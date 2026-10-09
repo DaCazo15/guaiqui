@@ -36,12 +36,12 @@ const handleClick = (event: MouseEvent) => {
 const sizeClasses = computed(() => {
   switch (props.size) {
     case 'sm':
-      return 'h-8 px-3 py-1.5 text-xs font-medium gap-1.5 rounded-guaiqui-sm'
+      return 'h-8 px-3 text-xs font-medium gap-1.5 rounded-guaiqui-sm'
     case 'lg':
-      return 'h-12 px-6 py-3 text-base font-semibold gap-2.5 rounded-guaiqui-lg'
+      return 'h-12 px-6 text-base font-semibold gap-2.5 rounded-guaiqui-lg'
     case 'md':
     default:
-      return 'h-10 px-4 py-2 text-sm font-semibold gap-2 rounded-guaiqui-md'
+      return 'h-10 px-4 text-sm font-semibold gap-2 rounded-guaiqui-md'
   }
 })
 

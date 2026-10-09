@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
-import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable } from '@guaiqui/ui'
+import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
 import { supabase } from '../lib/supabase'
 
 interface TeamMemberRow {
@@ -213,14 +213,15 @@ onMounted(loadMembers)
         <BaseInput label="Nombre Completo" v-model="form.name" placeholder="Ej: Fernando Duró" />
         <BaseInput label="Cargo o Rol" v-model="form.role" placeholder="Ej: Director Técnico" />
 
-        <div>
-          <label class="block text-xs font-semibold text-slate-300 mb-1">Categoría de Grupo</label>
-          <select v-model="form.group_category" class="w-full bg-slate-900 border border-slate-700 text-slate-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:border-emerald-500">
-            <option value="directiva">Directiva</option>
-            <option value="tecnico">Cuerpo Técnico</option>
-            <option value="logistica">Staff / Logística</option>
-          </select>
-        </div>
+        <BaseSelect
+          label="Categoría de Grupo"
+          v-model="form.group_category"
+          :options="[
+            { value: 'directiva', label: 'Directiva' },
+            { value: 'tecnico', label: 'Cuerpo Técnico' },
+            { value: 'logistica', label: 'Staff / Logística' }
+          ]"
+        />
 
         <BaseInput label="URL de Foto (Opcional)" v-model="form.photo_url" placeholder="https://..." />
         <BaseInput label="Orden de Aparición" type="number" v-model.number="form.order_index" />
