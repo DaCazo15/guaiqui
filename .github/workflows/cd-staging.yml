@@ -1,0 +1,45 @@
+name: CD Staging Pipeline
+
+on:
+  push:
+    branches: [main]
+
+jobs:
+  deploy-staging:
+    name: Deploy Migrations to Staging & Run Smoke Tests
+    runs-on: ubuntu-latest
+    environment: staging
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Link & Push Migrations to Staging Supabase
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.STAGING_SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.STAGING_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: ${{ secrets.STAGING_SUPABASE_PROJECT_ID }}
+        run: |
+          supabase link --project-ref $SUPABASE_PROJECT_ID --password $SUPABASE_DB_PASSWORD
+          supabase db push
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Run Playwright @smoke Tests against Staging
+        env:
+          PLAYWRIGHT_TEST_BASE_URL: ${{ secrets.STAGING_APP_URL }}
+        run: pnpm exec playwright test --grep "@smoke"

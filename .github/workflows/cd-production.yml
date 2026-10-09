@@ -1,0 +1,34 @@
+name: CD Production Pipeline
+
+on:
+  workflow_dispatch:
+
+jobs:
+  deploy-production:
+    name: Apply Migrations to Production (Requires Manual Approval)
+    runs-on: ubuntu-latest
+    environment: production
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Verify Migration Drift
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.PROD_SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.PROD_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: ${{ secrets.PROD_SUPABASE_PROJECT_ID }}
+        run: |
+          supabase link --project-ref $SUPABASE_PROJECT_ID --password $SUPABASE_DB_PASSWORD
+          supabase migration list
+
+      - name: Apply Migrations (Forward-Only)
+        env:
+          SUPABASE_ACCESS_TOKEN: ${{ secrets.PROD_SUPABASE_ACCESS_TOKEN }}
+          SUPABASE_DB_PASSWORD: ${{ secrets.PROD_SUPABASE_DB_PASSWORD }}
+          SUPABASE_PROJECT_ID: ${{ secrets.PROD_SUPABASE_PROJECT_ID }}
+        run: |
+          supabase db push

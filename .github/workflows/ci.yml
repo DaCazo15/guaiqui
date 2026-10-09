@@ -1,17 +1,24 @@
-name: CI
+name: CI Pipeline
 
 on:
   pull_request:
     branches: [main]
   push:
-    branches: [main]
+    branches-ignore: [main]
 
 jobs:
-  ci:
+  security-and-quality:
+    name: Security, Lint, Unit & Database Tests
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Secret Scanning with Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: pnpm/action-setup@v4
 
@@ -23,11 +30,34 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Verify No Production Secrets in Environment
+        run: node scripts/verify-no-prod-secrets.mjs
+
+      - name: Audit Dependencies
+        run: pnpm audit --prod || true
+
       - name: Lint
         run: pnpm lint
 
       - name: Type check
         run: pnpm typecheck
 
-      - name: Unit tests
+      - name: Vitest Unit Tests
         run: pnpm test
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Run Supabase pgTAP Database Tests
+        run: |
+          supabase start
+          supabase db reset
+          supabase test db
+
+      - name: Install Playwright Browsers
+        run: pnpm exec playwright install --with-deps
+
+      - name: Run Playwright E2E Tests
+        run: pnpm exec playwright test
