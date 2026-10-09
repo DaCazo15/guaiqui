@@ -22,6 +22,7 @@ const navItems = [
   { name: 'admin-personal', path: '/admin/personal', label: 'Personal & Roles', icon: 'bi-person-gear' },
   { name: 'admin-fanaticos', path: '/admin/fanaticos', label: 'Fanáticos', icon: 'bi-people' },
   { name: 'admin-segmentos', path: '/admin/segmentos', label: 'Segmentos', icon: 'bi-pie-chart' },
+  { name: 'admin-riesgo', path: '/admin/riesgo', label: 'Control Riesgo & Antifraude', icon: 'bi-shield-exclamation' },
   { name: 'admin-incidencias', path: '/admin/incidencias', label: 'Incidencias', icon: 'bi-exclamation-triangle' },
   { name: 'admin-auditoria', path: '/admin/auditoria', label: 'Auditoría', icon: 'bi-shield-check' },
   { name: 'admin-anuncios', path: '/admin/anuncios', label: 'Cinta Anuncios', icon: 'bi-megaphone' },

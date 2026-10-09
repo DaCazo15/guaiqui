@@ -19,6 +19,7 @@ import AdminEconomyView from '../pages/AdminEconomyView.vue'
 import AdminPersonalView from '../pages/AdminPersonalView.vue'
 import AdminFansView from '../pages/AdminFansView.vue'
 import AdminSegmentsView from '../pages/AdminSegmentsView.vue'
+import AdminRiskView from '../pages/AdminRiskView.vue'
 import AdminIssuesView from '../pages/AdminIssuesView.vue'
 import AdminAuditView from '../pages/AdminAuditView.vue'
 import AdminAnnouncementsView from '../pages/AdminAnnouncementsView.vue'
@@ -143,6 +144,12 @@ export const router = createRouter({
       path: '/admin/segmentos',
       name: 'admin-segmentos',
       component: AdminSegmentsView,
+      meta: { requiresAdmin: true }
+    },
+    {
+      path: '/admin/riesgo',
+      name: 'admin-riesgo',
+      component: AdminRiskView,
       meta: { requiresAdmin: true }
     },
     {
