@@ -39,3 +39,8 @@ coverage
 test-results/
 playwright-report/
 blob-report/
+
+# Supabase Local Runtime
+supabase/.temp/
+supabase/.branches/
+.temp/
