@@ -29,6 +29,12 @@ export interface Profile {
   referral_source?: string | null
   notification_prefs?: Json
   status: UserStatus
+  terms_accepted_at?: string | null
+  terms_version?: string | null
+  privacy_accepted_at?: string | null
+  privacy_version?: string | null
+  pearls_rules_accepted_at?: string | null
+  pearls_rules_version?: string | null
   created_at: string
 }
 
@@ -214,6 +220,179 @@ export interface AuditLog {
   created_at: string
 }
 
+export interface SiteAnnouncement {
+  id: string
+  message: string
+  link_url?: string | null
+  is_published: boolean
+  starts_at: string
+  ends_at?: string | null
+  created_at: string
+}
+
+export interface CarouselSlideRow {
+  id: string
+  tag?: string | null
+  title: string
+  subtitle?: string | null
+  cta_text?: string | null
+  cta_url?: string | null
+  image_url?: string | null
+  bg_gradient?: string | null
+  badge_variant?: string | null
+  order_index: number
+  is_published: boolean
+  starts_at: string
+  ends_at?: string | null
+  created_at: string
+}
+
+export interface HistoryMilestone {
+  id: string
+  year: string
+  title: string
+  text: string
+  image_url?: string | null
+  order_index: number
+  is_published: boolean
+  created_at: string
+}
+
+export interface SiteTeamMember {
+  id: string
+  name: string
+  role: string
+  group_category: 'directiva' | 'tecnico' | 'logistica'
+  photo_url?: string | null
+  order_index: number
+  is_published: boolean
+  created_at: string
+}
+
+export interface FaqItemRow {
+  id: string
+  question: string
+  answer: string
+  order_index: number
+  is_published: boolean
+  created_at: string
+}
+
+export interface SiteStat {
+  id: string
+  label: string
+  value: string
+  note?: string | null
+  is_sponsor: boolean
+  logo_url?: string | null
+  order_index: number
+  is_published: boolean
+  created_at: string
+}
+
+export interface SocialLink {
+  id: string
+  platform: string
+  label: string
+  url: string
+  icon?: string | null
+  order_index: number
+  is_published: boolean
+  created_at: string
+}
+
+export interface PolicyDocument {
+  id: string
+  slug: 'terminos' | 'privacidad' | 'perlitas' | 'canjes'
+  version: string
+  content_markdown: string
+  published_at: string
+  is_active: boolean
+  created_at: string
+}
+
+export interface AnalyticsOverview {
+  dau: number
+  wau: number
+  mau: number
+  new_registrations: number
+  pearls_issued: number
+  pearls_spent: number
+  redemptions_by_status: Record<string, number>
+  avg_fulfillment_hours: number
+}
+
+export interface AnalyticsActiveUserPeriod {
+  period: string
+  active_users: number
+  new_registrations: number
+}
+
+export interface AnalyticsTopFan {
+  fan_id: string
+  display_name: string
+  avatar_url?: string | null
+  trivias_played: number
+  pearls_earned: number
+}
+
+export interface AnalyticsTriviaSummary {
+  popular_trivias: Array<{
+    trivia_id: string
+    title: string
+    attempts_count: number
+    avg_score: number
+    completion_rate: number
+  }>
+  hardest_questions: Array<{
+    question_id: string
+    trivia_title: string
+    question_text: string
+    total_answers: number
+    correct_rate: number
+  }>
+}
+
+export interface AnalyticsProductSummary {
+  top_products: Array<{
+    product_id: string
+    name: string
+    cost_pearls: number
+    redemptions_count: number
+    total_pearls_spent: number
+  }>
+  low_stock_alerts: Array<{
+    product_id: string
+    name: string
+    stock: number
+    active: boolean
+  }>
+}
+
+export interface AnalyticsDemographics {
+  by_municipality: Array<{ name: string; count: number }>
+  by_gender: Array<{ name: string; count: number }>
+  by_age_group: Array<{ name: string; count: number }>
+}
+
+export interface AnalyticsEconomy {
+  total_issued: number
+  total_spent: number
+  total_in_circulation: number
+  total_held: number
+  cheapest_product_cost: number
+  most_expensive_product_cost: number
+  days_needed_for_cheapest: number
+  days_needed_for_most_expensive: number
+}
+
+export interface AnalyticsFunnelStep {
+  step: number
+  name: string
+  count: number
+  conversion_rate: number
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -235,6 +414,14 @@ export interface Database {
       economy_settings: { Row: EconomySettings }
       risk_flags: { Row: RiskFlag }
       audit_log: { Row: AuditLog }
+      site_announcements: { Row: SiteAnnouncement }
+      carousel_slides: { Row: CarouselSlideRow }
+      history_milestones: { Row: HistoryMilestone }
+      site_team_members: { Row: SiteTeamMember }
+      faqs: { Row: FaqItemRow }
+      site_stats: { Row: SiteStat }
+      social_links: { Row: SocialLink }
+      policy_documents: { Row: PolicyDocument }
     }
   }
 }

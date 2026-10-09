@@ -1,11 +1,13 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 import { BaseBadge, BaseButton } from '@guaiqui/ui'
-import { carouselSlides, type CarouselSlide } from '~/data/landingData'
+import { carouselSlides as fallbackSlides, type CarouselSlide } from '~/data/landingData'
 import { useAnalytics } from '~/composables/useAnalytics'
 
+const supabase = useSupabaseClient()
 const { trackEvent } = useAnalytics()
 
+const slides = ref<CarouselSlide[]>(fallbackSlides)
 const currentIndex = ref(0)
 const isPaused = ref(false)
 let timer: ReturnType<typeof setInterval> | null = null
@@ -15,11 +17,13 @@ let touchStartX = 0
 let touchEndX = 0
 
 const nextSlide = () => {
-  currentIndex.value = (currentIndex.value + 1) % carouselSlides.length
+  if (slides.value.length === 0) return
+  currentIndex.value = (currentIndex.value + 1) % slides.value.length
 }
 
 const prevSlide = () => {
-  currentIndex.value = (currentIndex.value - 1 + carouselSlides.length) % carouselSlides.length
+  if (slides.value.length === 0) return
+  currentIndex.value = (currentIndex.value - 1 + slides.value.length) % slides.value.length
 }
 
 const goToSlide = (index: number) => {
@@ -43,7 +47,30 @@ const handleTouchEnd = (e: TouchEvent) => {
   }
 }
 
-onMounted(() => {
+onMounted(async () => {
+  try {
+    const { data } = await supabase
+      .from('carousel_slides')
+      .select('*')
+      .eq('is_published', true)
+      .order('order_index', { ascending: true })
+
+    if (data && data.length > 0) {
+      slides.value = data.map((row: any) => ({
+        id: row.id,
+        tag: row.tag || 'Destacado',
+        title: row.title,
+        subtitle: row.subtitle || '',
+        ctaText: row.cta_text || 'Ver Más',
+        ctaUrl: row.cta_url || '#',
+        bgGradient: row.bg_gradient || 'from-emerald-900 via-guaiqui-primary-dark to-slate-900',
+        badgeVariant: (row.badge_variant as any) || 'primary'
+      }))
+    }
+  } catch (_err) {
+    // Keep fallback
+  }
+
   // Respect prefers-reduced-motion
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   if (!prefersReducedMotion) {
@@ -105,7 +132,7 @@ onUnmounted(() => {
         @touchend="handleTouchEnd"
       >
         <div
-          v-for="(slide, index) in carouselSlides"
+          v-for="(slide, index) in slides"
           v-show="index === currentIndex"
           :key="slide.id"
           :class="[
@@ -139,7 +166,7 @@ onUnmounted(() => {
         <!-- Indicators / Dots -->
         <div class="absolute bottom-4 right-4 flex items-center gap-2 bg-black/40 backdrop-blur-md px-3 py-1.5 rounded-full">
           <button
-            v-for="(_, index) in carouselSlides"
+            v-for="(_, index) in slides"
             :key="index"
             type="button"
             :class="[

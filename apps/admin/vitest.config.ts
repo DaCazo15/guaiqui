@@ -6,5 +6,7 @@ export default defineConfig({
   test: {
     name: 'admin',
     environment: 'node',
+    exclude: ['e2e/**', '**/node_modules/**']
   },
 })
+

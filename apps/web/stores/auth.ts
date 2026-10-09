@@ -20,12 +20,41 @@ export const useAuthStore = defineStore('auth', () => {
   const isAuthenticated = computed(() => !!user.value)
   const isEmailVerified = computed(() => !!user.value?.email_confirmed_at || !!user.value?.confirmed_at || (isAuthenticated.value && !!profile.value) || isAuthenticated.value)
   
+  const activeLegalVersions = ref<Record<string, string>>({
+    terminos: 'v1.0',
+    privacidad: 'v1.0',
+    perlitas: 'v1.0',
+    canjes: 'v1.0',
+  })
+
+  async function fetchActiveLegalVersions() {
+    try {
+      const { data } = await supabase.rpc('get_active_legal_versions')
+      if (data && typeof data === 'object') {
+        activeLegalVersions.value = data as Record<string, string>
+      }
+    } catch (_err) {
+      // Fallback to default v1.0
+    }
+  }
+
   const needsConsent = computed(() => {
     if (!isAuthenticated.value || !isEmailVerified.value || !profile.value) return false
+    const activeT = activeLegalVersions.value.terminos || 'v1.0'
+    const activeP = activeLegalVersions.value.privacidad || 'v1.0'
+    const activeR = activeLegalVersions.value.perlitas || 'v1.0'
+
+    const userT = profile.value.terms_version || 'v1.0'
+    const userP = profile.value.privacy_version || 'v1.0'
+    const userR = profile.value.pearls_rules_version || 'v1.0'
+
     return (
       !profile.value.terms_accepted_at ||
+      userT !== activeT ||
       !profile.value.privacy_accepted_at ||
-      !profile.value.pearls_rules_accepted_at
+      userP !== activeP ||
+      !profile.value.pearls_rules_accepted_at ||
+      userR !== activeR
     )
   })
 
@@ -168,16 +197,17 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     errorMessage.value = null
     try {
+      await fetchActiveLegalVersions()
       const now = new Date().toISOString()
       const { error } = await supabase
         .from('profiles')
         .update({
           terms_accepted_at: now,
-          terms_version: CURRENT_LEGAL_VERSIONS.terms,
+          terms_version: activeLegalVersions.value.terminos || 'v1.0',
           privacy_accepted_at: now,
-          privacy_version: CURRENT_LEGAL_VERSIONS.privacy,
+          privacy_version: activeLegalVersions.value.privacidad || 'v1.0',
           pearls_rules_accepted_at: now,
-          pearls_rules_version: CURRENT_LEGAL_VERSIONS.pearls_rules,
+          pearls_rules_version: activeLegalVersions.value.perlitas || 'v1.0',
         })
         .eq('id', user.value.id)
 
@@ -372,6 +402,7 @@ export const useAuthStore = defineStore('auth', () => {
     needsConsent,
     isActive,
     fetchProfile,
+    fetchActiveLegalVersions,
     loginWithEmail,
     signUpWithEmail,
     loginWithGoogle,

@@ -8,7 +8,7 @@ export interface TableColumn {
 
 interface Props {
   columns: TableColumn[]
-  data: Record<string, unknown>[]
+  data: any[]
   loading?: boolean
   emptyText?: string
 }
@@ -19,6 +19,7 @@ withDefaults(defineProps<Props>(), {
   loading: false,
   emptyText: 'No hay datos disponibles',
 })
+
 </script>
 
 <template>

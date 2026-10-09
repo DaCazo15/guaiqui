@@ -75,3 +75,15 @@ Hero, carrusel, cinta de anuncios, cómo funciona, plantilla, historia, equipo d
 - Preferir **composables y helpers** para lógica reutilizable.
 - Preferir **slots sobre props** en modales y botones (componentes de presentación genéricos).
 - Seguir la regla de **Vue Component Modularizer**: componentes de más de ~100-150 líneas de template deben descomponerse en subcomponentes enfocados (ver regla global `vue-component-modularizer`).
+
+---
+
+## Reglas de todas las fases
+
+1. Funciones nuevas en public: REVOKE ALL a PUBLIC y anon; GRANT EXECUTE solo a authenticated (o solo a service_role si es interna). Si son SECURITY DEFINER: search_path fijo, validar el rol del llamador dentro (assert_active_verified_fan, assert_staff o assert_admin) y rechazar perfiles con status = 'deleted' o 'suspended'. Sin SQL dinámico con interpolación. Toda función nueva entra en la allowlist de pgTAP.
+2. Toda tabla nueva con RLS activo y políticas mínimas. Vistas y vistas materializadas no accesibles para anon ni authenticated, salvo indicación expresa.
+3. Todo cambio de esquema es una migración nueva. No se edita una anterior y no se toca el proyecto remoto.
+4. Ningún dato personal en logs, errores ni analítica.
+5. Antes de codificar: leer migraciones, tipos y funciones reales, presentar un plan breve y esperar mi aprobación.
+6. Cierre de fase en máximo 20 líneas: qué se hizo, qué queda pendiente y la salida literal de supabase test db, pnpm test y pnpm exec playwright test (con conteo de pasadas y falladas). Si algo no se pudo ejecutar, decirlo. Nunca marcar algo como probado sin su salida.
+
