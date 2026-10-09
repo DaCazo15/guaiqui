@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
-import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable } from '@guaiqui/ui'
+import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
 import { supabase } from '../lib/supabase'
 
 interface OptionForm {
@@ -26,12 +26,19 @@ interface TriviaRow {
   starts_at: string
   ends_at: string
   time_limit_seconds: number
+  target_segment_id?: string
   reward_rules: { per_correct_pearls?: number; perfect_score_bonus?: number }
   max_attempts: number
   created_at: string
 }
 
+interface SegmentOption {
+  id: string
+  name: string
+}
+
 const trivias = ref<TriviaRow[]>([])
+const segments = ref<SegmentOption[]>([])
 const loading = ref(true)
 const actionLoading = ref(false)
 const errorMessage = ref<string | null>(null)
@@ -40,6 +47,7 @@ const successMessage = ref<string | null>(null)
 // Modal states
 const showEditorModal = ref(false)
 const showPreviewModal = ref(false)
+const showDeleteModal = ref(false)
 const selectedTrivia = ref<TriviaRow | null>(null)
 
 // Form state
@@ -50,6 +58,7 @@ const triviaForm = ref({
   starts_at: '',
   ends_at: '',
   time_limit_seconds: 60,
+  target_segment_id: '',
   per_correct_pearls: 50,
   perfect_score_bonus: 100,
   questions: [] as QuestionForm[]
@@ -64,16 +73,23 @@ const columns = [
   { key: 'actions', label: 'Acciones', align: 'right' as const }
 ]
 
-const loadTrivias = async () => {
+const loadTriviasAndSegments = async () => {
   loading.value = true
   try {
-    const { data, error } = await supabase
+    const { data: triviaData, error: tErr } = await supabase
       .from('trivias')
       .select('*')
       .order('created_at', { ascending: false })
 
-    if (error) throw error
-    trivias.value = data || []
+    if (tErr) throw tErr
+    trivias.value = triviaData || []
+
+    const { data: segmentData } = await supabase
+      .from('segments')
+      .select('id, name')
+      .order('name', { ascending: true })
+
+    segments.value = segmentData || []
   } catch (err: any) {
     errorMessage.value = err.message
   } finally {
@@ -93,6 +109,7 @@ const openNewTrivia = () => {
     starts_at: now.toISOString().slice(0, 16),
     ends_at: tomorrow.toISOString().slice(0, 16),
     time_limit_seconds: 60,
+    target_segment_id: '',
     per_correct_pearls: 50,
     perfect_score_bonus: 100,
     questions: [
@@ -121,6 +138,7 @@ const editTrivia = async (t: TriviaRow) => {
     starts_at: t.starts_at ? new Date(t.starts_at).toISOString().slice(0, 16) : '',
     ends_at: t.ends_at ? new Date(t.ends_at).toISOString().slice(0, 16) : '',
     time_limit_seconds: t.time_limit_seconds || 60,
+    target_segment_id: t.target_segment_id || '',
     per_correct_pearls: t.reward_rules?.per_correct_pearls ?? 50,
     perfect_score_bonus: t.reward_rules?.perfect_score_bonus ?? 100,
     questions: []
@@ -193,6 +211,7 @@ const saveTrivia = async () => {
       starts_at: new Date(triviaForm.value.starts_at).toISOString(),
       ends_at: new Date(triviaForm.value.ends_at).toISOString(),
       time_limit_seconds: Number(triviaForm.value.time_limit_seconds),
+      target_segment_id: triviaForm.value.target_segment_id || null,
       reward_rules: {
         per_correct_pearls: Number(triviaForm.value.per_correct_pearls),
         perfect_score_bonus: Number(triviaForm.value.perfect_score_bonus)
@@ -207,7 +226,7 @@ const saveTrivia = async () => {
     if (error) throw error
     successMessage.value = 'Trivia guardada correctamente.'
     showEditorModal.value = false
-    await loadTrivias()
+    await loadTriviasAndSegments()
   } catch (err: any) {
     errorMessage.value = err.message
   } finally {
@@ -222,7 +241,7 @@ const publishTrivia = async (id: string) => {
     const { error } = await supabase.rpc('admin_publish_trivia', { p_trivia_id: id })
     if (error) throw error
     successMessage.value = 'Trivia publicada exitosamente.'
-    await loadTrivias()
+    await loadTriviasAndSegments()
   } catch (err: any) {
     errorMessage.value = err.message
   } finally {
@@ -237,7 +256,7 @@ const duplicateTrivia = async (id: string) => {
     const { error } = await supabase.rpc('admin_duplicate_trivia', { p_trivia_id: id })
     if (error) throw error
     successMessage.value = 'Trivia duplicada correctamente.'
-    await loadTrivias()
+    await loadTriviasAndSegments()
   } catch (err: any) {
     errorMessage.value = err.message
   } finally {
@@ -245,15 +264,22 @@ const duplicateTrivia = async (id: string) => {
   }
 }
 
-const archiveTrivia = async (id: string) => {
-  if (!confirm('¿Está seguro de archivar esta trivia?')) return
+const confirmDeleteTrivia = (t: TriviaRow) => {
+  selectedTrivia.value = t
+  showDeleteModal.value = true
+}
+
+const deleteTrivia = async () => {
+  if (!selectedTrivia.value) return
   actionLoading.value = true
   errorMessage.value = null
   try {
-    const { error } = await supabase.rpc('admin_archive_trivia', { p_trivia_id: id })
+    const { error } = await supabase.from('trivias').delete().eq('id', selectedTrivia.value.id)
     if (error) throw error
-    successMessage.value = 'Trivia archivada correctamente.'
-    await loadTrivias()
+
+    successMessage.value = `Trivia "${selectedTrivia.value.title}" eliminada correctamente.`
+    showDeleteModal.value = false
+    await loadTriviasAndSegments()
   } catch (err: any) {
     errorMessage.value = err.message
   } finally {
@@ -268,7 +294,7 @@ const previewTrivia = async (t: TriviaRow) => {
   showPreviewModal.value = true
 }
 
-onMounted(loadTrivias)
+onMounted(loadTriviasAndSegments)
 </script>
 
 <template>
@@ -277,7 +303,7 @@ onMounted(loadTrivias)
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 class="text-2xl font-bold font-title text-white">Gestión de Trivias</h1>
-          <p class="text-sm text-slate-400">Crear, editar, validar y publicar trivias interactivas para los fanáticos.</p>
+          <p class="text-sm text-slate-400">Crear, modificar, tiempo limitado, segmentar y eliminar trivias para los fanáticos.</p>
         </div>
         <BaseButton variant="primary" @click="openNewTrivia">
           <i class="bi bi-plus-lg mr-1.5"></i> Nueva Trivia
@@ -316,7 +342,7 @@ onMounted(loadTrivias)
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1.5">
-            <button @click="previewTrivia(row as any)" class="p-1.5 text-sky-400 hover:bg-sky-950 rounded-lg" title="Vista previa de fan">
+            <button @click="previewTrivia(row as any)" class="p-1.5 text-sky-400 hover:bg-sky-950 rounded-lg" title="Vista previa">
               <i class="bi bi-eye"></i>
             </button>
             <button @click="editTrivia(row as any)" class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg" title="Editar trivia">
@@ -325,11 +351,11 @@ onMounted(loadTrivias)
             <button v-if="(row as any).status === 'draft'" @click="publishTrivia((row as any).id)" class="p-1.5 text-emerald-400 hover:bg-emerald-950 rounded-lg" title="Publicar trivia">
               <i class="bi bi-send"></i>
             </button>
-            <button @click="duplicateTrivia((row as any).id)" class="p-1.5 text-purple-400 hover:bg-purple-950 rounded-lg" title="Duplicar trivia">
+            <button @click="duplicateTrivia((row as any).id)" class="p-1.5 text-purple-400 hover:bg-purple-950 rounded-lg" title="Duplicar">
               <i class="bi bi-copy"></i>
             </button>
-            <button v-if="(row as any).status !== 'archived'" @click="archiveTrivia((row as any).id)" class="p-1.5 text-red-400 hover:bg-red-950 rounded-lg" title="Archivar">
-              <i class="bi bi-archive"></i>
+            <button @click="confirmDeleteTrivia(row as any)" class="p-1.5 text-red-400 hover:bg-red-950 rounded-lg" title="Eliminar trivia">
+              <i class="bi bi-trash"></i>
             </button>
           </div>
         </template>
@@ -340,17 +366,29 @@ onMounted(loadTrivias)
     <BaseModal v-if="showEditorModal" :is-open="showEditorModal" title="Editor de Trivia" @close="showEditorModal = false" size="xl">
       <div class="space-y-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <BaseInput label="Título de la Trivia" v-model="triviaForm.title" placeholder="Ej: Trivia vs Gigantes" />
-          <BaseInput label="Límite de Tiempo (Segundos)" type="number" v-model="triviaForm.time_limit_seconds" />
-          <BaseInput label="Fecha de Inicio" type="datetime-local" v-model="triviaForm.starts_at" />
-          <BaseInput label="Fecha de Fin" type="datetime-local" v-model="triviaForm.ends_at" />
-          <BaseInput label="Perlitas por Respuesta Correcta" type="number" v-model="triviaForm.per_correct_pearls" />
-          <BaseInput label="Bono por Puntaje Perfecto" type="number" v-model="triviaForm.perfect_score_bonus" />
+          <BaseInput label="Título de la Trivia" v-model="triviaForm.title" placeholder="Ej: Trivia Clásico Oriental" />
+          <BaseInput label="Límite de Tiempo por Pregunta (Segundos)" type="number" v-model="triviaForm.time_limit_seconds" />
+          <BaseInput label="Fecha y Hora de Inicio" type="datetime-local" v-model="triviaForm.starts_at" />
+          <BaseInput label="Fecha y Hora de Cierre (Tiempo Limitado)" type="datetime-local" v-model="triviaForm.ends_at" />
+
+          <BaseSelect
+            label="Grupo / Segmento Objetivo de Fanáticos"
+            v-model="triviaForm.target_segment_id"
+            :options="[
+              { value: '', label: 'Todos los fanáticos (Público)' },
+              ...segments.map(s => ({ value: s.id, label: s.name }))
+            ]"
+          />
+
+          <div class="grid grid-cols-2 gap-2">
+            <BaseInput label="Perlitas x Acierto" type="number" v-model="triviaForm.per_correct_pearls" />
+            <BaseInput label="Bono Perfecto" type="number" v-model="triviaForm.perfect_score_bonus" />
+          </div>
         </div>
 
         <div class="space-y-4">
           <div class="flex items-center justify-between border-t border-slate-800 pt-4">
-            <h3 class="font-bold text-slate-100">Preguntas y Respuestas</h3>
+            <h3 class="font-bold text-slate-100">Preguntas y Opciones</h3>
             <BaseButton size="sm" variant="secondary" @click="addQuestion">
               <i class="bi bi-plus-lg mr-1"></i> Agregar Pregunta
             </BaseButton>
@@ -360,7 +398,7 @@ onMounted(loadTrivias)
             <div class="flex items-center justify-between gap-3">
               <span class="text-xs font-bold uppercase text-emerald-400 font-mono">Pregunta #{{ qIdx + 1 }}</span>
               <button @click="removeQuestion(qIdx)" class="text-red-400 hover:text-red-300 text-xs">
-                <i class="bi bi-trash"></i> Eliminar
+                <i class="bi bi-trash"></i> Eliminar Pregunta
               </button>
             </div>
 
@@ -368,7 +406,7 @@ onMounted(loadTrivias)
 
             <div class="space-y-2 pl-4 border-l-2 border-slate-800">
               <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">
-                <span>Opciones (marca la opción correcta)</span>
+                <span>Opciones de respuesta</span>
                 <button @click="addOption(qIdx)" class="text-emerald-400 hover:underline text-xs">+ Opción</button>
               </div>
 
@@ -403,8 +441,26 @@ onMounted(loadTrivias)
       </template>
     </BaseModal>
 
+    <!-- Delete Modal -->
+    <BaseModal v-if="showDeleteModal" :is-open="showDeleteModal" title="Eliminar Trivia" @close="showDeleteModal = false">
+      <div class="space-y-4">
+        <p class="text-sm text-slate-300">
+          ¿Está seguro de eliminar permanentemente la trivia <strong>{{ selectedTrivia?.title }}</strong>?
+        </p>
+        <div class="p-3 bg-red-950/40 border border-red-800 text-xs text-red-300 rounded-lg">
+          Esta acción eliminará la trivia y sus preguntas de forma definitiva.
+        </div>
+      </div>
+      <template #footer>
+        <div class="flex items-center justify-end gap-3">
+          <BaseButton variant="secondary" @click="showDeleteModal = false">Cancelar</BaseButton>
+          <BaseButton variant="danger" :loading="actionLoading" @click="deleteTrivia">Confirmar Eliminación</BaseButton>
+        </div>
+      </template>
+    </BaseModal>
+
     <!-- Preview Modal -->
-    <BaseModal v-if="showPreviewModal" :is-open="showPreviewModal" title="Vista Previa de Trivia (Fan)" @close="showPreviewModal = false">
+    <BaseModal v-if="showPreviewModal" :is-open="showPreviewModal" title="Vista Previa de Trivia" @close="showPreviewModal = false">
       <div class="space-y-6">
         <div class="p-4 rounded-xl bg-emerald-950/40 border border-emerald-800/60">
           <h3 class="text-xl font-bold font-title text-white">{{ triviaForm.title }}</h3>

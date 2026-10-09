@@ -29,6 +29,7 @@ import AdminTeamView from '../pages/AdminTeamView.vue'
 import AdminFaqView from '../pages/AdminFaqView.vue'
 import AdminStatsView from '../pages/AdminStatsView.vue'
 import AdminPoliciesView from '../pages/AdminPoliciesView.vue'
+import AdminInstagramView from '../pages/AdminInstagramView.vue'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -198,6 +199,12 @@ export const router = createRouter({
       path: '/admin/cifras',
       name: 'admin-cifras',
       component: AdminStatsView,
+      meta: { requiresAdmin: true }
+    },
+    {
+      path: '/admin/instagram',
+      name: 'admin-instagram',
+      component: AdminInstagramView,
       meta: { requiresAdmin: true }
     },
     {

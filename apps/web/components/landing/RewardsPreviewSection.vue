@@ -24,7 +24,7 @@ const handleRewardClick = (name: string) => {
           </h2>
         </div>
 
-        <NuxtLink to="/#registro">
+        <NuxtLink to="/registro">
           <BaseButton variant="primary" size="md">
             Ver Todos los Premios (24+)
           </BaseButton>

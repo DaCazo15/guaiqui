@@ -60,14 +60,14 @@ const navLinks = [
 
       <!-- Action Buttons -->
       <div class="flex items-center gap-2 sm:gap-3">
-        <NuxtLink to="/#login" class="hidden sm:inline-flex">
+        <NuxtLink to="/login" class="hidden sm:inline-flex">
           <BaseButton variant="secondary" size="sm" @click="handleLogin">
             Iniciar sesión
           </BaseButton>
         </NuxtLink>
 
         <!-- Primary Register Button (ALWAYS visible outside drawer on mobile too) -->
-        <NuxtLink to="/#registro">
+        <NuxtLink to="/registro">
           <BaseButton variant="primary" size="sm" @click="handleRegister">
             Regístrate
           </BaseButton>
@@ -125,7 +125,7 @@ const navLinks = [
         </NuxtLink>
 
         <div class="pt-2 border-t border-guaiqui-border flex flex-col gap-2">
-          <NuxtLink to="/#login" @click="closeMobileMenu">
+          <NuxtLink to="/login" @click="closeMobileMenu">
             <BaseButton variant="secondary" block @click="handleLogin">
               Iniciar sesión
             </BaseButton>

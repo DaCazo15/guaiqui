@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
 import { supabase } from '../lib/supabase'
@@ -25,7 +25,12 @@ const actionLoading = ref(false)
 const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 
+// Filters
+const filterSearch = ref('')
+const filterCategory = ref('')
+
 const showEditorModal = ref(false)
+const showDeleteModal = ref(false)
 const selectedProduct = ref<ProductRow | null>(null)
 const uploadingImage = ref(false)
 
@@ -51,6 +56,14 @@ const columns = [
   { key: 'active', label: 'Estado', align: 'center' as const },
   { key: 'actions', label: 'Acciones', align: 'right' as const }
 ]
+
+const filteredProducts = computed(() => {
+  return products.value.filter(p => {
+    const matchesSearch = !filterSearch.value || p.name.toLowerCase().includes(filterSearch.value.toLowerCase())
+    const matchesCat = !filterCategory.value || p.category === filterCategory.value
+    return matchesSearch && matchesCat
+  })
+})
 
 const loadProducts = async () => {
   loading.value = true
@@ -104,6 +117,33 @@ const editProduct = (p: ProductRow) => {
     images: p.images || []
   }
   showEditorModal.value = true
+}
+
+const confirmDeleteProduct = (p: ProductRow) => {
+  selectedProduct.value = p
+  showDeleteModal.value = true
+}
+
+const deleteProduct = async () => {
+  if (!selectedProduct.value) return
+  actionLoading.value = true
+  errorMessage.value = null
+  try {
+    const { error } = await supabase
+      .from('products')
+      .delete()
+      .eq('id', selectedProduct.value.id)
+
+    if (error) throw error
+
+    successMessage.value = `Producto "${selectedProduct.value.name}" eliminado correctamente.`
+    showDeleteModal.value = false
+    await loadProducts()
+  } catch (err: any) {
+    errorMessage.value = err.message
+  } finally {
+    actionLoading.value = false
+  }
 }
 
 const handleImageUpload = async (event: Event) => {
@@ -189,11 +229,29 @@ onMounted(loadProducts)
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 class="text-2xl font-bold font-title text-white">Catálogo de Productos</h1>
-          <p class="text-sm text-slate-400">Administrar catálogo de canje, stock, costos y variaciones.</p>
+          <p class="text-sm text-slate-400">Crear, modificar, eliminar y gestionar stock de productos canjeables.</p>
         </div>
         <BaseButton variant="primary" @click="openNewProduct">
           <i class="bi bi-plus-lg mr-1.5"></i> Nuevo Producto
         </BaseButton>
+      </div>
+
+      <!-- Filters Toolbar -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-900 p-4 rounded-xl border border-slate-800">
+        <BaseInput v-model="filterSearch" placeholder="Buscar por nombre..." />
+        <BaseSelect
+          v-model="filterCategory"
+          placeholder="Todas las categorías"
+          :options="[
+            { value: '', label: 'Todas las categorías' },
+            { value: 'physical', label: 'Físico (Camisetas, gorras)' },
+            { value: 'experience', label: 'Experiencia' },
+            { value: 'raffle', label: 'Sorteo' }
+          ]"
+        />
+        <div class="flex items-center justify-end text-xs text-slate-400 font-mono">
+          Total: {{ filteredProducts.length }} productos
+        </div>
       </div>
 
       <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
@@ -205,7 +263,7 @@ onMounted(loadProducts)
         <button @click="successMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
       </div>
 
-      <BaseTable :columns="columns" :data="(products as any[])" :loading="loading" empty-text="No hay productos en el catálogo">
+      <BaseTable :columns="columns" :data="(filteredProducts as any[])" :loading="loading" empty-text="No hay productos en el catálogo">
         <template #cell-name="{ row }">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
@@ -228,8 +286,8 @@ onMounted(loadProducts)
         </template>
 
         <template #cell-stock="{ row }">
-          <span :class="['text-xs font-semibold px-2 py-0.5 rounded-full border font-mono', Number((row as ProductRow).stock) <= 5 ? 'bg-red-950 text-red-400 border-red-800' : 'bg-slate-900 text-slate-300 border-slate-800']">
-            {{ (row as ProductRow).stock }} unid.
+          <span :class="['text-xs font-semibold px-2 py-0.5 rounded-full border font-mono', Number((row as ProductRow).stock) === 0 ? 'bg-red-950 text-red-400 border-red-800' : Number((row as ProductRow).stock) <= 5 ? 'bg-amber-950 text-amber-300 border-amber-800' : 'bg-slate-900 text-slate-300 border-slate-800']">
+            {{ (row as ProductRow).stock === 0 ? 'Agotado' : `${(row as ProductRow).stock} unid.` }}
           </span>
         </template>
 
@@ -240,9 +298,12 @@ onMounted(loadProducts)
         </template>
 
         <template #cell-actions="{ row }">
-          <div class="flex items-center justify-end gap-1.5">
+          <div class="flex items-center justify-end gap-2">
             <button @click="editProduct(row as ProductRow)" class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg" title="Editar producto">
               <i class="bi bi-pencil"></i>
+            </button>
+            <button @click="confirmDeleteProduct(row as ProductRow)" class="p-1.5 text-red-400 hover:bg-red-950 rounded-lg" title="Eliminar producto">
+              <i class="bi bi-trash"></i>
             </button>
           </div>
         </template>
@@ -250,7 +311,7 @@ onMounted(loadProducts)
     </div>
 
     <!-- Product Editor Modal -->
-    <BaseModal v-if="showEditorModal" :is-open="showEditorModal" title="Editor de Producto" @close="showEditorModal = false" size="lg">
+    <BaseModal v-if="showEditorModal" :is-open="showEditorModal" title="Editor de Producto Canjeable" @close="showEditorModal = false" size="lg">
       <div class="space-y-4">
         <BaseInput label="Nombre del Producto" v-model="productForm.name" placeholder="Ej: Camiseta Oficial 2026" />
         <BaseInput label="Descripción" v-model="productForm.description" placeholder="Descripción corta del producto" />
@@ -277,7 +338,7 @@ onMounted(loadProducts)
         </div>
 
         <div class="space-y-2 border-t border-slate-800 pt-3">
-          <label class="block text-xs font-semibold text-slate-400">Imágenes del Producto (Bucket product-images)</label>
+          <label class="block text-xs font-semibold text-slate-400">Imágenes del Producto</label>
           <div class="flex flex-wrap items-center gap-3">
             <div v-for="(img, idx) in productForm.images" :key="idx" class="w-16 h-16 rounded-lg bg-slate-900 border border-slate-800 relative group overflow-hidden">
               <img :src="img" class="w-full h-full object-cover" />
@@ -294,17 +355,30 @@ onMounted(loadProducts)
             </label>
           </div>
         </div>
-
-        <div class="p-3 rounded-lg bg-slate-900 text-xs text-slate-400 border border-slate-800 flex items-center gap-2">
-          <i class="bi bi-info-circle text-emerald-400"></i>
-          <span>Los cambios de precio no afectarán los canjes ya realizados (costo congelado en cada orden).</span>
-        </div>
       </div>
 
       <template #footer>
         <div class="flex items-center justify-end gap-3">
           <BaseButton variant="secondary" @click="showEditorModal = false">Cancelar</BaseButton>
           <BaseButton variant="primary" :loading="actionLoading" @click="saveProduct">Guardar Producto</BaseButton>
+        </div>
+      </template>
+    </BaseModal>
+
+    <!-- Delete Confirmation Modal -->
+    <BaseModal v-if="showDeleteModal" :is-open="showDeleteModal" title="Eliminar Producto" @close="showDeleteModal = false">
+      <div class="space-y-4">
+        <p class="text-sm text-slate-300">
+          ¿Está seguro de eliminar permanentemente el producto <strong>{{ selectedProduct?.name }}</strong> del catálogo?
+        </p>
+        <div class="p-3 bg-red-950/40 border border-red-800 text-xs text-red-300 rounded-lg">
+          Esta acción no afectará los canjes históricos ya procesados.
+        </div>
+      </div>
+      <template #footer>
+        <div class="flex items-center justify-end gap-3">
+          <BaseButton variant="secondary" @click="showDeleteModal = false">Cancelar</BaseButton>
+          <BaseButton variant="danger" :loading="actionLoading" @click="deleteProduct">Confirmar Eliminación</BaseButton>
         </div>
       </template>
     </BaseModal>

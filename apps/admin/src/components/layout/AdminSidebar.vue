@@ -31,6 +31,7 @@ const navItems = [
   { name: 'admin-equipo', path: '/admin/equipo', label: 'Equipo / Staff', icon: 'bi-person-lines-fill' },
   { name: 'admin-faq', path: '/admin/faq', label: 'Preguntas FAQ', icon: 'bi-patch-question' },
   { name: 'admin-cifras', path: '/admin/cifras', label: 'Cifras & Sponsors', icon: 'bi-bar-chart-line' },
+  { name: 'admin-instagram', path: '/admin/instagram', label: 'Mosaico Instagram', icon: 'bi-instagram' },
   { name: 'admin-politicas', path: '/admin/politicas', label: 'Políticas Legales', icon: 'bi-journal-check' },
 ]
 

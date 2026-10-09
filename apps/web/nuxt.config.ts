@@ -12,7 +12,22 @@ export default defineNuxtConfig({
     redirectOptions: {
       login: '/login',
       callback: '/confirm',
-      exclude: ['/', '/registro', '/recuperar', '/restablecer-contrasena', '/verificar-correo', '/politicas/*', '/aceptar-terminos'],
+      exclude: [
+        '/',
+        '/registro',
+        '/login',
+        '/recuperar',
+        '/restablecer-contrasena',
+        '/verificar-correo',
+        '/politicas/*',
+        '/aceptar-terminos',
+        '/historia',
+        '/plantilla',
+        '/equipo-de-trabajo',
+        '/como-funciona',
+        '/faq',
+        '/contacto'
+      ],
     },
   },
 

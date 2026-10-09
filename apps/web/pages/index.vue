@@ -15,6 +15,8 @@ import FaqSection from '~/components/landing/FaqSection.vue'
 import FinalCtaSection from '~/components/landing/FinalCtaSection.vue'
 import SiteFooter from '~/components/landing/SiteFooter.vue'
 
+import InstagramSection from '~/components/landing/InstagramSection.vue'
+
 // SEO Meta
 useSeoMeta({
   title: 'Guaiqueríes de Margarita — Fan Zone Oficial & Plataforma de Fidelización',
@@ -66,7 +68,10 @@ useSeoMeta({
     <!-- 13. FaqAccordion -->
     <FaqSection />
 
-    <!-- 14. FinalCta & SiteFooter -->
+    <!-- 14. Instagram Mosaic -->
+    <InstagramSection />
+
+    <!-- 15. FinalCta & SiteFooter -->
     <FinalCtaSection />
     <SiteFooter />
   </div>

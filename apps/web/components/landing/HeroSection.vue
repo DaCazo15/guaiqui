@@ -42,7 +42,7 @@ const handleHeroHowItWorks = () => {
 
         <!-- Double CTA Buttons -->
         <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-          <NuxtLink to="/#registro" class="w-full sm:w-auto">
+          <NuxtLink to="/registro" class="w-full sm:w-auto">
             <BaseButton variant="primary" size="lg" block @click="handleHeroRegister">
               Regístrate Gratis Ahora
             </BaseButton>
@@ -100,7 +100,7 @@ const handleHeroHowItWorks = () => {
             </div>
           </div>
 
-          <NuxtLink to="/#registro">
+          <NuxtLink to="/registro">
             <BaseButton variant="primary" block size="md" @click="handleHeroRegister">
               Participar en la Trivia del Partido
             </BaseButton>

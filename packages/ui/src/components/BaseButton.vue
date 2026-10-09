@@ -1,7 +1,8 @@
 <script setup lang="ts">
 import { computed } from 'vue'
 
-export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger'
+export type ButtonVariant = 'primary' | 'secondary' | 'ghost' | 'danger' | 'outline'
+
 export type ButtonSize = 'sm' | 'md' | 'lg'
 
 interface Props {
@@ -35,18 +36,19 @@ const handleClick = (event: MouseEvent) => {
 const sizeClasses = computed(() => {
   switch (props.size) {
     case 'sm':
-      return 'px-3 py-1.5 text-xs font-medium gap-1.5 rounded-guaiqui-sm'
+      return 'h-8 px-3 py-1.5 text-xs font-medium gap-1.5 rounded-guaiqui-sm'
     case 'lg':
-      return 'px-6 py-3.5 text-base font-semibold gap-2.5 rounded-guaiqui-lg'
+      return 'h-12 px-6 py-3 text-base font-semibold gap-2.5 rounded-guaiqui-lg'
     case 'md':
     default:
-      return 'px-4 py-2.5 text-sm font-semibold gap-2 rounded-guaiqui-md'
+      return 'h-10 px-4 py-2 text-sm font-semibold gap-2 rounded-guaiqui-md'
   }
 })
 
 const variantClasses = computed(() => {
   switch (props.variant) {
     case 'secondary':
+    case 'outline':
       return 'bg-guaiqui-surface text-guaiqui-text border border-guaiqui-border hover:bg-guaiqui-surface-hover active:bg-gray-200'
     case 'ghost':
       return 'bg-transparent text-guaiqui-text hover:bg-guaiqui-primary-soft hover:text-guaiqui-primary active:bg-green-100'

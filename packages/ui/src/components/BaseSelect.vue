@@ -65,7 +65,7 @@ const handleChange = (event: Event) => {
         :aria-invalid="!!error"
         :aria-describedby="error ? `${selectId}-error` : hint ? `${selectId}-hint` : undefined"
         :class="[
-          'w-full px-3.5 py-2.5 text-sm bg-white border rounded-guaiqui-md text-guaiqui-text appearance-none transition-colors duration-150 pr-10',
+          'w-full h-10 px-3.5 py-2 text-sm bg-white border rounded-guaiqui-md text-guaiqui-text appearance-none transition-colors duration-150 pr-10',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1',
           error
             ? 'border-guaiqui-status-danger focus-visible:ring-guaiqui-status-danger'

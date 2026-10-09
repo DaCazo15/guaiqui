@@ -25,7 +25,7 @@ const handleFinalCta = () => {
       </p>
 
       <div class="pt-2">
-        <NuxtLink to="/#registro">
+        <NuxtLink to="/registro">
           <BaseButton variant="primary" size="lg" @click="handleFinalCta">
             Crear mi Cuenta Gratis
           </BaseButton>

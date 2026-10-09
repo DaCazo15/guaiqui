@@ -68,7 +68,7 @@ const handleInput = (event: Event) => {
         :aria-invalid="!!error"
         :aria-describedby="error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined"
         :class="[
-          'w-full px-3.5 py-2.5 text-sm bg-white border rounded-guaiqui-md text-guaiqui-text placeholder-guaiqui-text-subtle transition-colors duration-150',
+          'w-full h-10 px-3.5 py-2 text-sm bg-white border rounded-guaiqui-md text-guaiqui-text placeholder-guaiqui-text-subtle transition-colors duration-150',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1',
           error
             ? 'border-guaiqui-status-danger focus-visible:ring-guaiqui-status-danger'

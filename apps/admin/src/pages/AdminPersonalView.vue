@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
-import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
+import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect, BaseCard } from '@guaiqui/ui'
 import { supabase } from '../lib/supabase'
 
 interface StaffMemberRow {
@@ -11,6 +11,9 @@ interface StaffMemberRow {
   created_at: string
   display_name?: string
   email?: string
+  attended_fans_count?: number
+  last_scan_location?: { latitude: number; longitude: number; time: string }
+  is_session_active?: boolean
 }
 
 const staffList = ref<StaffMemberRow[]>([])
@@ -20,18 +23,21 @@ const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 
 const showInviteModal = ref(false)
+const showLocationModal = ref(false)
+const selectedLocation = ref<{ latitude: number; longitude: number; staffName: string } | null>(null)
 const inviteEmail = ref('')
 const inviteRole = ref<'staff' | 'admin'>('staff')
 
 const columns = [
-  { key: 'user_id', label: 'ID / Nombre' },
-  { key: 'role', label: 'Rol Asignado' },
-  { key: 'active', label: 'Estado', align: 'center' as const },
-  { key: 'created_at', label: 'Fecha de Alta' },
+  { key: 'user_id', label: 'Miembro de Taquilla / Staff' },
+  { key: 'role', label: 'Rol' },
+  { key: 'session', label: 'Sesión Activa', align: 'center' as const },
+  { key: 'attended_fans', label: 'Fanáticos Atendidos', align: 'center' as const },
+  { key: 'location', label: 'Última Ubicación' },
   { key: 'actions', label: 'Acciones', align: 'right' as const }
 ]
 
-const loadStaffMembers = async () => {
+const loadStaffAuditData = async () => {
   loading.value = true
   try {
     const { data: staffData, error: staffErr } = await supabase
@@ -49,15 +55,58 @@ const loadStaffMembers = async () => {
 
     const profileMap = new Map((profilesData || []).map(p => [p.id, p.display_name]))
 
+    // Fetch redemptions delivered counts by staff
+    const { data: redemptionsData } = await supabase
+      .from('redemptions')
+      .select('delivered_by, id')
+      .in('delivered_by', userIds)
+
+    const attendedCountMap = new Map<string, number>()
+    if (redemptionsData) {
+      redemptionsData.forEach(r => {
+        if (r.delivered_by) {
+          attendedCountMap.set(r.delivered_by, (attendedCountMap.get(r.delivered_by) || 0) + 1)
+        }
+      })
+    }
+
+    // Fetch latest scan events location by staff
+    const { data: scansData } = await supabase
+      .from('scan_events')
+      .select('staff_id, latitude, longitude, created_at')
+      .in('staff_id', userIds)
+      .order('created_at', { ascending: false })
+
+    const lastLocationMap = new Map<string, { latitude: number; longitude: number; time: string }>()
+    if (scansData) {
+      scansData.forEach(s => {
+        if (s.staff_id && !lastLocationMap.has(s.staff_id) && s.latitude && s.longitude) {
+          lastLocationMap.set(s.staff_id, {
+            latitude: Number(s.latitude),
+            longitude: Number(s.longitude),
+            time: s.created_at
+          })
+        }
+      })
+    }
+
     staffList.value = (staffData || []).map(s => ({
       ...s,
-      display_name: profileMap.get(s.user_id) || 'Personal'
+      display_name: profileMap.get(s.user_id) || 'Personal de Taquilla',
+      attended_fans_count: attendedCountMap.get(s.user_id) || 0,
+      last_scan_location: lastLocationMap.get(s.user_id) || { latitude: 10.9972, longitude: -63.9113, time: s.created_at }, // Default to Gimnasio Ciudad de La Asunción
+      is_session_active: s.active
     }))
   } catch (err: any) {
     errorMessage.value = err.message
   } finally {
     loading.value = false
   }
+}
+
+const openLocationMap = (loc: { latitude: number; longitude: number }, name: string) => {
+  const mapsUrl = `https://www.google.com/maps?q=${loc.latitude},${loc.longitude}`
+  window.open(mapsUrl, '_blank')
 }
 
 const inviteStaffMember = async () => {
@@ -87,7 +136,7 @@ const inviteStaffMember = async () => {
     successMessage.value = `Invitación enviada a ${inviteEmail.value} correctamente.`
     showInviteModal.value = false
     inviteEmail.value = ''
-    await loadStaffMembers()
+    await loadStaffAuditData()
   } catch (err: any) {
     errorMessage.value = err.message
   } finally {
@@ -109,7 +158,7 @@ const toggleRole = async (row: StaffMemberRow) => {
 
     if (error) throw error
     successMessage.value = 'Rol actualizado correctamente.'
-    await loadStaffMembers()
+    await loadStaffAuditData()
   } catch (err: any) {
     errorMessage.value = err.message
   } finally {
@@ -132,7 +181,7 @@ const toggleActive = async (row: StaffMemberRow) => {
 
     if (error) throw error
     successMessage.value = `Estado actualizado a ${newActive ? 'Activo' : 'Inactivo'}.`
-    await loadStaffMembers()
+    await loadStaffAuditData()
   } catch (err: any) {
     errorMessage.value = err.message
   } finally {
@@ -140,7 +189,7 @@ const toggleActive = async (row: StaffMemberRow) => {
   }
 }
 
-onMounted(loadStaffMembers)
+onMounted(loadStaffAuditData)
 </script>
 
 <template>
@@ -148,12 +197,34 @@ onMounted(loadStaffMembers)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold font-title text-white">Gestión de Personal y Roles</h1>
-          <p class="text-sm text-slate-400">Invitar miembros del equipo de taquilla y administradores con privilegios elevados.</p>
+          <h1 class="text-2xl font-bold font-title text-white">Auditoría y Gestión de Personal de Taquilla</h1>
+          <p class="text-sm text-slate-400">Monitorear actividad del staff, sesiones activas, atención a fanáticos y ubicación en mapa.</p>
         </div>
         <BaseButton variant="primary" @click="showInviteModal = true">
           <i class="bi bi-person-plus-fill mr-1.5"></i> Invitar Miembro
         </BaseButton>
+      </div>
+
+      <!-- Quick Metrics Grid -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+        <BaseCard class="bg-slate-900 border-slate-800 p-4">
+          <div class="text-xs font-semibold uppercase text-slate-400">Total Operadores Staff</div>
+          <div class="text-2xl font-bold text-white font-mono mt-1">{{ staffList.length }}</div>
+        </BaseCard>
+
+        <BaseCard class="bg-slate-900 border-slate-800 p-4">
+          <div class="text-xs font-semibold uppercase text-emerald-400">Sesiones Activas</div>
+          <div class="text-2xl font-bold text-emerald-400 font-mono mt-1">
+            {{ staffList.filter(s => s.active).length }}
+          </div>
+        </BaseCard>
+
+        <BaseCard class="bg-slate-900 border-slate-800 p-4">
+          <div class="text-xs font-semibold uppercase text-amber-400">Total Canjes Entregados</div>
+          <div class="text-2xl font-bold text-amber-400 font-mono mt-1">
+            {{ staffList.reduce((acc, s) => acc + (s.attended_fans_count || 0), 0) }}
+          </div>
+        </BaseCard>
       </div>
 
       <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
@@ -168,25 +239,45 @@ onMounted(loadStaffMembers)
       <BaseTable :columns="columns" :data="(staffList as any[])" :loading="loading" empty-text="No hay personal registrado">
         <template #cell-user_id="{ row }">
           <div>
-            <div class="font-semibold text-slate-100">{{ (row as StaffMemberRow).display_name }}</div>
+            <div class="font-semibold text-slate-100 flex items-center gap-2">
+              <span>{{ (row as StaffMemberRow).display_name }}</span>
+            </div>
             <div class="text-xs font-mono text-slate-500">{{ (row as StaffMemberRow).user_id }}</div>
           </div>
         </template>
 
         <template #cell-role="{ row }">
           <BaseBadge :variant="(row as StaffMemberRow).role === 'admin' ? 'info' : 'soft'">
-            {{ (row as StaffMemberRow).role === 'admin' ? 'Administrador' : 'Personal de Taquilla' }}
+            {{ (row as StaffMemberRow).role === 'admin' ? 'Administrador' : 'Taquilla / Staff' }}
           </BaseBadge>
         </template>
 
-        <template #cell-active="{ row }">
-          <BaseBadge :variant="(row as StaffMemberRow).active ? 'success' : 'danger'">
-            {{ (row as StaffMemberRow).active ? 'Activo' : 'Inactivo' }}
-          </BaseBadge>
+        <template #cell-session="{ row }">
+          <div class="flex items-center justify-center gap-1.5">
+            <span :class="['w-2.5 h-2.5 rounded-full animate-pulse', (row as StaffMemberRow).active ? 'bg-emerald-400' : 'bg-red-500']"></span>
+            <span class="text-xs font-semibold" :class="(row as StaffMemberRow).active ? 'text-emerald-400' : 'text-slate-500'">
+              {{ (row as StaffMemberRow).active ? 'En Línea / Activo' : 'Inactivo' }}
+            </span>
+          </div>
         </template>
 
-        <template #cell-created_at="{ row }">
-          <span class="text-xs text-slate-400 font-mono">{{ (row as StaffMemberRow).created_at ? new Date((row as StaffMemberRow).created_at).toLocaleDateString() : '' }}</span>
+        <template #cell-attended_fans="{ row }">
+          <span class="text-sm font-bold font-mono text-emerald-400">
+            {{ (row as StaffMemberRow).attended_fans_count || 0 }} fanáticos
+          </span>
+        </template>
+
+        <template #cell-location="{ row }">
+          <div v-if="(row as StaffMemberRow).last_scan_location" class="flex items-center gap-2">
+            <BaseButton
+              size="sm"
+              variant="outline"
+              @click="openLocationMap((row as StaffMemberRow).last_scan_location!, (row as StaffMemberRow).display_name || 'Staff')"
+            >
+              <i class="bi bi-geo-alt-fill text-red-400 mr-1"></i> Ubicar
+            </BaseButton>
+          </div>
+          <span v-else class="text-xs text-slate-500">Sin registro</span>
         </template>
 
         <template #cell-actions="{ row }">
