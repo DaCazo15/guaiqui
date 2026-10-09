@@ -1,0 +1,108 @@
+/* Design Tokens for Guaiqueríes de Margarita */
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+:root {
+  /* Brand Colors */
+  --g-color-primary: #0B7A3B;
+  --g-color-primary-dark: #064E27;
+  --g-color-primary-soft: #E7F5EC;
+  
+  --g-color-accent: #C8102E;
+  --g-color-accent-dark: #9B0B22;
+  --g-color-accent-soft: #FDF2F4;
+
+  --g-color-bg: #FFFFFF;
+  --g-color-surface: #F7F8F7;
+  --g-color-surface-hover: #EEF0EE;
+  --g-color-border: #E5E7EB;
+  
+  --g-color-text: #111827;
+  --g-color-text-muted: #4B5563;
+  --g-color-text-subtle: #9CA3AF;
+
+  /* Status Colors */
+  --g-color-success: #10B981;
+  --g-color-success-soft: #ECFDF5;
+  
+  --g-color-warning: #F59E0B;
+  --g-color-warning-soft: #FFFBEB;
+  
+  --g-color-danger: #EF4444;
+  --g-color-danger-soft: #FEF2F2;
+  
+  --g-color-info: #3B82F6;
+  --g-color-info-soft: #EFF6FF;
+
+  --g-color-perlita: #F59E0B;
+  --g-color-perlita-soft: #FEF3C7;
+
+  /* Typography */
+  --g-font-display: 'Barlow Condensed', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  --g-font-body: 'Barlow', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+
+  /* Radii */
+  --g-radius-sm: 0.375rem; /* 6px */
+  --g-radius-md: 0.5rem;   /* 8px */
+  --g-radius-lg: 0.75rem;  /* 12px */
+  --g-radius-xl: 1rem;     /* 16px */
+  --g-radius-full: 9999px;
+
+  /* Shadows */
+  --g-shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --g-shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.1);
+  --g-shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -4px rgba(0, 0, 0, 0.1);
+}
+
+/* Tabular numbers for financial/currency values */
+.tabular-nums {
+  font-variant-numeric: tabular-nums;
+}
+
+/* Self-hosted font declarations (with fallback to system font stack) */
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Barlow Condensed SemiBold'), local('BarlowCondensed-SemiBold');
+}
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: local('Barlow Condensed Bold'), local('BarlowCondensed-Bold');
+}
+
+@font-face {
+  font-family: 'Barlow Condensed';
+  font-style: normal;
+  font-weight: 800;
+  font-display: swap;
+  src: local('Barlow Condensed ExtraBold'), local('BarlowCondensed-ExtraBold');
+}
+
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+  src: local('Barlow Regular'), local('Barlow-Regular');
+}
+
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: local('Barlow Medium'), local('Barlow-Medium');
+}
+
+@font-face {
+  font-family: 'Barlow';
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: local('Barlow SemiBold'), local('Barlow-SemiBold');
+}

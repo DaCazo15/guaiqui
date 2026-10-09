@@ -1,0 +1,30 @@
+name: Supabase Database CI & Integrity Tests
+
+on:
+  pull_request:
+    branches: [ main, dev ]
+  push:
+    branches: [ main, dev ]
+
+jobs:
+  test-database:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Supabase CLI
+        uses: supabase/setup-cli@v1
+        with:
+          version: latest
+
+      - name: Start Supabase Local Stack
+        run: supabase start
+
+      - name: Reset Database and Apply All Migrations
+        run: supabase db reset
+
+      - name: Execute pgTAP SQL Integrity Test Suite
+        run: |
+          supabase test db

@@ -1,0 +1,6 @@
+@import '@guaiqui/ui/src/styles/tokens.css';
+@import 'bootstrap-icons/font/bootstrap-icons.css';
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
