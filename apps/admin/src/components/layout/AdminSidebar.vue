@@ -11,28 +11,31 @@ const emit = defineEmits<{
 
 const route = useRoute()
 
-const navItems = [
+const platformNavItems = [
   { name: 'admin-dashboard', path: '/admin/dashboard', label: 'Dashboard', icon: 'bi-speedometer2' },
   { name: 'admin-analitica', path: '/admin/analitica', label: 'Analítica', icon: 'bi-bar-chart-line-fill' },
   { name: 'admin-trivias', path: '/admin/trivias', label: 'Trivias', icon: 'bi-question-circle' },
   { name: 'admin-productos', path: '/admin/productos', label: 'Productos', icon: 'bi-box-seam' },
-  { name: 'admin-jugadores', path: '/admin/jugadores', label: 'Plantilla', icon: 'bi-person-bounding-box' },
-  { name: 'admin-partidos', path: '/admin/partidos', label: 'Partidos', icon: 'bi-calendar-event' },
   { name: 'admin-economia', path: '/admin/economia', label: 'Economía', icon: 'bi-coin' },
   { name: 'admin-personal', path: '/admin/personal', label: 'Personal & Roles', icon: 'bi-person-gear' },
   { name: 'admin-fanaticos', path: '/admin/fanaticos', label: 'Fanáticos', icon: 'bi-people' },
   { name: 'admin-segmentos', path: '/admin/segmentos', label: 'Segmentos', icon: 'bi-pie-chart' },
-  { name: 'admin-riesgo', path: '/admin/riesgo', label: 'Control Riesgo & Antifraude', icon: 'bi-shield-exclamation' },
+  { name: 'admin-riesgo', path: '/admin/riesgo', label: 'Control Riesgo', icon: 'bi-shield-exclamation' },
   { name: 'admin-incidencias', path: '/admin/incidencias', label: 'Incidencias', icon: 'bi-exclamation-triangle' },
-  { name: 'admin-auditoria', path: '/admin/auditoria', label: 'Auditoría', icon: 'bi-shield-check' },
-  { name: 'admin-anuncios', path: '/admin/anuncios', label: 'Cinta Anuncios', icon: 'bi-megaphone' },
+  { name: 'admin-auditoria', path: '/admin/auditoria', label: 'Auditoría', icon: 'bi-shield-check' }
+]
+
+const cmsNavItems = [
+  { name: 'admin-landing', path: '/admin/landing', label: 'Landing & Hero (Tema)', icon: 'bi-layout-text-window-reverse' },
   { name: 'admin-carrusel', path: '/admin/carrusel', label: 'Carrusel Hero', icon: 'bi-images' },
-  { name: 'admin-historia', path: '/admin/historia', label: 'Historia', icon: 'bi-hourglass-split' },
-  { name: 'admin-equipo', path: '/admin/equipo', label: 'Equipo / Staff', icon: 'bi-person-lines-fill' },
-  { name: 'admin-faq', path: '/admin/faq', label: 'Preguntas FAQ', icon: 'bi-patch-question' },
-  { name: 'admin-cifras', path: '/admin/cifras', label: 'Cifras & Sponsors', icon: 'bi-bar-chart-line' },
+  { name: 'admin-partidos', path: '/admin/partidos', label: 'Partidos & Clasificación', icon: 'bi-calendar-event' },
+  { name: 'admin-jugadores', path: '/admin/jugadores', label: 'Plantilla Jugadores', icon: 'bi-person-bounding-box' },
+  { name: 'admin-equipo', path: '/admin/equipo', label: 'Cuerpo Técnico & Staff', icon: 'bi-person-lines-fill' },
   { name: 'admin-instagram', path: '/admin/instagram', label: 'Mosaico Instagram', icon: 'bi-instagram' },
-  { name: 'admin-politicas', path: '/admin/politicas', label: 'Políticas Legales', icon: 'bi-journal-check' },
+  { name: 'admin-anuncios', path: '/admin/anuncios', label: 'Cinta Anuncios', icon: 'bi-megaphone' },
+  { name: 'admin-faq', path: '/admin/faq', label: 'Preguntas FAQ', icon: 'bi-patch-question' },
+  { name: 'admin-historia', path: '/admin/historia', label: 'Historia', icon: 'bi-hourglass-split' },
+  { name: 'admin-politicas', path: '/admin/politicas', label: 'Políticas Legales', icon: 'bi-journal-check' }
 ]
 
 const isActive = (path: string) => route.path.startsWith(path)
@@ -64,28 +67,52 @@ const isActive = (path: string) => route.path.startsWith(path)
         </button>
       </div>
 
-      <nav class="flex-1 p-4 space-y-1 overflow-y-auto">
-        <div class="px-3 py-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
-          Panel de Administración
+      <nav class="flex-1 p-4 space-y-6 overflow-y-auto">
+        <!-- Section 1: Platform & Operations -->
+        <div class="space-y-1">
+          <div class="px-3 py-1 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
+            Operaciones & Fanáticos
+          </div>
+          <RouterLink
+            v-for="item in platformNavItems"
+            :key="item.name"
+            :to="item.path"
+            @click="emit('close')"
+            :class="[
+              'flex items-center gap-3 px-3.5 py-2 rounded-xl font-medium text-sm transition-all duration-150',
+              isActive(item.path)
+                ? 'bg-emerald-600/15 text-emerald-400 border border-emerald-500/30 shadow-xs'
+                : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+            ]"
+          >
+            <i :class="['bi', item.icon, 'text-lg', isActive(item.path) ? 'text-emerald-400' : 'text-slate-400']"></i>
+            <span>{{ item.label }}</span>
+          </RouterLink>
         </div>
 
-        <RouterLink
-          v-for="item in navItems"
-          :key="item.name"
-          :to="item.path"
-          @click="emit('close')"
-          :class="[
-            'flex items-center gap-3 px-3.5 py-2 rounded-xl font-medium text-sm transition-all duration-150',
-            isActive(item.path)
-              ? 'bg-emerald-600/15 text-emerald-400 border border-emerald-500/30 shadow-xs'
-              : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
-          ]"
-        >
-          <i :class="['bi', item.icon, 'text-lg', isActive(item.path) ? 'text-emerald-400' : 'text-slate-400']"></i>
-          <span>{{ item.label }}</span>
-        </RouterLink>
+        <!-- Section 2: CMS & Landing -->
+        <div class="space-y-1 pt-3 border-t border-slate-800">
+          <div class="px-3 py-1 text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="bi bi-window-sidebar"></i> CMS Landing Pública
+          </div>
+          <RouterLink
+            v-for="item in cmsNavItems"
+            :key="item.name"
+            :to="item.path"
+            @click="emit('close')"
+            :class="[
+              'flex items-center gap-3 px-3.5 py-2 rounded-xl font-medium text-sm transition-all duration-150',
+              isActive(item.path)
+                ? 'bg-emerald-600/15 text-emerald-400 border border-emerald-500/30 shadow-xs'
+                : 'text-slate-300 hover:bg-slate-800/80 hover:text-white'
+            ]"
+          >
+            <i :class="['bi', item.icon, 'text-lg', isActive(item.path) ? 'text-emerald-400' : 'text-slate-400']"></i>
+            <span>{{ item.label }}</span>
+          </RouterLink>
+        </div>
 
-        <div class="pt-4 border-t border-slate-800 my-2">
+        <div class="pt-4 border-t border-slate-800">
           <RouterLink
             to="/staff/cola"
             @click="emit('close')"

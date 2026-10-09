@@ -30,6 +30,7 @@ import AdminFaqView from '../pages/AdminFaqView.vue'
 import AdminStatsView from '../pages/AdminStatsView.vue'
 import AdminPoliciesView from '../pages/AdminPoliciesView.vue'
 import AdminInstagramView from '../pages/AdminInstagramView.vue'
+import AdminLandingView from '../pages/AdminLandingView.vue'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -163,6 +164,12 @@ export const router = createRouter({
       path: '/admin/auditoria',
       name: 'admin-auditoria',
       component: AdminAuditView,
+      meta: { requiresAdmin: true }
+    },
+    {
+      path: '/admin/landing',
+      name: 'admin-landing',
+      component: AdminLandingView,
       meta: { requiresAdmin: true }
     },
     {
