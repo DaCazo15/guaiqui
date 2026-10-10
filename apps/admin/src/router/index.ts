@@ -34,6 +34,11 @@ import AdminPoliciesView from '../pages/AdminPoliciesView.vue'
 import AdminInstagramView from '../pages/AdminInstagramView.vue'
 import AdminLandingView from '../pages/AdminLandingView.vue'
 import AdminBirthdayView from '../pages/AdminBirthdayView.vue'
+import AdminLoginModalView from '../pages/AdminLoginModalView.vue'
+import AdminAdsView from '../pages/AdminAdsView.vue'
+import Enroll2FAView from '../pages/Enroll2FAView.vue'
+import Verify2FAView from '../pages/Verify2FAView.vue'
+
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -48,6 +53,19 @@ export const router = createRouter({
       component: LoginView,
       meta: { guestOnly: true }
     },
+    {
+      path: '/enroll-2fa',
+      name: 'enroll-2fa',
+      component: Enroll2FAView,
+      meta: { requiresAuthOnly: true }
+    },
+    {
+      path: '/verificar-2fa',
+      name: 'verificar-2fa',
+      component: Verify2FAView,
+      meta: { requiresAuthOnly: true }
+    },
+
     // Staff Routes
     {
       path: '/staff/cola',
@@ -142,6 +160,12 @@ export const router = createRouter({
       meta: { requiresAdmin: true }
     },
     {
+      path: '/admin/anuncios-recompensados',
+      name: 'admin-rewarded-ads',
+      component: AdminAdsView,
+      meta: { requiresAdmin: true }
+    },
+    {
       path: '/admin/personal',
       name: 'admin-personal',
       component: AdminPersonalView,
@@ -226,7 +250,14 @@ export const router = createRouter({
       meta: { requiresAdmin: true }
     },
     {
+      path: '/admin/contenido/modal-de-bienvenida',
+      name: 'admin-login-modal',
+      component: AdminLoginModalView,
+      meta: { requiresAdmin: true }
+    },
+    {
       path: '/admin/politicas',
+
       name: 'admin-politicas',
       component: AdminPoliciesView,
       meta: { requiresAdmin: true }
@@ -265,6 +296,23 @@ router.beforeEach(async (to, from, next) => {
 
   const isAuth = authStore.isAuthenticated
 
+  if (isAuth && to.name !== 'enroll-2fa' && to.name !== 'verificar-2fa' && to.name !== 'login') {
+    try {
+      const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
+      if (aalData) {
+        if (aalData.currentLevel !== 'aal2') {
+          if (aalData.nextLevel === 'aal2') {
+            return next({ name: 'verificar-2fa' })
+          } else {
+            return next({ name: 'enroll-2fa' })
+          }
+        }
+      }
+    } catch (e) {
+      console.warn('Error checking MFA assurance level:', e)
+    }
+  }
+
   if (to.meta.requiresAdmin) {
     if (!isAuth) {
       next({ name: 'login' })
@@ -289,3 +337,4 @@ router.beforeEach(async (to, from, next) => {
     next()
   }
 })
+

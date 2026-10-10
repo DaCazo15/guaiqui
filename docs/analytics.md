@@ -1,56 +1,96 @@
-# Guaiqueríes de Margarita — Documentación de Analítica y Embudo de Conversión
+# Guía de Analítica y Registro de Eventos (GA4 & PostHog)
 
-Este documento define la taxonomía de eventos y la configuración del embudo de conversión en PostHog Cloud para la plataforma Fan Zone de Guaiqueríes de Margarita.
+Este documento especifica la arquitectura de la capa de analítica, el inventario de eventos y la guía de configuración manual en **Google Analytics 4 (GA4)**.
 
----
-
-## 1. Principios de Privacidad y Cumplimiento
-
-1. **Cero PII (Personally Identifiable Information)**: Ningún evento o propiedad incluye correo electrónico, nombre, saldo de perlitas, dirección o número de teléfono.
-2. **Identificación Estricta**: Los usuarios se identifican únicamente con su `auth.uid()` interno de Supabase.
-3. **Consentimiento Previsto (Opt-In)**: La analítica solo se inicializa si el usuario acepta explícitamente en el banner de cookies o en la pantalla de ajustes.
-4. **Respeto a Do Not Track (DNT)**: Si la cabecera `DNT` o la preferencia del navegador está activa, se inhabilita el rastreo.
-5. **Sin Grabaciones de Sesión**: La función de grabación de pantalla y autocaptura está desactivada globalmente (`autocapture: false`, `disable_session_recording: true`).
+> [!IMPORTANT]
+> **REGLA DE PRIVACIDAD ABSOLUTA**: Queda estrictamente prohibido enviar información de identificación personal (PII) como correo electrónico, nombres, fechas de nacimiento, saldos o municipios en los identificadores de usuario (`user_id`), dimensiones personalizadas o propiedades de eventos. El `user_id` contiene exclusivamente el UUID anónimo interno generado por Supabase y solo se transmite bajo consentimiento explícito del fanático.
 
 ---
 
-## 2. Taxonomía de Eventos Mínimos
+## 1. Configuración General
 
-| Nombre de Evento | Descripción / Momento de Disparo | Propiedades Permitidas (Sin PII) |
+- **Medición de GA4**: Se configura con la variable pública `NUXT_PUBLIC_GA_MEASUREMENT_ID` (Formato: `G-XXXXXXXXXX`). *(Nota: Los ID de medición web de GA4 son identificadores públicos de flujo, no secretos)*.
+- **Despachador Unificado**: El composable `useAnalytics()` despacha eventos a GA4 y PostHog simultáneamente si están configurados y el usuario ha otorgado su consentimiento en la categoría "Analítica".
+- **Desactivación de Rastreo**: Se deshabilitan explícitamente las señales de Google (`allow_google_signals: false`) y la personalización de anuncios (`allow_ad_personalization_signals: false`).
+
+---
+
+## 2. Inventario de Eventos
+
+Todos los nombres de eventos siguen la convención `snake_case` con un máximo de 40 caracteres y hasta 25 parámetros.
+
+### 2.1. Navegación e Interacción General
+| Nombre del Evento | Descripción | Parámetros Permitidos |
 | :--- | :--- | :--- |
-| `cta_click` | Clics en botones principales de llamado a la acción (ej. en landing) | `section` (string), `target` (string) |
-| `signup_started` | El usuario inicia el formulario de registro | Ninguna |
-| `signup_completed` | El usuario completa con éxito la creación de cuenta | Ninguna |
-| `email_verified` | El usuario confirma su correo electrónico | Ninguna |
-| `trivia_started` | El usuario inicia un intento de trivia | `trivia_id` (uuid string) |
-| `trivia_completed` | El usuario finaliza y envía el intento de trivia | `trivia_id` (uuid string), `score` (int) |
-| `redemption_created` | El usuario solicita un canje en la tienda | `product_id` (uuid string), `cost_pearls` (int) |
-| `push_permission_prompted` | Se presenta la tarjeta explicativa para notificaciones push | Ninguna |
-| `push_permission_granted` | El usuario aprueba el permiso de notificaciones push | Ninguna |
+| `page_view` | Cambio de ruta en SPA (rutas normalizadas, ej: `/app/canjes/:id`) | `page_path` |
+| `ui_click` | Clic en elementos de interfaz con la directiva `v-track` | `section`, `element_id`, `destination` |
+| `cta_click` | Clic en llamadas a la acción destacadas | `section`, `element_id`, `destination` |
+
+### 2.2. Registro y Autenticación
+| Nombre del Evento | Descripción | Parámetros Permitidos |
+| :--- | :--- | :--- |
+| `signup_started` | Inicio del proceso de registro | `method` |
+| `signup_completed` | Registro completado exitosamente *(Evento clave)* | `method` |
+| `email_verified` | Verificación de correo confirmada | `user_id` |
+
+### 2.3. Juegos y Canjes
+| Nombre del Evento | Descripción | Parámetros Permitidos |
+| :--- | :--- | :--- |
+| `trivia_started` | Inicio de una trivia | `trivia_id` |
+| `trivia_completed` | Trivia finalizada *(Evento clave)* | `trivia_id`, `score`, `perfect_score` |
+| `redemption_created` | Canje de producto realizado *(Evento clave)* | `product_id`, `pearl_cost` |
+
+### 2.4. Notificaciones Push (Fase 8B)
+| Nombre del Evento | Descripción | Parámetros Permitidos |
+| :--- | :--- | :--- |
+| `push_permission_requested` | Solicitud de permiso de notificaciones push | `prompt_trigger` |
+| `push_permission_granted` | Permiso de notificaciones concedido | - |
+| `push_permission_denied` | Permiso de notificaciones rechazado | - |
+
+### 2.5. Modal Carrusel de Bienvenida (Fase 16)
+| Nombre del Evento | Descripción | Parámetros Permitidos |
+| :--- | :--- | :--- |
+| `login_modal_viewed` | Modal de bienvenida mostrado al fanático | - |
+| `login_modal_slide_viewed` | Diapositiva vista en el carrusel | `position`, `title` |
+| `login_modal_cta_clicked` | Clic en el botón principal de la diapositiva | `position`, `cta_url` |
+| `login_modal_closed` | Modal cerrado por el usuario | - |
+
+### 2.6. Anuncios Recompensados / Sponsors (Fase 18)
+*Nota de diseño: Para evitar los nombres de eventos reservados de GA4 (`ad_click`, `ad_impression`, etc.), los eventos de anuncios recompensados usan la nomenclatura oficial `rewarded_ad_*`:*
+
+| Nombre del Evento | Descripción | Parámetros Permitidos |
+| :--- | :--- | :--- |
+| `rewarded_ad_requested` | Solicitud de carga de video publicitario | `ad_id` |
+| `rewarded_ad_ready` | Video listo para reproducirse | `ad_id` |
+| `rewarded_ad_opted_in` | El usuario aceptó ver el video por perlitas | `ad_id` |
+| `rewarded_ad_granted` | Video completado y recompensa otorgada *(Evento clave)* | `ad_id`, `reward_pearls` |
+| `rewarded_ad_closed_early` | Usuario cerró el video antes de finalizar | `ad_id`, `watched_seconds` |
+| `rewarded_ad_no_fill` | No hay anuncios disponibles | `ad_id` |
+| `rewarded_ad_daily_limit_reached` | Se alcanzó el límite máximo diario de anuncios | `ad_id` |
 
 ---
 
-## 3. Embudo de Conversión en PostHog (Funnel Analysis)
+## 3. Pasos Manuales de Configuración en GA4
 
-Para evaluar la retención y conversión del usuario en la plataforma, configurar el siguiente embudo de 4 pasos en la consola de PostHog:
-
-### Embudo Principal: Registro → Activación → Retención → Conversión
-
-1. **Paso 1: Inicio de Registro** (`signup_started`)
-   - Mide el interés inicial del usuario al hacer clic en registrarse.
-2. **Paso 2: Verificación de Cuenta** (`email_verified`)
-   - Mide la tasa de confirmación de correo y activación de la cuenta.
-3. **Paso 3: Primera Trivia Completada** (`trivia_completed`)
-   - Mide la primera interacción de juego/engagement del fanático.
-4. **Paso 4: Primer Canje Creado** (`redemption_created`)
-   - Mide la conversión final en la economía de recompensas.
-
----
-
-## 4. Reescritura Vercel (`/ingest`)
-
-Para evitar bloqueadores de anuncios (ad-blockers), Vercel redirige las solicitudes de analítica mediante las siguientes reglas definidas en `vercel.json`:
-
-- `/ingest/static/*` → `https://us-assets.i.posthog.com/static/*`
-- `/ingest/*` → `https://us.i.posthog.com/*`
-- `/ingest/decide` → `https://us.i.posthog.com/decide`
+1. **Crear Propiedad y Flujo de Datos Web**:
+   - En la consola de Google Analytics, crear una propiedad para **Guaiqueríes Fan Zone**.
+   - Crear un **Flujo de datos Web** y copiar el **ID de medición** (`G-XXXXXXXXXX`).
+2. **Ajuste de Retención de Datos**:
+   - Ir a *Administración -> Ajustes de datos -> Retención de datos*.
+   - Cambiar la retención de datos de eventos a **14 meses**.
+3. **Desactivar Señales de Google**:
+   - En *Administración -> Ajustes de datos -> Recogida de datos*, deshabilitar **Google signals**.
+4. **Registrar Dimensiones Personalizadas**:
+   - Ir a *Administración -> Definiciones personalizadas -> Crear dimensiones personalizadas*:
+     - `section` (Ámbito de evento)
+     - `element_id` (Ámbito de evento)
+     - `ad_id` (Ámbito de evento)
+     - `slide_position` (Ámbito de evento)
+5. **Marcar Eventos Clave (Conversiones)**:
+   - Ir a *Administración -> Eventos -> Marcar como evento clave*:
+     - `signup_completed`
+     - `trivia_completed`
+     - `redemption_created`
+     - `rewarded_ad_granted`
+6. **Verificación**:
+   - Usar `DebugView` en GA4 para verificar el tráfico en tiempo real y conectar a **Looker Studio** para paneles visuales.

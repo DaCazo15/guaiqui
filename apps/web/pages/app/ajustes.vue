@@ -4,7 +4,10 @@ import { BaseCard, BaseButton } from '@guaiqui/ui'
 import { useAuthStore } from '~/stores/auth'
 import SettingsPreferencesForm from '~/components/settings/SettingsPreferencesForm.vue'
 import SettingsPasswordForm from '~/components/settings/SettingsPasswordForm.vue'
+import SettingsMfaSection from '~/components/settings/SettingsMfaSection.vue'
+import SettingsGlobalSignOut from '~/components/settings/SettingsGlobalSignOut.vue'
 import SettingsDeleteModal from '~/components/settings/SettingsDeleteModal.vue'
+
 
 definePageMeta({
   layout: 'app',
@@ -46,6 +49,17 @@ async function handleDeleteAccount() {
         <!-- Section 2: Change Password -->
         <SettingsPasswordForm />
       </div>
+
+      <div class="border-t border-guaiqui-border pt-6">
+        <!-- Section 2B: 2FA & MFA -->
+        <SettingsMfaSection />
+      </div>
+
+      <div class="border-t border-guaiqui-border pt-6">
+        <!-- Section 2C: Global Sign Out -->
+        <SettingsGlobalSignOut />
+      </div>
+
 
       <div class="border-t border-guaiqui-border pt-6 space-y-4">
         <!-- Section 3: Policies Links -->

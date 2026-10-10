@@ -1,0 +1,18 @@
+# Gitleaks Configuration for Guaiqueríes Platform
+
+[config]
+title = "Guaiqueries Gitleaks Config"
+
+[allowlist]
+description = "Allowed placeholders and test files"
+paths = [
+  '''\.env\.example''',
+  '''package-lock\.json''',
+  '''pnpm-lock\.yaml''',
+  '''supabase/tests/'''
+]
+regexes = [
+  '''1x00000000000000000000AA''',
+  '''1x0000000000000000000000000000000AA''',
+  '''eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9\.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im10eHlyYWNhdnlvZ3h4bGplbHZ4Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3OTE0MDE2NjAsImV4cCI6MjEwNjk3NzY2MH0'''
+]

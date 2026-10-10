@@ -8,7 +8,7 @@ export type Json =
 
 export type UserStatus = 'active' | 'suspended'
 export type StaffRole = 'staff' | 'admin'
-export type LedgerType = 'trivia_reward' | 'redemption' | 'refund' | 'admin_adjustment' | 'bonus' | 'streak_bonus' | 'birthday_bonus'
+export type LedgerType = 'trivia_reward' | 'redemption' | 'refund' | 'admin_adjustment' | 'bonus' | 'streak_bonus' | 'birthday_bonus' | 'ad_reward'
 export type LedgerStatus = 'confirmed' | 'held' | 'revoked'
 export type TriviaStatus = 'draft' | 'published' | 'archived'
 export type ProductCategory = 'physical' | 'experience' | 'raffle'

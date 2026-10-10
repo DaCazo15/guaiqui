@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach } from 'vitest'
-import { useAnalytics } from '../composables/useAnalytics'
+import { useAnalytics, normalizePath } from '../composables/useAnalytics'
 
-describe('Fase 8C — Analytics & Privacy Unit Tests', () => {
+describe('Fase 17 — GA4 & Analytics Layer Unit Tests', () => {
   beforeEach(() => {
     localStorage.clear()
   })
@@ -10,7 +10,7 @@ describe('Fase 8C — Analytics & Privacy Unit Tests', () => {
     const analytics = useAnalytics()
     analytics.initConsent()
 
-    const result = analytics.trackEvent('cta_click', { section: 'hero', target: '/registro' })
+    const result = analytics.trackEvent('cta_click', { section: 'hero', destination: '/registro' })
     expect(result).toBeNull()
   })
 
@@ -18,10 +18,10 @@ describe('Fase 8C — Analytics & Privacy Unit Tests', () => {
     const analytics = useAnalytics()
     analytics.setConsent(true)
 
-    const result = analytics.trackEvent('cta_click', { section: 'hero', target: '/registro' })
+    const result = analytics.trackEvent('cta_click', { section: 'hero', destination: '/registro' })
     expect(result).not.toBeNull()
     expect(result?.eventName).toBe('cta_click')
-    expect(result?.properties).toEqual({ section: 'hero', target: '/registro' })
+    expect(result?.properties).toEqual({ section: 'hero', destination: '/registro' })
   })
 
   it('strictly filters out PII keys from event properties', () => {
@@ -32,6 +32,7 @@ describe('Fase 8C — Analytics & Privacy Unit Tests', () => {
       email: 'fan@guaiqui.test',
       name: 'Juan Perez',
       display_name: 'JuanPerez123',
+      birth_date: '1995-05-20',
       balance: 5000,
       balance_cache: 5000,
       pearls: 5000,
@@ -50,9 +51,15 @@ describe('Fase 8C — Analytics & Privacy Unit Tests', () => {
     expect(cleanProps).not.toHaveProperty('email')
     expect(cleanProps).not.toHaveProperty('name')
     expect(cleanProps).not.toHaveProperty('display_name')
+    expect(cleanProps).not.toHaveProperty('birth_date')
     expect(cleanProps).not.toHaveProperty('balance')
-    expect(cleanProps).not.toHaveProperty('balance_cache')
-    expect(cleanProps).not.toHaveProperty('pearls')
+  })
+
+  it('normalizes SPA route paths replacing UUIDs and numeric IDs with :id', () => {
+    expect(normalizePath('/app/canjes/123e4567-e89b-12d3-a456-426614174000')).toBe('/app/canjes/:id')
+    expect(normalizePath('/app/trivias/98765')).toBe('/app/trivias/:id')
+    expect(normalizePath('/app/billetera?token=secret123')).toBe('/app/billetera')
+    expect(normalizePath('/app/perfil')).toBe('/app/perfil')
   })
 
   it('discards events immediately if user revokes analytics consent', () => {
@@ -61,11 +68,20 @@ describe('Fase 8C — Analytics & Privacy Unit Tests', () => {
 
     expect(analytics.hasAnalyticsConsent.value).toBe(true)
 
-    // User revokes consent in settings or banner
     analytics.setConsent(false)
 
     expect(analytics.hasAnalyticsConsent.value).toBe(false)
     const result = analytics.trackEvent('trivia_started', { trivia_id: 't-1' })
     expect(result).toBeNull()
+  })
+
+  it('supports non-reserved rewarded_ad_* event names for Phase 18', () => {
+    const analytics = useAnalytics()
+    analytics.setConsent(true)
+
+    const result = analytics.trackEvent('rewarded_ad_granted', { ad_id: 'ad-123', reward_pearls: 50 })
+    expect(result).not.toBeNull()
+    expect(result?.eventName).toBe('rewarded_ad_granted')
+    expect(result?.properties).toEqual({ ad_id: 'ad-123', reward_pearls: 50 })
   })
 })

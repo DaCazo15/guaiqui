@@ -4,8 +4,10 @@ import { useAuthStore } from '~/stores/auth'
 import AppSidebar from '~/components/app/AppSidebar.vue'
 import AppMobileNav from '~/components/app/AppMobileNav.vue'
 import NotificationBell from '~/components/app/NotificationBell.vue'
+import LoginModalCarousel from '~/components/app/LoginModalCarousel.vue'
 import { formatPerlitas } from '@guaiqui/shared'
 import { PearlIcon } from '@guaiqui/ui'
+
 
 const authStore = useAuthStore()
 
@@ -56,5 +58,9 @@ onMounted(async () => {
 
     <!-- Mobile Bottom Navigation Bar -->
     <AppMobileNav />
+
+    <!-- Login Welcome Modal Carousel -->
+    <LoginModalCarousel />
   </div>
 </template>
+

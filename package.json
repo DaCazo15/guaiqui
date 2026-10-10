@@ -18,8 +18,10 @@
     "test:db": "supabase test db",
     "db:types": "supabase gen types typescript --local > packages/shared/src/types/database.ts",
     "db:reset": "supabase db reset",
+    "security:scan-bundle": "node scripts/scan-bundle-leaks.mjs",
     "typecheck": "pnpm -r run --if-present typecheck"
   },
+
   "devDependencies": {
     "@eslint/js": "^9.12.0",
     "@playwright/test": "^1.48.0",

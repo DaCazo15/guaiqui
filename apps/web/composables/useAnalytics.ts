@@ -3,10 +3,12 @@ import { ref, computed } from 'vue'
 export interface ConsentState {
   necessary: boolean
   analytics: boolean
+  advertising: boolean
   decidedAt: string | null
 }
 
 const CONSENT_COOKIE_NAME = 'guaiqui_cookie_consent'
+
 const FORBIDDEN_PII_KEYS = new Set([
   'email',
   'name',
@@ -25,13 +27,47 @@ const FORBIDDEN_PII_KEYS = new Set([
 const consentState = ref<ConsentState>({
   necessary: true,
   analytics: false,
+  advertising: false,
   decidedAt: null,
 })
 
+const isGA4Initialized = ref(false)
 const isPostHogInitialized = ref(false)
 let posthogInstance: any = null
 
+/**
+ * Normalizes URL path to remove UUIDs, tokens, and PII before dispatching to analytics
+ */
+export function normalizePath(fullPath: string): string {
+  if (!fullPath) return '/'
+  const cleanPath = fullPath.split('?')[0] // Strip query parameters
+
+  const segments = cleanPath.split('/').filter(Boolean)
+  const normalizedSegments = segments.map((segment) => {
+    // Check UUID pattern
+    if (/^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$/.test(segment)) {
+      return ':id'
+    }
+    // Check numeric ID pattern
+    if (/^\d+$/.test(segment)) {
+      return ':id'
+    }
+    return segment
+  })
+
+  return '/' + normalizedSegments.join('/')
+}
+
 export function useAnalytics() {
+  const getGA4MeasurementId = (): string => {
+    if (typeof window === 'undefined') return ''
+    return (
+      (import.meta.env.VITE_GA_MEASUREMENT_ID as string) ||
+      (import.meta.env.NUXT_PUBLIC_GA_MEASUREMENT_ID as string) ||
+      ''
+    )
+  }
+
   const initConsent = () => {
     if (typeof window === 'undefined') return
 
@@ -42,22 +78,24 @@ export function useAnalytics() {
         consentState.value = {
           necessary: true,
           analytics: !!parsed.analytics,
+          advertising: parsed.advertising !== undefined ? !!parsed.advertising : !!parsed.analytics,
           decidedAt: parsed.decidedAt || null,
         }
       }
     } catch (_e) {
-      // Fallback default
+      // Default fallback
     }
 
     if (consentState.value.analytics && consentState.value.decidedAt) {
-      initPostHog()
+      initAdapters()
     }
   }
 
-  const setConsent = (analytics: boolean) => {
+  const setConsent = (analytics: boolean, advertising: boolean = analytics) => {
     consentState.value = {
       necessary: true,
       analytics,
+      advertising,
       decidedAt: new Date().toISOString(),
     }
 
@@ -66,12 +104,78 @@ export function useAnalytics() {
     }
 
     if (analytics) {
-      initPostHog()
-    } else if (posthogInstance) {
+      initAdapters()
+    } else {
+      revokeAnalytics()
+    }
+  }
+
+  const initAdapters = () => {
+    initGA4()
+    initPostHog()
+  }
+
+  const revokeAnalytics = () => {
+    if (typeof window === 'undefined') return
+
+    // 1. PostHog opt out
+    if (posthogInstance) {
       try {
         posthogInstance.opt_out_capturing()
       } catch (_e) {}
     }
+
+    // 2. GA4 disable flag
+    const gaId = getGA4MeasurementId()
+    if (gaId) {
+      ;(window as any)[`ga-disable-${gaId}`] = true
+    }
+
+    // 3. Delete all _ga cookies
+    try {
+      document.cookie.split(';').forEach((c) => {
+        const eqPos = c.indexOf('=')
+        const name = eqPos > -1 ? c.substring(0, eqPos).trim() : c.trim()
+        if (name.startsWith('_ga')) {
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+          document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
+        }
+      })
+    } catch (_e) {}
+  }
+
+  const initGA4 = () => {
+    if (typeof window === 'undefined' || isGA4Initialized.value) return
+    if (!consentState.value.analytics) return
+
+    const gaId = getGA4MeasurementId()
+    if (!gaId) return
+
+    // Re-enable in case it was previously disabled
+    ;(window as any)[`ga-disable-${gaId}`] = false
+
+    if (!document.getElementById('ga4-script')) {
+      const script = document.createElement('script')
+      script.id = 'ga4-script'
+      script.async = true
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`
+      document.head.appendChild(script)
+
+      ;(window as any).dataLayer = (window as any).dataLayer || []
+      function gtag(...args: any[]) {
+        ;(window as any).dataLayer.push(args)
+      }
+      ;(window as any).gtag = gtag
+
+      gtag('js', new Date())
+      gtag('config', gaId, {
+        allow_google_signals: false,
+        allow_ad_personalization_signals: false,
+        send_page_view: false,
+      })
+    }
+
+    isGA4Initialized.value = true
   }
 
   const initPostHog = async () => {
@@ -105,51 +209,99 @@ export function useAnalytics() {
   }
 
   const identifyUser = (userId: string) => {
-    if (!consentState.value.analytics || !posthogInstance) return
+    if (!consentState.value.analytics) return
     if (!userId || typeof userId !== 'string') return
-    // Strict requirement: Identify ONLY with internal UUID string, never pass traits object containing PII
-    try {
-      posthogInstance.identify(userId)
-    } catch (_e) {}
+
+    // Identify in GA4
+    const gaId = getGA4MeasurementId()
+    if (isGA4Initialized.value && (window as any).gtag && gaId) {
+      ;(window as any).gtag('config', gaId, { user_id: userId })
+    }
+
+    // Identify in PostHog
+    if (posthogInstance) {
+      try {
+        posthogInstance.identify(userId)
+      } catch (_e) {}
+    }
   }
 
   const sanitizeProperties = (props?: Record<string, any>): Record<string, any> => {
     if (!props) return {}
     const cleanProps: Record<string, any> = {}
 
+    let count = 0
     for (const [key, value] of Object.entries(props)) {
+      if (count >= 25) break // Max 25 params per event
       if (!FORBIDDEN_PII_KEYS.has(key.toLowerCase())) {
-        cleanProps[key] = value
+        let val = value
+        if (typeof val === 'string' && val.length > 100) {
+          val = val.substring(0, 100) // Max 100 chars per param value
+        }
+        cleanProps[key] = val
+        count++
       }
     }
     return cleanProps
   }
 
-  const trackEvent = (eventName: string, properties?: Record<string, any>) => {
+  const trackPageView = (path: string) => {
     if (!consentState.value.analytics) return null
+    const normalized = normalizePath(path)
 
-    const cleanProps = sanitizeProperties(properties)
+    const gaId = getGA4MeasurementId()
+    if (isGA4Initialized.value && (window as any).gtag && gaId) {
+      ;(window as any).gtag('event', 'page_view', { page_path: normalized })
+    }
 
     if (posthogInstance) {
       try {
-        posthogInstance.capture(eventName, cleanProps)
+        posthogInstance.capture('$pageview', { $current_url: normalized })
       } catch (_e) {}
     }
 
-    return { eventName, properties: cleanProps }
+    return normalized
+  }
+
+  const trackEvent = (eventName: string, properties?: Record<string, any>) => {
+    if (!consentState.value.analytics) return null
+
+    // Ensure event name max 40 chars
+    const cleanEventName = eventName.substring(0, 40)
+    const cleanProps = sanitizeProperties(properties)
+
+    // Dispatch to GA4
+    if (isGA4Initialized.value && (window as any).gtag) {
+      try {
+        ;(window as any).gtag('event', cleanEventName, cleanProps)
+      } catch (_e) {}
+    }
+
+    // Dispatch to PostHog
+    if (posthogInstance) {
+      try {
+        posthogInstance.capture(cleanEventName, cleanProps)
+      } catch (_e) {}
+    }
+
+    return { eventName: cleanEventName, properties: cleanProps }
   }
 
   const isConsentPending = computed(() => consentState.value.decidedAt === null)
   const hasAnalyticsConsent = computed(() => consentState.value.analytics)
+  const hasAdvertisingConsent = computed(() => consentState.value.advertising)
 
   return {
     consentState,
     isConsentPending,
     hasAnalyticsConsent,
+    hasAdvertisingConsent,
     initConsent,
     setConsent,
     identifyUser,
+    trackPageView,
     trackEvent,
     sanitizeProperties,
+    normalizePath,
   }
 }

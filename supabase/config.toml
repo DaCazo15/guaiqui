@@ -56,3 +56,8 @@ enable_confirmations = true
 
 [auth.external.google]
 enabled = false
+
+[auth.mfa.totp]
+enroll_enabled = true
+verify_enabled = true
+

@@ -6,6 +6,7 @@ const analytics = useAnalytics()
 const isOpen = ref(false)
 const showDetails = ref(false)
 const analyticsAllowed = ref(false)
+const advertisingAllowed = ref(false)
 
 onMounted(() => {
   analytics.initConsent()
@@ -15,22 +16,23 @@ onMounted(() => {
 })
 
 const handleAcceptAll = () => {
-  analytics.setConsent(true)
+  analytics.setConsent(true, true)
   isOpen.value = false
 }
 
 const handleRejectAll = () => {
-  analytics.setConsent(false)
+  analytics.setConsent(false, false)
   isOpen.value = false
 }
 
 const handleSavePreferences = () => {
-  analytics.setConsent(analyticsAllowed.value)
+  analytics.setConsent(analyticsAllowed.value, advertisingAllowed.value)
   isOpen.value = false
 }
 
 const openBannerModal = () => {
   analyticsAllowed.value = analytics.hasAnalyticsConsent.value
+  advertisingAllowed.value = analytics.hasAdvertisingConsent.value
   isOpen.value = true
 }
 
@@ -64,7 +66,7 @@ defineExpose({
     </div>
 
     <p class="text-xs text-guaiqui-text-muted leading-relaxed">
-      Utilizamos cookies necesarias para el funcionamiento del sitio y, si lo autorizas, cookies de analítica anónima para entender el uso de la Fan Zone sin rastrear tu identidad personal.
+      Utilizamos cookies necesarias para el funcionamiento del sitio y, si lo autorizas, cookies de analítica y publicidad para anuncios recompensados sin rastrear tu identidad personal.
     </p>
 
     <!-- Detailed category selection toggle -->
@@ -84,6 +86,18 @@ defineExpose({
         </div>
         <input
           v-model="analyticsAllowed"
+          type="checkbox"
+          class="w-4 h-4 accent-guaiqui-primary rounded"
+        />
+      </div>
+
+      <div class="flex items-center justify-between pt-1">
+        <div>
+          <span class="font-semibold text-guaiqui-text">Publicidad de Terceros</span>
+          <span class="block text-[10px] text-guaiqui-text-muted">Requerido para anuncios recompensados (GPT).</span>
+        </div>
+        <input
+          v-model="advertisingAllowed"
           type="checkbox"
           class="w-4 h-4 accent-guaiqui-primary rounded"
         />

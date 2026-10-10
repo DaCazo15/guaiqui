@@ -1,0 +1,4 @@
+# ads.txt - Google Ad Manager setup for Guaiqueríes de Margarita
+# Sustituir con la línea entregada por Google Ad Manager:
+# google.com, pub-XXXXXXXXXXXXXXXX, DIRECT, f08c47fec0942fa0
+google.com, pub-0000000000000000, DIRECT, f08c47fec0942fa0

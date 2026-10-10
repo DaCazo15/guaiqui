@@ -18,6 +18,7 @@ const emit = defineEmits<{
 const filters = [
   { id: 'all', label: 'Todos' },
   { id: 'trivia_reward', label: 'Trivias' },
+  { id: 'ad_reward', label: 'Anuncios' },
   { id: 'redemption', label: 'Canjes' },
   { id: 'refund', label: 'Reembolsos' },
   { id: 'bonus', label: 'Bonos' },
@@ -42,6 +43,8 @@ const getEntryIcon = (type: string) => {
   switch (type) {
     case 'trivia_reward':
       return 'bi-patch-question-fill text-guaiqui-primary'
+    case 'ad_reward':
+      return 'bi-play-btn-fill text-purple-600'
     case 'redemption':
       return 'bi-bag-check-fill text-guaiqui-accent'
     case 'refund':

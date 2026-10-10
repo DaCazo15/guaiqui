@@ -292,14 +292,16 @@ export const useAuthStore = defineStore('auth', () => {
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/restablecer-contrasena`,
       })
-      if (error) throw error
+      if (error) {
+        console.warn('Opaque password reset response (suppressed error):', error.message)
+      }
     } catch (err: any) {
-      errorMessage.value = translateAuthError(err.message)
-      throw new Error(errorMessage.value)
+      console.warn('Opaque password reset response (suppressed exception):', err)
     } finally {
       isLoading.value = false
     }
   }
+
 
   async function updatePassword(newPass: string) {
     isLoading.value = true

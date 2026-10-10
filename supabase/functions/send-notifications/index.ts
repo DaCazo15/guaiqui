@@ -184,8 +184,9 @@ serve(async (req) => {
           }
         }
       } else if (item.channel === 'email') {
-        // Canal de correo: interfaz con implementación vacía detrás de flag de configuración
         const emailEnabled = Deno.env.get('EMAIL_SERVICE_ENABLED') === 'true'
+        const resendKey1 = Deno.env.get('RESEND_API_KEY_1') || ''
+        const resendKey2 = Deno.env.get('RESEND_API_KEY_2') || ''
 
         if (!emailEnabled) {
           await supabaseAdmin
@@ -195,13 +196,77 @@ serve(async (req) => {
 
           results.push({ id: item.id, status: 'skipped' })
         } else {
-          // Stub de envío de correo para cuando se configure el servicio
-          await supabaseAdmin
-            .from('notification_outbox')
-            .update({ status: 'sent', sent_at: new Date().toISOString(), attempts })
-            .eq('id', item.id)
+          // Consultar correo del usuario destinatario
+          const { data: userProfile } = await supabaseAdmin
+            .from('profiles')
+            .select('id, display_name')
+            .eq('id', notif.user_id)
+            .single()
 
-          results.push({ id: item.id, status: 'sent' })
+          const { data: authUser } = await supabaseAdmin.auth.admin.getUserById(notif.user_id)
+          const targetEmail = authUser?.user?.email
+
+          if (!targetEmail) {
+            await supabaseAdmin
+              .from('notification_outbox')
+              .update({ status: 'skipped', error: 'Recipient email not found' })
+              .eq('id', item.id)
+
+            results.push({ id: item.id, status: 'skipped' })
+            continue
+          }
+
+          // Registrar intento de envío y obtener clave activa (1 o 2)
+          const { data: trackerData, error: trackerErr } = await supabaseAdmin.rpc('register_email_send_attempt')
+
+          if (trackerErr) {
+            const isMaintenance = trackerErr.message.includes('Servicio en mantenimiento') || trackerErr.code === 'P0001'
+            await supabaseAdmin
+              .from('notification_outbox')
+              .update({
+                status: isMaintenance ? 'failed' : 'pending',
+                attempts,
+                error: trackerErr.message
+              })
+              .eq('id', item.id)
+
+            results.push({ id: item.id, status: isMaintenance ? 'failed' : 'pending_retry', error: trackerErr.message })
+            continue
+          }
+
+          const activeApiKey = (trackerData?.key_index === 2) ? resendKey2 : resendKey1
+
+          // Enviar vía Resend API v1
+          const resendRes = await fetch('https://api.resend.com/emails', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${activeApiKey}`,
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              from: 'Guaiqueríes de Margarita <onboarding@resend.dev>',
+              to: [targetEmail],
+              subject: notif.title || 'Notificación Guaiqueríes',
+              html: `<p>Hola ${userProfile?.display_name || 'Fanático'},</p><p>${notif.body}</p>`,
+            })
+          })
+
+          if (resendRes.ok) {
+            await supabaseAdmin
+              .from('notification_outbox')
+              .update({ status: 'sent', sent_at: new Date().toISOString(), attempts, error: null })
+              .eq('id', item.id)
+
+            results.push({ id: item.id, status: 'sent' })
+          } else {
+            const errBody = await resendRes.json()
+            await supabaseAdmin
+              .from('notification_outbox')
+              .update({ status: 'pending', attempts, error: errBody.message || 'Resend API Error' })
+              .eq('id', item.id)
+
+            results.push({ id: item.id, status: 'pending_retry' })
+          }
         }
       }
     }
