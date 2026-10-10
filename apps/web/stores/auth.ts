@@ -10,13 +10,14 @@ export const useAuthStore = defineStore('auth', () => {
   const supabase = useSupabaseClient<Database>()
   const supabaseUser = useSupabaseUser()
   const sessionUser = ref<any>(null)
+  const explicitLoggedOut = ref(false)
 
   const profile = ref<ProfileRow | null>(null)
   const wallet = ref<WalletRow | null>(null)
   const isLoading = ref(false)
   const errorMessage = ref<string | null>(null)
 
-  const user = computed(() => sessionUser.value || supabaseUser.value)
+  const user = computed(() => explicitLoggedOut.value ? null : (sessionUser.value || supabaseUser.value))
   const isAuthenticated = computed(() => !!user.value)
   const isEmailVerified = computed(() => !!user.value?.email_confirmed_at || !!user.value?.confirmed_at || (isAuthenticated.value && !!profile.value) || isAuthenticated.value)
   
@@ -110,6 +111,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function loginWithEmail(email: string, pass: string) {
+    explicitLoggedOut.value = false
     isLoading.value = true
     errorMessage.value = null
     try {
@@ -359,6 +361,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
+    explicitLoggedOut.value = true
     isLoading.value = true
     try {
       profile.value = null
