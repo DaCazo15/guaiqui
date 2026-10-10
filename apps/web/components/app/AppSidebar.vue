@@ -17,6 +17,10 @@ const navItems = [
   { name: 'Mi Perfil', path: '/app/perfil', icon: 'bi-person-fill' },
   { name: 'Ajustes', path: '/app/ajustes', icon: 'bi-gear-fill' },
 ]
+
+const handleLogout = async () => {
+  await authStore.logout()
+}
 </script>
 
 <template>
@@ -76,8 +80,9 @@ const navItems = [
     <!-- Logout Footer -->
     <div class="pt-4 border-t border-guaiqui-border">
       <button
-        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-guaiqui-md text-sm text-guaiqui-accent hover:bg-guaiqui-accent-soft transition-colors font-medium"
-        @click="authStore.logout()"
+        type="button"
+        class="w-full flex items-center gap-3 px-3 py-2.5 rounded-guaiqui-md text-sm text-guaiqui-accent hover:bg-guaiqui-accent-soft transition-colors font-medium cursor-pointer"
+        @click="handleLogout"
       >
         <i class="bi bi-box-arrow-right text-base"></i>
         <span>Cerrar Sesión</span>

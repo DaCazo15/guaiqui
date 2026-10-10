@@ -359,10 +359,12 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
-    profile.value = null
-    wallet.value = null
-    sessionUser.value = null
+    isLoading.value = true
     try {
+      profile.value = null
+      wallet.value = null
+      sessionUser.value = null
+
       if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
         try {
           const registration = await navigator.serviceWorker.ready
@@ -375,18 +377,34 @@ export const useAuthStore = defineStore('auth', () => {
           // Ignore SW cleanup errors during logout
         }
       }
-      await supabase.auth.signOut()
-    } catch (err) {
-      console.warn('SignOut warning:', err)
-    } finally {
-      profile.value = null
-      wallet.value = null
-      sessionUser.value = null
+
+      await supabase.auth.signOut().catch((err) => console.warn('SignOut warning:', err))
+
       if (typeof window !== 'undefined') {
+        localStorage.clear()
+        sessionStorage.clear()
+
+        // Clear all authentication cookies
+        document.cookie.split(';').forEach((c) => {
+          const eqPos = c.indexOf('=')
+          const name = eqPos > -1 ? c.substring(0, eqPos).trim() : c.trim()
+          if (name.startsWith('sb-') || name.includes('supabase') || name.includes('token') || name.includes('auth')) {
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
+            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
+          }
+        })
+
         window.location.href = '/login'
       } else {
         await navigateTo('/login')
       }
+    } catch (err: any) {
+      console.warn('Logout catch error:', err)
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login'
+      }
+    } finally {
+      isLoading.value = false
     }
   }
 
