@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
 
 interface Props {
   modelValue: string | number | null | undefined
@@ -35,7 +35,8 @@ const emit = defineEmits<{
   (e: 'focus', event: FocusEvent): void
 }>()
 
-const inputId = computed(() => props.id || `input-${Math.random().toString(36).slice(2, 9)}`)
+const autoId = useId()
+const inputId = computed(() => props.id || `input-${autoId}`)
 
 const handleInput = (event: Event) => {
   const target = event.target as HTMLInputElement

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
 
 export interface SelectOption {
   label: string
@@ -36,7 +36,8 @@ const emit = defineEmits<{
   (e: 'change', event: Event): void
 }>()
 
-const selectId = computed(() => props.id || `select-${Math.random().toString(36).slice(2, 9)}`)
+const autoId = useId()
+const selectId = computed(() => props.id || `select-${autoId}`)
 
 const handleChange = (event: Event) => {
   const target = event.target as HTMLSelectElement

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { computed, useId } from 'vue'
 
 interface Props {
   modelValue?: boolean
@@ -23,7 +23,8 @@ const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
 }>()
 
-const checkboxId = computed(() => props.id || `checkbox-${Math.random().toString(36).slice(2, 9)}`)
+const autoId = useId()
+const checkboxId = computed(() => props.id || `checkbox-${autoId}`)
 
 const toggle = () => {
   if (!props.disabled) {
