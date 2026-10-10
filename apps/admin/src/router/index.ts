@@ -1,5 +1,6 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '../stores/auth'
+import { supabase } from '../lib/supabase'
 
 import LoginView from '../pages/LoginView.vue'
 import StaffQueueView from '../pages/StaffQueueView.vue'
@@ -32,6 +33,7 @@ import AdminStatsView from '../pages/AdminStatsView.vue'
 import AdminPoliciesView from '../pages/AdminPoliciesView.vue'
 import AdminInstagramView from '../pages/AdminInstagramView.vue'
 import AdminLandingView from '../pages/AdminLandingView.vue'
+import AdminBirthdayView from '../pages/AdminBirthdayView.vue'
 
 export const router = createRouter({
   history: createWebHistory(),
@@ -232,18 +234,43 @@ export const router = createRouter({
       meta: { requiresAdmin: true }
     },
     {
+      path: '/admin/cumpleanos',
+      name: 'admin-cumpleanos',
+      component: AdminBirthdayView,
+      meta: { requiresAdmin: true }
+    },
+    {
       path: '/:pathMatch(.*)*',
       redirect: '/staff/cola'
     }
   ]
 })
 
+supabase.auth.onAuthStateChange((event) => {
+  if (event === 'SIGNED_OUT') {
+    const authStore = useAuthStore()
+    authStore.user = null
+    authStore.staffMember = null
+    authStore.stopIdleMonitoring()
+    if (router.currentRoute.value.name !== 'login') {
+      router.replace({ name: 'login' })
+    }
+  }
+})
+
 router.beforeEach(async (to, from, next) => {
   const authStore = useAuthStore()
-  const isAuth = await authStore.checkAuth()
+
+  if (!authStore.isInitialized) {
+    await authStore.checkAuth()
+  }
+
+  const isAuth = authStore.isAuthenticated
 
   if (to.meta.requiresAdmin) {
-    if (!isAuth || !authStore.isAdmin) {
+    if (!isAuth) {
+      next({ name: 'login' })
+    } else if (!authStore.isAdmin) {
       next({ name: 'staff-queue' })
     } else {
       next()

@@ -15,7 +15,7 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="turnstile-wrapper my-2">
+  <div v-if="sitekey || $slots.default" class="turnstile-wrapper my-2">
     <!-- Slot for future Turnstile widget or wrapper content -->
     <slot>
       <!-- Hidden or default container for Turnstile script integration -->

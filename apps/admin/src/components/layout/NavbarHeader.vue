@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import { computed } from 'vue'
+import { useRouter } from 'vue-router'
 import { useAuthStore } from '../../stores/auth'
 
+const router = useRouter()
 const authStore = useAuthStore()
 
 defineEmits<{
@@ -12,6 +14,11 @@ const staffRoleLabel = computed(() => {
   if (authStore.staffMember?.role === 'admin') return 'Administrador'
   return 'Personal de Taquilla'
 })
+
+const handleSignOut = async () => {
+  await authStore.signOut('Sesión cerrada correctamente.')
+  router.replace({ name: 'login' })
+}
 </script>
 
 <template>
@@ -45,7 +52,7 @@ const staffRoleLabel = computed(() => {
       </div>
 
       <button
-        @click="authStore.signOut('Sesión cerrada correctamente.')"
+        @click="handleSignOut"
         class="flex items-center gap-2 px-3 py-1.5 text-xs font-semibold text-slate-300 hover:text-red-400 bg-slate-800 hover:bg-red-950/40 border border-slate-700 hover:border-red-900/50 rounded-lg transition-all"
         title="Cerrar sesión"
       >

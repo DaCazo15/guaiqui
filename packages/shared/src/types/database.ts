@@ -8,7 +8,7 @@ export type Json =
 
 export type UserStatus = 'active' | 'suspended'
 export type StaffRole = 'staff' | 'admin'
-export type LedgerType = 'trivia_reward' | 'redemption' | 'refund' | 'admin_adjustment' | 'bonus' | 'streak_bonus'
+export type LedgerType = 'trivia_reward' | 'redemption' | 'refund' | 'admin_adjustment' | 'bonus' | 'streak_bonus' | 'birthday_bonus'
 export type LedgerStatus = 'confirmed' | 'held' | 'revoked'
 export type TriviaStatus = 'draft' | 'published' | 'archived'
 export type ProductCategory = 'physical' | 'experience' | 'raffle'
@@ -393,6 +393,28 @@ export interface AnalyticsFunnelStep {
   conversion_rate: number
 }
 
+export interface BirthdaySettings {
+  id: number
+  enabled: boolean
+  title: string
+  message: string
+  image_url?: string | null
+  send_hour: number
+  grace_days: number
+  bonus_pearls: number
+  updated_at: string
+}
+
+export interface BirthdayCardResponse {
+  eligible: boolean
+  display_name?: string
+  title?: string
+  message?: string
+  image_url?: string | null
+  bonus_pearls?: number
+  has_claimed_bonus?: boolean
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -422,6 +444,7 @@ export interface Database {
       site_stats: { Row: SiteStat }
       social_links: { Row: SocialLink }
       policy_documents: { Row: PolicyDocument }
+      birthday_settings: { Row: BirthdaySettings }
     }
   }
 }

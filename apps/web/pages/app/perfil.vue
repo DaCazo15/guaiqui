@@ -13,6 +13,7 @@ definePageMeta({
 const authStore = useAuthStore()
 const avatarUploading = ref(false)
 const localError = ref<string | null>(null)
+const showBirthdayPrompt = ref(true)
 
 async function handleAvatarUpload(file: File) {
   avatarUploading.value = true
@@ -55,6 +56,30 @@ async function handleSaveProfile(updates: any) {
           <span>Ver Plantilla de Jugadores</span>
         </BaseButton>
       </NuxtLink>
+    </div>
+
+    <!-- Discrete ignorable Birthday Prompt Card if birth_date is not loaded -->
+    <div
+      v-if="!authStore.profile?.birth_date && showBirthdayPrompt"
+      class="p-4 bg-emerald-50 border border-emerald-200 rounded-guaiqui-xl flex items-center justify-between gap-4 shadow-guaiqui-sm text-guaiqui-text"
+    >
+      <div class="flex items-center gap-3">
+        <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 font-bold text-xl">
+          <i class="bi bi-gift-fill"></i>
+        </div>
+        <div>
+          <p class="text-sm font-semibold text-guaiqui-text">Añade tu cumpleaños para recibir un saludo del equipo</p>
+          <p class="text-xs text-guaiqui-text-muted">Los Guaiqueríes de Margarita te enviarán una felicitación especial el día de tu cumpleaños.</p>
+        </div>
+      </div>
+      <button
+        @click="showBirthdayPrompt = false"
+        class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-emerald-100/50 transition-colors"
+        title="Ignorar aviso"
+        aria-label="Ignorar aviso de cumpleaños"
+      >
+        <i class="bi bi-x-lg text-sm"></i>
+      </button>
     </div>
 
     <!-- Main Card -->

@@ -60,7 +60,7 @@ async function handleGoogleLogin() {
       </div>
 
       <BaseCard class="bg-white border-guaiqui-border shadow-guaiqui-md p-6 rounded-guaiqui-xl space-y-6">
-        <form @submit.prevent="handleLogin" class="space-y-4">
+        <form class="space-y-4" @submit.prevent="handleLogin">
           <div v-if="localError || authStore.errorMessage" class="p-3 bg-guaiqui-status-danger-soft border border-guaiqui-status-danger/30 rounded-guaiqui-md text-guaiqui-status-danger text-sm flex items-center gap-2">
             <i class="bi bi-exclamation-circle-fill shrink-0"></i>
             <span>{{ localError || authStore.errorMessage }}</span>

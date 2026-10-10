@@ -35,7 +35,8 @@ const cmsNavItems = [
   { name: 'admin-anuncios', path: '/admin/anuncios', label: 'Cinta Anuncios', icon: 'bi-megaphone' },
   { name: 'admin-faq', path: '/admin/faq', label: 'Preguntas FAQ', icon: 'bi-patch-question' },
   { name: 'admin-historia', path: '/admin/historia', label: 'Historia', icon: 'bi-hourglass-split' },
-  { name: 'admin-politicas', path: '/admin/politicas', label: 'Políticas Legales', icon: 'bi-journal-check' }
+  { name: 'admin-politicas', path: '/admin/politicas', label: 'Políticas Legales', icon: 'bi-journal-check' },
+  { name: 'admin-cumpleanos', path: '/admin/cumpleanos', label: 'Saludo Cumpleaños', icon: 'bi-gift' }
 ]
 
 const isActive = (path: string) => route.path.startsWith(path)

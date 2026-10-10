@@ -13,6 +13,7 @@ const prefs = authStore.profile?.notification_prefs || {}
 const redemptionsPref = ref(true) // Always enabled for transactional inbox
 const triviasMatchesPref = ref(prefs.trivias_matches ?? true)
 const newsPref = ref(prefs.news ?? true)
+const birthdayPref = ref(prefs.birthday ?? true)
 const pushPref = ref(prefs.push ?? true)
 const emailPref = ref(prefs.email ?? true)
 const language = ref('es')
@@ -31,6 +32,7 @@ async function savePreferences() {
         redemptions: true,
         trivias_matches: triviasMatchesPref.value,
         news: newsPref.value,
+        birthday: birthdayPref.value,
         push: pushPref.value,
         email: emailPref.value,
       },
@@ -110,6 +112,15 @@ async function sendTestNotification() {
           <span class="font-semibold text-xs">Novedades del Equipo</span>
           <span class="block text-[11px] text-guaiqui-text-muted">
             Anuncios importantes, sorteos y noticias de los Guaiqueríes de Margarita.
+          </span>
+        </BaseCheckbox>
+      </div>
+
+      <div class="pt-2">
+        <BaseCheckbox v-model="birthdayPref">
+          <span class="font-semibold text-xs">Saludo de Cumpleaños</span>
+          <span class="block text-[11px] text-guaiqui-text-muted">
+            Recibir una felicitación especial del equipo el día de tu cumpleaños.
           </span>
         </BaseCheckbox>
       </div>

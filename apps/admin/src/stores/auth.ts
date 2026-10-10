@@ -16,6 +16,7 @@ export const useAuthStore = defineStore('auth', () => {
   const user = ref<any>(null)
   const staffMember = ref<StaffProfile | null>(null)
   const isLoading = ref(true)
+  const isInitialized = ref(false)
   const authError = ref<string | null>(null)
   
   const lastActivityTime = ref<number>(Date.now())
@@ -32,15 +33,20 @@ export const useAuthStore = defineStore('auth', () => {
     stopIdleMonitoring()
     lastActivityTime.value = Date.now()
 
-    const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart']
-    events.forEach(evt => window.addEventListener(evt, resetIdleTimer, { passive: true }))
+    if (typeof window !== 'undefined') {
+      const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart']
+      events.forEach(evt => window.addEventListener(evt, resetIdleTimer, { passive: true }))
 
-    idleTimer = window.setInterval(async () => {
-      if (user.value && Date.now() - lastActivityTime.value >= IDLE_TIMEOUT_MS) {
-        console.warn('Sesión de staff cerrada por inactividad de 30 minutos.')
-        await signOut('Sesión cerrada automáticamente por 30 minutos de inactividad.')
-      }
-    }, 15000)
+      idleTimer = window.setInterval(async () => {
+        if (user.value && Date.now() - lastActivityTime.value >= IDLE_TIMEOUT_MS) {
+          console.warn('Sesión de staff cerrada por inactividad de 30 minutos.')
+          await signOut('Sesión cerrada automáticamente por 30 minutos de inactividad.')
+          if (window.location.pathname !== '/login') {
+            window.location.href = '/login'
+          }
+        }
+      }, 15000)
+    }
   }
 
   const stopIdleMonitoring = () => {
@@ -48,8 +54,10 @@ export const useAuthStore = defineStore('auth', () => {
       clearInterval(idleTimer)
       idleTimer = null
     }
-    const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart']
-    events.forEach(evt => window.removeEventListener(evt, resetIdleTimer))
+    if (typeof window !== 'undefined') {
+      const events = ['mousemove', 'keydown', 'click', 'scroll', 'touchstart']
+      events.forEach(evt => window.removeEventListener(evt, resetIdleTimer))
+    }
   }
 
   const fetchStaffData = async (uid: string): Promise<boolean> => {
@@ -89,7 +97,11 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  const checkAuth = async (): Promise<boolean> => {
+  const checkAuth = async (force = false): Promise<boolean> => {
+    if (isInitialized.value && !force) {
+      return isAuthenticated.value
+    }
+
     isLoading.value = true
     try {
       const { data: { session } } = await supabase.auth.getSession()
@@ -109,7 +121,14 @@ export const useAuthStore = defineStore('auth', () => {
         stopIdleMonitoring()
         return false
       }
+    } catch (err: any) {
+      console.error('Error durante checkAuth:', err)
+      user.value = null
+      staffMember.value = null
+      stopIdleMonitoring()
+      return false
     } finally {
+      isInitialized.value = true
       isLoading.value = false
     }
   }
@@ -150,21 +169,28 @@ export const useAuthStore = defineStore('auth', () => {
 
   const signOut = async (reason?: string) => {
     stopIdleMonitoring()
-    await supabase.auth.signOut()
-    user.value = null
-    staffMember.value = null
-    authError.value = reason || null
+    try {
+      await supabase.auth.signOut({ scope: 'local' })
+    } catch (err) {
+      console.warn('Error al cerrar sesión en Supabase:', err)
+    } finally {
+      user.value = null
+      staffMember.value = null
+      authError.value = reason || null
+    }
   }
 
   return {
     user,
     staffMember,
     isLoading,
+    isInitialized,
     authError,
     isAuthenticated,
     isAdmin,
     checkAuth,
     signIn,
-    signOut
+    signOut,
+    stopIdleMonitoring
   }
 })

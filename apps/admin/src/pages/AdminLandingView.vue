@@ -92,8 +92,8 @@ const saveSettings = async () => {
   successMessage.value = null
   try {
     const { error } = await supabase.from('landing_settings').upsert({
-      id: 1,
       ...settings.value,
+      id: 1,
       updated_at: new Date().toISOString()
     })
     if (error) throw error

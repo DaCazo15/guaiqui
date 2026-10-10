@@ -80,6 +80,7 @@ function handleSubmit() {
       v-model="birthDate"
       label="Fecha de nacimiento"
       type="date"
+      hint="Se utiliza para enviarte un saludo especial del equipo el día de tu cumpleaños."
     />
 
     <BaseSelect
