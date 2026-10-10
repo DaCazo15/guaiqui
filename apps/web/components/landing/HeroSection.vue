@@ -26,7 +26,7 @@ const handleHeroHowItWorks = () => {
         <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 text-xs font-semibold text-emerald-200">
           <BaseBadge variant="soft" size="sm">Fan Zone 2026</BaseBadge>
           <span class="flex items-center gap-1">
-            +100.000 fanáticos conectados <PearlIcon size="xs" />
+            +100.000 fanáticos conectados 
           </span>
         </div>
 

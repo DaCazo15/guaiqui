@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { BaseButton, PearlIcon } from '@guaiqui/ui'
+import { BaseButton } from '@guaiqui/ui'
 import { useAnalytics } from '~/composables/useAnalytics'
 
 const { trackEvent } = useAnalytics()
@@ -40,7 +40,6 @@ const navLinks = [
         <img src="/logo.png" alt="Guaiqueríes Logo" class="w-8 h-8 object-contain group-hover:scale-105 transition-transform" />
         <span class="flex items-center gap-1">
           <span>GUAIQUERÍES</span>
-          <PearlIcon size="xs" />
         </span>
       </NuxtLink>
 
