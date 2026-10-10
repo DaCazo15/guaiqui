@@ -1,9 +1,17 @@
 import { defineNuxtPlugin, useRouter } from '#imports'
+import { inject } from '@vercel/analytics'
+import { injectSpeedInsights } from '@vercel/speed-insights'
 import { useAnalytics } from '~/composables/useAnalytics'
 
 export default defineNuxtPlugin((nuxtApp) => {
   const analytics = useAnalytics()
   const router = useRouter()
+
+  // Initialize Vercel Analytics & Speed Insights
+  try {
+    inject()
+    injectSpeedInsights()
+  } catch (_e) {}
 
   // Initialize consent on app mount
   analytics.initConsent()
