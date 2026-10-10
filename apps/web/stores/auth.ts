@@ -382,7 +382,11 @@ export const useAuthStore = defineStore('auth', () => {
       profile.value = null
       wallet.value = null
       sessionUser.value = null
-      await navigateTo('/login')
+      if (typeof window !== 'undefined') {
+        window.location.href = '/login'
+      } else {
+        await navigateTo('/login')
+      }
     }
   }
 

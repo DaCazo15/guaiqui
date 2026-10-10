@@ -56,7 +56,7 @@ const navItems = [
     </div>
 
     <!-- Nav Links -->
-    <nav class="flex-1 space-y-1">
+    <nav class="flex-1 space-y-1 overflow-y-auto pr-1">
       <NuxtLink
         v-for="item in navItems"
         :key="item.path"
