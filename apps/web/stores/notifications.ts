@@ -31,7 +31,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
   const fetchNotifications = async () => {
     const supabase = useSupabaseClient()
     const user = useSupabaseUser()
-    if (!user.value) return
+    if (!user.value || !user.value.id) return
 
     isLoading.value = true
     try {
@@ -52,7 +52,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
   const subscribeToRealtime = () => {
     const supabase = useSupabaseClient()
     const user = useSupabaseUser()
-    if (!user.value || realtimeChannel.value) return
+    if (!user.value || !user.value.id || realtimeChannel.value) return
 
     realtimeChannel.value = supabase
       .channel('user-notifications')
