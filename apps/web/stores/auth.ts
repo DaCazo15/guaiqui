@@ -19,7 +19,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   const user = computed(() => explicitLoggedOut.value ? null : (sessionUser.value || supabaseUser.value))
   const isAuthenticated = computed(() => !!user.value)
-  const isEmailVerified = computed(() => !!user.value?.email_confirmed_at || !!user.value?.confirmed_at || (isAuthenticated.value && !!profile.value) || isAuthenticated.value)
+  const isEmailVerified = computed(() => !!user.value?.email_confirmed_at || !!user.value?.confirmed_at || (isAuthenticated.value && !!profile.value))
   
   const activeLegalVersions = ref<Record<string, string>>({
     terminos: 'v1.0',
@@ -363,31 +363,55 @@ export const useAuthStore = defineStore('auth', () => {
   async function logout() {
     explicitLoggedOut.value = true
     isLoading.value = true
+
+    // a) Call supabase.auth.signOut({ scope: 'local' }) first inside try/catch
     try {
-      profile.value = null
-      wallet.value = null
-      sessionUser.value = null
+      await supabase.auth.signOut({ scope: 'local' }).catch((err) => console.warn('SignOut warning:', err))
+    } catch (err) {
+      console.warn('SignOut error:', err)
+    }
 
-      if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-        try {
-          const registration = await navigator.serviceWorker.ready
-          const subscription = await registration.pushManager.getSubscription()
-          if (subscription) {
-            await supabase.rpc('unregister_push_subscription', { p_endpoint: subscription.endpoint })
-            await subscription.unsubscribe()
+    // b) Background push cleanup using navigator.serviceWorker.getRegistration() + Promise.race (2000ms timeout)
+    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
+      try {
+        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000))
+        const pushCleanup = (async () => {
+          const reg = await navigator.serviceWorker.getRegistration()
+          if (reg && reg.pushManager) {
+            const sub = await reg.pushManager.getSubscription()
+            if (sub) {
+              await supabase.rpc('unregister_push_subscription', { p_endpoint: sub.endpoint }).catch(() => {})
+              await sub.unsubscribe().catch(() => {})
+            }
           }
-        } catch (_swErr) {
-          // Ignore SW cleanup errors during logout
-        }
+        })()
+        await Promise.race([pushCleanup, timeoutPromise])
+      } catch (_swErr) {
+        // Ignore SW push cleanup errors
       }
+    }
 
-      await supabase.auth.signOut().catch((err) => console.warn('SignOut warning:', err))
-
+    // c) In finally block: clean selective keys (sb- or supabase), clear cookies, reset profile, wallet, sessionUser, isLoading, redirect
+    try {
       if (typeof window !== 'undefined') {
-        localStorage.clear()
-        sessionStorage.clear()
+        const localKeysToRemove: string[] = []
+        for (let i = 0; i < localStorage.length; i++) {
+          const k = localStorage.key(i)
+          if (k && (k.startsWith('sb-') || k.includes('supabase'))) {
+            localKeysToRemove.push(k)
+          }
+        }
+        localKeysToRemove.forEach((k) => localStorage.removeItem(k))
 
-        // Clear all authentication cookies
+        const sessionKeysToRemove: string[] = []
+        for (let i = 0; i < sessionStorage.length; i++) {
+          const k = sessionStorage.key(i)
+          if (k && (k.startsWith('sb-') || k.includes('supabase'))) {
+            sessionKeysToRemove.push(k)
+          }
+        }
+        sessionKeysToRemove.forEach((k) => sessionStorage.removeItem(k))
+
         document.cookie.split(';').forEach((c) => {
           const eqPos = c.indexOf('=')
           const name = eqPos > -1 ? c.substring(0, eqPos).trim() : c.trim()
@@ -396,18 +420,20 @@ export const useAuthStore = defineStore('auth', () => {
             document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
           }
         })
+      }
+    } catch (_clearErr) {
+      // Ignore storage/cookie clear errors
+    } finally {
+      profile.value = null
+      wallet.value = null
+      sessionUser.value = null
+      isLoading.value = false
 
+      if (typeof window !== 'undefined') {
         window.location.href = '/login'
       } else {
         await navigateTo('/login')
       }
-    } catch (err: any) {
-      console.warn('Logout catch error:', err)
-      if (typeof window !== 'undefined') {
-        window.location.href = '/login'
-      }
-    } finally {
-      isLoading.value = false
     }
   }
 

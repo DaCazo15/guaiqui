@@ -44,3 +44,5 @@ blob-report/
 supabase/.temp/
 supabase/.branches/
 .temp/
+repo.bundle
+repomix-output.xml

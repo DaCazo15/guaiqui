@@ -113,6 +113,20 @@ export const useNotificationsStore = defineStore('notifications', () => {
     await supabase.rpc('mark_all_notifications_read')
   }
 
+  async function getSWRegistrationWithTimeout(timeoutMs = 2000): Promise<ServiceWorkerRegistration | null> {
+    if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return null
+    try {
+      const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), timeoutMs))
+      const regPromise = (async () => {
+        const reg = await navigator.serviceWorker.getRegistration()
+        return reg || null
+      })()
+      return await Promise.race([regPromise, timeoutPromise])
+    } catch (_err) {
+      return null
+    }
+  }
+
   const requestPushPermission = async () => {
     if (typeof window === 'undefined' || !('Notification' in window)) {
       throw new Error('Las notificaciones no están soportadas en este navegador.')
@@ -130,7 +144,12 @@ export const useNotificationsStore = defineStore('notifications', () => {
     }
 
     try {
-      const registration = await navigator.serviceWorker.ready
+      const registration = await getSWRegistrationWithTimeout(2000)
+      if (!registration || !registration.pushManager) {
+        console.warn('Service Worker registration not available for push.')
+        return false
+      }
+
       const vapidKey = (import.meta.env.VITE_VAPID_PUBLIC_KEY as string) || ''
 
       let subscription = await registration.pushManager.getSubscription()
@@ -164,12 +183,14 @@ export const useNotificationsStore = defineStore('notifications', () => {
     if (typeof window === 'undefined' || !('serviceWorker' in navigator)) return
 
     try {
-      const registration = await navigator.serviceWorker.ready
-      const subscription = await registration.pushManager.getSubscription()
-      if (subscription) {
-        const supabase = useSupabaseClient()
-        await supabase.rpc('unregister_push_subscription', { p_endpoint: subscription.endpoint })
-        await subscription.unsubscribe()
+      const registration = await getSWRegistrationWithTimeout(2000)
+      if (registration && registration.pushManager) {
+        const subscription = await registration.pushManager.getSubscription()
+        if (subscription) {
+          const supabase = useSupabaseClient()
+          await supabase.rpc('unregister_push_subscription', { p_endpoint: subscription.endpoint }).catch(() => {})
+          await subscription.unsubscribe().catch(() => {})
+        }
       }
       isSubscribed.value = false
     } catch (err) {
