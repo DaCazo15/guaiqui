@@ -359,6 +359,9 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function logout() {
+    profile.value = null
+    wallet.value = null
+    sessionUser.value = null
     try {
       if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
         try {
@@ -378,7 +381,8 @@ export const useAuthStore = defineStore('auth', () => {
     } finally {
       profile.value = null
       wallet.value = null
-      navigateTo('/login')
+      sessionUser.value = null
+      await navigateTo('/login')
     }
   }
 

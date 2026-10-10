@@ -79,8 +79,8 @@ export const useTriviaStore = defineStore('trivias', () => {
       homeSummary.value = data as HomeSummaryData
       return data
     } catch (err: any) {
-      errorMessage.value = err.message
-      throw err
+      errorMessage.value = err.message || 'Error al cargar resumen'
+      return null
     } finally {
       isLoading.value = false
     }
@@ -95,8 +95,8 @@ export const useTriviaStore = defineStore('trivias', () => {
       leaderboard.value = (data as any)?.leaderboard || []
       return leaderboard.value
     } catch (err: any) {
-      errorMessage.value = err.message
-      throw err
+      errorMessage.value = err.message || 'Error al cargar el ranking'
+      return []
     } finally {
       isLoading.value = false
     }
