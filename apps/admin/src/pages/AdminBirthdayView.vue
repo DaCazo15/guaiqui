@@ -23,7 +23,7 @@ const testSuccessMessage = ref<string | null>(null)
 const settings = ref<BirthdaySettings>({
   enabled: true,
   title: '¡Feliz Cumpleaños, Guaiquerí!',
-  message: '¡En nombre de todos los que formamos parte de los **Guaiqueríes de Margarita**, te deseamos un feliz cumpleaños, {nombre}! 🏀\n\nGracias por tu pasión y por ser parte fundamental de nuestra tribu.',
+  message: '¡En nombre de todos los que formamos parte de los **Guaiqueríes de Margarita**, te deseamos un feliz cumpleaños, {nombre}!\n\nGracias por tu pasión y por ser parte fundamental de nuestra tribu.',
   image_url: '',
   send_hour: 9,
   grace_days: 3,
@@ -201,9 +201,9 @@ const sendHourLabels: Record<number, string> = {
         </div>
 
         <button
-          @click="handleSendTestNotification"
           :disabled="testLoading"
           class="flex items-center justify-center gap-2 px-4 py-2 bg-slate-800 hover:bg-slate-700 text-emerald-400 font-semibold text-xs rounded-xl border border-slate-700 transition-all disabled:opacity-50"
+          @click="handleSendTestNotification"
         >
           <i v-if="testLoading" class="bi bi-arrow-repeat animate-spin text-sm"></i>
           <i v-else class="bi bi-send-fill text-sm"></i>
@@ -242,12 +242,12 @@ const sendHourLabels: Record<number, string> = {
             </div>
 
             <label class="relative inline-flex items-center cursor-pointer">
-              <input type="checkbox" v-model="settings.enabled" class="sr-only peer">
+              <input v-model="settings.enabled" type="checkbox" class="sr-only peer">
               <div class="w-11 h-6 bg-slate-800 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
             </label>
           </div>
 
-          <form @submit.prevent="handleSaveSettings" class="space-y-4">
+          <form class="space-y-4" @submit.prevent="handleSaveSettings">
             <!-- Título -->
             <div>
               <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
@@ -272,7 +272,7 @@ const sendHourLabels: Record<number, string> = {
                 rows="5"
                 required
                 placeholder="Usa {nombre} para referenciar al fanático..."
-                class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white text-sm focus:outline-none focus:border-emerald-500 font-mono text-xs"
+                class="w-full px-3.5 py-2 bg-slate-950 border border-slate-800 rounded-xl text-white focus:outline-none focus:border-emerald-500 font-mono text-xs"
               ></textarea>
               <p class="text-[11px] text-slate-400 mt-1">
                 <i class="bi bi-info-circle mr-1"></i> Usa <code class="text-emerald-400">{nombre}</code> para insertar el nombre del fan y <code class="text-emerald-400">**texto**</code> para negrita.

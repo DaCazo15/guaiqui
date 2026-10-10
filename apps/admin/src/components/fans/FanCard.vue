@@ -61,7 +61,7 @@ const formatDate = (dateStr: string) => {
             <span class="px-2 py-0.5 bg-slate-800 text-emerald-400 rounded-md font-mono text-[11px] uppercase font-bold block mb-1">
               {{ r.status }}
             </span>
-            <span class="text-[11px] text-emerald-400 font-semibold">{{ r.cost_pearls }} 🦪</span>
+            <span class="text-[11px] text-emerald-400 font-semibold">{{ r.cost_pearls }} <i class="bi bi-gem text-[10px]"></i></span>
           </div>
         </div>
       </div>

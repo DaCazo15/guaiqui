@@ -12,25 +12,31 @@ const emit = defineEmits<{
   (e: 'clear'): void
 }>()
 
-const isApproved = computed(() => props.scanData?.result === 'OK_APPROVED' || props.scanData?.status === 'approved' || props.scanData?.status === 'scheduled')
+const isApproved = computed(() => props.scanData?.result === 'OK_APPROVED' || props.scanData?.result === 'OK_SCHEDULED' || props.scanData?.status === 'approved' || props.scanData?.status === 'scheduled')
 const isDelivered = computed(() => props.scanData?.result === 'ALREADY_DELIVERED' || props.scanData?.status === 'delivered' || props.scanData?.status === 'completed')
+
+const displayName = computed(() => props.scanData?.display_name || props.scanData?.fan_display_name)
+const avatarUrl = computed(() => props.scanData?.avatar_url || props.scanData?.fan_avatar_url)
+const productTitle = computed(() => props.scanData?.product_title || props.scanData?.product_name)
+const variantTitle = computed(() => props.scanData?.variant_title || props.scanData?.variant)
+const isExperience = computed(() => props.scanData?.is_experience ?? (props.scanData?.product_category === 'experience'))
 
 const resultBadge = computed(() => {
   const result = props.scanData?.result
   const status = props.scanData?.status
 
-  if (result === 'OK_APPROVED' || status === 'approved' || status === 'scheduled') {
+  if (result === 'OK_APPROVED' || result === 'OK_SCHEDULED' || status === 'approved' || status === 'scheduled') {
     return {
       class: 'bg-emerald-950/80 border-emerald-700 text-emerald-300',
       icon: 'bi-check-circle-fill text-emerald-400',
-      title: 'Canje Válido y Listo para Entrega',
-      label: 'APROBADO'
+      title: status === 'scheduled' || result === 'OK_SCHEDULED' ? 'Experiencia Agendada y Lista para Asistencia' : 'Canje Válido y Listo para Entrega',
+      label: status === 'scheduled' || result === 'OK_SCHEDULED' ? 'AGENDADO' : 'APROBADO'
     }
   } else if (result === 'ALREADY_DELIVERED' || status === 'delivered' || status === 'completed') {
     return {
       class: 'bg-amber-950/80 border-amber-700 text-amber-300',
       icon: 'bi-info-circle-fill text-amber-400',
-      title: 'Premio Ya Entregado Previamente',
+      title: 'Premio o Asistencia Ya Registrada Previamente',
       label: 'YA ENTREGADO'
     }
   } else if (status === 'cancelled' || status === 'rejected' || status === 'expired') {
@@ -69,26 +75,30 @@ const resultBadge = computed(() => {
     </div>
 
     <!-- Fan & Product Details (PRIVACY ENFORCED: No email, birthdate, gender, size, or metadata!) -->
-    <div v-if="scanData.fan_display_name || scanData.product_name" class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-950/60 p-4 rounded-xl border border-slate-800/80">
+    <div v-if="displayName || productTitle" class="grid grid-cols-1 md:grid-cols-2 gap-4 bg-slate-950/60 p-4 rounded-xl border border-slate-800/80">
       <!-- Fan Info -->
       <div class="flex items-center gap-3 border-b md:border-b-0 md:border-r border-slate-800 pb-3 md:pb-0 md:pr-3">
         <div class="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 text-emerald-400 flex items-center justify-center font-bold text-lg overflow-hidden flex-shrink-0">
-          <img v-if="scanData.fan_avatar_url" :src="scanData.fan_avatar_url" :alt="scanData.fan_display_name" class="w-full h-full object-cover" />
-          <span v-else>{{ (scanData.fan_display_name || 'F')[0] }}</span>
+          <img v-if="avatarUrl" :src="avatarUrl" :alt="displayName" class="w-full h-full object-cover" />
+          <span v-else>{{ (displayName || 'F')[0] }}</span>
         </div>
         <div>
           <span class="text-[11px] text-slate-500 uppercase tracking-wider font-semibold block">Fanático</span>
-          <span class="font-bold text-sm text-white">{{ scanData.fan_display_name }}</span>
+          <span class="font-bold text-sm text-white">{{ displayName }}</span>
         </div>
       </div>
 
       <!-- Product Info -->
       <div class="space-y-1">
         <span class="text-[11px] text-slate-500 uppercase tracking-wider font-semibold block">Premio / Canje</span>
-        <div class="font-bold text-sm text-emerald-400">{{ scanData.product_name }}</div>
+        <div class="font-bold text-sm text-emerald-400">{{ productTitle }}</div>
         <div class="flex items-center gap-2 text-xs text-slate-400">
-          <span v-if="scanData.variant" class="px-2 py-0.5 bg-slate-800 rounded-md font-mono text-[11px]">Talla/Variante: {{ scanData.variant }}</span>
-          <span class="font-semibold text-emerald-400">{{ scanData.cost_pearls }} perlitas</span>
+          <span v-if="variantTitle" class="px-2 py-0.5 bg-slate-800 rounded-md font-mono text-[11px]">Talla/Variante: {{ variantTitle }}</span>
+          <span v-if="scanData.cost_pearls" class="font-semibold text-emerald-400 flex items-center gap-1">
+            <span>{{ scanData.cost_pearls }}</span>
+            <i class="bi bi-gem text-xs"></i>
+            <span>perlitas</span>
+          </span>
         </div>
       </div>
     </div>
@@ -119,7 +129,7 @@ const resultBadge = computed(() => {
         >
           <i v-if="isLoadingAction" class="bi bi-arrow-repeat animate-spin me-1"></i>
           <i v-else class="bi bi-check2-circle text-base me-1"></i>
-          <span>{{ scanData.product_category === 'experience' ? 'Registrar Asistencia' : 'Entregar Canje' }}</span>
+          <span>{{ isExperience ? 'Registrar Asistencia' : 'Entregar Canje' }}</span>
         </button>
       </div>
     </div>

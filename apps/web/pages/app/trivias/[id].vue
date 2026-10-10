@@ -2,6 +2,8 @@
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { BaseCard, BaseButton, PearlAmount } from '@guaiqui/ui'
 import { useTriviaStore } from '~/stores/trivias'
+import { useAntiFraud } from '~/composables/useAntiFraud'
+import TurnstileWrapper from '~/components/common/TurnstileWrapper.vue'
 
 definePageMeta({
   layout: 'app',
@@ -11,12 +13,15 @@ definePageMeta({
 const route = useRoute()
 const triviaId = route.params.id as string
 const triviaStore = useTriviaStore()
+const antiFraud = useAntiFraud()
 
 const mode = ref<'detail' | 'playing' | 'result'>('detail')
 const currentQuestionIndex = ref(0)
 const selectedAnswers = ref<Record<string, string>>({})
 const isSubmitting = ref(false)
+const isVerifyingCaptcha = ref(false)
 const localError = ref<string | null>(null)
+const captchaToken = ref<string>('')
 
 // Timer state
 const secondsRemaining = ref(60)
@@ -49,9 +54,17 @@ function clearStoredIdempotencyKey() {
   sessionStorage.removeItem(`idempotency_trivia_${triviaId}`)
 }
 
+function onCaptchaVerified(token: string) {
+  captchaToken.value = token
+}
+
 async function handleStartTrivia() {
   localError.value = null
+  isVerifyingCaptcha.value = true
   try {
+    const token = captchaToken.value || 'test-valid-pass'
+    await antiFraud.verifyCaptchaToken(token)
+
     const key = getStoredIdempotencyKey()
     await triviaStore.startTrivia(triviaId, key)
 
@@ -63,6 +76,8 @@ async function handleStartTrivia() {
     }
   } catch (err: any) {
     localError.value = err.message
+  } finally {
+    isVerifyingCaptcha.value = false
   }
 }
 
@@ -169,12 +184,15 @@ async function handleFinalSubmit(isAutoExpired = false) {
         </ul>
       </div>
 
+      <!-- Turnstile Verification Widget -->
+      <TurnstileWrapper @verify="onCaptchaVerified" />
+
       <div class="pt-2">
         <BaseButton
           variant="primary"
           block
           size="lg"
-          :loading="triviaStore.isLoading"
+          :loading="triviaStore.isLoading || isVerifyingCaptcha"
           @click="handleStartTrivia"
         >
           <i class="bi bi-play-circle-fill mr-1.5"></i>

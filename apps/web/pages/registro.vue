@@ -95,8 +95,8 @@ async function finishRegistration(optionalPreferences?: {
     <div class="w-full max-w-lg space-y-6">
       <!-- Header -->
       <div class="text-center space-y-2">
-        <div class="inline-flex items-center justify-center w-14 h-14 rounded-full bg-guaiqui-primary-soft border border-guaiqui-primary/30 text-guaiqui-primary text-2xl shadow-guaiqui-sm">
-          <i class="bi bi-person-plus-fill"></i>
+        <div class="inline-flex items-center justify-center mb-1">
+          <img src="/logo.png" alt="Guaiqueríes Logo" class="w-14 h-14 object-contain" />
         </div>
         <h1 class="font-display text-3xl font-bold uppercase tracking-wider text-guaiqui-text">
           Únete a la <span class="text-guaiqui-primary">Tribu</span>

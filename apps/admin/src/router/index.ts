@@ -87,13 +87,11 @@ export const router = createRouter({
     },
     {
       path: '/staff/trivia',
-      name: 'staff-trivia',
-      component: StaffTriviaView,
-      meta: { requiresStaff: true }
+      redirect: '/admin/trivias'
     },
     {
       path: '/staff/trivias',
-      redirect: '/staff/trivia'
+      redirect: '/admin/trivias'
     },
 
     // Admin Routes (/admin/*)

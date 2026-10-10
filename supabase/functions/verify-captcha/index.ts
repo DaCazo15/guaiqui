@@ -7,9 +7,9 @@ const corsHeaders = {
 };
 
 // Helper: SHA-256 HMAC / Hex digest
-async function hashIp(ip: string): Promise<string> {
+async function hashIp(ip: string, salt: string): Promise<string> {
   const encoder = new TextEncoder();
-  const data = encoder.encode(ip + "_guaiqui_salt_2026");
+  const data = encoder.encode(ip + salt);
   const hashBuffer = await crypto.subtle.digest("SHA-256", data);
   const hashArray = Array.from(new Uint8Array(hashBuffer));
   return hashArray.map((b) => b.toString(16).padStart(2, "0")).join("");
@@ -32,7 +32,27 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-    const turnstileSecret = Deno.env.get("TURNSTILE_SECRET_KEY") || "1x0000000000000000000000000000000AA";
+    const turnstileSecret = Deno.env.get("TURNSTILE_SECRET_KEY");
+    const ipSalt = Deno.env.get("IP_SALT");
+    const environment = Deno.env.get("ENVIRONMENT") || Deno.env.get("NODE_ENV") || "production";
+    const isLocal = environment === "local" || environment === "test";
+
+    // Fail closed if TURNSTILE_SECRET_KEY is missing in non-local environments
+    if (!turnstileSecret && !isLocal) {
+      return new Response(
+        JSON.stringify({ error: "TURNSTILE_SECRET_KEY no configurado en servidor" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    // Determine salt to use
+    const saltToUse = ipSalt || (isLocal ? "_guaiqui_ip_salt_local_2026" : "");
+    if (!saltToUse) {
+      return new Response(
+        JSON.stringify({ error: "IP_SALT no configurado en servidor" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
 
     const callerClient = createClient(supabaseUrl, supabaseAnonKey, {
       global: { headers: { Authorization: authHeader } },
@@ -46,14 +66,40 @@ serve(async (req) => {
       });
     }
 
-    const { token, device_id } = await req.json();
-    const clientIp = req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "127.0.0.1";
-    const ipHash = await hashIp(clientIp);
+    let body: any = {};
+    try {
+      body = await req.json();
+    } catch (_) {
+      // invalid body format
+    }
+    const token = body?.token;
+    const device_id = body?.device_id;
 
-    // Verify Turnstile Token with Cloudflare siteverify (if token provided)
-    if (token) {
+    // Token is mandatory
+    if (!token || typeof token !== "string" || token.trim() === "") {
+      return new Response(
+        JSON.stringify({ error: "Token de captcha obligatorio" }),
+        { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const clientIp = req.headers.get("x-forwarded-for") || req.headers.get("cf-connecting-ip") || "127.0.0.1";
+    const ipHash = await hashIp(clientIp, saltToUse);
+
+    // Allow mock token "test-valid-pass" ONLY in local/test environment
+    const isMockPass = isLocal && token === "test-valid-pass";
+
+    if (!isMockPass) {
+      const secretToUse = turnstileSecret || (isLocal ? "1x0000000000000000000000000000000AA" : "");
+      if (!secretToUse) {
+        return new Response(
+          JSON.stringify({ error: "TURNSTILE_SECRET_KEY no configurado en servidor" }),
+          { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+
       const cfFormData = new FormData();
-      cfFormData.append("secret", turnstileSecret);
+      cfFormData.append("secret", secretToUse);
       cfFormData.append("response", token);
       cfFormData.append("remoteip", clientIp);
 
@@ -63,11 +109,11 @@ serve(async (req) => {
       });
 
       const cfOutcome = await cfRes.json();
-      if (!cfOutcome.success && token !== "test-valid-pass") {
-        return new Response(JSON.stringify({ error: "CAPTCHA_VERIFICATION_FAILED" }), {
-          status: 400,
-          headers: { ...corsHeaders, "Content-Type": "application/json" },
-        });
+      if (!cfOutcome.success) {
+        return new Response(
+          JSON.stringify({ error: "CAPTCHA_VERIFICATION_FAILED" }),
+          { status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
       }
     }
 

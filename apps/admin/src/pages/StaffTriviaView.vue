@@ -218,9 +218,8 @@ const saveTrivia = async () => {
       }
     }
 
-    const { error } = await supabase.rpc('admin_upsert_trivia', {
-      p_trivia: payloadTrivia,
-      p_questions: triviaForm.value.questions
+    const { error } = await supabase.rpc('staff_upsert_trivia', {
+      p_trivia: payloadTrivia
     })
 
     if (error) throw error

@@ -87,7 +87,7 @@ const formatDate = (dateStr: string) => {
             </td>
 
             <td class="py-3 px-4 text-center font-semibold text-emerald-400">
-              {{ item.cost_pearls }} 🦪
+              {{ item.cost_pearls }} <i class="bi bi-gem text-xs text-emerald-400 ms-0.5"></i>
             </td>
 
             <td class="py-3 px-4 text-center">

@@ -68,17 +68,18 @@ const handleCodeScanned = async (code: string) => {
 }
 
 const handleDeliver = async () => {
-  if (!scanData.value || !scanData.value.id) return
+  const redemptionId = scanData.value?.redemption_id || scanData.value?.id
+  if (!scanData.value || !redemptionId) return
   isDelivering.value = true
 
   try {
-    const idempotencyKey = `idemp_scan_${scanData.value.id}_${Date.now()}`
-    const isExperience = scanData.value.product_category === 'experience'
+    const idempotencyKey = `idemp_scan_${redemptionId}_${Date.now()}`
+    const isExperience = scanData.value.is_experience ?? (scanData.value.product_category === 'experience')
 
     const functionName = isExperience ? 'check_in_redemption' : 'deliver_redemption'
 
     const { data, error } = await supabase.rpc(functionName, {
-      p_redemption_id: scanData.value.id,
+      p_redemption_id: redemptionId,
       p_idempotency_key: idempotencyKey,
       p_note: isExperience ? 'Asistencia registrada en escáner' : 'Entrega realizada en escáner de taquilla'
     })
@@ -101,11 +102,12 @@ const handleDeliver = async () => {
 }
 
 const handleReportIssue = async ({ reason, note }: { reason: string; note: string }) => {
-  if (!scanData.value || !scanData.value.id) return
+  const redemptionId = scanData.value?.redemption_id || scanData.value?.id
+  if (!scanData.value || !redemptionId) return
 
   try {
     const { error } = await supabase.rpc('report_redemption_issue', {
-      p_redemption_id: scanData.value.id,
+      p_redemption_id: redemptionId,
       p_reason: reason,
       p_note: note
     })
@@ -172,7 +174,7 @@ const clearScan = () => {
       <!-- Issue Modal -->
       <ScannerIssueModal
         :is-open="isIssueModalOpen"
-        :redemption-id="scanData?.id || null"
+        :redemption-id="scanData?.redemption_id || scanData?.id || null"
         @close="isIssueModalOpen = false"
         @submit="handleReportIssue"
       />

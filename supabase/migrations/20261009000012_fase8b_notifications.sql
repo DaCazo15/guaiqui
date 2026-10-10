@@ -792,7 +792,7 @@ REVOKE ALL ON FUNCTION public.mark_all_notifications_read() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.mark_all_notifications_read() TO authenticated, service_role;
 
 REVOKE ALL ON FUNCTION public.release_held_pearls(UUID) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.release_held_pearls(UUID) FROM authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.release_held_pearls(UUID) TO authenticated, service_role;
 
 REVOKE ALL ON FUNCTION public.cron_notify_expiring_redemptions() FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.cron_notify_expiring_redemptions() TO service_role, postgres;

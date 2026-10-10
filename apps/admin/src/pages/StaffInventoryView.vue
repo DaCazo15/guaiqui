@@ -148,7 +148,7 @@ const saveProduct = async () => {
       images: productForm.value.images
     }
 
-    const { error } = await supabase.rpc('admin_upsert_product', { p_product: payload })
+    const { error } = await supabase.rpc('staff_upsert_product', { p_product: payload })
     if (error) throw error
 
     showEditorModal.value = false
@@ -285,7 +285,7 @@ onMounted(() => {
                 </td>
 
                 <td class="py-3 px-4 text-center font-semibold text-emerald-400 font-mono text-sm">
-                  {{ item.cost_pearls }} 🦪
+                  {{ item.cost_pearls }} <i class="bi bi-gem text-emerald-400 ms-0.5"></i>
                 </td>
 
                 <td class="py-3 px-4 text-center font-mono font-bold text-sm">

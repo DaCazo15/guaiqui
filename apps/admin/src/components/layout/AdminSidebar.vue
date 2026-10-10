@@ -53,12 +53,15 @@ const isActive = (path: string) => route.path.startsWith(path)
 
     <aside
       :class="[
-        'fixed lg:static top-0 bottom-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 flex flex-col transition-transform duration-200 ease-in-out',
+        'fixed lg:static top-0 bottom-0 left-0 z-50 w-64 h-full shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col transition-transform duration-200 ease-in-out',
         isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       ]"
     >
       <div class="h-16 flex items-center justify-between px-6 lg:hidden border-b border-slate-800">
-        <span class="font-bold text-slate-100">Menú Administrador</span>
+        <div class="flex items-center gap-2">
+          <img src="/logo.png" alt="Guaiqueríes Admin Logo" class="w-7 h-7 object-contain shrink-0" />
+          <span class="font-bold text-slate-100">Menú Administrador</span>
+        </div>
         <button
           @click="emit('close')"
           class="p-1.5 text-slate-400 hover:text-white rounded-md"
@@ -66,6 +69,14 @@ const isActive = (path: string) => route.path.startsWith(path)
         >
           <i class="bi bi-x-lg text-lg"></i>
         </button>
+      </div>
+
+      <div class="px-5 py-4 border-b border-slate-800 hidden lg:flex items-center gap-3">
+        <img src="/logo.png" alt="Guaiqueríes Admin Logo" class="w-9 h-9 object-contain shrink-0" />
+        <div>
+          <span class="font-bold text-slate-100 text-sm tracking-wide block">Guaiqueríes</span>
+          <span class="text-[11px] text-emerald-400 font-mono font-semibold uppercase">Panel Admin</span>
+        </div>
       </div>
 
       <nav class="flex-1 p-4 space-y-6 overflow-y-auto">

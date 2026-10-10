@@ -14,7 +14,6 @@ const route = useRoute()
 const navItems = [
   { name: 'staff-queue', path: '/staff/cola', label: 'Cola de Canjes', icon: 'bi-list-check' },
   { name: 'staff-scanner', path: '/staff/escaner', label: 'Escáner QR', icon: 'bi-qr-code-scan' },
-  { name: 'staff-trivia', path: '/staff/trivia', label: 'Gestión de Trivias', icon: 'bi-question-circle' },
   { name: 'staff-issues', path: '/staff/incidencias', label: 'Incidencias', icon: 'bi-exclamation-triangle' },
   { name: 'staff-inventory', path: '/staff/inventario', label: 'Inventario', icon: 'bi-box-seam' },
   { name: 'staff-fans', path: '/staff/fanaticos', label: 'Consulta de Fans', icon: 'bi-people' },
@@ -35,7 +34,7 @@ const isActive = (path: string) => route.path.startsWith(path)
     <!-- Sidebar menu container -->
     <aside
       :class="[
-        'fixed lg:static top-0 bottom-0 left-0 z-50 w-64 bg-slate-900 border-r border-slate-800 flex flex-col transition-transform duration-200 ease-in-out',
+        'fixed lg:static top-0 bottom-0 left-0 z-50 w-64 h-full shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col transition-transform duration-200 ease-in-out',
         isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       ]"
     >

@@ -2,6 +2,7 @@
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
 import { formatPerlitas } from '@guaiqui/shared'
+import { PearlIcon } from '@guaiqui/ui'
 
 const route = useRoute()
 const authStore = useAuthStore()
@@ -26,10 +27,8 @@ const handleLogout = async () => {
 <template>
   <aside class="hidden md:flex flex-col w-64 border-r border-guaiqui-border bg-white min-h-screen p-4 sticky top-0 h-screen">
     <!-- Brand Logo -->
-    <div class="flex items-center gap-3 px-3 py-4 mb-4 border-b border-guaiqui-border">
-      <div class="w-10 h-10 rounded-full bg-guaiqui-primary-soft border border-guaiqui-primary/30 flex items-center justify-center text-xl text-guaiqui-primary">
-        <i class="bi bi-dribbble"></i>
-      </div>
+    <div class="flex items-center gap-1 px-3 py-4 mb-4 border-b border-guaiqui-border">
+      <img src="/logo.png" alt="Guaiqueríes Logo" class="w-[53px] h-[53px] object-contain shrink-0" />
       <div>
         <h1 class="font-display text-lg font-bold text-guaiqui-text uppercase tracking-wider">
           Guaiqueríes
@@ -53,8 +52,8 @@ const handleLogout = async () => {
           </span>
         </div>
       </div>
-      <div class="flex items-center gap-1 text-xs font-bold text-guaiqui-perlita bg-guaiqui-perlita-soft px-2 py-1 rounded-full border border-guaiqui-perlita/20 shrink-0">
-        <i class="bi bi-circle-fill text-[8px]"></i>
+      <div class="flex items-center gap-1.5 text-xs font-bold text-guaiqui-perlita bg-guaiqui-perlita-soft px-2.5 py-1 rounded-full border border-guaiqui-perlita/20 shrink-0">
+        <PearlIcon size="xs" animated />
         <span>{{ formatPerlitas(authStore.wallet?.balance_cache || 0) }}</span>
       </div>
     </div>

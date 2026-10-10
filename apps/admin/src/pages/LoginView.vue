@@ -37,8 +37,8 @@ const handleLogin = async () => {
     <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl space-y-6">
       <!-- Header / Logo -->
       <div class="text-center space-y-2">
-        <div class="inline-flex items-center justify-center w-14 h-14 rounded-2xl bg-emerald-600/20 border border-emerald-500/30 text-emerald-400 mb-2">
-          <i class="bi bi-shield-lock-fill text-2xl"></i>
+        <div class="inline-flex items-center justify-center mb-1">
+          <img src="/logo.png" alt="Guaiqueríes Taquilla Logo" class="w-16 h-16 object-contain" />
         </div>
         <h1 class="text-2xl font-bold text-white tracking-wide">Guaiqueríes Taquilla</h1>
         <p class="text-sm text-slate-400">Portal de Validación y Canjes para Personal</p>

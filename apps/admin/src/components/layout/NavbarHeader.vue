@@ -33,9 +33,7 @@ const handleSignOut = async () => {
       </button>
 
       <div class="flex items-center gap-2">
-        <div class="w-8 h-8 rounded-full bg-emerald-600 flex items-center justify-center font-bold text-white shadow-md">
-          G
-        </div>
+        <img src="/logo.png" alt="Guaiqueríes Staff Logo" class="w-8 h-8 object-contain shrink-0" />
         <span class="font-bold text-lg tracking-wide hidden sm:inline-block">Guaiqueríes <span class="text-emerald-400 text-xs uppercase px-2 py-0.5 bg-emerald-950 border border-emerald-800 rounded-full font-mono ml-1">Staff</span></span>
       </div>
     </div>

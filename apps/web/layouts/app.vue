@@ -5,6 +5,7 @@ import AppSidebar from '~/components/app/AppSidebar.vue'
 import AppMobileNav from '~/components/app/AppMobileNav.vue'
 import NotificationBell from '~/components/app/NotificationBell.vue'
 import { formatPerlitas } from '@guaiqui/shared'
+import { PearlIcon } from '@guaiqui/ui'
 
 const authStore = useAuthStore()
 
@@ -25,9 +26,7 @@ onMounted(async () => {
       <!-- Mobile Top Header -->
       <header class="md:hidden sticky top-0 z-30 bg-white/95 border-b border-guaiqui-border backdrop-blur-lg px-4 py-3 flex items-center justify-between shadow-guaiqui-sm">
         <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-full bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center text-lg">
-            <i class="bi bi-dribbble"></i>
-          </div>
+          <img src="/logo.png" alt="Guaiqueríes Logo" class="w-8 h-8 object-contain shrink-0" />
           <span class="font-display text-base font-bold uppercase tracking-wider text-guaiqui-text">
             Guaiqueríes
           </span>
@@ -36,7 +35,7 @@ onMounted(async () => {
         <div class="flex items-center gap-2">
           <!-- Pearl Balance Badge -->
           <NuxtLink to="/app/billetera" class="flex items-center gap-1.5 text-xs font-bold text-guaiqui-perlita bg-guaiqui-perlita-soft border border-guaiqui-perlita/20 px-2.5 py-1 rounded-full">
-            <i class="bi bi-circle-fill text-[10px]"></i>
+            <PearlIcon size="xs" animated />
             <span>{{ formatPerlitas(authStore.wallet?.balance_cache || 0) }}</span>
           </NuxtLink>
 

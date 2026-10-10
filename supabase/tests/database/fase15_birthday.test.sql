@@ -1,6 +1,6 @@
 BEGIN;
 
-SELECT plan(18);
+SELECT plan(22);
 
 -- Setup Test Users
 -- 1. Verified Active Fan (Born today in Caracas)
@@ -117,7 +117,7 @@ SELECT is(
 );
 
 -- Test 11: Control de accesos (Permisos RLS / RPC)
--- Usuario no autenticado (anon) no puede ejecutar get_birthday_card ni claim_birthday_bonus
+-- Usuario no autenticado (anon) no puede ejecutar RPCs internas ni privadas
 SET LOCAL request.jwt.claims = '{"role": "anon"}';
 
 SELECT throws_ok(
@@ -132,13 +132,31 @@ SELECT throws_ok(
     'Anon no puede ejecutar claim_birthday_bonus'
 );
 
--- Test 12: Usuario fan (authenticated) no puede ejecutar enqueue_birthday_notifications ni send_test_birthday_notification
+SELECT throws_ok(
+    'SELECT public.confirm_test_user_email(''test@guaiqui.test'')',
+    'permission denied for function confirm_test_user_email',
+    'Anon no puede ejecutar confirm_test_user_email'
+);
+
+SELECT throws_ok(
+    'SELECT public.purge_auth_identities()',
+    'permission denied for function purge_auth_identities',
+    'Anon no puede ejecutar purge_auth_identities'
+);
+
+-- Test 12: Usuario fan (authenticated) no puede ejecutar enqueue_birthday_notifications, create_notification ni send_test_birthday_notification
 SET LOCAL request.jwt.claims = '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}';
 
 SELECT throws_ok(
     'SELECT public.enqueue_birthday_notifications()',
     'permission denied for function enqueue_birthday_notifications',
     'Authenticated fan no puede ejecutar enqueue_birthday_notifications'
+);
+
+SELECT throws_ok(
+    'SELECT public.create_notification(''11111111-1111-1111-1111-111111111111''::uuid, ''test'', ''title'', ''body'')',
+    'permission denied for function create_notification',
+    'Authenticated fan no puede ejecutar create_notification'
 );
 
 SELECT throws_ok(

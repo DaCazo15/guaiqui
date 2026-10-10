@@ -48,8 +48,8 @@ async function handleGoogleLogin() {
     <div class="w-full max-w-md space-y-6">
       <!-- Header / Logo -->
       <div class="text-center space-y-2">
-        <div class="inline-flex items-center justify-center w-16 h-16 rounded-full bg-guaiqui-primary-soft border border-guaiqui-primary/30 text-guaiqui-primary text-3xl shadow-guaiqui-sm">
-          <i class="bi bi-dribbble"></i>
+        <div class="inline-flex items-center justify-center mb-1">
+          <img src="/logo.png" alt="Guaiqueríes Logo" class="w-16 h-16 object-contain" />
         </div>
         <h1 class="font-display text-3xl font-bold uppercase tracking-wider text-guaiqui-text">
           Guaiqueríes <span class="text-guaiqui-primary">Fan Zone</span>

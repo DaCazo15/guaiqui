@@ -37,9 +37,7 @@ const navLinks = [
     <div class="max-w-6xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
       <!-- Brand Logo -->
       <NuxtLink to="/" class="flex items-center gap-2 text-guaiqui-primary font-display font-extrabold text-xl sm:text-2xl tracking-tight uppercase group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-guaiqui-primary rounded-md p-1">
-        <span class="w-8 h-8 rounded-full bg-guaiqui-primary text-white flex items-center justify-center font-bold text-sm shadow-xs group-hover:scale-105 transition-transform">
-          G
-        </span>
+        <img src="/logo.png" alt="Guaiqueríes Logo" class="w-8 h-8 object-contain group-hover:scale-105 transition-transform" />
         <span class="flex items-center gap-1">
           <span>GUAIQUERÍES</span>
           <PearlIcon size="xs" />

@@ -88,7 +88,7 @@ async function handleClaimBonus() {
 async function handleShare() {
   const shareData = {
     title: '¡Feliz Cumpleaños con los Guaiqueríes!',
-    text: '¡Celebrando mi cumpleaños junto a la tribu de los Guaiqueríes de Margarita! 🏀',
+    text: '¡Celebrando mi cumpleaños junto a la tribu de los Guaiqueríes de Margarita!',
     url: window.location.origin,
   }
 

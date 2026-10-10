@@ -10,9 +10,9 @@ GRANT EXECUTE ON ALL FUNCTIONS IN SCHEMA public TO anon;
 -- Explicitly ensure public RPCs have proper GRANT EXECUTE
 GRANT EXECUTE ON FUNCTION public.home_summary() TO authenticated, anon;
 GRANT EXECUTE ON FUNCTION public.wallet_summary() TO authenticated;
-GRANT EXECUTE ON FUNCTION public.wallet_ledger(INT, INT) TO authenticated;
-GRANT EXECUTE ON FUNCTION public.get_leaderboard(INT, INT, TEXT) TO authenticated, anon;
-GRANT EXECUTE ON FUNCTION public.staff_redemption_queue(TEXT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.wallet_ledger(TEXT, TIMESTAMPTZ, INT) TO authenticated;
+GRANT EXECUTE ON FUNCTION public.get_leaderboard(TEXT) TO authenticated, anon;
+GRANT EXECUTE ON FUNCTION public.staff_redemption_queue(TEXT, TEXT, TIMESTAMPTZ, INT) TO authenticated;
 GRANT EXECUTE ON FUNCTION public.parse_instagram_shortcode(TEXT) TO authenticated, anon;
 
 -- Admin & Staff helper RPCs
