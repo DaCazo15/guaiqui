@@ -14,8 +14,9 @@ const route = useRoute()
 const navItems = [
   { name: 'staff-queue', path: '/staff/cola', label: 'Cola de Canjes', icon: 'bi-list-check' },
   { name: 'staff-scanner', path: '/staff/escaner', label: 'Escáner QR', icon: 'bi-qr-code-scan' },
+  { name: 'staff-trivia', path: '/staff/trivia', label: 'Gestión de Trivias', icon: 'bi-question-circle' },
   { name: 'staff-issues', path: '/staff/incidencias', label: 'Incidencias', icon: 'bi-exclamation-triangle' },
-  { name: 'staff-inventory', path: '/staff/inventario', label: 'Inventario', icon: 'bi-box-seam' },
+  { name: 'staff-inventory', path: '/staff/inventario', label: 'Inventario & Canjes', icon: 'bi-box-seam' },
   { name: 'staff-fans', path: '/staff/fanaticos', label: 'Consulta de Fans', icon: 'bi-people' },
 ]
 

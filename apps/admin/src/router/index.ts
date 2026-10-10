@@ -8,6 +8,7 @@ import StaffRedemptionDetailView from '../pages/StaffRedemptionDetailView.vue'
 import StaffIssuesView from '../pages/StaffIssuesView.vue'
 import StaffInventoryView from '../pages/StaffInventoryView.vue'
 import StaffFansView from '../pages/StaffFansView.vue'
+import StaffTriviaView from '../pages/StaffTriviaView.vue'
 
 import AdminDashboardView from '../pages/AdminDashboardView.vue'
 import AdminAnalyticsView from '../pages/AdminAnalyticsView.vue'
@@ -81,6 +82,16 @@ export const router = createRouter({
       name: 'staff-fans',
       component: StaffFansView,
       meta: { requiresStaff: true }
+    },
+    {
+      path: '/staff/trivia',
+      name: 'staff-trivia',
+      component: StaffTriviaView,
+      meta: { requiresStaff: true }
+    },
+    {
+      path: '/staff/trivias',
+      redirect: '/staff/trivia'
     },
 
     // Admin Routes (/admin/*)
