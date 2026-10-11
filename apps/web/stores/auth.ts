@@ -63,7 +63,7 @@ export const useAuthStore = defineStore('auth', () => {
 
   async function fetchProfile(overrideUser?: any) {
     const targetUser = overrideUser || user.value
-    if (!targetUser || !targetUser.id) {
+    if (!targetUser || !targetUser.id || typeof targetUser.id !== 'string' || targetUser.id === 'undefined') {
       profile.value = null
       wallet.value = null
       return

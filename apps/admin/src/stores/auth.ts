@@ -61,6 +61,10 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   const fetchStaffData = async (uid: string): Promise<boolean> => {
+    if (!uid || typeof uid !== 'string' || uid === 'undefined') {
+      staffMember.value = null
+      return false
+    }
     try {
       const { data: staff, error: staffErr } = await supabase
         .from('staff_members')
