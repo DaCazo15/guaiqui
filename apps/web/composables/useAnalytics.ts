@@ -61,15 +61,25 @@ export function normalizePath(fullPath: string): string {
 export function useAnalytics() {
   const getGA4MeasurementId = (): string => {
     if (typeof window === 'undefined') return ''
+    try {
+      const config = useRuntimeConfig()
+      if (config?.public?.gaMeasurementId) {
+        return config.public.gaMeasurementId
+      }
+    } catch (_e) {}
+
     return (
       (import.meta.env.VITE_GA_MEASUREMENT_ID as string) ||
       (import.meta.env.NUXT_PUBLIC_GA_MEASUREMENT_ID as string) ||
-      ''
+      'G-P6EY10HB0B'
     )
   }
 
   const initConsent = () => {
     if (typeof window === 'undefined') return
+
+    // Initialize GA4 with Google Consent Mode v2 default (denied) so Google Tag is detected
+    initGA4()
 
     try {
       const stored = localStorage.getItem(CONSENT_COOKIE_NAME)
@@ -87,7 +97,8 @@ export function useAnalytics() {
     }
 
     if (consentState.value.analytics && consentState.value.decidedAt) {
-      initAdapters()
+      updateGA4Consent()
+      initPostHog()
     }
   }
 
@@ -103,8 +114,10 @@ export function useAnalytics() {
       localStorage.setItem(CONSENT_COOKIE_NAME, JSON.stringify(consentState.value))
     }
 
+    updateGA4Consent()
+
     if (analytics) {
-      initAdapters()
+      initPostHog()
     } else {
       revokeAnalytics()
     }
@@ -112,7 +125,10 @@ export function useAnalytics() {
 
   const initAdapters = () => {
     initGA4()
-    initPostHog()
+    updateGA4Consent()
+    if (consentState.value.analytics) {
+      initPostHog()
+    }
   }
 
   const revokeAnalytics = () => {
@@ -125,11 +141,12 @@ export function useAnalytics() {
       } catch (_e) {}
     }
 
-    // 2. GA4 disable flag
+    // 2. GA4 disable flag & Consent update
     const gaId = getGA4MeasurementId()
     if (gaId) {
       ;(window as any)[`ga-disable-${gaId}`] = true
     }
+    updateGA4Consent()
 
     // 3. Delete all _ga cookies
     try {
@@ -144,28 +161,58 @@ export function useAnalytics() {
     } catch (_e) {}
   }
 
+  const updateGA4Consent = () => {
+    if (typeof window === 'undefined' || !(window as any).gtag) return
+    const gaId = getGA4MeasurementId()
+    if (!gaId) return
+
+    if (consentState.value.analytics) {
+      ;(window as any)[`ga-disable-${gaId}`] = false
+      ;(window as any).gtag('consent', 'update', {
+        analytics_storage: 'granted',
+        ad_storage: consentState.value.advertising ? 'granted' : 'denied',
+        ad_user_data: consentState.value.advertising ? 'granted' : 'denied',
+        ad_personalization: consentState.value.advertising ? 'granted' : 'denied',
+      })
+    } else {
+      ;(window as any)[`ga-disable-${gaId}`] = true
+      ;(window as any).gtag('consent', 'update', {
+        analytics_storage: 'denied',
+        ad_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+      })
+    }
+  }
+
   const initGA4 = () => {
     if (typeof window === 'undefined' || isGA4Initialized.value) return
-    if (!consentState.value.analytics) return
 
     const gaId = getGA4MeasurementId()
     if (!gaId) return
 
-    // Re-enable in case it was previously disabled
-    ;(window as any)[`ga-disable-${gaId}`] = false
-
     if (!document.getElementById('ga4-script')) {
-      const script = document.createElement('script')
-      script.id = 'ga4-script'
-      script.async = true
-      script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`
-      document.head.appendChild(script)
-
+      // 1. Initialize dataLayer & Consent Mode v2 default (denied) BEFORE loading script
       ;(window as any).dataLayer = (window as any).dataLayer || []
       function gtag(...args: any[]) {
         ;(window as any).dataLayer.push(args)
       }
       ;(window as any).gtag = gtag
+
+      gtag('consent', 'default', {
+        ad_storage: 'denied',
+        analytics_storage: 'denied',
+        ad_user_data: 'denied',
+        ad_personalization: 'denied',
+        wait_for_update: 500,
+      })
+
+      // 2. Load gtag script tag
+      const script = document.createElement('script')
+      script.id = 'ga4-script'
+      script.async = true
+      script.src = `https://www.googletagmanager.com/gtag/js?id=${gaId}`
+      document.head.appendChild(script)
 
       gtag('js', new Date())
       gtag('config', gaId, {
