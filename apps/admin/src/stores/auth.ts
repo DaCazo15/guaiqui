@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { User } from '@supabase/supabase-js'
 import { supabase } from '../lib/supabase'
 
 export interface StaffProfile {
@@ -13,7 +14,7 @@ export interface StaffProfile {
 const IDLE_TIMEOUT_MS = 30 * 60 * 1000 // 30 minutos
 
 export const useAuthStore = defineStore('auth', () => {
-  const user = ref<any>(null)
+  const user = ref<User | null>(null)
   const staffMember = ref<StaffProfile | null>(null)
   const isLoading = ref(true)
   const isInitialized = ref(false)
@@ -93,7 +94,7 @@ export const useAuthStore = defineStore('auth', () => {
 
       authError.value = null
       return true
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error fetching staff member profile:', err)
       staffMember.value = null
       authError.value = 'Error al verificar permisos de personal.'
@@ -125,7 +126,7 @@ export const useAuthStore = defineStore('auth', () => {
         stopIdleMonitoring()
         return false
       }
-    } catch (err: any) {
+    } catch (err) {
       console.error('Error durante checkAuth:', err)
       user.value = null
       staffMember.value = null
@@ -163,8 +164,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       startIdleMonitoring()
       return { success: true }
-    } catch (err: any) {
-      authError.value = err.message || 'Error al iniciar sesión.'
+    } catch (err) {
+      authError.value = err instanceof Error ? err.message : 'Error al iniciar sesión.'
       return { success: false, message: authError.value || undefined }
     } finally {
       isLoading.value = false

@@ -418,33 +418,37 @@ export interface BirthdayCardResponse {
 export interface Database {
   public: {
     Tables: {
-      profiles: { Row: Profile }
-      staff_members: { Row: StaffMember }
-      wallets: { Row: Wallet }
-      ledger_entries: { Row: LedgerEntry }
-      trivias: { Row: Trivia }
-      trivia_questions: { Row: TriviaQuestion }
-      trivia_options: { Row: TriviaOption }
-      trivia_attempts: { Row: TriviaAttempt }
-      products: { Row: Product }
-      redemptions: { Row: Redemption }
-      redemption_history: { Row: RedemptionHistory }
-      scan_events: { Row: ScanEvent }
-      players: { Row: Player }
-      games: { Row: Game }
-      segments: { Row: Segment }
-      economy_settings: { Row: EconomySettings }
-      risk_flags: { Row: RiskFlag }
-      audit_log: { Row: AuditLog }
-      site_announcements: { Row: SiteAnnouncement }
-      carousel_slides: { Row: CarouselSlideRow }
-      history_milestones: { Row: HistoryMilestone }
-      site_team_members: { Row: SiteTeamMember }
-      faqs: { Row: FaqItemRow }
-      site_stats: { Row: SiteStat }
-      social_links: { Row: SocialLink }
-      policy_documents: { Row: PolicyDocument }
-      birthday_settings: { Row: BirthdaySettings }
+      profiles: { Row: Profile; Insert: Partial<Profile>; Update: Partial<Profile>; Relationships: [] }
+      staff_members: { Row: StaffMember; Insert: Partial<StaffMember>; Update: Partial<StaffMember>; Relationships: [] }
+      wallets: { Row: Wallet; Insert: Partial<Wallet>; Update: Partial<Wallet>; Relationships: [] }
+      ledger_entries: { Row: LedgerEntry; Insert: Partial<LedgerEntry>; Update: Partial<LedgerEntry>; Relationships: [] }
+      trivias: { Row: Trivia; Insert: Partial<Trivia>; Update: Partial<Trivia>; Relationships: [] }
+      trivia_questions: { Row: TriviaQuestion; Insert: Partial<TriviaQuestion>; Update: Partial<TriviaQuestion>; Relationships: [] }
+      trivia_options: { Row: TriviaOption; Insert: Partial<TriviaOption>; Update: Partial<TriviaOption>; Relationships: [] }
+      trivia_attempts: { Row: TriviaAttempt; Insert: Partial<TriviaAttempt>; Update: Partial<TriviaAttempt>; Relationships: [] }
+      products: { Row: Product; Insert: Partial<Product>; Update: Partial<Product>; Relationships: [] }
+      redemptions: { Row: Redemption; Insert: Partial<Redemption>; Update: Partial<Redemption>; Relationships: [] }
+      redemption_history: { Row: RedemptionHistory; Insert: Partial<RedemptionHistory>; Update: Partial<RedemptionHistory>; Relationships: [] }
+      scan_events: { Row: ScanEvent; Insert: Partial<ScanEvent>; Update: Partial<ScanEvent>; Relationships: [] }
+      players: { Row: Player; Insert: Partial<Player>; Update: Partial<Player>; Relationships: [] }
+      games: { Row: Game; Insert: Partial<Game>; Update: Partial<Game>; Relationships: [] }
+      segments: { Row: Segment; Insert: Partial<Segment>; Update: Partial<Segment>; Relationships: [] }
+      economy_settings: { Row: EconomySettings; Insert: Partial<EconomySettings>; Update: Partial<EconomySettings>; Relationships: [] }
+      risk_flags: { Row: RiskFlag; Insert: Partial<RiskFlag>; Update: Partial<RiskFlag>; Relationships: [] }
+      audit_log: { Row: AuditLog; Insert: Partial<AuditLog>; Update: Partial<AuditLog>; Relationships: [] }
+      site_announcements: { Row: SiteAnnouncement; Insert: Partial<SiteAnnouncement>; Update: Partial<SiteAnnouncement>; Relationships: [] }
+      carousel_slides: { Row: CarouselSlideRow; Insert: Partial<CarouselSlideRow>; Update: Partial<CarouselSlideRow>; Relationships: [] }
+      history_milestones: { Row: HistoryMilestone; Insert: Partial<HistoryMilestone>; Update: Partial<HistoryMilestone>; Relationships: [] }
+      site_team_members: { Row: SiteTeamMember; Insert: Partial<SiteTeamMember>; Update: Partial<SiteTeamMember>; Relationships: [] }
+      faqs: { Row: FaqItemRow; Insert: Partial<FaqItemRow>; Update: Partial<FaqItemRow>; Relationships: [] }
+      site_stats: { Row: SiteStat; Insert: Partial<SiteStat>; Update: Partial<SiteStat>; Relationships: [] }
+      social_links: { Row: SocialLink; Insert: Partial<SocialLink>; Update: Partial<SocialLink>; Relationships: [] }
+      policy_documents: { Row: PolicyDocument; Insert: Partial<PolicyDocument>; Update: Partial<PolicyDocument>; Relationships: [] }
+      birthday_settings: { Row: BirthdaySettings; Insert: Partial<BirthdaySettings>; Update: Partial<BirthdaySettings>; Relationships: [] }
     }
+    Views: Record<string, never>
+    Functions: Record<string, never>
+    Enums: Record<string, never>
+    CompositeTypes: Record<string, never>
   }
 }

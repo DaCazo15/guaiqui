@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
+import type { User } from '@supabase/supabase-js'
 import type { Database } from '@guaiqui/shared'
 import { CURRENT_LEGAL_VERSIONS } from '@guaiqui/shared'
 
@@ -9,7 +10,7 @@ export type WalletRow = Database['public']['Tables']['wallets']['Row']
 export const useAuthStore = defineStore('auth', () => {
   const supabase = useSupabaseClient<Database>()
   const supabaseUser = useSupabaseUser()
-  const sessionUser = ref<any>(null)
+  const sessionUser = ref<User | null>(null)
   const explicitLoggedOut = ref(false)
 
   const profile = ref<ProfileRow | null>(null)
@@ -442,11 +443,13 @@ export const useAuthStore = defineStore('auth', () => {
 
   function translateAuthError(msg: string): string {
     if (!msg) return 'Ocurrió un error inesperado.'
-    if (msg.includes('Invalid login credentials')) return 'Correo o contraseña incorrectos.'
-    if (msg.includes('User already registered')) return 'Ya existe una cuenta registrada con este correo.'
-    if (msg.includes('Password should be at least')) return 'La contraseña debe tener al menos 8 caracteres.'
-    if (msg.includes('Email rate limit exceeded')) return 'Límite de envíos excedido. Espera unos minutos e intentalo de nuevo.'
-    if (msg.includes('Unsupported provider') || msg.includes('provider is not enabled')) {
+    const lower = msg.toLowerCase()
+    if (lower.includes('invalid login credentials')) return 'Correo o contraseña incorrectos.'
+    if (lower.includes('user already registered')) return 'Ya existe una cuenta registrada con este correo.'
+    if (lower.includes('email not confirmed')) return 'Tu correo aún no ha sido verificado. Revisa tu bandeja de entrada o spam.'
+    if (lower.includes('password should be at least')) return 'La contraseña debe tener al menos 8 caracteres.'
+    if (lower.includes('rate limit')) return 'Límite de envíos excedido. Espera unos minutos e inténtalo de nuevo.'
+    if (lower.includes('unsupported provider') || lower.includes('provider is not enabled')) {
       return 'El inicio de sesión con Google aún no está configurado en el servidor Supabase.'
     }
     return msg
