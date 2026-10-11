@@ -13,6 +13,7 @@
     "@guaiqui/shared": "workspace:*",
     "@guaiqui/ui": "workspace:*",
     "@supabase/supabase-js": "^2.117.3",
+    "@vercel/analytics": "^1.6.1",
     "@vercel/speed-insights": "^1.1.0",
     "echarts": "^6.1.0",
     "html5-qrcode": "^2.3.8",
