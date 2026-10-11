@@ -18,7 +18,17 @@ export const useAuthStore = defineStore('auth', () => {
   const isLoading = ref(false)
   const errorMessage = ref<string | null>(null)
 
-  const user = computed(() => explicitLoggedOut.value ? null : (sessionUser.value || supabaseUser.value))
+  const user = computed<User | null>(() => {
+    if (explicitLoggedOut.value) return null
+    const current = sessionUser.value || (supabaseUser.value as unknown as User | null)
+    if (!current) return null
+    const currentObj = current as { id?: string; sub?: string }
+    const id = current.id || currentObj.sub
+    if (!current.id && id) {
+      return { ...current, id }
+    }
+    return current
+  })
   const isAuthenticated = computed(() => !!user.value)
   const isEmailVerified = computed(() => {
     if (!user.value) return false
@@ -47,7 +57,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (data && typeof data === 'object') {
         activeLegalVersions.value = data as Record<string, string>
       }
-    } catch (_err) {
+    } catch {
       // Fallback to default v1.0
     }
   }
@@ -74,12 +84,24 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isActive = computed(() => profile.value?.status === 'active')
 
-  async function fetchProfile(overrideUser?: any) {
+  async function fetchProfile(overrideUser?: User | null) {
     if (overrideUser) {
       sessionUser.value = overrideUser
+    } else if (!sessionUser.value && typeof supabase.auth?.getUser === 'function') {
+      try {
+        const { data: userData } = await supabase.auth.getUser()
+        if (userData?.user) {
+          sessionUser.value = userData.user
+        }
+      } catch {
+        // Fallback to supabaseUser state if network or offline
+      }
     }
+
     const targetUser = overrideUser || user.value
-    if (!targetUser || !targetUser.id || typeof targetUser.id !== 'string' || targetUser.id === 'undefined') {
+    const targetUserObj = targetUser as { id?: string; sub?: string } | null | undefined
+    const targetId = targetUser?.id || targetUserObj?.sub
+    if (!targetId || typeof targetId !== 'string' || targetId === 'undefined') {
       profile.value = null
       wallet.value = null
       return
@@ -89,13 +111,14 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = true
       errorMessage.value = null
 
-      let { data: prof, error: profErr } = await supabase
+      const { data: initialProf, error: profErr } = await supabase
         .from('profiles')
         .select('*')
-        .eq('id', targetUser.id)
+        .eq('id', targetId)
         .maybeSingle()
 
       if (profErr) throw profErr
+      let prof = initialProf
 
       if (!prof) {
         // Fallback: trigger might have failed or been bypassed, ensure profile exists
@@ -104,10 +127,10 @@ export const useAuthStore = defineStore('auth', () => {
           const { data: fallbackProf } = await supabase
             .from('profiles')
             .select('*')
-            .eq('id', targetUser.id)
+            .eq('id', targetId)
             .maybeSingle()
           prof = fallbackProf
-        } catch (_rpcErr) {
+        } catch {
           // ensure_profile RPC could be missing or failed gracefully
         }
       }
@@ -117,14 +140,15 @@ export const useAuthStore = defineStore('auth', () => {
       const { data: wal, error: walErr } = await supabase
         .from('wallets')
         .select('*')
-        .eq('fan_id', targetUser.id)
+        .eq('fan_id', targetId)
         .maybeSingle()
 
       if (walErr) throw walErr
       wallet.value = wal
-    } catch (err: any) {
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : 'Error al cargar perfil'
       console.error('Error al cargar perfil:', err)
-      errorMessage.value = err.message || 'Error al cargar perfil'
+      errorMessage.value = msg
     } finally {
       isLoading.value = false
     }

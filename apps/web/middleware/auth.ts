@@ -3,8 +3,8 @@ import { useAuthStore } from '~/stores/auth'
 export default defineNuxtRouteMiddleware(async (to) => {
   const authStore = useAuthStore()
 
-  // Ensure profile is loaded
-  if (authStore.isAuthenticated && !authStore.profile) {
+  // Ensure profile and session are loaded
+  if (!authStore.profile) {
     await authStore.fetchProfile()
   }
 

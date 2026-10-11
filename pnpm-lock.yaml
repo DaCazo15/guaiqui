@@ -108,6 +108,9 @@ importers:
       '@pinia/nuxt':
         specifier: ^0.5.0
         version: 0.5.5(magicast@0.5.5)(typescript@5.9.3)(vue@3.5.43(typescript@5.9.3))
+      '@supabase/supabase-js':
+        specifier: ^2.117.3
+        version: 2.117.3
       '@vercel/analytics':
         specifier: ^1.4.1
         version: 1.6.1(vue-router@4.6.4(vue@3.5.43(typescript@5.9.3)))(vue@3.5.43(typescript@5.9.3))
