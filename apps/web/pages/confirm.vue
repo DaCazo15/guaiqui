@@ -33,25 +33,32 @@ onMounted(async () => {
     } else {
       errorMessage.value = errorParam || 'El enlace de verificación no es válido.'
     }
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
     return
   }
 
   // 2. Si regresamos con código PKCE (?code=...), intercambiar por sesión
-  let exchangeError: string | null = null
   const code = route.query.code
   if (code && typeof code === 'string') {
     try {
       const { error } = await supabase.auth.exchangeCodeForSession(code)
       if (error) {
-        exchangeError = error.message
+        status.value = 'error'
+        errorMessage.value = error.message?.toLowerCase().includes('expired')
+          ? 'El enlace de confirmación ha expirado o ya fue utilizado.'
+          : 'No se pudo validar el enlace de confirmación. Por favor, solicita uno nuevo.'
+        await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
+        return
       }
-    } catch (err: unknown) {
-      exchangeError = err instanceof Error ? err.message : 'Error al intercambiar código'
+    } catch {
+      status.value = 'error'
+      errorMessage.value = 'El enlace de confirmación ha expirado o ya fue utilizado.'
+      await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
+      return
     }
   }
 
   // 3. Obtener usuario de la sesión activa
-  // (En Nuxt Supabase SSR, el plugin cliente puede haber intercambiado el código automáticamente)
   const { data: userData } = await supabase.auth.getUser()
   const activeUser = userData?.user
 
@@ -76,13 +83,23 @@ onMounted(async () => {
     navigateTo('/login')
   } else {
     status.value = 'error'
-    if (exchangeError?.toLowerCase().includes('expired')) {
-      errorMessage.value = 'El enlace de confirmación ha expirado o ya fue utilizado.'
-    } else {
-      errorMessage.value = 'No se pudo validar el enlace de confirmación. Por favor, solicita uno nuevo.'
-    }
+    errorMessage.value = 'No se encontró una sesión activa para este enlace. Por favor, solicita uno nuevo.'
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
   }
 })
+
+async function handleGoToLogin() {
+  try {
+    await authStore.logout()
+  } catch {
+    await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
+    if (typeof window !== 'undefined') {
+      window.location.href = '/login'
+    } else {
+      await navigateTo('/login')
+    }
+  }
+}
 
 async function handleResendEmail() {
   if (!emailForResend.value || !emailForResend.value.includes('@')) {
@@ -177,13 +194,14 @@ async function handleResendEmail() {
 
       <!-- Botón para ir al login -->
       <div class="pt-2">
-        <NuxtLink
-          to="/login"
-          class="w-full py-2.5 px-4 rounded-lg border border-guaiqui-border hover:bg-guaiqui-surface text-guaiqui-text font-bold text-sm tracking-wide transition-colors flex items-center justify-center gap-2"
+        <button
+          type="button"
+          class="w-full py-2.5 px-4 rounded-lg border border-guaiqui-border hover:bg-guaiqui-surface text-guaiqui-text font-bold text-sm tracking-wide transition-colors flex items-center justify-center gap-2 cursor-pointer"
+          @click="handleGoToLogin"
         >
           <i class="bi bi-box-arrow-in-right"></i>
           <span>Ir a Iniciar Sesión</span>
-        </NuxtLink>
+        </button>
       </div>
     </div>
   </div>
