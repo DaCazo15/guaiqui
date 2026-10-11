@@ -81,7 +81,9 @@ CREATE TABLE IF NOT EXISTS public.ad_reconciliation (
 
 ALTER TABLE public.ad_reconciliation ENABLE ROW LEVEL SECURITY;
 REVOKE ALL ON public.ad_reconciliation FROM PUBLIC, anon, authenticated;
-GRANT SELECT ON public.ad_reconciliation TO authenticated USING (public.is_admin_check());
+DROP POLICY IF EXISTS "AdReconciliation Admin Read" ON public.ad_reconciliation;
+CREATE POLICY "AdReconciliation Admin Read" ON public.ad_reconciliation FOR SELECT TO authenticated USING (public.is_admin_check());
+GRANT SELECT ON public.ad_reconciliation TO authenticated, service_role;
 
 -- 7. Unique Partial Index on ledger_entries to prevent double payment for ad blocks
 CREATE UNIQUE INDEX IF NOT EXISTS idx_ledger_ad_block ON public.ledger_entries (source_type, source_id) WHERE source_type = 'ad_block';
@@ -746,14 +748,17 @@ GRANT EXECUTE ON FUNCTION public.analytics_ads(TIMESTAMPTZ, TIMESTAMPTZ) TO auth
 
 
 -- 16. Update policy_documents to reference 3rd party ads & ad session data
-INSERT INTO public.policy_documents (slug, title, content, version)
+UPDATE public.policy_documents
+SET is_active = false, updated_at = NOW()
+WHERE slug = 'privacidad' AND is_active = true;
+
+INSERT INTO public.policy_documents (slug, version, content_markdown, is_active)
 VALUES (
-    'privacy',
-    'Política de Privacidad',
-    'Actualización Fase 18: Recopilación y procesamiento de datos para anuncios de terceros con Google Ad Manager y Google Publisher Tag (GPT), cookies publicitarias no personalizadas y registro auditado de sesiones de recompensa.',
-    '18.0'
-)
-ON CONFLICT (slug) DO UPDATE
-SET version = '18.0',
-    content = EXCLUDED.content,
-    updated_at = NOW();
+    'privacidad',
+    '18.0',
+    '# Política de Privacidad (v18.0)
+
+Actualización Fase 18: Recopilación y procesamiento de datos para anuncios de terceros con Google Ad Manager y Google Publisher Tag (GPT), cookies publicitarias no personalizadas y registro auditado de sesiones de recompensa.',
+    true
+);
+

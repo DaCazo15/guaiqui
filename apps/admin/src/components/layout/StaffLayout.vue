@@ -15,13 +15,13 @@ const closeSidebar = () => {
 </script>
 
 <template>
-  <div class="h-screen bg-slate-950 text-slate-100 flex flex-col font-sans antialiased overflow-hidden">
+  <div class="h-screen bg-gray-50 text-gray-900 flex flex-col font-sans antialiased overflow-hidden">
     <NavbarHeader @toggle-sidebar="toggleSidebar" />
 
     <div class="flex-1 flex min-h-0 overflow-hidden">
       <NavbarSidebar :is-open="isSidebarOpen" @close="closeSidebar" />
 
-      <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-slate-950">
+      <main class="flex-1 overflow-y-auto p-4 sm:p-6 lg:p-8 bg-gray-50">
         <div class="max-w-7xl mx-auto">
           <slot />
         </div>

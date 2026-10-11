@@ -48,8 +48,9 @@ async function fetchSettings() {
       .eq('id', 1)
       .maybeSingle()
 
-    if (error) throw error
-    if (data) {
+    if (error) {
+      console.warn('birthday_settings table not accessible yet, using default configuration:', error.message)
+    } else if (data) {
       settings.value = {
         enabled: data.enabled ?? true,
         title: data.title || '¡Feliz Cumpleaños, Guaiquerí!',
@@ -60,8 +61,8 @@ async function fetchSettings() {
         bonus_pearls: data.bonus_pearls ?? 0
       }
     }
-  } catch (err: any) {
-    errorMessage.value = err.message || 'Error al cargar la configuración de cumpleaños.'
+  } catch (err) {
+    console.warn('Error fetching birthday settings:', err)
   } finally {
     loading.value = false
   }
@@ -89,8 +90,8 @@ async function handleSaveSettings() {
     } else {
       throw new Error(data?.message || 'Error al guardar.')
     }
-  } catch (err: any) {
-    errorMessage.value = err.message || 'Error al guardar la configuración.'
+  } catch (err) {
+    errorMessage.value = err instanceof Error ? err.message : 'Error al guardar la configuración.'
   } finally {
     actionLoading.value = false
   }
@@ -107,8 +108,8 @@ async function handleSendTestNotification() {
     if (data?.success) {
       testSuccessMessage.value = 'Notificación de prueba enviada a tu usuario de admin.'
     }
-  } catch (err: any) {
-    errorMessage.value = err.message || 'Error al enviar la prueba.'
+  } catch (err) {
+    errorMessage.value = err instanceof Error ? err.message : 'Error al enviar la prueba.'
   } finally {
     testLoading.value = false
   }
@@ -138,23 +139,47 @@ async function handleImageUpload(event: Event) {
       .getPublicUrl(filePath)
 
     settings.value.image_url = publicData.publicUrl
-  } catch (err: any) {
-    errorMessage.value = err.message || 'Error al subir la imagen a site-media.'
+  } catch (err) {
+    errorMessage.value = err instanceof Error ? err.message : 'Error al subir la imagen a site-media.'
   } finally {
     uploadLoading.value = false
   }
 }
 
-const previewFormattedMessage = computed(() => {
-  if (!settings.value.message) return ''
+interface FormattedSegment {
+  text: string
+  isBold: boolean
+}
+
+type FormattedLine = FormattedSegment[]
+type FormattedParagraph = FormattedLine[]
+
+const previewParagraphs = computed<FormattedParagraph[]>(() => {
+  if (!settings.value.message) return []
   const replaced = settings.value.message.replace(/{nombre}/g, previewName.value)
-  const escaped = replaced
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-  
-  const bolded = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-  return bolded.split('\n\n').map(p => `<p class="mb-2">${p.replace(/\n/g, '<br/>')}</p>`).join('')
+
+  return replaced.split('\n\n').map(paragraph => {
+    return paragraph.split('\n').map(line => {
+      const segments: FormattedSegment[] = []
+      const boldRegex = /\*\*(.*?)\*\*/g
+      let lastIndex = 0
+      let match: RegExpExecArray | null
+
+      while ((match = boldRegex.exec(line)) !== null) {
+        if (match.index > lastIndex) {
+          segments.push({ text: line.slice(lastIndex, match.index), isBold: false })
+        }
+        segments.push({ text: match[1], isBold: true })
+        lastIndex = boldRegex.lastIndex
+      }
+
+      if (lastIndex < line.length) {
+        segments.push({ text: line.slice(lastIndex), isBold: false })
+      }
+
+      return segments
+    })
+  })
 })
 
 const sendHourLabels: Record<number, string> = {
@@ -402,7 +427,17 @@ const sendHourLabels: Record<number, string> = {
                 <span>{{ settings.title }}</span>
               </h4>
 
-              <div class="text-xs text-slate-700 leading-relaxed" v-html="previewFormattedMessage"></div>
+              <div class="text-xs text-slate-700 leading-relaxed space-y-2">
+                <p v-for="(paragraph, pIdx) in previewParagraphs" :key="pIdx">
+                  <template v-for="(line, lIdx) in paragraph" :key="lIdx">
+                    <br v-if="lIdx > 0" />
+                    <template v-for="(segment, sIdx) in line" :key="sIdx">
+                      <strong v-if="segment.isBold">{{ segment.text }}</strong>
+                      <span v-else>{{ segment.text }}</span>
+                    </template>
+                  </template>
+                </p>
+              </div>
 
               <div class="pt-3 border-t border-slate-100 flex flex-wrap gap-2 items-center justify-between">
                 <div class="flex gap-2">

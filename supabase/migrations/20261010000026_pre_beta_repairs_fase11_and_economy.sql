@@ -390,7 +390,7 @@ CREATE OR REPLACE FUNCTION public.redeem_product(
     p_idempotency_key TEXT
 )
 RETURNS JSONB AS $$
-DECLARATION
+DECLARE
     v_fan_id UUID := auth.uid();
     v_product products%ROWTYPE;
     v_wallet wallets%ROWTYPE;

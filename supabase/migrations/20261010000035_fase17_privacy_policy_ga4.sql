@@ -1,10 +1,16 @@
 -- Migration: 20261010000035_fase17_privacy_policy_ga4.sql
 -- Description: Privacy Policy update (v1.1) detailing Google Analytics 4 integration, cookie consent, PII prohibition, and opt-out mechanisms.
 
+-- Ensure updated_at column exists on policy_documents
+ALTER TABLE public.policy_documents ADD COLUMN IF NOT EXISTS updated_at TIMESTAMPTZ DEFAULT NOW();
+
 -- Deactivate previous active version of privacidad
 UPDATE public.policy_documents
 SET is_active = false, updated_at = NOW()
 WHERE slug = 'privacidad' AND is_active = true;
+
+-- Remove previous identical version if exists to allow clean insert
+DELETE FROM public.policy_documents WHERE slug = 'privacidad' AND version = 'v1.1';
 
 -- Insert new active version v1.1
 INSERT INTO public.policy_documents (slug, version, content_markdown, is_active)
@@ -31,6 +37,4 @@ Utilizamos **Google Analytics 4 (GA4)** y **PostHog** de forma anónima únicame
 ### 4. Cómo Retirar tu Consentimiento
 Puedes modificar o retirar tu consentimiento en cualquier momento haciendo clic en **"Configuración de Cookies"** en el pie de página de la aplicación web o desde la sección de **Ajustes**. Al rechazar la analítica, se detendrá el envío de eventos y se eliminarán automáticamente las cookies asociadas a Google Analytics (`_ga`).',
   true
-)
-ON CONFLICT (slug, version) DO UPDATE 
-SET content_markdown = EXCLUDED.content_markdown, is_active = true, updated_at = NOW();
+);

@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
+import AdminLayout from '../components/layout/AdminLayout.vue'
 import { supabase } from '../lib/supabase'
 
 const loading = ref(true)
@@ -38,17 +39,15 @@ const fetchData = async () => {
   loading.value = true
   message.value = null
   try {
-    // 1. Fetch current settings
+    // 1. Fetch current settings safely without coercing error
     const { data: ecoData, error: ecoErr } = await supabase
       .from('economy_settings')
       .select('*')
       .order('created_at', { ascending: false })
       .limit(1)
-      .single()
+      .maybeSingle()
 
-    if (ecoErr) throw ecoErr
-
-    if (ecoData) {
+    if (!ecoErr && ecoData) {
       settings.value.ads_enabled = ecoData.ads_enabled ?? true
       settings.value.daily_ad_views = ecoData.daily_ad_views ?? 50
       settings.value.block_size = ecoData.block_size ?? 10
@@ -70,10 +69,15 @@ const fetchData = async () => {
       }))
     }
 
-    // 3. Fetch analytics
-    const { data: analyticsRes, error: analyticsErr } = await supabase.rpc('analytics_ads')
-    if (analyticsErr) throw analyticsErr
-    analyticsData.value = analyticsRes
+    // 3. Fetch analytics (graceful fallback)
+    try {
+      const { data: analyticsRes, error: analyticsErr } = await supabase.rpc('analytics_ads')
+      if (!analyticsErr) {
+        analyticsData.value = analyticsRes
+      }
+    } catch {
+      analyticsData.value = null
+    }
   } catch (err: any) {
     message.value = { text: err.message || 'Error al cargar datos de anuncios.', type: 'error' }
   } finally {
@@ -139,7 +143,8 @@ onMounted(() => {
 </script>
 
 <template>
-  <div class="space-y-8">
+  <AdminLayout>
+    <div class="max-w-7xl mx-auto space-y-8">
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>
         <h1 class="text-2xl font-bold text-gray-900 uppercase tracking-wide">
@@ -411,4 +416,5 @@ onMounted(() => {
       </div>
     </div>
   </div>
+</AdminLayout>
 </template>

@@ -43,6 +43,7 @@ CREATE POLICY "BirthdaySettings Admin Write" ON public.birthday_settings
     FOR ALL TO authenticated USING (public.is_admin_check());
 
 -- 3. Internal function enqueue_birthday_notifications
+DROP FUNCTION IF EXISTS public.enqueue_birthday_notifications(TIMESTAMPTZ);
 CREATE OR REPLACE FUNCTION public.enqueue_birthday_notifications(p_now TIMESTAMPTZ DEFAULT NOW())
 RETURNS JSONB AS $$
 DECLARE

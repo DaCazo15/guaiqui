@@ -57,7 +57,7 @@ GRANT EXECUTE ON FUNCTION public.report_redemption_issue(UUID, TEXT, TEXT) TO au
 GRANT EXECUTE ON FUNCTION public.get_redemption_qr(UUID) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.staff_redemption_queue(TEXT, TEXT, TIMESTAMPTZ, INT) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.approve_redemption(UUID, TEXT) TO authenticated, service_role;
-GRANT EXECUTE ON FUNCTION public.verify_redemption_code(TEXT) TO authenticated, service_role;
+GRANT EXECUTE ON FUNCTION public.verify_redemption_code(TEXT, TEXT) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.generate_redemption_code(UUID) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.compute_redemption_code_hash(TEXT) TO authenticated, service_role;
 GRANT EXECUTE ON FUNCTION public.admin_upsert_product(JSONB) TO authenticated, service_role;
@@ -71,7 +71,27 @@ GRANT EXECUTE ON FUNCTION public.update_birthday_settings(BOOLEAN, TEXT, TEXT, T
 GRANT EXECUTE ON FUNCTION public.send_test_birthday_notification() TO authenticated, service_role;
 
 -- 7. Explicit Allowlist for SERVICE_ROLE / POSTGRES (Internal System & Background Cron functions)
-GRANT EXECUTE ON FUNCTION public.purge_auth_identities() TO service_role, postgres;
+CREATE OR REPLACE FUNCTION public.purge_auth_identities(p_user_id UUID)
+RETURNS JSONB AS $$
+DECLARE
+    v_deleted_count INT := 0;
+BEGIN
+    IF p_user_id IS NULL THEN
+        RAISE EXCEPTION 'User ID is required.';
+    END IF;
+
+    DELETE FROM auth.identities WHERE user_id = p_user_id;
+    GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'purged_user_id', p_user_id,
+        'identities_removed', v_deleted_count
+    );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public, auth, pg_temp;
+
+GRANT EXECUTE ON FUNCTION public.purge_auth_identities(UUID) TO service_role, postgres;
 GRANT EXECUTE ON FUNCTION public.create_notification(UUID, TEXT, TEXT, TEXT, JSONB, TEXT) TO service_role, postgres;
 GRANT EXECUTE ON FUNCTION public.check_rate_limit(UUID, TEXT, INT, INT) TO service_role, postgres;
 GRANT EXECUTE ON FUNCTION public.compute_risk(UUID) TO service_role, postgres;
@@ -83,4 +103,4 @@ GRANT EXECUTE ON FUNCTION public.cron_cleanup_old_notifications() TO service_rol
 GRANT EXECUTE ON FUNCTION public.refresh_analytics_materialized_views() TO service_role, postgres;
 GRANT EXECUTE ON FUNCTION public.run_daily_wallet_reconciliation() TO service_role, postgres;
 GRANT EXECUTE ON FUNCTION public.seed_analytics_performance_data(INT, INT) TO service_role, postgres;
-GRANT EXECUTE ON FUNCTION public.purge_fraud_telemetry(INT) TO service_role, postgres;
+GRANT EXECUTE ON FUNCTION public.purge_fraud_telemetry() TO service_role, postgres;

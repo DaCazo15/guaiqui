@@ -70,24 +70,28 @@ const loadStaffAuditData = async () => {
       })
     }
 
-    // Fetch latest scan events location by staff
-    const { data: scansData } = await supabase
-      .from('scan_events')
-      .select('staff_id, latitude, longitude, created_at')
-      .in('staff_id', userIds)
-      .order('created_at', { ascending: false })
-
+    // Fetch latest scan events location by staff safely with graceful fallback
     const lastLocationMap = new Map<string, { latitude: number; longitude: number; time: string }>()
-    if (scansData) {
-      scansData.forEach(s => {
-        if (s.staff_id && !lastLocationMap.has(s.staff_id) && s.latitude && s.longitude) {
-          lastLocationMap.set(s.staff_id, {
-            latitude: Number(s.latitude),
-            longitude: Number(s.longitude),
-            time: s.created_at
-          })
-        }
-      })
+    try {
+      const { data: scansData, error: scanErr } = await supabase
+        .from('scan_events')
+        .select('staff_id, latitude, longitude, created_at')
+        .in('staff_id', userIds)
+        .order('created_at', { ascending: false })
+
+      if (!scanErr && scansData) {
+        scansData.forEach((s: any) => {
+          if (s.staff_id && !lastLocationMap.has(s.staff_id) && s.latitude && s.longitude) {
+            lastLocationMap.set(s.staff_id, {
+              latitude: Number(s.latitude),
+              longitude: Number(s.longitude),
+              time: s.created_at
+            })
+          }
+        })
+      }
+    } catch {
+      // Gracefully ignore if columns are not present in schema
     }
 
     staffList.value = (staffData || []).map(s => ({
