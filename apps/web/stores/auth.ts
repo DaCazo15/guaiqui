@@ -154,7 +154,7 @@ export const useAuthStore = defineStore('auth', () => {
       })
       if (error) throw error
 
-      if (data.user) {
+      if (data?.user?.id) {
         // Save initial consent in profile
         const now = new Date().toISOString()
         await supabase
@@ -168,9 +168,10 @@ export const useAuthStore = defineStore('auth', () => {
             pearls_rules_version: CURRENT_LEGAL_VERSIONS.pearls_rules,
           })
           .eq('id', data.user.id)
+
+        await fetchProfile(data.user)
       }
 
-      await fetchProfile()
       return data
     } catch (err: any) {
       errorMessage.value = translateAuthError(err.message)
@@ -195,7 +196,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function acceptConsent() {
-    if (!user.value) return
+    if (!user.value?.id) return
     isLoading.value = true
     errorMessage.value = null
     try {
@@ -224,7 +225,7 @@ export const useAuthStore = defineStore('auth', () => {
   }
 
   async function updateProfile(updates: Partial<ProfileRow>) {
-    if (!user.value) return
+    if (!user.value?.id) return
     isLoading.value = true
     errorMessage.value = null
     try {
