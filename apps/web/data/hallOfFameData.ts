@@ -21,6 +21,7 @@ export interface LegendFigure {
   titles: string[]
   achievements: string[]
   bio: string
+  image_url: string
 }
 
 export interface ChampionshipTitle {
@@ -110,8 +111,9 @@ export const legendaryFigures: LegendFigure[] = [
     era: '1977 - 1985',
     position: 'Base Armador',
     titles: ['1977', '1978', '1979', '1980', '1981', '1982'],
-    achievements: ['Base del Hexacampeonato', 'Líder histórico en asistencias de la era dorada', 'Nacionalizado venezolano'],
+    achievements: ['Base del Hexacampeonato', 'Líder histórico en asistencias', 'Nacionalizado venezolano'],
     bio: 'El arquitecto ofensivo que hizo soñar a toda Margarita. Su visión de juego y control del ritmo marcaron la época más gloriosa del baloncesto en Venezuela.',
+    image_url: '/images/historia/san-shepherd.png',
   },
   {
     id: 'palito-quiroz',
@@ -124,6 +126,7 @@ export const legendaryFigures: LegendFigure[] = [
     titles: ['1997', '2007'],
     achievements: ['Bicampeón LPB', 'Capitán de la era moderna', 'Más de 500 juegos con la franquicia'],
     bio: 'Orgullo de Nueva Esparta y referente insular. Guió a la Tribu a reconquistar la gloria en las finales de 1997 y 2007.',
+    image_url: '/images/historia/alexander-quiroz.jpg',
   },
   {
     id: 'askia-jones',
@@ -134,8 +137,9 @@ export const legendaryFigures: LegendFigure[] = [
     era: '1996 - 2001',
     position: 'Escolta',
     titles: ['1997'],
-    achievements: ['MVP de la Final 1997', 'Récord de triples en postemporada', 'Ex-jugador NBA (Minnesota Timberwolves)'],
+    achievements: ['MVP de la Final 1997', 'Récord de triples en postemporada', 'Ex-jugador NBA (Timberwolves)'],
     bio: 'Anotador prolífico con puntería legendaria. Encestó triples decisivos para sellar la séptima estrella del equipo ante Cocodrilos.',
+    image_url: '/images/historia/askia-jones.jpg',
   },
   {
     id: 'paco-diez',
@@ -145,8 +149,9 @@ export const legendaryFigures: LegendFigure[] = [
     category: 'builder',
     era: '1977 - 1983',
     titles: ['1977', '1978', '1979', '1980', '1981', '1982'],
-    achievements: ['Estratega del Hexacampeonato consecutivo', 'Leyenda del banquillo venezolano'],
+    achievements: ['Estratega del Hexacampeonato', 'Leyenda del banquillo'],
     bio: 'El maestro táctico detrás de la dinastía más imponente en la historia del deporte venezolano. Forjó el carácter guerrero de la Tribu.',
+    image_url: '/images/historia/francisco.jpg',
   },
   {
     id: 'julio-toro',
@@ -156,8 +161,9 @@ export const legendaryFigures: LegendFigure[] = [
     category: 'builder',
     era: '1997',
     titles: ['1997'],
-    achievements: ['Campeón LPB 1997', 'Entrenador mundialista olímpico'],
+    achievements: ['Campeón LPB 1997', 'Entrenador mundialista'],
     bio: 'Con su temperamento ganador y mística caribeña, llevó a Guaiqueríes a levantar el trofeo en 1997 terminando una sequía de quince años.',
+    image_url: '/images/historia/julio-toro.jpg',
   },
   {
     id: 'heissler-guillent',
@@ -168,8 +174,9 @@ export const legendaryFigures: LegendFigure[] = [
     era: '2021 - 2023',
     position: 'Base Armador',
     titles: ['2021 (Copa Superliga)'],
-    achievements: ['MVP Copa Superliga 2021', 'Base de la Selección Nacional de Venezuela'],
+    achievements: ['MVP Copa Superliga 2021', 'Base de la Selección Nacional'],
     bio: 'Comandó la conquista de la Copa Superliga 2021 con actuaciones magistrales en el Gimnasio Ciudad de La Asunción.',
+    image_url: '/images/historia/heissler-guillent.jpg',
   },
 ]
 

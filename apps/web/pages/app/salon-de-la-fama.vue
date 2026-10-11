@@ -217,41 +217,50 @@ function closeLegendModal() {
         <BaseCard
           v-for="legend in filteredLegends"
           :key="legend.id"
-          class="p-5 bg-white border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm hover:border-guaiqui-primary/50 transition-all cursor-pointer space-y-4 flex flex-col justify-between"
+          class="p-0 overflow-hidden bg-white border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm hover:border-guaiqui-primary/50 transition-all cursor-pointer flex flex-col justify-between group"
           @click="openLegendModal(legend)"
         >
-          <div class="space-y-3">
-            <div class="flex items-start justify-between gap-2">
-              <div class="w-10 h-10 rounded-full bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center font-bold text-base shrink-0 border border-guaiqui-primary/20">
-                <i v-if="legend.role === 'coach'" class="bi bi-clipboard-data-fill text-sm"></i>
-                <i v-else class="bi bi-person-fill text-base"></i>
-              </div>
-              <span class="text-[11px] font-mono font-bold text-guaiqui-primary uppercase">
+          <!-- Card Photo Header -->
+          <div class="relative h-48 w-full bg-slate-900 overflow-hidden">
+            <img
+              :src="legend.image_url"
+              :alt="legend.name"
+              class="w-full h-full object-cover object-top group-hover:scale-105 transition-transform duration-300"
+              loading="lazy"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+            <div class="absolute top-2.5 left-2.5 right-2.5 flex items-center justify-between">
+              <span class="px-2 py-0.5 rounded-full bg-slate-950/80 backdrop-blur-xs text-emerald-400 font-mono font-bold text-[10px] uppercase border border-emerald-500/30">
                 {{ legend.era }}
               </span>
+              <span class="px-2 py-0.5 rounded-full bg-amber-500 text-slate-950 font-bold text-[10px] uppercase tracking-wider flex items-center gap-1 shadow-xs">
+                <i class="bi bi-trophy-fill text-[9px]"></i>
+                <span>{{ legend.titles.length }} {{ legend.titles.length === 1 ? 'título' : 'títulos' }}</span>
+              </span>
             </div>
-
-            <div>
-              <h3 class="font-display font-bold text-lg text-guaiqui-text uppercase">
+            <div class="absolute bottom-2.5 left-2.5 right-2.5">
+              <h3 class="font-display font-bold text-lg text-white uppercase leading-tight drop-shadow-sm">
                 {{ legend.name }}
               </h3>
-              <p class="text-xs font-semibold text-guaiqui-primary italic">
+              <p class="text-xs font-semibold text-amber-400 italic">
                 "{{ legend.nickname }}"
-              </p>
-              <p class="text-xs text-guaiqui-text-muted mt-1 line-clamp-3">
-                {{ legend.bio }}
               </p>
             </div>
           </div>
 
-          <div class="pt-3 border-t border-guaiqui-border flex items-center justify-between text-xs font-medium text-guaiqui-text">
-            <span class="text-amber-600 font-semibold truncate">
-              <i class="bi bi-trophy-fill mr-1"></i>
-              {{ legend.titles.length }} {{ legend.titles.length === 1 ? 'título' : 'títulos' }}
-            </span>
-            <span class="text-guaiqui-primary text-xs hover:underline flex items-center gap-1">
-              Ver ficha <i class="bi bi-arrow-right"></i>
-            </span>
+          <div class="p-4 space-y-3 flex-1 flex flex-col justify-between">
+            <p class="text-xs text-guaiqui-text-muted line-clamp-3 leading-relaxed">
+              {{ legend.bio }}
+            </p>
+
+            <div class="pt-2 border-t border-guaiqui-border flex items-center justify-between text-xs font-medium text-guaiqui-text">
+              <span class="text-[11px] text-guaiqui-text-muted truncate">
+                {{ legend.position || 'Director Técnico' }}
+              </span>
+              <span class="text-guaiqui-primary text-xs font-bold hover:underline flex items-center gap-1 shrink-0">
+                Ver ficha <i class="bi bi-arrow-right"></i>
+              </span>
+            </div>
           </div>
         </BaseCard>
       </div>
@@ -386,28 +395,38 @@ function closeLegendModal() {
         @click.self="closeLegendModal"
       >
         <div class="relative w-full max-w-lg bg-white rounded-guaiqui-xl shadow-2xl border border-guaiqui-border overflow-hidden">
+          <!-- Circular Close Button -->
           <button
             type="button"
             @click="closeLegendModal"
-            class="absolute top-3 right-3 z-10 w-8 h-8 rounded-full bg-slate-100 hover:bg-red-600 hover:text-white text-gray-700 flex items-center justify-center transition-all cursor-pointer shadow-sm"
+            class="absolute top-3 right-3 z-20 w-8 h-8 rounded-full bg-slate-900/70 hover:bg-red-600 text-white flex items-center justify-center transition-all cursor-pointer shadow-sm border border-white/20"
           >
             <i class="bi bi-x-lg text-xs font-bold"></i>
           </button>
 
-          <div class="p-6 space-y-4">
-            <div class="space-y-1">
-              <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-guaiqui-primary">
+          <!-- Photo Header in Modal -->
+          <div class="relative h-56 w-full bg-slate-900 overflow-hidden">
+            <img
+              :src="selectedLegend.image_url"
+              :alt="selectedLegend.name"
+              class="w-full h-full object-cover object-top"
+            />
+            <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/20 to-transparent" />
+            <div class="absolute bottom-3 left-4 right-4">
+              <span class="text-[11px] font-mono font-bold uppercase tracking-wider text-emerald-300">
                 {{ selectedLegend.era }} • {{ selectedLegend.position || 'Director Técnico' }}
               </span>
-              <h2 class="font-display font-extrabold text-2xl text-guaiqui-text uppercase">
+              <h2 class="font-display font-extrabold text-2xl text-white uppercase drop-shadow-sm">
                 {{ selectedLegend.name }}
               </h2>
-              <p class="text-xs font-semibold text-guaiqui-primary italic">
+              <p class="text-xs font-semibold text-amber-400 italic">
                 "{{ selectedLegend.nickname }}"
               </p>
             </div>
+          </div>
 
-            <p class="text-xs sm:text-sm text-guaiqui-text-muted leading-relaxed">
+          <div class="p-6 space-y-4">
+            <p class="text-xs sm:text-sm text-guaiqui-text leading-relaxed">
               {{ selectedLegend.bio }}
             </p>
 
