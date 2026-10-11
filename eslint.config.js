@@ -17,6 +17,8 @@ export default [
         definePageMeta: 'readonly',
         navigateTo: 'readonly',
         useSeoMeta: 'readonly',
+        useSupabaseClient: 'readonly',
+        useSupabaseUser: 'readonly',
       },
     },
   },

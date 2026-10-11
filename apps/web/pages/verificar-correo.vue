@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
+import { useSupabaseClient } from '#imports'
 import { BaseButton, BaseCard } from '@guaiqui/ui'
 import { useAuthStore } from '~/stores/auth'
 
@@ -11,8 +12,27 @@ let timer: ReturnType<typeof setInterval> | null = null
 const feedbackMessage = ref<string | null>(null)
 const errorMessage = ref<string | null>(null)
 
-onMounted(() => {
+const supabase = useSupabaseClient()
+
+onMounted(async () => {
   startCooldown(60)
+  // Comprobar automáticamente si el usuario ya fue verificado para no retenerlo
+  try {
+    const { data: refreshData } = await supabase.auth.refreshSession()
+    const updatedUser = refreshData?.user || (await supabase.auth.getUser()).data?.user
+    if (updatedUser) {
+      await authStore.fetchProfile(updatedUser)
+      if (authStore.isEmailVerified) {
+        if (authStore.needsConsent) {
+          navigateTo('/aceptar-terminos')
+        } else {
+          navigateTo('/app')
+        }
+      }
+    }
+  } catch {
+    // Mantenerse en la vista si aún no está verificado
+  }
 })
 
 onUnmounted(() => {
@@ -46,22 +66,37 @@ async function handleResend() {
     await authStore.resendVerificationEmail(targetEmail)
     feedbackMessage.value = '¡Enlace de verificación reenviado! Revisa tu bandeja de entrada.'
     startCooldown(60)
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err) {
+    errorMessage.value = err instanceof Error ? err.message : 'Error al reenviar correo.'
   }
 }
 
 async function checkVerification() {
-  await authStore.fetchProfile()
-  if (authStore.isEmailVerified) {
-    if (authStore.needsConsent) {
-      navigateTo('/aceptar-terminos')
-    } else {
-      navigateTo('/app')
+  try {
+    feedbackMessage.value = null
+    errorMessage.value = null
+
+    // 1. Refrescar la sesión con Supabase Auth para renovar el JWT con el nuevo email_confirmed_at
+    const { data: refreshData } = await supabase.auth.refreshSession()
+    const updatedUser = refreshData?.user || (await supabase.auth.getUser()).data?.user
+
+    // 2. Sincronizar el usuario refrescado en el store
+    await authStore.fetchProfile(updatedUser)
+
+    // 3. Comprobar si ya está verificado y redirigir
+    if (authStore.isEmailVerified) {
+      if (authStore.needsConsent) {
+        navigateTo('/aceptar-terminos')
+      } else {
+        navigateTo('/app')
+      }
+      return
     }
-  } else {
-    feedbackMessage.value = 'El correo aún no ha sido verificado. Por favor revisa tu bandeja de entrada o spam.'
+  } catch (err) {
+    console.warn('Error al verificar sesión:', err)
   }
+
+  feedbackMessage.value = 'El correo aún no ha sido verificado. Por favor revisa tu bandeja de entrada o spam.'
 }
 </script>
 
@@ -118,7 +153,7 @@ async function checkVerification() {
       </BaseCard>
 
       <div class="text-center text-sm text-guaiqui-text-muted">
-        <button @click="authStore.logout()" class="text-guaiqui-text-muted hover:text-guaiqui-text underline text-xs">
+        <button class="text-guaiqui-text-muted hover:text-guaiqui-text underline text-xs" @click="authStore.logout()">
           Cerrar sesión / Usar otra cuenta
         </button>
       </div>
