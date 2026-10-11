@@ -3,6 +3,8 @@ import { ref, onMounted } from 'vue'
 import { BaseCard, BaseBadge } from '@guaiqui/ui'
 import { useSupabaseClient } from '#imports'
 
+import { newsInstagramPosts } from '~/data/newsInstagramData'
+
 interface InstagramPost {
   id: string
   post_url: string
@@ -26,16 +28,21 @@ onMounted(async () => {
     if (data && data.length > 0) {
       posts.value = data
     } else {
-      // Fallback sample data if empty
-      posts.value = [
-        { id: '1', post_url: 'https://www.instagram.com/p/C12345/', image_url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=600&auto=format&fit=crop', caption: '¡Victoria de la Tribu en La Asunción!' },
-        { id: '2', post_url: 'https://www.instagram.com/p/C67890/', image_url: 'https://images.unsplash.com/photo-1519861531473-9200262188bf?w=600&auto=format&fit=crop', caption: 'Entrenamiento matutino oficial 💪' },
-        { id: '3', post_url: 'https://www.instagram.com/p/C99999/', image_url: 'https://images.unsplash.com/photo-1504450758481-7338eba7524a?w=600&auto=format&fit=crop', caption: 'Fanáticos encendiendo las gradas 🔥' },
-        { id: '4', post_url: 'https://www.instagram.com/p/C88888/', image_url: 'https://images.unsplash.com/photo-1579952363873-27f3bade9f55?w=600&auto=format&fit=crop', caption: 'Nuestra mascota oficial celebrando 🏀' }
-      ]
+      // Use official SPB news dataset as fallback
+      posts.value = newsInstagramPosts.slice(0, 4).map((p) => ({
+        id: p.id,
+        post_url: 'https://www.instagram.com/guaiqueriesbbc/',
+        image_url: p.image_url,
+        caption: p.title,
+      }))
     }
-  } catch (err) {
-    // Graceful fallback
+  } catch {
+    posts.value = newsInstagramPosts.slice(0, 4).map((p) => ({
+      id: p.id,
+      post_url: 'https://www.instagram.com/guaiqueriesbbc/',
+      image_url: p.image_url,
+      caption: p.title,
+    }))
   }
 })
 </script>
@@ -45,7 +52,7 @@ onMounted(async () => {
     <div class="max-w-6xl mx-auto space-y-8">
       <div class="text-center space-y-2">
         <span class="text-xs uppercase font-bold text-pink-400 tracking-widest bg-pink-950/60 border border-pink-800/60 px-3 py-1 rounded-full inline-flex items-center gap-1.5">
-          <i class="bi bi-instagram"></i> @GuaiqueriesOficial
+          <i class="bi bi-instagram"></i> @guaiqueriesbbc
         </span>
         <h2 class="font-display font-extrabold text-3xl sm:text-4xl uppercase tracking-tight">
           La Tribu en Instagram
@@ -57,13 +64,11 @@ onMounted(async () => {
 
       <!-- Instagram Mosaic Grid (Flex / Grid up to 8 items) -->
       <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
-        <a
+        <NuxtLink
           v-for="post in posts"
           :key="post.id"
-          :href="post.post_url"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="group relative rounded-2xl overflow-hidden aspect-square bg-slate-900 border border-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500 shadow-lg"
+          to="/noticias"
+          class="group relative rounded-2xl overflow-hidden aspect-square bg-slate-900 border border-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500 shadow-lg cursor-pointer"
         >
           <img
             :src="post.image_url"
@@ -80,7 +85,19 @@ onMounted(async () => {
               <i class="bi bi-instagram"></i> Ver publicación
             </span>
           </div>
-        </a>
+        </NuxtLink>
+      </div>
+
+      <!-- Bottom Action -->
+      <div class="text-center pt-2">
+        <NuxtLink
+          to="/noticias"
+          class="inline-flex items-center gap-2 px-6 py-2.5 rounded-xl bg-slate-900 hover:bg-slate-800 border border-slate-800 text-white text-xs font-bold uppercase tracking-wider transition-all"
+        >
+          <i class="bi bi-newspaper"></i>
+          <span>Explorar Todas las Noticias en Feed</span>
+          <i class="bi bi-arrow-right"></i>
+        </NuxtLink>
       </div>
     </div>
   </section>

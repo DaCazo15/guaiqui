@@ -24,7 +24,7 @@ const handleRegister = () => {
 
 const navLinks = [
   { label: 'Inicio', to: '/' },
-  { label: 'La App', to: '/#como-funciona' },
+  { label: 'Noticias', to: '/noticias' },
   { label: 'Salón de la Fama', to: '/salon-de-la-fama' },
   { label: 'Historia', to: '/historia' },
   { label: 'Plantilla', to: '/plantilla' },

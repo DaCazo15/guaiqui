@@ -38,6 +38,7 @@ import BandanaSeparator from './BandanaSeparator.vue'
         <ul class="space-y-2 text-xs text-slate-300">
           <li><NuxtLink to="/" class="hover:text-emerald-400 transition-colors">Inicio</NuxtLink></li>
           <li><NuxtLink to="/#como-funciona" class="hover:text-emerald-400 transition-colors">La App</NuxtLink></li>
+          <li><NuxtLink to="/noticias" class="hover:text-emerald-400 transition-colors">Noticias</NuxtLink></li>
           <li><NuxtLink to="/salon-de-la-fama" class="hover:text-emerald-400 transition-colors">Salón de la Fama</NuxtLink></li>
           <li><NuxtLink to="/historia" class="hover:text-emerald-400 transition-colors">Historia de la Tribu</NuxtLink></li>
           <li><NuxtLink to="/plantilla" class="hover:text-emerald-400 transition-colors">Plantilla de Jugadores</NuxtLink></li>
