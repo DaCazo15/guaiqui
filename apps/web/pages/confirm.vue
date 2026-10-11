@@ -27,26 +27,22 @@ onMounted(async () => {
     return
   }
 
-  // 2. Si regresamos con código PKCE (?code=...), intercambiar por sesión
+  // 2. Si regresamos con código PKCE (?code=...), intentar intercambiar por sesión
   const code = route.query.code
   if (code && typeof code === 'string') {
     try {
-      const { error } = await supabase.auth.exchangeCodeForSession(code)
-      if (error) {
-        status.value = 'error'
-        await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
-        return
-      }
+      await supabase.auth.exchangeCodeForSession(code)
     } catch {
-      status.value = 'error'
-      await supabase.auth.signOut({ scope: 'local' }).catch(() => {})
-      return
+      // Si el plugin de @nuxtjs/supabase ya consumió el código en paralelo, continuamos
     }
   }
 
   // 3. Obtener usuario de la sesión activa
-  const { data: userData } = await supabase.auth.getUser()
-  const activeUser = userData?.user
+  let activeUser = (await supabase.auth.getUser()).data?.user
+  if (!activeUser) {
+    const { data: sessionData } = await supabase.auth.getSession()
+    activeUser = sessionData.session?.user || null
+  }
 
   if (activeUser) {
     await authStore.fetchProfile(activeUser)
@@ -64,7 +60,7 @@ onMounted(async () => {
     }
   }
 
-  // 4. Si no hay usuario y no vino código, redirigir al login
+  // 4. Si tras verificar no hay usuario ni sesión activa:
   if (!code) {
     navigateTo('/login')
   } else {
