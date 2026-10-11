@@ -61,6 +61,10 @@
     {
       "source": "/ingest/decide",
       "destination": "https://us.i.posthog.com/decide"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
     }
   ]
 }

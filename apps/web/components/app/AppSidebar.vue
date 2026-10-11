@@ -10,6 +10,7 @@ const authStore = useAuthStore()
 const navItems = [
   { name: 'Inicio', path: '/app', icon: 'bi-house-door-fill' },
   { name: 'Trivias', path: '/app/trivias', icon: 'bi-patch-question-fill' },
+  { name: 'Ver Anuncios', path: '/app/anuncios', icon: 'bi-play-btn-fill' },
   { name: 'Billetera', path: '/app/billetera', icon: 'bi-wallet2' },
   { name: 'Tienda', path: '/app/tienda', icon: 'bi-bag-heart-fill' },
   { name: 'Mis Canjes', path: '/app/canjes', icon: 'bi-gift-fill' },

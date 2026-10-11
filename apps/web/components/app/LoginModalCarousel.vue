@@ -179,28 +179,32 @@ const onImageError = (slideId: string) => {
       @keydown="handleKeyDown"
     >
       <div
-        ref="modalRef"
-        tabindex="-1"
-        role="dialog"
-        aria-modal="true"
-        aria-label="Novedades del Club"
-        class="relative w-[92vw] sm:w-full max-w-[720px] max-h-[75vh] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col focus:outline-none"
+        class="relative w-[92vw] sm:w-full max-w-[720px]"
         @mouseenter="isHoveredOrFocused = true"
         @mouseleave="isHoveredOrFocused = false"
         @focusin="isHoveredOrFocused = true"
         @focusout="isHoveredOrFocused = false"
-        @touchstart="handleTouchStart"
-        @touchend="handleTouchEnd"
       >
-        <!-- Close Button X -->
+        <!-- Botón de cerrar "X" circular en la esquina superior derecha centrado en el borde de la modal -->
         <button
           @click="closeModal"
-          class="absolute top-3 right-3 z-30 w-9 h-9 rounded-full bg-slate-950/70 border border-white/20 text-white hover:bg-red-600 flex items-center justify-center transition-all focus:ring-2 focus:ring-emerald-400"
-          title="Cerrar ventana"
+          class="absolute -top-3.5 -right-3.5 sm:-top-4 sm:-right-4 z-50 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-slate-900 border-2 border-emerald-600 shadow-xl hover:bg-red-600 hover:text-white hover:border-red-600 flex items-center justify-center transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer"
+          title="Cerrar modal"
           aria-label="Cerrar modal de bienvenida"
         >
-          <i class="bi bi-x-lg text-sm"></i>
+          <i class="bi bi-x-lg text-sm sm:text-base font-bold"></i>
         </button>
+
+        <div
+          ref="modalRef"
+          tabindex="-1"
+          role="dialog"
+          aria-modal="true"
+          aria-label="Novedades del Club"
+          class="w-full max-h-[75vh] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col focus:outline-none"
+          @touchstart="handleTouchStart"
+          @touchend="handleTouchEnd"
+        >
 
         <!-- Slide Media Area (16:9) -->
         <div class="relative w-full aspect-video bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 overflow-hidden flex items-center justify-center">
@@ -286,5 +290,6 @@ const onImageError = (slideId: string) => {
         </div>
       </div>
     </div>
-  </Teleport>
+  </div>
+</Teleport>
 </template>

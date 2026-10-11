@@ -29,9 +29,9 @@ const handleSignOut = async () => {
     <!-- Brand & Mobile toggle -->
     <div class="flex items-center gap-3">
       <button 
-        @click="$emit('toggleSidebar')"
         class="lg:hidden p-2 text-gray-500 hover:text-gray-900 hover:bg-gray-100 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500"
         aria-label="Abrir menú"
+        @click="$emit('toggleSidebar')"
       >
         <i class="bi bi-list text-2xl"></i>
       </button>
@@ -50,7 +50,7 @@ const handleSignOut = async () => {
             v-else
             class="text-xs uppercase px-2.5 py-0.5 bg-blue-50 text-blue-800 border border-blue-300 rounded-full font-semibold tracking-wider font-mono"
           >
-            Taquilla / Staff
+            Panel Taquilla
           </span>
         </div>
       </div>
@@ -90,9 +90,9 @@ const handleSignOut = async () => {
       </div>
 
       <button
-        @click="handleSignOut"
         class="flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-gray-600 hover:text-red-700 bg-gray-50 hover:bg-red-50 border border-gray-200 hover:border-red-200 rounded-lg transition-all"
         title="Cerrar sesión"
+        @click="handleSignOut"
       >
         <i class="bi bi-box-arrow-right text-sm"></i>
         <span class="hidden sm:inline">Salir</span>

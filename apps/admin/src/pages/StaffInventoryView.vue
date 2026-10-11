@@ -2,7 +2,7 @@
 import { ref, onMounted, computed } from 'vue'
 import StaffLayout from '../components/layout/StaffLayout.vue'
 import InventoryAdjustModal from '../components/inventory/InventoryAdjustModal.vue'
-import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseSelect } from '@guaiqui/ui'
+import { BaseBadge, BaseInput, BaseSelect } from '@guaiqui/ui'
 import { supabase } from '../lib/supabase'
 
 interface ProductItem {
@@ -19,27 +19,11 @@ interface ProductItem {
 
 const products = ref<ProductItem[]>([])
 const isLoading = ref(true)
-const actionLoading = ref(false)
 const searchQuery = ref('')
 const selectedCategory = ref('')
 
 const selectedProduct = ref<ProductItem | null>(null)
 const isAdjustModalOpen = ref(false)
-
-// Editor & Delete Modal states
-const showEditorModal = ref(false)
-const showDeleteModal = ref(false)
-
-const productForm = ref({
-  id: '',
-  name: '',
-  description: '',
-  category: 'physical',
-  cost_pearls: 100,
-  stock: 10,
-  active: true,
-  images: [] as string[]
-})
 
 const fetchProducts = async () => {
   isLoading.value = true
@@ -91,99 +75,9 @@ const handleConfirmAdjust = async ({ delta, reason }: { delta: number; reason: s
       selectedProduct.value = null
       await fetchProducts()
     }
-  } catch (err: any) {
-    alert('Error de conexión al ajustar existencias: ' + err.message)
-  }
-}
-
-// Open modal for New Product Creation
-const openNewProduct = () => {
-  selectedProduct.value = null
-  productForm.value = {
-    id: '',
-    name: '',
-    description: '',
-    category: 'physical',
-    cost_pearls: 100,
-    stock: 10,
-    active: true,
-    images: []
-  }
-  showEditorModal.value = true
-}
-
-// Open modal for Editing Product
-const editProduct = (p: ProductItem) => {
-  selectedProduct.value = p
-  productForm.value = {
-    id: p.id,
-    name: p.name,
-    description: p.description || '',
-    category: p.category || 'physical',
-    cost_pearls: p.cost_pearls,
-    stock: p.stock,
-    active: p.active,
-    images: p.images || []
-  }
-  showEditorModal.value = true
-}
-
-// Save or Update Product
-const saveProduct = async () => {
-  if (!productForm.value.name.trim()) {
-    alert('El nombre del producto es obligatorio.')
-    return
-  }
-
-  actionLoading.value = true
-  try {
-    const payload = {
-      id: productForm.value.id || undefined,
-      name: productForm.value.name,
-      description: productForm.value.description,
-      category: productForm.value.category,
-      cost_pearls: Number(productForm.value.cost_pearls),
-      stock: Number(productForm.value.stock),
-      active: productForm.value.active,
-      images: productForm.value.images
-    }
-
-    const { error } = await supabase.rpc('staff_upsert_product', { p_product: payload })
-    if (error) throw error
-
-    showEditorModal.value = false
-    await fetchProducts()
-  } catch (err: any) {
-    alert('Error al guardar el producto: ' + err.message)
-  } finally {
-    actionLoading.value = false
-  }
-}
-
-// Open modal for Deleting Product
-const confirmDeleteProduct = (p: ProductItem) => {
-  selectedProduct.value = p
-  showDeleteModal.value = true
-}
-
-const deleteProduct = async () => {
-  if (!selectedProduct.value) return
-  actionLoading.value = true
-  try {
-    const { error } = await supabase
-      .from('products')
-      .delete()
-      .eq('id', selectedProduct.value.id)
-
-    if (error) throw error
-
-    showDeleteModal.value = false
-    selectedProduct.value = null
-    await fetchProducts()
-  } catch (err: any) {
-    alert('Error al eliminar producto: ' + err.message)
-  } finally {
-    actionLoading.value = false
+  } catch (err: unknown) {
+    const msg = err instanceof Error ? err.message : String(err)
+    alert('Error de conexión al ajustar existencias: ' + msg)
   }
 }
 
@@ -199,20 +93,18 @@ onMounted(() => {
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 class="text-2xl font-bold text-white tracking-wide font-title">Inventario de Taquilla y Canjes</h1>
-          <p class="text-xs text-slate-400">Crear, modificar, eliminar y gestionar stock de premios canjeables</p>
+          <p class="text-xs text-slate-400">Consulta de catálogo y ajuste de existencias físicas para taquilla</p>
         </div>
 
         <div class="flex items-center gap-3">
-          <BaseButton variant="primary" @click="openNewProduct">
-            <i class="bi bi-plus-lg mr-1.5"></i> Agregar Producto
-          </BaseButton>
           <button
-            @click="fetchProducts"
             :disabled="isLoading"
-            class="p-2 text-slate-300 hover:text-white bg-slate-900 border border-slate-800 rounded-xl"
+            class="px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center gap-2 transition-colors"
             title="Actualizar catálogo"
+            @click="fetchProducts"
           >
-            <i :class="['bi bi-arrow-clockwise text-lg', isLoading ? 'animate-spin' : '']"></i>
+            <i :class="['bi bi-arrow-clockwise text-sm', isLoading ? 'animate-spin' : '']"></i>
+            <span>Actualizar</span>
           </button>
         </div>
       </div>
@@ -301,29 +193,14 @@ onMounted(() => {
                 </td>
 
                 <td class="py-3 px-4 text-right">
-                  <div class="flex items-center justify-end gap-1.5">
+                  <div class="flex items-center justify-end">
                     <button
-                      @click="editProduct(item)"
-                      class="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
-                      title="Editar Producto"
-                    >
-                      <i class="bi bi-pencil text-sm"></i>
-                    </button>
-
-                    <button
-                      @click="openAdjustModal(item)"
-                      class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 text-xs font-semibold rounded-lg transition-all"
+                      class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 text-xs font-semibold rounded-lg transition-all inline-flex items-center gap-1.5"
                       title="Ajustar Cantidad de Stock"
+                      @click="openAdjustModal(item)"
                     >
-                      <i class="bi bi-pencil-square me-1"></i> Stock
-                    </button>
-
-                    <button
-                      @click="confirmDeleteProduct(item)"
-                      class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-950/60 rounded-lg transition-colors"
-                      title="Eliminar Producto"
-                    >
-                      <i class="bi bi-trash text-sm"></i>
+                      <i class="bi bi-pencil-square"></i>
+                      <span>Ajustar Stock</span>
                     </button>
                   </div>
                 </td>
@@ -340,65 +217,6 @@ onMounted(() => {
         @close="isAdjustModalOpen = false"
         @submit="handleConfirmAdjust"
       />
-
-      <!-- Product Editor Modal (Crear / Editar) -->
-      <BaseModal
-        v-if="showEditorModal"
-        :is-open="showEditorModal"
-        :title="productForm.id ? 'Editar Producto Canjeable' : 'Agregar Nuevo Producto Canjeable'"
-        @close="showEditorModal = false"
-      >
-        <div class="space-y-4">
-          <BaseInput label="Nombre del Producto" v-model="productForm.name" placeholder="Ej: Camiseta Oficial Guaiqueríes 2026" />
-          <BaseInput label="Descripción" v-model="productForm.description" placeholder="Descripción breve del producto canjeable" />
-
-          <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-            <BaseSelect
-              label="Categoría"
-              v-model="productForm.category"
-              :options="[
-                { value: 'physical', label: 'Físico (Camisetas, gorras)' },
-                { value: 'experience', label: 'Experiencia (Saludos, entradas)' },
-                { value: 'raffle', label: 'Sorteo' }
-              ]"
-            />
-            <BaseInput label="Costo en Perlitas" type="number" v-model.number="productForm.cost_pearls" />
-            <BaseInput label="Stock Inicial" type="number" v-model.number="productForm.stock" />
-          </div>
-
-          <div class="flex items-center pt-2">
-            <label class="flex items-center gap-2 text-sm text-slate-200 cursor-pointer">
-              <input type="checkbox" v-model="productForm.active" class="w-4 h-4 accent-emerald-500 rounded" />
-              <span>Producto Activo en la Tienda</span>
-            </label>
-          </div>
-        </div>
-
-        <template #footer>
-          <div class="flex items-center justify-end gap-3">
-            <BaseButton variant="secondary" @click="showEditorModal = false">Cancelar</BaseButton>
-            <BaseButton variant="primary" :loading="actionLoading" @click="saveProduct">Guardar Producto</BaseButton>
-          </div>
-        </template>
-      </BaseModal>
-
-      <!-- Delete Confirmation Modal -->
-      <BaseModal v-if="showDeleteModal" :is-open="showDeleteModal" title="Eliminar Producto" @close="showDeleteModal = false">
-        <div class="space-y-4">
-          <p class="text-sm text-slate-300">
-            ¿Está seguro de eliminar permanentemente el producto <strong>{{ selectedProduct?.name }}</strong> del inventario?
-          </p>
-          <div class="p-3 bg-red-950/40 border border-red-800 text-xs text-red-300 rounded-lg">
-            Esta acción lo eliminará de la tienda de canjes del fanático.
-          </div>
-        </div>
-        <template #footer>
-          <div class="flex items-center justify-end gap-3">
-            <BaseButton variant="secondary" @click="showDeleteModal = false">Cancelar</BaseButton>
-            <BaseButton variant="danger" :loading="actionLoading" @click="deleteProduct">Confirmar Eliminación</BaseButton>
-          </div>
-        </template>
-      </BaseModal>
     </div>
   </StaffLayout>
 </template>

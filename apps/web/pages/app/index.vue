@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import { BaseCard, BaseButton, PearlAmount } from '@guaiqui/ui'
 import { useAuthStore } from '~/stores/auth'
 import { useTriviaStore } from '~/stores/trivias'
+import { useAdsProgress } from '~/composables/useAdsProgress'
 
 definePageMeta({
   layout: 'app',
@@ -11,11 +12,13 @@ definePageMeta({
 
 const authStore = useAuthStore()
 const triviaStore = useTriviaStore()
+const adsProgress = useAdsProgress()
 
 onMounted(async () => {
   await Promise.all([
     authStore.fetchProfile(),
     triviaStore.fetchHomeSummary(),
+    adsProgress.fetchProgress(),
   ])
 })
 </script>
@@ -40,6 +43,12 @@ onMounted(async () => {
             <BaseButton variant="primary" size="md">
               <i class="bi bi-patch-question-fill mr-1.5"></i>
               Jugar Trivia del Día
+            </BaseButton>
+          </NuxtLink>
+          <NuxtLink v-if="adsProgress.isAdsEnabled.value" to="/app/anuncios">
+            <BaseButton variant="outline" size="md">
+              <i class="bi bi-play-btn-fill mr-1.5"></i>
+              Ver Anuncios
             </BaseButton>
           </NuxtLink>
           <NuxtLink to="/app/tienda">
@@ -82,6 +91,38 @@ onMounted(async () => {
         </p>
       </BaseCard>
     </div>
+
+    <!-- Rewarded Ads Promo Card (Asynchronous & Reactive) -->
+    <BaseCard
+      v-if="adsProgress.isAdsEnabled.value"
+      class="bg-gradient-to-r from-emerald-900 to-slate-900 text-white p-5 rounded-guaiqui-xl shadow-guaiqui-md border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4"
+    >
+      <div class="flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-400/30 flex items-center justify-center text-emerald-400 text-2xl shrink-0">
+          <i class="bi bi-play-btn-fill"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <span class="text-xs uppercase tracking-wider text-emerald-400 font-bold font-mono">¡Gana Perlitas!</span>
+            <span v-if="adsProgress.progress.value" class="text-xs text-slate-300">
+              ({{ adsProgress.progress.value.completed_today }} / {{ adsProgress.progress.value.daily_limit }} completados hoy)
+            </span>
+          </div>
+          <h3 class="font-display text-lg font-bold uppercase tracking-wide text-white">
+            Videos Publicitarios Recompensados
+          </h3>
+          <p class="text-xs text-slate-300 max-w-xl">
+            Apoya al equipo viendo videos publicitarios cortos y acumula perlitas automáticas para canjear en la tienda oficial.
+          </p>
+        </div>
+      </div>
+      <NuxtLink to="/app/anuncios" class="shrink-0 w-full sm:w-auto">
+        <BaseButton variant="primary" size="md" block>
+          <span>Ver Anuncios</span>
+          <i class="bi bi-arrow-right ml-1.5"></i>
+        </BaseButton>
+      </NuxtLink>
+    </BaseCard>
 
     <!-- Active Trivia & Next Game Row -->
     <div class="grid md:grid-cols-2 gap-6">
