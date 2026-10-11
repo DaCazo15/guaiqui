@@ -445,6 +445,9 @@ export const useAuthStore = defineStore('auth', () => {
     if (msg.includes('User already registered')) return 'Ya existe una cuenta registrada con este correo.'
     if (msg.includes('Password should be at least')) return 'La contraseña debe tener al menos 8 caracteres.'
     if (msg.includes('Email rate limit exceeded')) return 'Límite de envíos excedido. Espera unos minutos e intentalo de nuevo.'
+    if (msg.includes('Unsupported provider') || msg.includes('provider is not enabled')) {
+      return 'El inicio de sesión con Google aún no está configurado en el servidor Supabase.'
+    }
     return msg
   }
 
