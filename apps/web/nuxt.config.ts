@@ -22,6 +22,7 @@ export default defineNuxtConfig({
         '/politicas/*',
         '/aceptar-terminos',
         '/historia',
+        '/salon-de-la-fama',
         '/plantilla',
         '/equipo-de-trabajo',
         '/como-funciona',

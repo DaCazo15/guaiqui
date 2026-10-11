@@ -25,10 +25,10 @@ const handleRegister = () => {
 const navLinks = [
   { label: 'Inicio', to: '/' },
   { label: 'La App', to: '/#como-funciona' },
+  { label: 'Salón de la Fama', to: '/salon-de-la-fama' },
   { label: 'Historia', to: '/historia' },
   { label: 'Plantilla', to: '/plantilla' },
   { label: 'Equipo', to: '/equipo-de-trabajo' },
-  { label: 'Políticas', to: '/politicas/terminos' },
 ]
 </script>
 
