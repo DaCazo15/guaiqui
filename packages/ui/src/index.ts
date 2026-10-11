@@ -40,6 +40,8 @@ export { default as EmptyState } from './components/EmptyState.vue'
 export { default as Skeleton } from './components/Skeleton.vue'
 export type { SkeletonVariant } from './components/Skeleton.vue'
 
+export { default as BaseSkeletonLayout } from './components/BaseSkeletonLayout.vue'
+
 export { default as PearlIcon } from './components/PearlIcon.vue'
 export type { PearlIconSize } from './components/PearlIcon.vue'
 

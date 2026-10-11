@@ -9,6 +9,8 @@ import { formatPerlitas } from '@guaiqui/shared'
 import { PearlIcon } from '@guaiqui/ui'
 
 
+import { BaseSkeletonLayout } from '@guaiqui/ui'
+
 const authStore = useAuthStore()
 
 onMounted(async () => {
@@ -19,7 +21,11 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="min-h-screen bg-guaiqui-surface text-guaiqui-text flex flex-col md:flex-row">
+  <div v-if="authStore.loading && !authStore.profile">
+    <BaseSkeletonLayout :dark="true" :show-sidebar="true" />
+  </div>
+
+  <div v-else class="min-h-screen bg-guaiqui-surface text-guaiqui-text flex flex-col md:flex-row">
     <!-- Desktop Sidebar -->
     <AppSidebar />
 

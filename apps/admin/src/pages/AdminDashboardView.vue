@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import AdminLayout from '../components/layout/AdminLayout.vue'
-import { BaseCard, BaseBadge, BaseButton } from '@guaiqui/ui'
+import { BaseCard, BaseBadge, BaseButton, BaseSkeletonLayout } from '@guaiqui/ui'
 import { supabase } from '../lib/supabase'
 
 const pendingIssuesCount = ref(0)
@@ -52,7 +52,11 @@ onMounted(loadDashboardMetrics)
 
 <template>
   <AdminLayout>
-    <div class="max-w-7xl mx-auto space-y-8">
+    <div v-if="loading" class="max-w-7xl mx-auto">
+      <BaseSkeletonLayout :dark="true" :show-sidebar="false" />
+    </div>
+
+    <div v-else class="max-w-7xl mx-auto space-y-8">
       <!-- Title header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
