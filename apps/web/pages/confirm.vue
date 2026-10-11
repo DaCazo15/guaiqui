@@ -37,25 +37,21 @@ onMounted(async () => {
   }
 
   // 2. Si regresamos con código PKCE (?code=...), intercambiar por sesión
+  let exchangeError: string | null = null
   const code = route.query.code
   if (code && typeof code === 'string') {
     try {
       const { error } = await supabase.auth.exchangeCodeForSession(code)
       if (error) {
-        status.value = 'error'
-        errorMessage.value = error.message?.toLowerCase().includes('expired')
-          ? 'El enlace de confirmación ha expirado o ya fue utilizado.'
-          : 'No se pudo validar el enlace de confirmación. Por favor, solicita uno nuevo.'
-        return
+        exchangeError = error.message
       }
-    } catch {
-      status.value = 'error'
-      errorMessage.value = 'El enlace de confirmación ha expirado o ya fue utilizado.'
-      return
+    } catch (err: unknown) {
+      exchangeError = err instanceof Error ? err.message : 'Error al intercambiar código'
     }
   }
 
   // 3. Obtener usuario de la sesión activa
+  // (En Nuxt Supabase SSR, el plugin cliente puede haber intercambiado el código automáticamente)
   const { data: userData } = await supabase.auth.getUser()
   const activeUser = userData?.user
 
@@ -75,12 +71,16 @@ onMounted(async () => {
     }
   }
 
-  // Si no hay usuario y no vino código, redirigir al login
+  // 4. Si no hay usuario y no vino código, redirigir al login
   if (!code) {
     navigateTo('/login')
   } else {
     status.value = 'error'
-    errorMessage.value = 'No se encontró una sesión activa para este enlace. Por favor inicia sesión.'
+    if (exchangeError?.toLowerCase().includes('expired')) {
+      errorMessage.value = 'El enlace de confirmación ha expirado o ya fue utilizado.'
+    } else {
+      errorMessage.value = 'No se pudo validar el enlace de confirmación. Por favor, solicita uno nuevo.'
+    }
   }
 })
 
