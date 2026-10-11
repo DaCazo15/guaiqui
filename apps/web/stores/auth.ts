@@ -20,7 +20,19 @@ export const useAuthStore = defineStore('auth', () => {
 
   const user = computed(() => explicitLoggedOut.value ? null : (sessionUser.value || supabaseUser.value))
   const isAuthenticated = computed(() => !!user.value)
-  const isEmailVerified = computed(() => !!user.value?.email_confirmed_at || !!user.value?.confirmed_at || (isAuthenticated.value && !!profile.value))
+  const isEmailVerified = computed(() => {
+    if (!user.value) return false
+    const isOAuth =
+      user.value.app_metadata?.provider === 'google' ||
+      (Array.isArray(user.value.app_metadata?.providers) &&
+        user.value.app_metadata.providers.includes('google'))
+    return (
+      !!user.value.email_confirmed_at ||
+      !!user.value.confirmed_at ||
+      isOAuth ||
+      (isAuthenticated.value && !!profile.value)
+    )
+  })
   
   const activeLegalVersions = ref<Record<string, string>>({
     terminos: 'v1.0',
@@ -63,6 +75,9 @@ export const useAuthStore = defineStore('auth', () => {
   const isActive = computed(() => profile.value?.status === 'active')
 
   async function fetchProfile(overrideUser?: any) {
+    if (overrideUser) {
+      sessionUser.value = overrideUser
+    }
     const targetUser = overrideUser || user.value
     if (!targetUser || !targetUser.id || typeof targetUser.id !== 'string' || targetUser.id === 'undefined') {
       profile.value = null
@@ -84,13 +99,17 @@ export const useAuthStore = defineStore('auth', () => {
 
       if (!prof) {
         // Fallback: trigger might have failed or been bypassed, ensure profile exists
-        await supabase.rpc('ensure_profile')
-        const { data: fallbackProf } = await supabase
-          .from('profiles')
-          .select('*')
-          .eq('id', targetUser.id)
-          .maybeSingle()
-        prof = fallbackProf
+        try {
+          await supabase.rpc('ensure_profile')
+          const { data: fallbackProf } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', targetUser.id)
+            .maybeSingle()
+          prof = fallbackProf
+        } catch (_rpcErr) {
+          // ensure_profile RPC could be missing or failed gracefully
+        }
       }
 
       profile.value = prof

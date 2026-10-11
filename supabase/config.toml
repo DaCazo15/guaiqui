@@ -34,8 +34,16 @@ file_size_limit = "50MiB"
 
 [auth]
 enabled = true
-site_url = "http://localhost:3000"
-additional_redirect_urls = ["http://localhost:3001"]
+# Site URL principal de la plataforma (Producción en Vercel)
+site_url = "https://guaiqui.vercel.app"
+# Redirect URLs autorizadas para redirección de OAuth, confirmación de correo y entornos local/producción
+additional_redirect_urls = [
+  "https://guaiqui.vercel.app/**",       # Producción Web (Nuxt)
+  "https://guaiqui.vercel.app/confirm",   # Callback confirmación y OAuth PKCE producción
+  "http://localhost:3000/**",             # Local Web (Nuxt)
+  "http://localhost:3001/**",             # Local Admin alternativo
+  "http://localhost:3010/**"              # Local Admin (Vite port por defecto en apps/admin)
+]
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
 refresh_token_reuse_interval = 10
@@ -54,8 +62,30 @@ enable_signup = true
 double_confirm_changes = true
 enable_confirmations = true
 
+# Configuración de servidor SMTP propio (Resend)
+[auth.email.smtp]
+enabled = true
+host = "smtp.resend.com"
+port = 465
+user = "resend"
+pass = "env(SMTP_PASS)"
+admin_email = "onboarding@resend.dev"
+sender_name = "Guaiqueríes de Margarita"
+
+# Plantillas de correo que utilizan {{ .ConfirmationURL }}
+[auth.email.template.confirmation]
+subject = "Confirma tu correo electrónico — Guaiqueríes de Margarita"
+content_path = "./supabase/templates/confirmation.html"
+
+[auth.email.template.recovery]
+subject = "Restablece tu contraseña — Guaiqueríes de Margarita"
+content_path = "./supabase/templates/recovery.html"
+
 [auth.external.google]
-enabled = false
+enabled = true
+client_id = "env(GOOGLE_CLIENT_ID)"
+secret = "env(GOOGLE_CLIENT_SECRET)"
+skip_nonce_check = true
 
 [auth.mfa.totp]
 enroll_enabled = true
