@@ -62,9 +62,6 @@ function onImageError(e: Event) {
   <section class="py-16 sm:py-20 bg-slate-950 text-white px-4 sm:px-8 border-t border-slate-900">
     <div class="max-w-6xl mx-auto space-y-8">
       <div class="text-center space-y-2">
-        <span class="text-xs uppercase font-bold text-guaiqui-primary tracking-widest bg-guaiqui-primary/10 border border-guaiqui-primary/30 px-3 py-1 rounded-full inline-flex items-center gap-1.5">
-          <i class="bi bi-newspaper"></i> Actualidad SPB 2026
-        </span>
         <h2 class="font-display font-extrabold text-3xl sm:text-4xl uppercase tracking-tight">
           Noticias de la <span class="text-guaiqui-primary">Tribu</span>
         </h2>
@@ -92,7 +89,7 @@ function onImageError(e: Event) {
 
           <!-- Badge superior derecho (naranja como en la captura) -->
           <div class="absolute top-3 right-3 z-10">
-            <span class="bg-[#f25c05] text-white text-[10px] font-extrabold uppercase px-2.5 py-1 tracking-wider rounded-sm shadow-md">
+            <span class="bg-[#f25c05]/50 text-white text-[10px] font-extrabold uppercase px-2.5 py-1 tracking-wider rounded-sm shadow-md">
               {{ (post as any).badge || 'DESTACADOS' }}
             </span>
           </div>
