@@ -23,6 +23,7 @@ const isSubmitting = ref(false)
 const isVerifyingCaptcha = ref(false)
 const localError = ref<string | null>(null)
 const captchaToken = ref<string>('')
+const attemptKey = ref<string>('')
 
 
 const attemptData = computed(() => triviaStore.currentAttempt)
@@ -104,17 +105,17 @@ async function handleFinalSubmit() {
   localError.value = null
 
   try {
-    const key = getStoredIdempotencyKey()
     const attemptId = attemptData.value?.attempt_id
-    if (!attemptId) throw new Error('Attempt ID not found')
+    if (!attemptId || !attemptKey.value) throw new Error('Intento no encontrado, vuelve a empezar la trivia.')
 
-    await triviaStore.submitTrivia(attemptId, selectedAnswers.value, key)
-    clearStoredIdempotencyKey()
+    await triviaStore.submitTrivia(attemptId, selectedAnswers.value, attemptKey.value)
+    attemptKey.value = ''
     mode.value = 'result'
   } catch (err: any) {
     localError.value = err.message
     // Even if error occurs, show result if already played or expired
-    if (err.message.includes('previamente') || err.message.includes('expirado') || err.message.includes('terminó') || err.message.includes('finalizado')) {
+    if (['previamente', 'expirado', 'terminó', 'finalizado', 'agotó', 'cerró']
+      .some(w => err.message.includes(w))) {
       mode.value = 'result'
     }
   } finally {
@@ -219,9 +220,6 @@ async function handleFinalSubmit() {
           <p class="text-base font-bold text-guaiqui-text font-display">
             Pregunta {{ currentQuestionIndex + 1 }} de {{ totalQuestions }}
           </p>
-        </div>
-        <div class="text-xs font-semibold text-guaiqui-primary bg-guaiqui-primary-soft px-2.5 py-1 rounded-full">
-          Sin límite de tiempo
         </div>
       </BaseCard>
 
