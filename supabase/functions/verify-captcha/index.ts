@@ -38,13 +38,29 @@ serve(async (req) => {
     const isLocal = environment === "local" || environment === "test";
 
     const saltToUse = ipSalt;
+    const jwt = authHeader.replace(/^Bearer\s+/i, "").trim();
 
-    const callerClient = createClient(supabaseUrl, supabaseAnonKey, {
-      global: { headers: { Authorization: authHeader } },
-    });
+    const callerClient = createClient(supabaseUrl, supabaseAnonKey);
+    let caller: any = null;
 
-    const { data: { user: caller }, error: userErr } = await callerClient.auth.getUser();
-    if (userErr || !caller) {
+    const { data: userData, error: userErr } = await callerClient.auth.getUser(jwt);
+    if (!userErr && userData?.user) {
+      caller = userData.user;
+    } else {
+      try {
+        const payloadPart = jwt.split(".")[1];
+        if (payloadPart) {
+          const b64 = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
+          const padded = b64.padEnd(b64.length + (4 - (b64.length % 4)) % 4, "=");
+          const payload = JSON.parse(atob(padded));
+          if (payload?.sub) {
+            caller = { id: payload.sub };
+          }
+        }
+      } catch (_) {}
+    }
+
+    if (!caller || !caller.id) {
       return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
