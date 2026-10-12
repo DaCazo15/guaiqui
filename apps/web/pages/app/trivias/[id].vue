@@ -87,6 +87,9 @@ async function handleStartTrivia() {
     }
   } catch (err: any) {
     localError.value = err.message
+    if (err.message.includes('terminó') || err.message.includes('finalizado') || err.message.includes('previamente')) {
+      clearStoredIdempotencyKey()
+    }
   } finally {
     isVerifyingCaptcha.value = false
   }
@@ -145,8 +148,8 @@ async function handleFinalSubmit(isAutoExpired = false) {
     mode.value = 'result'
   } catch (err: any) {
     localError.value = err.message
-    // Even if error occurs, show result if already played
-    if (err.message.includes('previamente') || err.message.includes('expirado')) {
+    // Even if error occurs, show result if already played or expired
+    if (err.message.includes('previamente') || err.message.includes('expirado') || err.message.includes('terminó') || err.message.includes('finalizado')) {
       mode.value = 'result'
     }
   } finally {

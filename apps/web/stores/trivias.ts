@@ -133,15 +133,18 @@ export const useTriviaStore = defineStore('trivias', () => {
       })
       if (startErr) throw startErr
 
-      const attemptId = (attemptRes as any).attempt_id
+      const res = attemptRes as any
+      if (!res?.questions || !Array.isArray(res.questions) || res.questions.length === 0) {
+        throw new Error('No se encontraron preguntas disponibles para esta trivia.')
+      }
 
-      // 2. Fetch questions securely via RPC (without is_correct)
-      const { data: questionsRes, error: qErr } = await supabase.rpc('get_attempt_questions', {
-        p_attempt_id: attemptId,
-      })
-      if (qErr) throw qErr
-
-      currentAttempt.value = questionsRes as AttemptData
+      currentAttempt.value = {
+        attempt_id: res.attempt_id,
+        trivia_id: triviaId,
+        expires_at: res.expires_at,
+        seed: res.seed,
+        questions: res.questions,
+      }
       return currentAttempt.value
     } catch (err: any) {
       errorMessage.value = translateTriviaError(err.message)
@@ -172,29 +175,6 @@ export const useTriviaStore = defineStore('trivias', () => {
     }
   }
 
-  function translateTriviaError(msg: string): string {
-    if (!msg) return 'Ocurrió un error inesperado al procesar la trivia.'
-    if (msg.includes('TRIVIA_ALREADY_PLAYED') || msg.includes('Maximum participation attempts reached')) {
-      return 'Ya has participado en esta trivia previamente.'
-    }
-    if (msg.includes('TRIVIA_NOT_STARTED')) {
-      return 'Esta trivia aún no ha comenzado. Estará disponible próximamente.'
-    }
-    if (msg.includes('TRIVIA_EXPIRED') || msg.includes('ATTEMPT_EXPIRED')) {
-      return 'El plazo para participar en esta trivia ha finalizado.'
-    }
-    if (msg.includes('time window is closed')) {
-      return 'La ventana de participación de esta trivia no está activa en este momento.'
-    }
-    if (msg.includes('verificado')) {
-      return 'Debes tener tu correo electrónico verificado para participar.'
-    }
-    if (msg.includes('inactiva, suspendida')) {
-      return 'Tu cuenta no está activa para participar en trivias.'
-    }
-    return msg
-  }
-
   return {
     homeSummary,
     leaderboard,
@@ -208,5 +188,32 @@ export const useTriviaStore = defineStore('trivias', () => {
     fetchTrivias,
     startTrivia,
     submitTrivia,
+    translateTriviaError,
   }
 })
+
+export function translateTriviaError(msg: string): string {
+  if (!msg) return 'Ocurrió un error inesperado al procesar la trivia.'
+  if (msg.includes('TRIVIA_ALREADY_PLAYED') || msg.includes('Maximum participation attempts reached')) {
+    return 'Ya has participado en esta trivia previamente.'
+  }
+  if (msg.includes('TRIVIA_NOT_STARTED')) {
+    return 'Esta trivia aún no ha comenzado. Estará disponible próximamente.'
+  }
+  if (msg.includes('ATTEMPT_EXPIRED')) {
+    return 'Tu tiempo para este intento terminó.'
+  }
+  if (msg.includes('TRIVIA_EXPIRED')) {
+    return 'El plazo para participar en esta trivia ha finalizado.'
+  }
+  if (msg.includes('time window is closed')) {
+    return 'La ventana de participación de esta trivia no está activa en este momento.'
+  }
+  if (msg.includes('verificado')) {
+    return 'Debes tener tu correo electrónico verificado para participar.'
+  }
+  if (msg.includes('inactiva, suspendida')) {
+    return 'Tu cuenta no está activa para participar en trivias.'
+  }
+  return msg
+}

@@ -97,6 +97,14 @@ const loadTriviasAndSegments = async () => {
   }
 }
 
+const toLocalDateTimeInput = (dateInput?: string | Date | null): string => {
+  if (!dateInput) return ''
+  const d = new Date(dateInput)
+  if (isNaN(d.getTime())) return ''
+  d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
+  return d.toISOString().slice(0, 16)
+}
+
 const openNewTrivia = () => {
   selectedTrivia.value = null
   const now = new Date()
@@ -106,8 +114,8 @@ const openNewTrivia = () => {
     id: '',
     title: '',
     description: '',
-    starts_at: now.toISOString().slice(0, 16),
-    ends_at: tomorrow.toISOString().slice(0, 16),
+    starts_at: toLocalDateTimeInput(now),
+    ends_at: toLocalDateTimeInput(tomorrow),
     time_limit_seconds: 60,
     target_segment_id: '',
     per_correct_pearls: 50,
@@ -135,8 +143,8 @@ const editTrivia = async (t: TriviaRow) => {
     id: t.id,
     title: t.title,
     description: t.description || '',
-    starts_at: t.starts_at ? new Date(t.starts_at).toISOString().slice(0, 16) : '',
-    ends_at: t.ends_at ? new Date(t.ends_at).toISOString().slice(0, 16) : '',
+    starts_at: toLocalDateTimeInput(t.starts_at),
+    ends_at: toLocalDateTimeInput(t.ends_at),
     time_limit_seconds: t.time_limit_seconds || 60,
     target_segment_id: t.target_segment_id || '',
     per_correct_pearls: t.reward_rules?.per_correct_pearls ?? 50,
@@ -367,7 +375,7 @@ onMounted(loadTriviasAndSegments)
       <div class="space-y-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <BaseInput label="Título de la Trivia" v-model="triviaForm.title" placeholder="Ej: Trivia Clásico Oriental" />
-          <BaseInput label="Límite de Tiempo por Pregunta (Segundos)" type="number" v-model="triviaForm.time_limit_seconds" />
+          <BaseInput label="Tiempo total del intento (segundos)" type="number" v-model.number="triviaForm.time_limit_seconds" />
           <BaseInput label="Fecha y Hora de Inicio" type="datetime-local" v-model="triviaForm.starts_at" />
           <BaseInput label="Fecha y Hora de Cierre (Tiempo Limitado)" type="datetime-local" v-model="triviaForm.ends_at" />
 

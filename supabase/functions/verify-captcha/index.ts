@@ -32,40 +32,39 @@ serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL") ?? "";
     const supabaseServiceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY") ?? "";
     const supabaseAnonKey = Deno.env.get("SUPABASE_ANON_KEY") ?? "";
-    const turnstileSecret = Deno.env.get("TURNSTILE_SECRET_KEY") || "1x0000000000000000000000000000000AA";
-    const ipSalt = Deno.env.get("IP_SALT") || "_guaiqui_ip_salt_prod_2026";
+    const turnstileSecret = Deno.env.get("TURNSTILE_SECRET_KEY");
+    const ipSalt = Deno.env.get("IP_SALT");
     const environment = Deno.env.get("ENVIRONMENT") || Deno.env.get("NODE_ENV") || "production";
     const isLocal = environment === "local" || environment === "test";
 
-    const saltToUse = ipSalt;
+    if (!isLocal && !turnstileSecret) {
+      return new Response(
+        JSON.stringify({ error: "TURNSTILE_SECRET_KEY no configurado en el servidor" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    if (!isLocal && !ipSalt) {
+      return new Response(
+        JSON.stringify({ error: "IP_SALT no configurado en el servidor de producción" }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const saltToUse = ipSalt || "_guaiqui_ip_salt_local_test";
     const jwt = authHeader.replace(/^Bearer\s+/i, "").trim();
 
     const callerClient = createClient(supabaseUrl, supabaseAnonKey);
-    let caller: any = null;
-
     const { data: userData, error: userErr } = await callerClient.auth.getUser(jwt);
-    if (!userErr && userData?.user) {
-      caller = userData.user;
-    } else {
-      try {
-        const payloadPart = jwt.split(".")[1];
-        if (payloadPart) {
-          const b64 = payloadPart.replace(/-/g, "+").replace(/_/g, "/");
-          const padded = b64.padEnd(b64.length + (4 - (b64.length % 4)) % 4, "=");
-          const payload = JSON.parse(atob(padded));
-          if (payload?.sub) {
-            caller = { id: payload.sub };
-          }
-        }
-      } catch (_) {}
-    }
 
-    if (!caller || !caller.id) {
+    if (userErr || !userData?.user) {
       return new Response(JSON.stringify({ error: "Invalid token" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const caller = userData.user;
 
     let body: any = {};
     try {
