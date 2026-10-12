@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed, onMounted, onUnmounted } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { BaseCard, BaseButton, PearlAmount } from '@guaiqui/ui'
 import { formatCaracas } from '@guaiqui/shared'
 import { useTriviaStore } from '~/stores/trivias'
@@ -24,9 +24,6 @@ const isVerifyingCaptcha = ref(false)
 const localError = ref<string | null>(null)
 const captchaToken = ref<string>('')
 
-// Timer state
-const secondsRemaining = ref(60)
-let timerInterval: any = null
 
 const attemptData = computed(() => triviaStore.currentAttempt)
 const currentQuestion = computed(() => attemptData.value?.questions[currentQuestionIndex.value])
@@ -52,9 +49,6 @@ onMounted(async () => {
   await triviaStore.fetchTrivias()
 })
 
-onUnmounted(() => {
-  if (timerInterval) clearInterval(timerInterval)
-})
 
 function onCaptchaVerified(token: string) {
   captchaToken.value = token
@@ -79,7 +73,6 @@ async function handleStartTrivia() {
       mode.value = 'playing'
       currentQuestionIndex.value = 0
       selectedAnswers.value = {}
-      startTimer(attemptData.value.expires_at)
     }
   } catch (err: any) {
     localError.value = err.message
@@ -88,25 +81,6 @@ async function handleStartTrivia() {
   }
 }
 
-function startTimer(expiresAtStr: string) {
-  if (timerInterval) clearInterval(timerInterval)
-
-  const updateRemaining = () => {
-    const expiresAt = new Date(expiresAtStr).getTime()
-    const now = new Date().getTime()
-    const diff = Math.max(0, Math.floor((expiresAt - now) / 1000))
-    secondsRemaining.value = diff
-
-    if (diff <= 0) {
-      clearInterval(timerInterval)
-      // Auto submit on expiration
-      handleFinalSubmit(true)
-    }
-  }
-
-  updateRemaining()
-  timerInterval = setInterval(updateRemaining, 1000)
-}
 
 function selectOption(questionId: string, optionId: string) {
   selectedAnswers.value[questionId] = optionId
@@ -124,12 +98,10 @@ function prevQuestion() {
   }
 }
 
-async function handleFinalSubmit(isAutoExpired = false) {
+async function handleFinalSubmit() {
   if (isSubmitting.value) return
   isSubmitting.value = true
   localError.value = null
-
-  if (timerInterval) clearInterval(timerInterval)
 
   try {
     const key = getStoredIdempotencyKey()
@@ -175,7 +147,7 @@ async function handleFinalSubmit(isAutoExpired = false) {
           {{ currentTriviaInfo?.title || 'Trivia Guaiqueríes' }}
         </h1>
         <p class="text-sm text-guaiqui-text-muted">
-          {{ currentTriviaInfo?.description || 'Responde las preguntas antes de que expire el tiempo para ganar perlitas y acumular días en tu racha.' }}
+          {{ currentTriviaInfo?.description || 'Responde las preguntas para ganar perlitas y acumular días en tu racha.' }}
         </p>
       </div>
 
@@ -206,9 +178,8 @@ async function handleFinalSubmit(isAutoExpired = false) {
           <span>Reglas del Juego:</span>
         </h4>
         <ul class="space-y-1.5 list-disc list-inside text-xs text-guaiqui-text-muted">
-          <li>El reloj comenzará a correr inmediatamente al hacer clic en <strong>"Empezar Trivia"</strong>.</li>
           <li>Cada respuesta correcta te otorga perlitas directamente a tu billetera.</li>
-          <li>Responde con calma pero cuida el temporizador; al llegar a cero, se enviarán tus respuestas automáticamente.</li>
+          <li>Responde con calma y revisa tus respuestas antes de enviar.</li>
         </ul>
       </div>
 
@@ -240,24 +211,16 @@ async function handleFinalSubmit(isAutoExpired = false) {
 
     <!-- Mode 2: PLAYING (QUIZ STUDIO) -->
     <div v-else-if="mode === 'playing' && currentQuestion" class="space-y-4">
-      <!-- Header with Progress & Timer -->
+      <!-- Header with Progress -->
       <BaseCard class="p-4 bg-white border-guaiqui-border rounded-guaiqui-lg flex items-center justify-between shadow-guaiqui-sm">
         <div>
-          <span class="text-xs text-guaiqui-text-muted font-medium">Pregunta</span>
+          <span class="text-xs text-guaiqui-text-muted font-medium">Progreso</span>
           <p class="text-base font-bold text-guaiqui-text font-display">
-            {{ currentQuestionIndex + 1 }} / {{ totalQuestions }}
+            Pregunta {{ currentQuestionIndex + 1 }} de {{ totalQuestions }}
           </p>
         </div>
-
-        <div class="text-right">
-          <span class="text-xs text-guaiqui-text-muted font-medium">Tiempo Restante</span>
-          <p
-            class="text-xl font-bold font-mono flex items-center gap-1 justify-end"
-            :class="secondsRemaining <= 10 ? 'text-guaiqui-status-danger animate-pulse' : 'text-guaiqui-perlita'"
-          >
-            <i class="bi bi-stopwatch"></i>
-            <span>{{ secondsRemaining }}s</span>
-          </p>
+        <div class="text-xs font-semibold text-guaiqui-primary bg-guaiqui-primary-soft px-2.5 py-1 rounded-full">
+          Sin límite de tiempo
         </div>
       </BaseCard>
 
@@ -323,7 +286,7 @@ async function handleFinalSubmit(isAutoExpired = false) {
             variant="primary"
             size="md"
             :loading="isSubmitting"
-            @click="handleFinalSubmit(false)"
+            @click="handleFinalSubmit"
           >
             <i class="bi bi-send-check mr-1.5"></i>
             Enviar Respuestas

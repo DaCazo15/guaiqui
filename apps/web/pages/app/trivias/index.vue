@@ -88,8 +88,8 @@ function getStatusBadge(trivia: any) {
                 Inicio: {{ formatCaracas(t.starts_at) }}
               </span>
               <span class="flex items-center gap-1">
-                <i class="bi bi-stopwatch text-guaiqui-primary"></i>
-                Tiempo: {{ t.time_limit_seconds }}s
+                <i class="bi bi-hourglass-split text-guaiqui-primary"></i>
+                Sin límite de tiempo
               </span>
               <span class="flex items-center gap-1">
                 <i class="bi bi-bullseye text-guaiqui-primary"></i>

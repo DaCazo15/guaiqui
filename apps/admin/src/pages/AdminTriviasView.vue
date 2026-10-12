@@ -366,7 +366,6 @@ onMounted(loadTriviasAndSegments)
       <div class="space-y-6">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <BaseInput label="Título de la Trivia" v-model="triviaForm.title" placeholder="Ej: Trivia Clásico Oriental" />
-          <BaseInput label="Tiempo total del intento (segundos)" type="number" v-model.number="triviaForm.time_limit_seconds" />
           <BaseInput label="Fecha y Hora de Inicio — Hora de Caracas (GMT-4)" type="datetime-local" v-model="triviaForm.starts_at" />
           <BaseInput label="Fecha y Hora de Cierre (Tiempo Limitado) — Hora de Caracas (GMT-4)" type="datetime-local" v-model="triviaForm.ends_at" />
 
@@ -463,7 +462,7 @@ onMounted(loadTriviasAndSegments)
       <div class="space-y-6">
         <div class="p-4 rounded-xl bg-emerald-950/40 border border-emerald-800/60">
           <h3 class="text-xl font-bold font-title text-white">{{ triviaForm.title }}</h3>
-          <p class="text-xs text-slate-300 mt-1">Tiempo límite: {{ triviaForm.time_limit_seconds }}s | Recompensa: +{{ triviaForm.per_correct_pearls }} perlitas por acierto</p>
+          <p class="text-xs text-slate-300 mt-1">Recompensa: +{{ triviaForm.per_correct_pearls }} perlitas por acierto</p>
         </div>
 
         <div class="space-y-4">
