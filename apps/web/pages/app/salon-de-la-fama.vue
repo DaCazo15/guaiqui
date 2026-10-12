@@ -139,7 +139,7 @@ function closeLegendModal() {
                   {{ jersey.name }}
                 </h3>
                 <BaseBadge variant="warning" size="sm">
-                  {{ jersey.titlesCount }} {{ jersey.titlesCount === 1 ? 'título' : 'títulos' }}
+                  {{ jersey.titlesBadge || `${jersey.titlesCount} ${jersey.titlesCount === 1 ? 'título' : 'títulos'}` }}
                 </BaseBadge>
               </div>
               <p class="text-xs font-semibold text-guaiqui-primary italic">
@@ -369,8 +369,8 @@ function closeLegendModal() {
             <div class="p-3 bg-amber-50 rounded-guaiqui-md border border-amber-200 flex items-center gap-3">
               <i class="bi bi-trophy-fill text-amber-600 text-xl shrink-0"></i>
               <div>
-                <span class="text-xs font-bold text-amber-900 block">Palmarés con Guaiqueríes</span>
-                <span class="text-xs text-amber-800">{{ selectedJersey.titlesCount }} Títulos Nacionales</span>
+                <span class="text-xs font-bold text-amber-900 block">Distinción y Palmarés</span>
+                <span class="text-xs text-amber-800">{{ selectedJersey.titlesBadge || `${selectedJersey.titlesCount} Títulos Nacionales` }}</span>
               </div>
             </div>
 

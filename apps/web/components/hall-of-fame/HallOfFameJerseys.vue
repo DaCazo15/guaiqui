@@ -55,7 +55,7 @@ import { retiredJerseys } from '~/data/hallOfFameData'
                 </div>
                 <span class="inline-flex items-center gap-1 px-2.5 py-1 bg-amber-50 text-amber-800 rounded-full text-xs font-bold border border-amber-200 shrink-0">
                   <i class="bi bi-trophy-fill text-amber-500 text-[10px]"></i>
-                  <span>{{ jersey.titlesCount }} {{ jersey.titlesCount === 1 ? 'título' : 'títulos' }}</span>
+                  <span>{{ jersey.titlesBadge || `${jersey.titlesCount} ${jersey.titlesCount === 1 ? 'título' : 'títulos'}` }}</span>
                 </span>
               </div>
 
