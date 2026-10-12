@@ -52,8 +52,8 @@ async function sharePost(post: InstagramNewsPost) {
 
 function onImageError(e: Event) {
   const target = e.target as HTMLImageElement
-  if (target && !target.src.includes('noticia-1.jpg')) {
-    target.src = '/images/noticias/noticia-1.jpg'
+  if (target && !target.src.includes('noticia-spb-1.jpg')) {
+    target.src = '/images/noticias/noticia-spb-1.jpg'
   }
 }
 </script>
@@ -193,8 +193,8 @@ function onImageError(e: Event) {
           </a>
         </div>
 
-        <!-- Post Image (Aspect 4:3) -->
-        <div class="relative aspect-4/3 w-full bg-slate-950 overflow-hidden">
+        <!-- Post Image (Aspect 16:10 como en la captura) -->
+        <div class="relative aspect-[16/10] w-full bg-slate-950 overflow-hidden">
           <img
             :src="post.image_url"
             :alt="post.title"
@@ -203,6 +203,13 @@ function onImageError(e: Event) {
             referrerpolicy="no-referrer"
             @error="onImageError"
           />
+
+          <!-- Badge naranja de categoría oficial SPB -->
+          <div class="absolute top-3 right-3 z-10">
+            <span class="bg-[#f25c05] text-white text-[10px] font-extrabold uppercase px-2.5 py-1 tracking-wider rounded-sm shadow-md">
+              {{ post.badge }}
+            </span>
+          </div>
         </div>
 
         <!-- Action Icons Bar -->

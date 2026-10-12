@@ -34,8 +34,8 @@ function closePostModal() {
 
 function onImageError(e: Event) {
   const target = e.target as HTMLImageElement
-  if (target && !target.src.includes('noticia-1.jpg')) {
-    target.src = '/images/noticias/noticia-1.jpg'
+  if (target && !target.src.includes('noticia-spb-1.jpg')) {
+    target.src = '/images/noticias/noticia-spb-1.jpg'
   }
 }
 </script>
@@ -114,43 +114,49 @@ function onImageError(e: Event) {
           </button>
         </div>
 
-        <!-- Instagram Grid (3 columns on desktop, 2 on mobile) -->
-        <div class="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-6">
+        <!-- Grid de Noticias oficiales SPB (3 columnas en desktop, adaptado al formato exacto) -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-5">
           <div
             v-for="post in filteredPosts"
             :key="post.id"
-            class="group relative aspect-square bg-slate-900 rounded-xl overflow-hidden cursor-pointer shadow-sm hover:shadow-md transition-all border border-guaiqui-border"
+            class="group relative aspect-[16/10] bg-slate-900 rounded-xl overflow-hidden cursor-pointer shadow-lg hover:shadow-2xl transition-all duration-300 border border-slate-800 hover:border-slate-700 hover:-translate-y-1"
             @click="openPostModal(post)"
           >
+            <!-- Imagen oficial en alta definición -->
             <img
               :src="post.image_url"
               :alt="post.title"
-              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               loading="lazy"
               referrerpolicy="no-referrer"
               @error="onImageError"
             />
 
-            <!-- Hover Overlay -->
-            <div class="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col justify-between p-3 sm:p-4 text-white">
-              <div class="flex justify-between items-start">
-                <span class="text-[10px] font-mono uppercase bg-emerald-600/90 px-2 py-0.5 rounded-full font-bold">
+            <!-- Badge superior derecho (naranja idéntico a la captura) -->
+            <div class="absolute top-3 right-3 z-10">
+              <span class="bg-[#f25c05] text-white text-[10px] font-extrabold uppercase px-2.5 py-1 tracking-wider rounded-sm shadow-md">
+                {{ post.badge }}
+              </span>
+            </div>
+
+            <!-- Gradiente oscuro inferior con Título en Mayúsculas y Fecha -->
+            <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-transparent flex flex-col justify-end p-4 text-white">
+              <h3 class="font-display font-extrabold text-sm sm:text-base text-white uppercase tracking-tight leading-snug line-clamp-2 drop-shadow-md group-hover:text-amber-300 transition-colors">
+                {{ post.title }}
+              </h3>
+              
+              <div class="flex items-center justify-between pt-1.5 border-t border-white/10 mt-2">
+                <span class="text-[11px] text-slate-300 font-normal tracking-normal drop-shadow">
                   {{ post.date_formatted }}
                 </span>
-                <i class="bi bi-instagram text-sm text-pink-400"></i>
-              </div>
-
-              <div class="space-y-1">
-                <p class="font-display font-bold text-xs sm:text-sm uppercase leading-tight line-clamp-2">
-                  {{ post.title }}
-                </p>
-                <div class="flex items-center gap-3 text-xs font-semibold pt-1">
+                
+                <div class="flex items-center gap-2.5 text-xs font-semibold text-slate-300 group-hover:text-white transition-colors">
                   <span class="flex items-center gap-1">
-                    <i class="bi bi-heart-fill text-rose-500"></i>
+                    <i class="bi bi-heart-fill text-rose-500 text-[11px]"></i>
                     {{ (post.likes_count + (likedPosts[post.id] ? 1 : 0)).toLocaleString() }}
                   </span>
                   <span class="flex items-center gap-1">
-                    <i class="bi bi-chat-fill"></i>
+                    <i class="bi bi-chat-fill text-sky-400 text-[11px]"></i>
                     {{ post.comments_count }}
                   </span>
                 </div>

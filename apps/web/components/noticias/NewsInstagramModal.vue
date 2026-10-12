@@ -13,8 +13,8 @@ const emit = defineEmits<{
 
 function onImageError(e: Event) {
   const target = e.target as HTMLImageElement
-  if (target && !target.src.includes('noticia-1.jpg')) {
-    target.src = '/images/noticias/noticia-1.jpg'
+  if (target && !target.src.includes('noticia-spb-1.jpg')) {
+    target.src = '/images/noticias/noticia-spb-1.jpg'
   }
 }
 </script>
@@ -38,7 +38,7 @@ function onImageError(e: Event) {
         </button>
 
         <!-- Media Column -->
-        <div class="w-full md:w-3/5 bg-slate-950 flex items-center justify-center overflow-hidden aspect-square md:aspect-auto">
+        <div class="relative w-full md:w-3/5 bg-slate-950 flex items-center justify-center overflow-hidden aspect-[16/10] md:aspect-auto">
           <img
             :src="post.image_url"
             :alt="post.title"
@@ -46,6 +46,13 @@ function onImageError(e: Event) {
             referrerpolicy="no-referrer"
             @error="onImageError"
           />
+
+          <!-- Badge oficial SPB -->
+          <div class="absolute top-3 left-3 z-10">
+            <span class="bg-[#f25c05] text-white text-[11px] font-extrabold uppercase px-3 py-1 tracking-wider rounded-sm shadow-md">
+              {{ post.badge || 'DESTACADOS' }}
+            </span>
+          </div>
         </div>
 
         <!-- Post Content Column -->
@@ -112,15 +119,28 @@ function onImageError(e: Event) {
               </span>
             </div>
 
-            <a
-              href="https://www.instagram.com/guaiqueriesbbc/"
-              target="_blank"
-              rel="noopener noreferrer"
-              class="w-full py-2 bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-opacity hover:opacity-95 flex items-center justify-center gap-2"
-            >
-              <i class="bi bi-instagram"></i>
-              <span>Ver en Instagram Oficial</span>
-            </a>
+            <div class="space-y-2">
+              <a
+                v-if="post.post_url"
+                :href="post.post_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-full py-2 bg-guaiqui-primary hover:bg-guaiqui-primary-dark text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-colors flex items-center justify-center gap-2"
+              >
+                <i class="bi bi-box-arrow-up-right"></i>
+                <span>Leer Crónica Completa en SPB</span>
+              </a>
+
+              <a
+                href="https://www.instagram.com/guaiqueriesbbc/"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-full py-2 bg-gradient-to-r from-purple-600 via-pink-600 to-amber-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition-opacity hover:opacity-95 flex items-center justify-center gap-2"
+              >
+                <i class="bi bi-instagram"></i>
+                <span>Ver en Instagram Oficial</span>
+              </a>
+            </div>
           </div>
         </div>
       </div>

@@ -28,28 +28,32 @@ onMounted(async () => {
     if (data && data.length > 0) {
       posts.value = data
     } else {
-      // Use official SPB news dataset as fallback
-      posts.value = newsInstagramPosts.slice(0, 4).map((p) => ({
+      // Usar las noticias oficiales de la SPB scrapeadas
+      posts.value = newsInstagramPosts.map((p) => ({
         id: p.id,
-        post_url: 'https://www.instagram.com/guaiqueriesbbc/',
+        post_url: p.post_url || 'https://www.instagram.com/guaiqueriesbbc/',
         image_url: p.image_url,
         caption: p.title,
+        badge: p.badge,
+        date_formatted: p.date_formatted,
       }))
     }
   } catch {
-    posts.value = newsInstagramPosts.slice(0, 4).map((p) => ({
+    posts.value = newsInstagramPosts.map((p) => ({
       id: p.id,
-      post_url: 'https://www.instagram.com/guaiqueriesbbc/',
+      post_url: p.post_url || 'https://www.instagram.com/guaiqueriesbbc/',
       image_url: p.image_url,
       caption: p.title,
+      badge: p.badge,
+      date_formatted: p.date_formatted,
     }))
   }
 })
 
 function onImageError(e: Event) {
   const target = e.target as HTMLImageElement
-  if (target && !target.src.includes('noticia-1.jpg')) {
-    target.src = '/images/noticias/noticia-1.jpg'
+  if (target && !target.src.includes('noticia-spb-1.jpg')) {
+    target.src = '/images/noticias/noticia-spb-1.jpg'
   }
 }
 </script>
@@ -58,40 +62,48 @@ function onImageError(e: Event) {
   <section class="py-16 sm:py-20 bg-slate-950 text-white px-4 sm:px-8 border-t border-slate-900">
     <div class="max-w-6xl mx-auto space-y-8">
       <div class="text-center space-y-2">
-        <span class="text-xs uppercase font-bold text-pink-400 tracking-widest bg-pink-950/60 border border-pink-800/60 px-3 py-1 rounded-full inline-flex items-center gap-1.5">
-          <i class="bi bi-instagram"></i> @guaiqueriesbbc
+        <span class="text-xs uppercase font-bold text-guaiqui-primary tracking-widest bg-guaiqui-primary/10 border border-guaiqui-primary/30 px-3 py-1 rounded-full inline-flex items-center gap-1.5">
+          <i class="bi bi-newspaper"></i> Actualidad SPB 2026
         </span>
         <h2 class="font-display font-extrabold text-3xl sm:text-4xl uppercase tracking-tight">
-          La Tribu en Instagram
+          Noticias de la <span class="text-guaiqui-primary">Tribu</span>
         </h2>
         <p class="text-slate-400 text-xs sm:text-sm max-w-xl mx-auto">
-          Sigue las últimas novedades, mejores jugadas e historias de Guaiqueríes de Margarita en redes sociales.
+          Coberturas oficiales, resultados de partidos y actualidad de Guaiqueríes de Margarita en la Superliga Profesional de Baloncesto.
         </p>
       </div>
 
-      <!-- Instagram Mosaic Grid (Flex / Grid up to 8 items) -->
-      <div class="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      <!-- Noticias Grid: 3 columnas x 2 filas (diseño idéntico a la captura) -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
         <NuxtLink
           v-for="post in posts"
           :key="post.id"
           to="/noticias"
-          class="group relative rounded-2xl overflow-hidden aspect-square bg-slate-900 border border-slate-800 focus:outline-none focus:ring-2 focus:ring-pink-500 shadow-lg cursor-pointer"
+          class="group relative rounded-xl overflow-hidden aspect-[16/10] bg-slate-900 border border-slate-800 focus:outline-none focus:ring-2 focus:ring-guaiqui-primary shadow-xl cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:border-slate-700"
         >
+          <!-- Imagen de la noticia -->
           <img
             :src="post.image_url"
-            :alt="post.caption || 'Instagram Post Guaiqueríes'"
-            class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            :alt="post.caption || 'Noticia Guaiqueríes'"
+            class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
             referrerpolicy="no-referrer"
             @error="onImageError"
           />
 
-          <!-- Overlay gradient on hover -->
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/40 to-transparent opacity-60 group-hover:opacity-90 transition-opacity flex flex-col justify-end p-3">
-            <span class="text-xs font-semibold text-white line-clamp-2 drop-shadow-md">
-              {{ post.caption }}
+          <!-- Badge superior derecho (naranja como en la captura) -->
+          <div class="absolute top-3 right-3 z-10">
+            <span class="bg-[#f25c05] text-white text-[10px] font-extrabold uppercase px-2.5 py-1 tracking-wider rounded-sm shadow-md">
+              {{ (post as any).badge || 'DESTACADOS' }}
             </span>
-            <span class="text-[10px] text-pink-400 font-bold flex items-center gap-1 mt-1">
-              <i class="bi bi-instagram"></i> Ver publicación
+          </div>
+
+          <!-- Degradado oscuro inferior con Título y Fecha -->
+          <div class="absolute inset-0 bg-gradient-to-t from-black/95 via-black/55 to-transparent flex flex-col justify-end p-4">
+            <h3 class="font-display font-bold text-sm sm:text-base text-white uppercase tracking-tight leading-snug line-clamp-2 drop-shadow-md group-hover:text-amber-300 transition-colors">
+              {{ post.caption }}
+            </h3>
+            <span class="text-[11px] text-slate-300 mt-1.5 font-normal tracking-normal drop-shadow">
+              {{ (post as any).date_formatted || 'martes, 16 de junio del 2026' }}
             </span>
           </div>
         </NuxtLink>
