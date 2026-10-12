@@ -105,6 +105,13 @@ const deletePost = async (id: string) => {
   }
 }
 
+function onImageError(e: Event) {
+  const target = e.target as HTMLImageElement
+  if (target && !target.src.includes('noticia-1.jpg')) {
+    target.src = '/images/noticias/noticia-1.jpg'
+  }
+}
+
 onMounted(loadPosts)
 </script>
 
@@ -150,7 +157,12 @@ onMounted(loadPosts)
           class="bg-slate-900 border-slate-800 overflow-hidden group relative flex flex-col justify-between"
         >
           <div class="relative h-48 bg-slate-950 overflow-hidden">
-            <img :src="post.image_url" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+            <img
+              :src="post.image_url"
+              class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+              referrerpolicy="no-referrer"
+              @error="onImageError"
+            />
             <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
             <div class="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[10px] text-pink-400 font-bold flex items-center gap-1">
               <i class="bi bi-instagram"></i> #{{ index + 1 }}

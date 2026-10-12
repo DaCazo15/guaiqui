@@ -49,6 +49,13 @@ async function sharePost(post: InstagramNewsPost) {
     }
   }
 }
+
+function onImageError(e: Event) {
+  const target = e.target as HTMLImageElement
+  if (target && !target.src.includes('noticia-1.jpg')) {
+    target.src = '/images/noticias/noticia-1.jpg'
+  }
+}
 </script>
 
 <template>
@@ -193,6 +200,8 @@ async function sharePost(post: InstagramNewsPost) {
             :alt="post.title"
             class="w-full h-full object-cover"
             loading="lazy"
+            referrerpolicy="no-referrer"
+            @error="onImageError"
           />
         </div>
 

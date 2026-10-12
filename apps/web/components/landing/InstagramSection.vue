@@ -45,6 +45,13 @@ onMounted(async () => {
     }))
   }
 })
+
+function onImageError(e: Event) {
+  const target = e.target as HTMLImageElement
+  if (target && !target.src.includes('noticia-1.jpg')) {
+    target.src = '/images/noticias/noticia-1.jpg'
+  }
+}
 </script>
 
 <template>
@@ -74,6 +81,8 @@ onMounted(async () => {
             :src="post.image_url"
             :alt="post.caption || 'Instagram Post Guaiqueríes'"
             class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500"
+            referrerpolicy="no-referrer"
+            @error="onImageError"
           />
 
           <!-- Overlay gradient on hover -->

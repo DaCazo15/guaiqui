@@ -10,11 +10,10 @@ import StatsBand from '~/components/landing/StatsBand.vue'
 import RosterPreviewSection from '~/components/landing/RosterPreviewSection.vue'
 import HistoryTimelineSection from '~/components/landing/HistoryTimelineSection.vue'
 import StaffGridSection from '~/components/landing/StaffGridSection.vue'
-import CommunityBlock from '~/components/landing/CommunityBlock.vue'
+// import CommunityBlock from '~/components/landing/CommunityBlock.vue'
 import FaqSection from '~/components/landing/FaqSection.vue'
 import FinalCtaSection from '~/components/landing/FinalCtaSection.vue'
 import SiteFooter from '~/components/landing/SiteFooter.vue'
-
 import InstagramSection from '~/components/landing/InstagramSection.vue'
 
 // SEO Meta
@@ -63,7 +62,7 @@ useSeoMeta({
     <StaffGridSection />
 
     <!-- 12. CommunityBlock -->
-    <CommunityBlock />
+    <!-- <CommunityBlock /> -->
 
     <!-- 13. FaqAccordion -->
     <FaqSection />

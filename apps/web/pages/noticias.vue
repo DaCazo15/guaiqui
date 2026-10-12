@@ -31,6 +31,13 @@ function openPostModal(post: InstagramNewsPost) {
 function closePostModal() {
   selectedPost.value = null
 }
+
+function onImageError(e: Event) {
+  const target = e.target as HTMLImageElement
+  if (target && !target.src.includes('noticia-1.jpg')) {
+    target.src = '/images/noticias/noticia-1.jpg'
+  }
+}
 </script>
 
 <template>
@@ -120,6 +127,8 @@ function closePostModal() {
               :alt="post.title"
               class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
               loading="lazy"
+              referrerpolicy="no-referrer"
+              @error="onImageError"
             />
 
             <!-- Hover Overlay -->

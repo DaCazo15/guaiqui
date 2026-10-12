@@ -10,6 +10,13 @@ const emit = defineEmits<{
   (e: 'close'): void
   (e: 'toggle-like', postId: string): void
 }>()
+
+function onImageError(e: Event) {
+  const target = e.target as HTMLImageElement
+  if (target && !target.src.includes('noticia-1.jpg')) {
+    target.src = '/images/noticias/noticia-1.jpg'
+  }
+}
 </script>
 
 <template>
@@ -36,6 +43,8 @@ const emit = defineEmits<{
             :src="post.image_url"
             :alt="post.title"
             class="w-full h-full object-cover max-h-[50vh] md:max-h-[90vh]"
+            referrerpolicy="no-referrer"
+            @error="onImageError"
           />
         </div>
 
