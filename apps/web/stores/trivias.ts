@@ -121,7 +121,7 @@ export const useTriviaStore = defineStore('trivias', () => {
       const wonMap = new Set<string>()
       if (userAttempts && Array.isArray(userAttempts)) {
         userAttempts.forEach((att: any) => {
-          if (att.submitted_at && (att.score > 0 || att.pearls_awarded > 0)) {
+          if (att.submitted_at && att.pearls_awarded > 0) {
             wonMap.add(att.trivia_id)
           }
         })

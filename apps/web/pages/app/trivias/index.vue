@@ -92,8 +92,8 @@ function getStatusBadge(trivia: any) {
                 Sin límite de tiempo
               </span>
               <span class="flex items-center gap-1">
-                <i class="bi bi-bullseye text-guaiqui-primary"></i>
-                Máx. Intentos: {{ t.max_attempts }}
+                <i class="bi bi-arrow-repeat text-guaiqui-primary"></i>
+                Intentos hasta ganar
               </span>
               <span class="flex items-center gap-1">
                 Recompensa estimada: <PearlAmount :amount="150" size="sm" />

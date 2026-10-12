@@ -367,7 +367,7 @@ onMounted(loadTriviasAndSegments)
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <BaseInput label="Título de la Trivia" v-model="triviaForm.title" placeholder="Ej: Trivia Clásico Oriental" />
           <BaseInput label="Fecha y Hora de Inicio — Hora de Caracas (GMT-4)" type="datetime-local" v-model="triviaForm.starts_at" />
-          <BaseInput label="Fecha y Hora de Cierre (Tiempo Limitado) — Hora de Caracas (GMT-4)" type="datetime-local" v-model="triviaForm.ends_at" />
+          <BaseInput label="Fecha y Hora de Cierre — Hora de Caracas (GMT-4)" type="datetime-local" v-model="triviaForm.ends_at" />
 
           <BaseSelect
             label="Grupo / Segmento Objetivo de Fanáticos"

@@ -178,7 +178,8 @@ async function handleFinalSubmit() {
           <span>Reglas del Juego:</span>
         </h4>
         <ul class="space-y-1.5 list-disc list-inside text-xs text-guaiqui-text-muted">
-          <li>Cada respuesta correcta te otorga perlitas directamente a tu billetera.</li>
+          <li>Debes acertar todas las preguntas para ganar la trivia y recibir tus perlitas.</li>
+          <li>Si no aciertas todas, puedes volver a intentarlo las veces que desees hasta ganarla.</li>
           <li>Responde con calma y revisa tus respuestas antes de enviar.</li>
         </ul>
       </div>
@@ -298,14 +299,21 @@ async function handleFinalSubmit() {
     <!-- Mode 3: RESULT SCREEN -->
     <BaseCard v-else-if="mode === 'result'" class="p-8 bg-white border-guaiqui-border rounded-guaiqui-xl text-center space-y-6 shadow-guaiqui-sm">
       <div class="space-y-2">
-        <div class="w-14 h-14 rounded-full bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center text-3xl mx-auto">
-          <i class="bi bi-trophy-fill text-amber-500"></i>
+        <div
+          class="w-14 h-14 rounded-full flex items-center justify-center text-3xl mx-auto"
+          :class="(resultData?.pearls_awarded || 0) > 0 ? 'bg-amber-100 text-amber-500' : 'bg-guaiqui-primary-soft text-guaiqui-primary'"
+        >
+          <i :class="(resultData?.pearls_awarded || 0) > 0 ? 'bi bi-trophy-fill' : 'bi bi-arrow-repeat'"></i>
         </div>
         <h2 class="font-display text-2xl md:text-3xl font-bold text-guaiqui-text">
-          ¡Trivia Completada!
+          {{ (resultData?.pearls_awarded || 0) > 0 ? '¡Trivia Ganada!' : '¡Sigue intentándolo!' }}
         </h2>
         <p class="text-sm text-guaiqui-text-muted">
-          Tus respuestas han sido evaluadas en el servidor.
+          {{
+            (resultData?.pearls_awarded || 0) > 0
+              ? '¡Excelente! Acertaste todas las preguntas y tus perlitas han sido acreditadas.'
+              : 'Para ganar las perlitas debes responder correctamente todas las preguntas. ¡Puedes volver a jugar de inmediato!'
+          }}
         </p>
       </div>
 
@@ -332,17 +340,30 @@ async function handleFinalSubmit() {
       </div>
 
       <div class="pt-4 flex flex-col sm:flex-row gap-3 justify-center">
-        <NuxtLink to="/app/billetera">
-          <BaseButton variant="primary" block>
-            <i class="bi bi-wallet2 mr-1.5"></i>
-            Ver Mi Billetera
+        <template v-if="(resultData?.pearls_awarded || 0) > 0">
+          <NuxtLink to="/app/billetera">
+            <BaseButton variant="primary" block>
+              <i class="bi bi-wallet2 mr-1.5"></i>
+              Ver Mi Billetera
+            </BaseButton>
+          </NuxtLink>
+          <NuxtLink to="/app/trivias">
+            <BaseButton variant="outline" block>
+              Ver Más Trivias
+            </BaseButton>
+          </NuxtLink>
+        </template>
+        <template v-else>
+          <BaseButton variant="primary" block @click="mode = 'detail'">
+            <i class="bi bi-arrow-repeat mr-1.5"></i>
+            Reintentar Trivia
           </BaseButton>
-        </NuxtLink>
-        <NuxtLink to="/app/trivias">
-          <BaseButton variant="outline" block>
-            Ver Más Trivias
-          </BaseButton>
-        </NuxtLink>
+          <NuxtLink to="/app/trivias">
+            <BaseButton variant="outline" block>
+              Volver a Trivias
+            </BaseButton>
+          </NuxtLink>
+        </template>
       </div>
     </BaseCard>
   </div>
