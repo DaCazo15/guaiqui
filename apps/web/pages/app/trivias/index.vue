@@ -48,7 +48,7 @@ function getStatusBadge(trivia: any) {
           Trivias <span class="text-guaiqui-primary">Guaiqueríes</span>
         </h1>
         <p class="text-sm text-guaiqui-text-muted">
-          Demuestra tu pasión baloncestística y gana perlitas para canjear en la tienda oficial.
+          Demuestra tu pasión por el baloncesto y gana perlitas para canjear en la tienda oficial.
         </p>
       </div>
     </div>
@@ -86,14 +86,6 @@ function getStatusBadge(trivia: any) {
               <span class="flex items-center gap-1">
                 <i class="bi bi-calendar-event text-guaiqui-primary"></i>
                 Inicio: {{ formatCaracas(t.starts_at) }}
-              </span>
-              <span class="flex items-center gap-1">
-                <i class="bi bi-hourglass-split text-guaiqui-primary"></i>
-                Sin límite de tiempo
-              </span>
-              <span class="flex items-center gap-1">
-                <i class="bi bi-arrow-repeat text-guaiqui-primary"></i>
-                Intentos hasta ganar
               </span>
               <span class="flex items-center gap-1">
                 Recompensa estimada: <PearlAmount :amount="150" size="sm" />
