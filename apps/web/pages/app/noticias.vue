@@ -217,7 +217,7 @@ function onImageError(e: Event) {
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-4">
               <!-- Like Button -->
-              <!-- <button
+              <button
                 type="button"
                 @click="toggleLike(post.id)"
                 class="flex items-center gap-1.5 text-base font-bold transition-transform active:scale-125 cursor-pointer"
@@ -226,7 +226,6 @@ function onImageError(e: Event) {
                 <i :class="['bi', likedPosts[post.id] ? 'bi-heart-fill' : 'bi-heart', 'text-xl']"></i>
               </button>
 
-              Comment Button -->
               <!-- <button
                 type="button"
                 @click="toggleCaption(post.id)"
