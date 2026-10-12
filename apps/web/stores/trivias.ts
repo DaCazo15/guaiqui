@@ -177,8 +177,14 @@ export const useTriviaStore = defineStore('trivias', () => {
     if (msg.includes('TRIVIA_ALREADY_PLAYED') || msg.includes('Maximum participation attempts reached')) {
       return 'Ya has participado en esta trivia previamente.'
     }
-    if (msg.includes('ATTEMPT_EXPIRED') || msg.includes('time window is closed')) {
-      return 'El tiempo para esta trivia ha expirado.'
+    if (msg.includes('TRIVIA_NOT_STARTED')) {
+      return 'Esta trivia aún no ha comenzado. Estará disponible próximamente.'
+    }
+    if (msg.includes('TRIVIA_EXPIRED') || msg.includes('ATTEMPT_EXPIRED')) {
+      return 'El plazo para participar en esta trivia ha finalizado.'
+    }
+    if (msg.includes('time window is closed')) {
+      return 'La ventana de participación de esta trivia no está activa en este momento.'
     }
     if (msg.includes('verificado')) {
       return 'Debes tener tu correo electrónico verificado para participar.'

@@ -31,6 +31,17 @@ const attemptData = computed(() => triviaStore.currentAttempt)
 const currentQuestion = computed(() => attemptData.value?.questions[currentQuestionIndex.value])
 const totalQuestions = computed(() => attemptData.value?.questions.length || 0)
 const resultData = computed(() => triviaStore.currentResult)
+const currentTriviaInfo = computed(() => triviaStore.activeTrivias.find((t: any) => t.id === triviaId))
+
+const isTriviaUpcoming = computed(() => {
+  if (!currentTriviaInfo.value?.starts_at) return false
+  return new Date(currentTriviaInfo.value.starts_at).getTime() > Date.now()
+})
+
+const isTriviaExpired = computed(() => {
+  if (!currentTriviaInfo.value?.ends_at) return false
+  return new Date(currentTriviaInfo.value.ends_at).getTime() < Date.now()
+})
 
 onMounted(async () => {
   await triviaStore.fetchTrivias()
@@ -165,11 +176,22 @@ async function handleFinalSubmit(isAutoExpired = false) {
           <span>Desafío de Fanáticos</span>
         </span>
         <h1 class="font-display text-2xl md:text-3xl font-bold text-guaiqui-text">
-          Trivia Guaiqueríes
+          {{ currentTriviaInfo?.title || 'Trivia Guaiqueríes' }}
         </h1>
         <p class="text-sm text-guaiqui-text-muted">
-          Responde las preguntas antes de que expire el tiempo para ganar perlitas y acumular días en tu racha.
+          {{ currentTriviaInfo?.description || 'Responde las preguntas antes de que expire el tiempo para ganar perlitas y acumular días en tu racha.' }}
         </p>
+      </div>
+
+      <!-- Banner de estado si aún no inicia o expiró -->
+      <div v-if="isTriviaUpcoming" class="p-3.5 bg-amber-50 border border-amber-200 rounded-guaiqui-lg text-xs font-semibold text-amber-900 flex items-center gap-2">
+        <i class="bi bi-clock-history text-amber-600 text-base shrink-0"></i>
+        <span>Esta trivia está programada para comenzar próximamente.</span>
+      </div>
+
+      <div v-else-if="isTriviaExpired" class="p-3.5 bg-red-50 border border-red-200 rounded-guaiqui-lg text-xs font-semibold text-red-900 flex items-center gap-2">
+        <i class="bi bi-x-circle-fill text-red-600 text-base shrink-0"></i>
+        <span>El plazo de participación para esta trivia ha concluido.</span>
       </div>
 
       <div class="p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-lg space-y-3 text-sm text-guaiqui-text">
@@ -193,10 +215,17 @@ async function handleFinalSubmit(isAutoExpired = false) {
           block
           size="lg"
           :loading="triviaStore.isLoading || isVerifyingCaptcha"
+          :disabled="isTriviaUpcoming || isTriviaExpired"
           @click="handleStartTrivia"
         >
           <i class="bi bi-play-circle-fill mr-1.5"></i>
-          Empezar Trivia Ahora
+          {{
+            isTriviaUpcoming
+              ? 'Trivia aún no disponible'
+              : isTriviaExpired
+                ? 'Trivia finalizada'
+                : 'Empezar Trivia Ahora'
+          }}
         </BaseButton>
       </div>
     </BaseCard>
