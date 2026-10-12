@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { BaseCard, BaseBadge } from '@guaiqui/ui'
 import { useSupabaseClient } from '#imports'
 
 import { newsInstagramPosts } from '~/data/newsInstagramData'
