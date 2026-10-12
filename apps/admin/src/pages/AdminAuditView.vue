@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseCard, BaseButton, BaseBadge, BaseInput, BaseTable } from '@guaiqui/ui'
+import { formatCaracas } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
 
 interface AuditLogRow {
@@ -82,7 +83,7 @@ onMounted(loadAuditLogs)
 
       <BaseTable :columns="columns" :data="(auditLogs as any[])" :loading="loading" empty-text="No hay registros de auditoría que coincidan">
         <template #cell-created_at="{ row }">
-          <span class="text-xs font-mono text-slate-300">{{ (row as AuditLogRow).created_at ? new Date((row as AuditLogRow).created_at).toLocaleString() : '' }}</span>
+          <span class="text-xs font-mono text-slate-300">{{ (row as AuditLogRow).created_at ? formatCaracas((row as AuditLogRow).created_at) : '' }}</span>
         </template>
 
         <template #cell-actor_name="{ row }">

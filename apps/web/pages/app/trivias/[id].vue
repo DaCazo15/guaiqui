@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { BaseCard, BaseButton, PearlAmount } from '@guaiqui/ui'
+import { formatCaracas } from '@guaiqui/shared'
 import { useTriviaStore } from '~/stores/trivias'
 import { useAntiFraud } from '~/composables/useAntiFraud'
 import TurnstileWrapper from '~/components/common/TurnstileWrapper.vue'
@@ -43,6 +44,10 @@ const isTriviaExpired = computed(() => {
   return new Date(currentTriviaInfo.value.ends_at).getTime() < Date.now()
 })
 
+const isTriviaWon = computed(() => {
+  return !!currentTriviaInfo.value?.is_won
+})
+
 onMounted(async () => {
   await triviaStore.fetchTrivias()
 })
@@ -51,32 +56,23 @@ onUnmounted(() => {
   if (timerInterval) clearInterval(timerInterval)
 })
 
-function getStoredIdempotencyKey(): string {
-  const storageKey = `idempotency_trivia_${triviaId}`
-  let key = sessionStorage.getItem(storageKey)
-  if (!key) {
-    key = `attempt_${triviaId}_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`
-    sessionStorage.setItem(storageKey, key)
-  }
-  return key
-}
-
-function clearStoredIdempotencyKey() {
-  sessionStorage.removeItem(`idempotency_trivia_${triviaId}`)
-}
-
 function onCaptchaVerified(token: string) {
   captchaToken.value = token
 }
 
 async function handleStartTrivia() {
+  if (isTriviaWon.value) {
+    localError.value = 'Ya has ganado esta trivia previamente.'
+    return
+  }
   localError.value = null
   isVerifyingCaptcha.value = true
   try {
     const token = captchaToken.value || 'test-valid-pass'
     await antiFraud.verifyCaptchaToken(token)
 
-    const key = getStoredIdempotencyKey()
+    // UUID nuevo por cada intento
+    const key = crypto.randomUUID()
     await triviaStore.startTrivia(triviaId, key)
 
     if (attemptData.value) {
@@ -87,9 +83,6 @@ async function handleStartTrivia() {
     }
   } catch (err: any) {
     localError.value = err.message
-    if (err.message.includes('terminó') || err.message.includes('finalizado') || err.message.includes('previamente')) {
-      clearStoredIdempotencyKey()
-    }
   } finally {
     isVerifyingCaptcha.value = false
   }
@@ -186,8 +179,18 @@ async function handleFinalSubmit(isAutoExpired = false) {
         </p>
       </div>
 
-      <!-- Banner de estado si aún no inicia o expiró -->
-      <div v-if="isTriviaUpcoming" class="p-3.5 bg-amber-50 border border-amber-200 rounded-guaiqui-lg text-xs font-semibold text-amber-900 flex items-center gap-2">
+      <div v-if="currentTriviaInfo" class="flex flex-wrap items-center gap-4 text-xs text-guaiqui-text-muted">
+        <span><i class="bi bi-calendar-event text-guaiqui-primary mr-1"></i>Inicio: {{ formatCaracas(currentTriviaInfo.starts_at) }}</span>
+        <span><i class="bi bi-calendar-check text-guaiqui-primary mr-1"></i>Cierre: {{ formatCaracas(currentTriviaInfo.ends_at) }}</span>
+      </div>
+
+      <!-- Banner de estado si ya ganó, aún no inicia o expiró -->
+      <div v-if="isTriviaWon" class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-guaiqui-lg text-xs font-semibold text-emerald-900 flex items-center gap-2">
+        <i class="bi bi-trophy-fill text-emerald-600 text-base shrink-0"></i>
+        <span>¡Ya has ganado esta trivia! Las perlitas obtenidas ya fueron acreditadas a tu billetera.</span>
+      </div>
+
+      <div v-else-if="isTriviaUpcoming" class="p-3.5 bg-amber-50 border border-amber-200 rounded-guaiqui-lg text-xs font-semibold text-amber-900 flex items-center gap-2">
         <i class="bi bi-clock-history text-amber-600 text-base shrink-0"></i>
         <span>Esta trivia está programada para comenzar próximamente.</span>
       </div>
@@ -210,24 +213,26 @@ async function handleFinalSubmit(isAutoExpired = false) {
       </div>
 
       <!-- Turnstile Verification Widget -->
-      <TurnstileWrapper @verify="onCaptchaVerified" />
+      <TurnstileWrapper v-if="!isTriviaWon" @verify="onCaptchaVerified" />
 
       <div class="pt-2">
         <BaseButton
-          variant="primary"
+          :variant="isTriviaWon ? 'secondary' : 'primary'"
           block
           size="lg"
           :loading="triviaStore.isLoading || isVerifyingCaptcha"
-          :disabled="isTriviaUpcoming || isTriviaExpired"
+          :disabled="isTriviaWon || isTriviaUpcoming || isTriviaExpired"
           @click="handleStartTrivia"
         >
-          <i class="bi bi-play-circle-fill mr-1.5"></i>
+          <i :class="isTriviaWon ? 'bi bi-check-circle-fill text-emerald-600 mr-1.5' : 'bi bi-play-circle-fill mr-1.5'"></i>
           {{
-            isTriviaUpcoming
-              ? 'Trivia aún no disponible'
-              : isTriviaExpired
-                ? 'Trivia finalizada'
-                : 'Empezar Trivia Ahora'
+            isTriviaWon
+              ? 'Ya has ganado esta trivia previamente'
+              : isTriviaUpcoming
+                ? 'Trivia aún no disponible'
+                : isTriviaExpired
+                  ? 'Trivia finalizada'
+                  : 'Empezar Trivia Ahora'
           }}
         </BaseButton>
       </div>

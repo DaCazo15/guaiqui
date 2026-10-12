@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable } from '@guaiqui/ui'
+import { formatCaracas } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
 
 interface RiskFlagRow {
@@ -186,7 +187,7 @@ onMounted(loadQueue)
         </template>
 
         <template #cell-created_at="{ row }">
-          <span class="text-xs text-slate-400">{{ new Date((row as any).created_at).toLocaleString() }}</span>
+          <span class="text-xs text-slate-400">{{ (row as any).created_at ? formatCaracas((row as any).created_at) : '' }}</span>
         </template>
 
         <template #cell-actions="{ row }">

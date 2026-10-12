@@ -2,7 +2,7 @@
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
-import { SOFASCORE_OFFICIAL_GAMES, SOFASCORE_TEAM_INFO } from '@guaiqui/shared'
+import { SOFASCORE_OFFICIAL_GAMES, SOFASCORE_TEAM_INFO, caracasInputToISO, isoToCaracasInput, nowCaracasInput, formatCaracas } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
 
 interface GameRow {
@@ -107,12 +107,11 @@ const syncWithSofascore = async () => {
 }
 
 const openNewGame = () => {
-  const now = new Date()
   gameForm.value = {
     id: '',
     opponent: '',
     location: 'Gimnasio Ciudad de La Asunción',
-    game_date: now.toISOString().slice(0, 16),
+    game_date: nowCaracasInput(),
     is_home: true,
     status: 'scheduled',
     our_score: 0,
@@ -126,7 +125,7 @@ const editGame = (g: GameRow) => {
     id: g.id,
     opponent: g.opponent,
     location: g.location,
-    game_date: g.game_date ? new Date(g.game_date).toISOString().slice(0, 16) : '',
+    game_date: g.game_date ? isoToCaracasInput(g.game_date) : '',
     is_home: g.is_home,
     status: g.status,
     our_score: g.our_score || 0,
@@ -143,7 +142,7 @@ const saveGame = async () => {
       id: gameForm.value.id || undefined,
       opponent: gameForm.value.opponent,
       location: gameForm.value.location,
-      game_date: new Date(gameForm.value.game_date).toISOString(),
+      game_date: caracasInputToISO(gameForm.value.game_date),
       is_home: gameForm.value.is_home,
       status: gameForm.value.status,
       our_score: Number(gameForm.value.our_score),
@@ -219,7 +218,7 @@ onMounted(loadGames)
         </template>
 
         <template #cell-game_date="{ row }">
-          <span class="text-xs text-slate-300">{{ (row as GameRow).game_date ? new Date((row as GameRow).game_date).toLocaleString() : '' }}</span>
+          <span class="text-xs text-slate-300">{{ (row as GameRow).game_date ? formatCaracas((row as GameRow).game_date) : '' }}</span>
         </template>
 
         <template #cell-is_home="{ row }">
@@ -258,7 +257,7 @@ onMounted(loadGames)
       <div class="space-y-4">
         <BaseInput label="Equipo Rival" v-model="gameForm.opponent" placeholder="Ej: Trotamundos de Carabobo" />
         <BaseInput label="Ubicación / Gimnasio" v-model="gameForm.location" />
-        <BaseInput label="Fecha y Hora" type="datetime-local" v-model="gameForm.game_date" />
+        <BaseInput label="Fecha y Hora — Hora de Caracas (GMT-4)" type="datetime-local" v-model="gameForm.game_date" />
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <BaseSelect

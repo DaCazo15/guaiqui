@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseCard, BaseButton, BaseInput, BaseTable } from '@guaiqui/ui'
+import { formatCaracas } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
 
 const dailyCap = ref(1000)
@@ -160,7 +161,7 @@ onMounted(loadEconomySettings)
               <span class="font-semibold text-gray-900">{{ log.actor?.display_name || 'Administrador' }}</span>
               <span class="text-gray-600 font-mono ml-2">Cap Diario: {{ log.after?.daily_pearl_cap }} | Cap Semanal: {{ log.after?.weekly_pearl_cap }}</span>
             </div>
-            <span class="text-gray-500 font-mono">{{ new Date(log.created_at).toLocaleString() }}</span>
+            <span class="text-gray-500 font-mono">{{ formatCaracas(log.created_at) }}</span>
           </div>
 
           <div v-if="historyLogs.length === 0" class="text-xs text-gray-500 text-center py-4">

@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, computed } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
+import { caracasInputToISO, isoToCaracasInput, nowCaracasInput } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
 
 interface LoginModalSlide {
@@ -79,8 +80,8 @@ function selectSlide(slide: LoginModalSlide) {
     cta_label: slide.cta_label || 'Ver más',
     cta_url: slide.cta_url || '/app/tienda',
     status: slide.status,
-    starts_at: slide.starts_at ? new Date(slide.starts_at).toISOString().slice(0, 16) : '',
-    ends_at: slide.ends_at ? new Date(slide.ends_at).toISOString().slice(0, 16) : ''
+    starts_at: slide.starts_at ? isoToCaracasInput(slide.starts_at) : '',
+    ends_at: slide.ends_at ? isoToCaracasInput(slide.ends_at) : ''
   }
 }
 
@@ -101,7 +102,7 @@ function openNewSlide() {
     cta_label: 'Ver más',
     cta_url: '/app/tienda',
     status: 'draft',
-    starts_at: new Date().toISOString().slice(0, 16),
+    starts_at: nowCaracasInput(),
     ends_at: ''
   }
 }
@@ -121,8 +122,8 @@ async function handleSave() {
       p_cta_label: form.value.cta_label,
       p_cta_url: form.value.cta_url,
       p_status: form.value.status,
-      p_starts_at: form.value.starts_at ? new Date(form.value.starts_at).toISOString() : new Date().toISOString(),
-      p_ends_at: form.value.ends_at ? new Date(form.value.ends_at).toISOString() : null
+      p_starts_at: form.value.starts_at ? caracasInputToISO(form.value.starts_at) : caracasInputToISO(nowCaracasInput()),
+      p_ends_at: form.value.ends_at ? caracasInputToISO(form.value.ends_at) : null
     })
 
     if (error) throw error
@@ -397,7 +398,7 @@ const currentPreview = computed(() => {
               <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div>
                   <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                    Válido Desde
+                    Válido Desde — Hora de Caracas (GMT-4)
                   </label>
                   <input
                     v-model="form.starts_at"
@@ -407,7 +408,7 @@ const currentPreview = computed(() => {
                 </div>
                 <div>
                   <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-1">
-                    Válido Hasta (Opcional)
+                    Válido Hasta (Opcional) — Hora de Caracas (GMT-4)
                   </label>
                   <input
                     v-model="form.ends_at"

@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import StaffLayout from '../components/layout/StaffLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
+import { caracasInputToISO, isoToCaracasInput, nowCaracasInput, formatCaracas } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
 
 interface OptionForm {
@@ -97,25 +98,15 @@ const loadTriviasAndSegments = async () => {
   }
 }
 
-const toLocalDateTimeInput = (dateInput?: string | Date | null): string => {
-  if (!dateInput) return ''
-  const d = new Date(dateInput)
-  if (isNaN(d.getTime())) return ''
-  d.setMinutes(d.getMinutes() - d.getTimezoneOffset())
-  return d.toISOString().slice(0, 16)
-}
-
 const openNewTrivia = () => {
   selectedTrivia.value = null
-  const now = new Date()
-  const tomorrow = new Date(now.getTime() + 24 * 60 * 60 * 1000)
 
   triviaForm.value = {
     id: '',
     title: '',
     description: '',
-    starts_at: toLocalDateTimeInput(now),
-    ends_at: toLocalDateTimeInput(tomorrow),
+    starts_at: nowCaracasInput(),
+    ends_at: nowCaracasInput(24 * 60 * 60 * 1000),
     time_limit_seconds: 60,
     target_segment_id: '',
     per_correct_pearls: 50,
@@ -143,8 +134,8 @@ const editTrivia = async (t: TriviaRow) => {
     id: t.id,
     title: t.title,
     description: t.description || '',
-    starts_at: toLocalDateTimeInput(t.starts_at),
-    ends_at: toLocalDateTimeInput(t.ends_at),
+    starts_at: isoToCaracasInput(t.starts_at),
+    ends_at: isoToCaracasInput(t.ends_at),
     time_limit_seconds: t.time_limit_seconds || 60,
     target_segment_id: t.target_segment_id || '',
     per_correct_pearls: t.reward_rules?.per_correct_pearls ?? 50,
@@ -216,8 +207,8 @@ const saveTrivia = async () => {
       id: triviaForm.value.id || undefined,
       title: triviaForm.value.title,
       description: triviaForm.value.description,
-      starts_at: new Date(triviaForm.value.starts_at).toISOString(),
-      ends_at: new Date(triviaForm.value.ends_at).toISOString(),
+      starts_at: caracasInputToISO(triviaForm.value.starts_at),
+      ends_at: caracasInputToISO(triviaForm.value.ends_at),
       time_limit_seconds: Number(triviaForm.value.time_limit_seconds),
       target_segment_id: triviaForm.value.target_segment_id || null,
       reward_rules: {
@@ -335,11 +326,11 @@ onMounted(loadTriviasAndSegments)
         </template>
 
         <template #cell-starts_at="{ row }">
-          <span class="text-xs text-slate-300">{{ (row as any).starts_at ? new Date((row as any).starts_at).toLocaleString() : '' }}</span>
+          <span class="text-xs text-slate-300">{{ (row as any).starts_at ? formatCaracas((row as any).starts_at) : '' }}</span>
         </template>
 
         <template #cell-ends_at="{ row }">
-          <span class="text-xs text-slate-300">{{ (row as any).ends_at ? new Date((row as any).ends_at).toLocaleString() : '' }}</span>
+          <span class="text-xs text-slate-300">{{ (row as any).ends_at ? formatCaracas((row as any).ends_at) : '' }}</span>
         </template>
 
         <template #cell-reward_rules="{ row }">
@@ -376,8 +367,8 @@ onMounted(loadTriviasAndSegments)
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <BaseInput label="Título de la Trivia" v-model="triviaForm.title" placeholder="Ej: Trivia Clásico Oriental" />
           <BaseInput label="Tiempo total del intento (segundos)" type="number" v-model.number="triviaForm.time_limit_seconds" />
-          <BaseInput label="Fecha y Hora de Inicio" type="datetime-local" v-model="triviaForm.starts_at" />
-          <BaseInput label="Fecha y Hora de Cierre (Tiempo Limitado)" type="datetime-local" v-model="triviaForm.ends_at" />
+          <BaseInput label="Fecha y Hora de Inicio — Hora de Caracas (GMT-4)" type="datetime-local" v-model="triviaForm.starts_at" />
+          <BaseInput label="Fecha y Hora de Cierre (Tiempo Limitado) — Hora de Caracas (GMT-4)" type="datetime-local" v-model="triviaForm.ends_at" />
 
           <BaseSelect
             label="Grupo / Segmento Objetivo de Fanáticos"

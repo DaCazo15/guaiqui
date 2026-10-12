@@ -4,10 +4,10 @@ import { translateTriviaError } from '../stores/trivias'
 describe('translateTriviaError', () => {
   it('differentiates ATTEMPT_EXPIRED vs TRIVIA_EXPIRED correctly', () => {
     const attemptExpiredMsg = translateTriviaError('Error: ATTEMPT_EXPIRED')
-    expect(attemptExpiredMsg).toBe('Tu tiempo para este intento terminó.')
+    expect(attemptExpiredMsg).toBe('Se agotó tu tiempo para responder.')
 
     const triviaExpiredMsg = translateTriviaError('Error: TRIVIA_EXPIRED')
-    expect(triviaExpiredMsg).toBe('El plazo para participar en esta trivia ha finalizado.')
+    expect(triviaExpiredMsg).toBe('Esta trivia ya cerró.')
   })
 
   it('translates TRIVIA_ALREADY_PLAYED', () => {

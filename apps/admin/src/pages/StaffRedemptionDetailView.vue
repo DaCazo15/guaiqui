@@ -4,6 +4,7 @@ import { useRoute, useRouter } from 'vue-router'
 import StaffLayout from '../components/layout/StaffLayout.vue'
 import QueueRejectModal from '../components/queue/QueueRejectModal.vue'
 import ScannerIssueModal from '../components/scanner/ScannerIssueModal.vue'
+import { formatCaracas } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
 
 const route = useRoute()
@@ -242,7 +243,7 @@ onMounted(() => {
               </div>
 
               <span class="font-mono text-[11px] text-slate-500">
-                {{ new Date(h.created_at).toLocaleString('es-VE') }}
+                {{ formatCaracas(h.created_at) }}
               </span>
             </div>
           </div>

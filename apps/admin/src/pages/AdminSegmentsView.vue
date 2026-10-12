@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
+import { formatCaracas } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
 
 interface SegmentRow {
@@ -225,7 +226,7 @@ onMounted(loadSegments)
         </template>
 
         <template #cell-created_at="{ row }">
-          <span class="text-xs text-slate-400 font-mono">{{ (row as any).created_at ? new Date((row as any).created_at).toLocaleDateString() : '' }}</span>
+          <span class="text-xs text-slate-400 font-mono">{{ (row as any).created_at ? formatCaracas((row as any).created_at) : '' }}</span>
         </template>
 
         <template #cell-actions="{ row }">

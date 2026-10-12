@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
+import { caracasInputToISO, isoToCaracasInput, nowCaracasInput } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
 
 interface ProductRow {
@@ -84,7 +85,6 @@ const loadProducts = async () => {
 
 const openNewProduct = () => {
   selectedProduct.value = null
-  const now = new Date()
   productForm.value = {
     id: '',
     name: '',
@@ -94,7 +94,7 @@ const openNewProduct = () => {
     stock: 10,
     variantsText: '',
     active: true,
-    valid_from: now.toISOString().slice(0, 16),
+    valid_from: nowCaracasInput(),
     valid_until: '',
     images: []
   }
@@ -112,8 +112,8 @@ const editProduct = (p: ProductRow) => {
     stock: p.stock,
     variantsText: Array.isArray(p.variants) ? p.variants.join(', ') : '',
     active: p.active,
-    valid_from: p.valid_from ? new Date(p.valid_from).toISOString().slice(0, 16) : '',
-    valid_until: p.valid_until ? new Date(p.valid_until).toISOString().slice(0, 16) : '',
+    valid_from: p.valid_from ? isoToCaracasInput(p.valid_from) : '',
+    valid_until: p.valid_until ? isoToCaracasInput(p.valid_until) : '',
     images: p.images || []
   }
   showEditorModal.value = true
@@ -202,8 +202,8 @@ const saveProduct = async () => {
       stock: Number(productForm.value.stock),
       variants: variantsList,
       active: productForm.value.active,
-      valid_from: productForm.value.valid_from ? new Date(productForm.value.valid_from).toISOString() : new Date().toISOString(),
-      valid_until: productForm.value.valid_until ? new Date(productForm.value.valid_until).toISOString() : null,
+      valid_from: productForm.value.valid_from ? caracasInputToISO(productForm.value.valid_from) : caracasInputToISO(nowCaracasInput()),
+      valid_until: productForm.value.valid_until ? caracasInputToISO(productForm.value.valid_until) : null,
       images: productForm.value.images
     }
 
@@ -333,8 +333,8 @@ onMounted(loadProducts)
         <BaseInput label="Variantes (separadas por coma)" v-model="productForm.variantsText" placeholder="S, M, L, XL" />
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <BaseInput label="Válido Desde" type="datetime-local" v-model="productForm.valid_from" />
-          <BaseInput label="Válido Hasta (Opcional)" type="datetime-local" v-model="productForm.valid_until" />
+          <BaseInput label="Válido Desde — Hora de Caracas (GMT-4)" type="datetime-local" v-model="productForm.valid_from" />
+          <BaseInput label="Válido Hasta (Opcional) — Hora de Caracas (GMT-4)" type="datetime-local" v-model="productForm.valid_until" />
         </div>
 
         <div class="space-y-2 border-t border-slate-800 pt-3">

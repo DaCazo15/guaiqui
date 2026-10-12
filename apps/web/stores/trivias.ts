@@ -112,8 +112,28 @@ export const useTriviaStore = defineStore('trivias', () => {
         .order('starts_at', { ascending: false })
 
       if (error) throw error
-      activeTrivias.value = data || []
-      return data
+
+      // Consultar intentos del usuario para identificar trivias ganadas
+      const { data: userAttempts } = await supabase
+        .from('trivia_attempts')
+        .select('trivia_id, score, pearls_awarded, submitted_at')
+
+      const wonMap = new Set<string>()
+      if (userAttempts && Array.isArray(userAttempts)) {
+        userAttempts.forEach((att: any) => {
+          if (att.submitted_at && (att.score > 0 || att.pearls_awarded > 0)) {
+            wonMap.add(att.trivia_id)
+          }
+        })
+      }
+
+      const formatted = (data || []).map((t: any) => ({
+        ...t,
+        is_won: wonMap.has(t.id),
+      }))
+
+      activeTrivias.value = formatted
+      return formatted
     } catch (err: any) {
       errorMessage.value = err.message
       throw err
@@ -193,7 +213,13 @@ export const useTriviaStore = defineStore('trivias', () => {
 })
 
 export function translateTriviaError(msg: string): string {
+  if (process.dev || (import.meta as any).env?.DEV) {
+    console.warn('[translateTriviaError raw]:', msg)
+  }
   if (!msg) return 'Ocurrió un error inesperado al procesar la trivia.'
+  if (msg.includes('TRIVIA_ALREADY_WON')) {
+    return 'Ya has ganado esta trivia previamente.'
+  }
   if (msg.includes('TRIVIA_ALREADY_PLAYED') || msg.includes('Maximum participation attempts reached')) {
     return 'Ya has participado en esta trivia previamente.'
   }
@@ -201,10 +227,10 @@ export function translateTriviaError(msg: string): string {
     return 'Esta trivia aún no ha comenzado. Estará disponible próximamente.'
   }
   if (msg.includes('ATTEMPT_EXPIRED')) {
-    return 'Tu tiempo para este intento terminó.'
+    return 'Se agotó tu tiempo para responder.'
   }
   if (msg.includes('TRIVIA_EXPIRED')) {
-    return 'El plazo para participar en esta trivia ha finalizado.'
+    return 'Esta trivia ya cerró.'
   }
   if (msg.includes('time window is closed')) {
     return 'La ventana de participación de esta trivia no está activa en este momento.'

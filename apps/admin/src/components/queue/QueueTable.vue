@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { RouterLink } from 'vue-router'
+import { formatCaracas } from '@guaiqui/shared'
 
 defineProps<{
   items: any[]
@@ -35,7 +36,7 @@ const getStatusBadge = (status: string) => {
 
 const formatDate = (dateStr: string) => {
   if (!dateStr) return '-'
-  return new Date(dateStr).toLocaleString('es-VE', {
+  return formatCaracas(dateStr, {
     dateStyle: 'short',
     timeStyle: 'short'
   })

@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
+import { caracasInputToISO, isoToCaracasInput, nowCaracasInput } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
 
 interface SlideRow {
@@ -72,7 +73,6 @@ const loadSlides = async () => {
 }
 
 const openNew = () => {
-  const now = new Date()
   form.value = {
     id: '',
     tag: 'Próximo Partido',
@@ -85,7 +85,7 @@ const openNew = () => {
     badge_variant: 'accent',
     order_index: slides.value.length,
     is_published: true,
-    starts_at: now.toISOString().slice(0, 16),
+    starts_at: nowCaracasInput(),
     ends_at: ''
   }
   showEditorModal.value = true
@@ -104,8 +104,8 @@ const editRow = (row: SlideRow) => {
     badge_variant: row.badge_variant || 'accent',
     order_index: row.order_index,
     is_published: row.is_published,
-    starts_at: row.starts_at ? new Date(row.starts_at).toISOString().slice(0, 16) : '',
-    ends_at: row.ends_at ? new Date(row.ends_at).toISOString().slice(0, 16) : ''
+    starts_at: row.starts_at ? isoToCaracasInput(row.starts_at) : '',
+    ends_at: row.ends_at ? isoToCaracasInput(row.ends_at) : ''
   }
   showEditorModal.value = true
 }
@@ -153,8 +153,8 @@ const saveRow = async () => {
       badge_variant: form.value.badge_variant,
       order_index: Number(form.value.order_index),
       is_published: form.value.is_published,
-      starts_at: form.value.starts_at ? new Date(form.value.starts_at).toISOString() : new Date().toISOString(),
-      ends_at: form.value.ends_at ? new Date(form.value.ends_at).toISOString() : null
+      starts_at: form.value.starts_at ? caracasInputToISO(form.value.starts_at) : caracasInputToISO(nowCaracasInput()),
+      ends_at: form.value.ends_at ? caracasInputToISO(form.value.ends_at) : null
     }
 
     if (form.value.id) {
@@ -287,8 +287,8 @@ onMounted(loadSlides)
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-2">
-          <BaseInput label="Válido Desde" type="datetime-local" v-model="form.starts_at" />
-          <BaseInput label="Válido Hasta (Opcional)" type="datetime-local" v-model="form.ends_at" />
+          <BaseInput label="Válido Desde — Hora de Caracas (GMT-4)" type="datetime-local" v-model="form.starts_at" />
+          <BaseInput label="Válido Hasta (Opcional) — Hora de Caracas (GMT-4)" type="datetime-local" v-model="form.ends_at" />
         </div>
 
         <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer pt-2">

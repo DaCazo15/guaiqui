@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { BaseCard, BaseButton, PearlAmount } from '@guaiqui/ui'
+import { formatCaracas } from '@guaiqui/shared'
 import { useTriviaStore } from '~/stores/trivias'
 
 definePageMeta({
@@ -15,6 +16,10 @@ onMounted(async () => {
 })
 
 function getStatusBadge(trivia: any) {
+  if (trivia.is_won) {
+    return { label: 'Ganada', class: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' }
+  }
+
   const now = new Date().getTime()
   const start = new Date(trivia.starts_at).getTime()
   const end = new Date(trivia.ends_at).getTime()
@@ -77,7 +82,11 @@ function getStatusBadge(trivia: any) {
               {{ t.description || 'Pone a prueba tus conocimientos sobre la historia y plantilla del equipo.' }}
             </p>
 
-            <div class="flex items-center gap-4 text-xs text-guaiqui-text-muted pt-1">
+            <div class="flex flex-wrap items-center gap-4 text-xs text-guaiqui-text-muted pt-1">
+              <span class="flex items-center gap-1">
+                <i class="bi bi-calendar-event text-guaiqui-primary"></i>
+                Inicio: {{ formatCaracas(t.starts_at) }}
+              </span>
               <span class="flex items-center gap-1">
                 <i class="bi bi-stopwatch text-guaiqui-primary"></i>
                 Tiempo: {{ t.time_limit_seconds }}s
@@ -93,12 +102,20 @@ function getStatusBadge(trivia: any) {
           </div>
 
           <div class="flex items-center gap-3">
-            <NuxtLink :to="`/app/trivias/${t.id}`">
-              <BaseButton variant="primary" size="md">
-                <span>Ver Detalles & Jugar</span>
-                <i class="bi bi-arrow-right ml-1.5"></i>
+            <template v-if="t.is_won">
+              <BaseButton variant="secondary" size="md" :disabled="true" class="opacity-60 cursor-not-allowed">
+                <span>Trivia Ganada</span>
+                <i class="bi bi-check-circle-fill ml-1.5 text-emerald-600"></i>
               </BaseButton>
-            </NuxtLink>
+            </template>
+            <template v-else>
+              <NuxtLink :to="`/app/trivias/${t.id}`">
+                <BaseButton variant="primary" size="md">
+                  <span>Ver Detalles & Jugar</span>
+                  <i class="bi bi-arrow-right ml-1.5"></i>
+                </BaseButton>
+              </NuxtLink>
+            </template>
           </div>
         </div>
       </BaseCard>
