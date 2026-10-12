@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed } from 'vue'
-import { BaseCard, BaseButton, BaseBadge } from '@guaiqui/ui'
+import { BaseCard, BaseButton, BaseBadge, PearlIcon } from '@guaiqui/ui'
 import { useSupabaseClient, useSupabaseUser } from '#imports'
 import { useAnalytics } from '~/composables/useAnalytics'
 
@@ -349,20 +349,20 @@ useSeoMeta({
           <span class="text-xs font-bold uppercase tracking-wider text-guaiqui-text-muted block">Progreso Diario</span>
           <div class="flex items-baseline gap-2 mt-1">
             <span class="font-display font-extrabold text-3xl text-guaiqui-primary">
-              {{ progressData.completed_today }}
+              {{ progressData.completed_today ?? 0 }}
             </span>
             <span class="text-sm font-semibold text-guaiqui-text-muted">
-              / {{ progressData.daily_limit }} anuncios completados hoy
+              / {{ progressData.daily_limit ?? 50 }} anuncios completados hoy
             </span>
           </div>
         </div>
 
         <div class="text-right sm:text-right">
           <span class="text-xs font-bold uppercase tracking-wider text-guaiqui-text-muted block">Ganado hoy por anuncios</span>
-          <div class="flex items-center justify-end gap-1.5 mt-1">
-            <i class="bi bi-gem text-amber-500 text-lg"></i>
+          <div class="flex items-center justify-end gap-2 mt-1">
+            <PearlIcon size="md" class="shrink-0" />
             <span class="font-display font-extrabold text-2xl text-guaiqui-text">
-              +{{ progressData.pearls_earned_today }}
+              +{{ progressData.pearls_earned_today ?? 0 }}
             </span>
             <span class="text-xs text-guaiqui-text-muted font-medium">perlitas</span>
           </div>
@@ -373,7 +373,7 @@ useSeoMeta({
       <div class="space-y-2">
         <div class="flex items-center justify-between text-xs font-semibold">
           <span class="text-guaiqui-text">
-            Avance bloque actual ({{ progressData.block_progress }} / {{ progressData.block_size }})
+            Avance bloque actual ({{ progressData.block_progress ?? 0 }} / {{ progressData.block_size ?? 10 }})
           </span>
           <span class="text-guaiqui-primary font-bold">
             Recompensa al completar: +{{ currentBlockPearlReward }} perlitas
@@ -383,47 +383,73 @@ useSeoMeta({
         <div class="w-full h-3 bg-guaiqui-surface rounded-full overflow-hidden border border-guaiqui-border">
           <div
             class="h-full bg-linear-to-r from-guaiqui-primary to-emerald-400 transition-all duration-500 rounded-full"
-            :style="{ width: `${(progressData.block_progress / progressData.block_size) * 100}%` }"
+            :style="{ width: `${(((progressData.block_progress ?? 0) / (progressData.block_size || 10)) * 100)}%` }"
           ></div>
         </div>
 
         <p class="text-[11px] text-guaiqui-text-muted">
-          Completa {{ progressData.block_size - progressData.block_progress }} anuncio(s) más para reclamar las {{ currentBlockPearlReward }} perlitas de este bloque.
+          Completa {{ Math.max(0, (progressData.block_size || 10) - (progressData.block_progress ?? 0)) }} anuncio(s) más para reclamar las {{ currentBlockPearlReward }} perlitas de este bloque.
         </p>
       </div>
 
-      <!-- CTA Button -->
-      <div class="pt-3">
-        <BaseButton
-          variant="primary"
-          size="lg"
-          class="w-full sm:w-auto px-8 py-3 font-bold uppercase tracking-wider text-sm shadow-md"
-          :loading="sessionLoading"
-          :disabled="sessionLoading || loadingProgress || !progressData.can_watch"
-          @click="handleStartAd"
-        >
-          <i class="bi bi-play-circle-fill mr-2 text-lg"></i>
-          {{ sessionLoading ? 'Cargando anuncio...' : 'Ver anuncio para ganar perlitas' }}
-        </BaseButton>
+      <!-- CTA Button & System Status -->
+      <div class="pt-3 space-y-3">
+        <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
+          <BaseButton
+            variant="primary"
+            size="lg"
+            class="w-full sm:w-auto px-8 py-3 font-bold uppercase tracking-wider text-sm shadow-md"
+            :loading="sessionLoading"
+            :disabled="sessionLoading || loadingProgress || !progressData.can_watch"
+            @click="handleStartAd"
+          >
+            <i class="bi bi-play-circle-fill mr-2 text-lg"></i>
+            {{
+              sessionLoading
+                ? 'Cargando anuncio...'
+                : !progressData.can_watch && progressData.cant_reason === 'ADS_DISABLED'
+                  ? 'Anuncios en pausa temporal'
+                  : 'Ver anuncio para ganar perlitas'
+            }}
+          </BaseButton>
+        </div>
 
-        <p v-if="!progressData.can_watch" class="text-xs text-amber-700 bg-amber-50 border border-amber-200 p-3 rounded-guaiqui-md mt-3 font-medium">
-          <i class="bi bi-info-circle-fill mr-1"></i>
-          <template v-if="progressData.cant_reason === 'AD_DAILY_LIMIT'">
-            Has alcanzado el máximo de 50 anuncios de hoy. ¡Gracias por apoyar a la Tribu Verde! Vuelve mañana.
-          </template>
-          <template v-else-if="progressData.cant_reason === 'ADS_DISABLED'">
-            Los anuncios se encuentran desactivados por mantenimiento temporal.
-          </template>
-          <template v-else-if="progressData.cant_reason === 'ACCOUNT_TOO_NEW'">
-            Tu cuenta es muy reciente. Requiere al menos 3 días de antigüedad para ver anuncios.
-          </template>
-          <template v-else-if="progressData.cant_reason === 'TRIVIAS_REQUIRED'">
-            Debes completar al menos 1 trivia antes de acceder a los anuncios.
-          </template>
-          <template v-else>
-            No es posible ver anuncios en este momento.
-          </template>
-        </p>
+        <!-- Banner de estado integrado cuando no es posible ver anuncios -->
+        <div
+          v-if="!progressData.can_watch"
+          class="flex items-start gap-3 p-3.5 rounded-xl text-xs font-medium border"
+          :class="[
+            progressData.cant_reason === 'ADS_DISABLED'
+              ? 'bg-amber-50/90 border-amber-200 text-amber-900'
+              : 'bg-slate-50 border-slate-200 text-slate-700'
+          ]"
+        >
+          <div class="w-5 h-5 rounded-full bg-amber-200/80 text-amber-800 flex items-center justify-center shrink-0 mt-0.5">
+            <i :class="progressData.cant_reason === 'ADS_DISABLED' ? 'bi bi-tools text-xs' : 'bi bi-info-circle-fill text-xs'"></i>
+          </div>
+          <div>
+            <span v-if="progressData.cant_reason === 'ADS_DISABLED'" class="font-bold block text-amber-950 mb-0.5">
+              Mantenimiento programado de publicidad
+            </span>
+            <span>
+              <template v-if="progressData.cant_reason === 'AD_DAILY_LIMIT'">
+                Has alcanzado el límite de 50 anuncios de hoy. ¡Gracias por apoyar a la Tribu Verde! Vuelve mañana.
+              </template>
+              <template v-else-if="progressData.cant_reason === 'ADS_DISABLED'">
+                El sistema de anuncios recompensados se encuentra en mantenimiento temporal. Se reactivará próximamente.
+              </template>
+              <template v-else-if="progressData.cant_reason === 'ACCOUNT_TOO_NEW'">
+                Tu cuenta es muy reciente. Requiere al menos 3 días de antigüedad para ver anuncios.
+              </template>
+              <template v-else-if="progressData.cant_reason === 'TRIVIAS_REQUIRED'">
+                Debes completar al menos 1 trivia antes de acceder a los anuncios.
+              </template>
+              <template v-else>
+                No es posible ver anuncios en este momento.
+              </template>
+            </span>
+          </div>
+        </div>
       </div>
     </BaseCard>
 
