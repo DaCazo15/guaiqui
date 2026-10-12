@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable } from '@guaiqui/ui'
+import { SOFASCORE_OFFICIAL_ROSTER, SOFASCORE_TEAM_INFO } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
 
 interface PlayerRow {
@@ -20,6 +21,7 @@ interface PlayerRow {
 const players = ref<PlayerRow[]>([])
 const loading = ref(true)
 const actionLoading = ref(false)
+const syncLoading = ref(false)
 const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 
@@ -60,6 +62,52 @@ const loadPlayers = async () => {
     errorMessage.value = err.message
   } finally {
     loading.value = false
+  }
+}
+
+const syncWithSofascore = async () => {
+  if (!confirm(`¿Deseas sincronizar la plantilla oficial desde Sofascore (ID: ${SOFASCORE_TEAM_INFO.sofascore_id})?\nEsto actualizará o registrará los 22 jugadores oficiales de la SPB.`)) {
+    return
+  }
+
+  syncLoading.value = true
+  errorMessage.value = null
+  successMessage.value = null
+
+  try {
+    let syncedCount = 0
+    // Recorremos los jugadores oficiales de Sofascore
+    for (const p of SOFASCORE_OFFICIAL_ROSTER) {
+      // Buscar si ya existe por nombre o número de camiseta
+      const existing = players.value.find(
+        ep => ep.name.toLowerCase() === p.name.toLowerCase() || ep.jersey_number === p.jersey_number
+      )
+
+      const payload = {
+        id: existing ? existing.id : undefined,
+        name: p.name,
+        jersey_number: p.jersey_number,
+        position: p.position,
+        height: p.height,
+        age: p.age,
+        nationality: p.nationality,
+        bio: p.bio,
+        is_active: p.is_active,
+        is_star: p.is_star
+      }
+
+      const { error } = await supabase.rpc('admin_upsert_player', { p_player: payload })
+      if (!error) {
+        syncedCount++
+      }
+    }
+
+    successMessage.value = `¡Sincronización completada! ${syncedCount} jugadores oficiales de Sofascore (SPB) sincronizados.`
+    await loadPlayers()
+  } catch (err: any) {
+    errorMessage.value = `Error en sincronización: ${err.message}`
+  } finally {
+    syncLoading.value = false
   }
 }
 
@@ -148,12 +196,22 @@ onMounted(loadPlayers)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold font-title text-white">Plantilla de Jugadores</h1>
-          <p class="text-sm text-slate-400">Gestión de la plantilla oficial de Guaiqueríes de Margarita.</p>
+          <div class="flex items-center gap-3">
+            <h1 class="text-2xl font-bold font-title text-white">Plantilla de Jugadores</h1>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800">
+              <i class="bi bi-link-45deg"></i> Sofascore ID: 248672
+            </span>
+          </div>
+          <p class="text-sm text-slate-400 mt-1">Gestión de la plantilla oficial de Guaiqueríes de Margarita sincronizada con Sofascore SPB.</p>
         </div>
-        <BaseButton variant="primary" @click="openNewPlayer">
-          <i class="bi bi-person-plus mr-1.5"></i> Agregar Jugador
-        </BaseButton>
+        <div class="flex items-center gap-3">
+          <BaseButton variant="outline" :loading="syncLoading" @click="syncWithSofascore">
+            <i class="bi bi-arrow-repeat mr-1.5" :class="{ 'animate-spin': syncLoading }"></i> Sincronizar con Sofascore
+          </BaseButton>
+          <BaseButton variant="primary" @click="openNewPlayer">
+            <i class="bi bi-person-plus mr-1.5"></i> Agregar Jugador
+          </BaseButton>
+        </div>
       </div>
 
       <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">

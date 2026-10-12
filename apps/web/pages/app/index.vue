@@ -84,12 +84,17 @@ onMounted(async () => {
         </p>
       </BaseCard>
 
-      <BaseCard class="p-4 bg-white border-guaiqui-border rounded-guaiqui-lg space-y-1 shadow-guaiqui-sm">
-        <p class="text-xs text-guaiqui-text-muted uppercase tracking-wider font-medium">Próximo Partido</p>
-        <p class="text-sm font-bold text-guaiqui-text font-display truncate">
-          {{ triviaStore.homeSummary?.next_game?.opponent || 'Por anunciar' }}
-        </p>
-      </BaseCard>
+      <NuxtLink to="/app/partidos" class="block group">
+        <BaseCard class="p-4 bg-white border-guaiqui-border group-hover:border-guaiqui-primary rounded-guaiqui-lg space-y-1 shadow-guaiqui-sm transition-all duration-200">
+          <div class="flex items-center justify-between">
+            <p class="text-xs text-guaiqui-text-muted uppercase tracking-wider font-medium">Próximo Partido</p>
+            <i class="bi bi-chevron-right text-xs text-guaiqui-text-subtle group-hover:text-guaiqui-primary transition-colors"></i>
+          </div>
+          <p class="text-sm font-bold text-guaiqui-text font-display truncate group-hover:text-guaiqui-primary transition-colors">
+            {{ triviaStore.homeSummary?.next_game?.opponent || 'Marinos de Anzoátegui' }}
+          </p>
+        </BaseCard>
+      </NuxtLink>
     </div>
 
     <!-- Rewarded Ads Promo Card (Asynchronous & Reactive) -->
@@ -205,5 +210,76 @@ onMounted(async () => {
         </NuxtLink>
       </BaseCard>
     </div>
+
+    <!-- Sofascore Games Quick Widget -->
+    <BaseCard class="p-6 bg-white border-guaiqui-border rounded-guaiqui-xl space-y-4 shadow-guaiqui-sm">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+        <div class="flex items-center gap-2">
+          <div class="w-9 h-9 rounded-lg bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center text-lg">
+            <i class="bi bi-calendar-event-fill"></i>
+          </div>
+          <div>
+            <h2 class="font-display text-lg font-bold text-guaiqui-text uppercase tracking-wide">
+              Gran Final SPB & Calendario
+            </h2>
+            <p class="text-xs text-guaiqui-text-muted">
+              Resultados oficiales sincronizados con Sofascore · Team ID: 248672
+            </p>
+          </div>
+        </div>
+
+        <NuxtLink to="/app/partidos">
+          <BaseButton variant="secondary" size="sm">
+            <i class="bi bi-calendar-check mr-1.5"></i> Ver Calendario Completo
+          </BaseButton>
+        </NuxtLink>
+      </div>
+
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-4 pt-2">
+        <!-- Game 4 -->
+        <div class="p-3.5 bg-guaiqui-surface rounded-guaiqui-lg border border-guaiqui-border space-y-2">
+          <div class="flex items-center justify-between text-[11px] font-semibold text-guaiqui-text-muted">
+            <span>Final SPB · Juego 4</span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold uppercase text-[10px]">Victoria</span>
+          </div>
+          <div class="flex items-center justify-between font-display font-bold text-sm">
+            <span>Guaiqueríes</span>
+            <span class="text-guaiqui-primary font-black text-base">81</span>
+          </div>
+          <div class="flex items-center justify-between font-display font-bold text-sm text-guaiqui-text-muted">
+            <span>Marinos</span>
+            <span class="font-black text-base">78</span>
+          </div>
+        </div>
+
+        <!-- Game 3 -->
+        <div class="p-3.5 bg-guaiqui-surface rounded-guaiqui-lg border border-guaiqui-border space-y-2">
+          <div class="flex items-center justify-between text-[11px] font-semibold text-guaiqui-text-muted">
+            <span>Final SPB · Juego 3</span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold uppercase text-[10px]">Victoria</span>
+          </div>
+          <div class="flex items-center justify-between font-display font-bold text-sm">
+            <span>Guaiqueríes</span>
+            <span class="text-guaiqui-primary font-black text-base">75</span>
+          </div>
+          <div class="flex items-center justify-between font-display font-bold text-sm text-guaiqui-text-muted">
+            <span>Marinos</span>
+            <span class="font-black text-base">72</span>
+          </div>
+        </div>
+
+        <!-- Próximo Juego 5 -->
+        <div class="p-3.5 bg-gradient-to-br from-emerald-950 to-slate-900 text-white rounded-guaiqui-lg border border-emerald-500/30 space-y-2 flex flex-col justify-between">
+          <div class="flex items-center justify-between text-[11px] font-bold text-emerald-400">
+            <span>Final SPB · Juego 5</span>
+            <span class="px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-400/30 uppercase text-[10px]">Programado</span>
+          </div>
+          <div>
+            <p class="font-display font-black text-base uppercase">Guaiqueríes vs Marinos</p>
+            <p class="text-[11px] text-slate-300">Gimnasio Luis Ramos · Pto. La Cruz</p>
+          </div>
+        </div>
+      </div>
+    </BaseCard>
   </div>
 </template>

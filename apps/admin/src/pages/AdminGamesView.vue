@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
+import { SOFASCORE_OFFICIAL_GAMES, SOFASCORE_TEAM_INFO } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
 
 interface GameRow {
@@ -18,6 +19,7 @@ interface GameRow {
 const games = ref<GameRow[]>([])
 const loading = ref(true)
 const actionLoading = ref(false)
+const syncLoading = ref(false)
 const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 
@@ -56,6 +58,51 @@ const loadGames = async () => {
     errorMessage.value = err.message
   } finally {
     loading.value = false
+  }
+}
+
+const syncWithSofascore = async () => {
+  if (!confirm(`¿Deseas sincronizar el calendario y resultados desde Sofascore (ID: ${SOFASCORE_TEAM_INFO.sofascore_id})?\nEsto actualizará los marcadores de la Gran Final SPB y los próximos encuentros programados.`)) {
+    return
+  }
+
+  syncLoading.value = true
+  errorMessage.value = null
+  successMessage.value = null
+
+  try {
+    let syncedCount = 0
+    for (const g of SOFASCORE_OFFICIAL_GAMES) {
+      // Buscar si el partido ya existe con este rival y fecha similar
+      const gDateDay = new Date(g.game_date).toISOString().slice(0, 10)
+      const existing = games.value.find(eg => {
+        const egDay = eg.game_date ? new Date(eg.game_date).toISOString().slice(0, 10) : ''
+        return eg.opponent.toLowerCase() === g.opponent.toLowerCase() && egDay === gDateDay
+      })
+
+      const payload = {
+        id: existing ? existing.id : undefined,
+        opponent: g.opponent,
+        location: g.location,
+        game_date: new Date(g.game_date).toISOString(),
+        is_home: g.is_home,
+        status: g.status,
+        our_score: g.our_score,
+        opponent_score: g.opponent_score
+      }
+
+      const { error } = await supabase.rpc('admin_upsert_game', { p_game: payload })
+      if (!error) {
+        syncedCount++
+      }
+    }
+
+    successMessage.value = `¡Sincronización completada! ${syncedCount} partidos oficiales de Sofascore actualizados.`
+    await loadGames()
+  } catch (err: any) {
+    errorMessage.value = `Error al sincronizar partidos: ${err.message}`
+  } finally {
+    syncLoading.value = false
   }
 }
 
@@ -139,12 +186,22 @@ onMounted(loadGames)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold font-title text-white">Calendario y Resultados de Partidos</h1>
-          <p class="text-sm text-slate-400">Programación de partidos, marcadores en vivo y partidos finalizados.</p>
+          <div class="flex items-center gap-3">
+            <h1 class="text-2xl font-bold font-title text-white">Calendario y Resultados de Partidos</h1>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800">
+              <i class="bi bi-link-45deg"></i> Sofascore ID: 248672
+            </span>
+          </div>
+          <p class="text-sm text-slate-400 mt-1">Programación oficial, resultados de la Gran Final SPB y marcadores sincronizados desde Sofascore.</p>
         </div>
-        <BaseButton variant="primary" @click="openNewGame">
-          <i class="bi bi-calendar-plus mr-1.5"></i> Programar Partido
-        </BaseButton>
+        <div class="flex items-center gap-3">
+          <BaseButton variant="outline" :loading="syncLoading" @click="syncWithSofascore">
+            <i class="bi bi-arrow-repeat mr-1.5" :class="{ 'animate-spin': syncLoading }"></i> Sincronizar con Sofascore
+          </BaseButton>
+          <BaseButton variant="primary" @click="openNewGame">
+            <i class="bi bi-calendar-plus mr-1.5"></i> Programar Partido
+          </BaseButton>
+        </div>
       </div>
 
       <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">

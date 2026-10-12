@@ -15,6 +15,7 @@ const navItems = [
   { name: 'Tienda', path: '/app/tienda', icon: 'bi-bag-heart-fill' },
   { name: 'Mis Canjes', path: '/app/canjes', icon: 'bi-gift-fill' },
   { name: 'Ranking', path: '/app/ranking', icon: 'bi-trophy-fill' },
+  { name: 'Partidos', path: '/app/partidos', icon: 'bi-calendar-event-fill' },
   { name: 'Plantilla', path: '/app/plantilla', icon: 'bi-people-fill' },
   { name: 'Salón de la Fama', path: '/app/salon-de-la-fama', icon: 'bi-award-fill' },
   { name: 'Noticias', path: '/app/noticias', icon: 'bi-newspaper' },

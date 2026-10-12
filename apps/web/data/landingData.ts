@@ -216,12 +216,12 @@ export const teamStats = [
 ]
 
 export const keyRoster: PlayerItem[] = [
-  { id: 'p-1', number: 10, name: 'Heissler Guillent', position: 'Base (PG)', height: '1.86 m', age: 37, nationality: 'Venezuela', isStar: true },
-  { id: 'p-2', number: 14, name: 'Windi Graterol', position: 'Pívot (C)', height: '2.05 m', age: 38, nationality: 'Venezuela', isStar: true },
-  { id: 'p-3', number: 7, name: 'Pedro Chourio', position: 'Escolta (SG)', height: '1.86 m', age: 34, nationality: 'Venezuela' },
-  { id: 'p-4', number: 21, name: 'Edgar Martínez', position: 'Alero (SF)', height: '1.93 m', age: 27, nationality: 'Venezuela' },
-  { id: 'p-5', number: 33, name: 'Alphonso Anderson', position: 'Ala-Pívot (PF)', height: '2.01 m', age: 26, nationality: 'EE.UU.' },
-  { id: 'p-6', number: 3, name: 'Gary Browne', position: 'Base / Escolta', height: '1.85 m', age: 31, nationality: 'Puerto Rico' },
+  { id: 'p-1', number: 7, name: 'Pedro Chourio', position: 'Escolta / Alero (SG/SF)', height: '1.86 m', age: 34, nationality: 'Venezuela', isStar: true },
+  { id: 'p-2', number: 10, name: 'Heissler Guillent', position: 'Base (PG)', height: '1.86 m', age: 37, nationality: 'Venezuela', isStar: true },
+  { id: 'p-3', number: 14, name: 'Windi Graterol', position: 'Pívot (C)', height: '2.05 m', age: 38, nationality: 'Venezuela', isStar: true },
+  { id: 'p-4', number: 2, name: 'Juan Guerrero', position: 'Ala-Pívot (PF)', height: '2.05 m', age: 31, nationality: 'Rep. Dominicana', isStar: true },
+  { id: 'p-5', number: 0, name: 'Tavario Miller', position: 'Pívot (C)', height: '2.03 m', age: 30, nationality: 'Bahamas', isStar: true },
+  { id: 'p-6', number: 1, name: 'Nahziah Carter', position: 'Alero (SF)', height: '1.98 m', age: 25, nationality: 'EE.UU.', isStar: false },
 ]
 
 export const historyMilestones: Milestone[] = [
