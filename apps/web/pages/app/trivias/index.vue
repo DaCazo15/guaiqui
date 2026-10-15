@@ -38,6 +38,12 @@ function getStatusBadge(trivia: any) {
 
   return { label: 'Disponible', class: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' }
 }
+
+function getEstimatedReward(t: any): number {
+  const perCorrect = Number(t?.reward_rules?.per_correct_pearls) || 50
+  const bonus = Number(t?.reward_rules?.perfect_score_bonus) || 100
+  return perCorrect + bonus
+}
 </script>
 
 <template>
@@ -88,7 +94,7 @@ function getStatusBadge(trivia: any) {
                 Inicio: {{ formatCaracas(t.starts_at) }}
               </span>
               <span class="flex items-center gap-1">
-                Recompensa estimada: <PearlAmount :amount="150" size="sm" />
+                Recompensa estimada: <PearlAmount :amount="getEstimatedReward(t)" size="sm" />
               </span>
             </div>
           </div>

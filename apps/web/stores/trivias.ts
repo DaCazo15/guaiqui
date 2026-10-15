@@ -142,6 +142,50 @@ export const useTriviaStore = defineStore('trivias', () => {
     }
   }
 
+  async function fetchTriviaById(id: string) {
+    if (!id) return null
+    isLoading.value = true
+    errorMessage.value = null
+    try {
+      const { data, error } = await supabase
+        .from('trivias')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (error) throw error
+
+      // Consultar intentos del usuario para verificar si ya fue ganada
+      const { data: userAttempts } = await supabase
+        .from('trivia_attempts')
+        .select('trivia_id, score, pearls_awarded, submitted_at')
+        .eq('trivia_id', id)
+
+      const isWon = Array.isArray(userAttempts) && userAttempts.some(
+        (att: any) => att.submitted_at && att.pearls_awarded > 0
+      )
+
+      const formatted = {
+        ...data,
+        is_won: isWon,
+      }
+
+      const idx = activeTrivias.value.findIndex((t: any) => t.id === id)
+      if (idx !== -1) {
+        activeTrivias.value[idx] = formatted
+      } else {
+        activeTrivias.value.push(formatted)
+      }
+
+      return formatted
+    } catch (err: any) {
+      errorMessage.value = err.message
+      return activeTrivias.value.find((t: any) => t.id === id) || null
+    } finally {
+      isLoading.value = false
+    }
+  }
+
   async function startTrivia(triviaId: string, idempotencyKey: string) {
     isLoading.value = true
     errorMessage.value = null
@@ -206,6 +250,7 @@ export const useTriviaStore = defineStore('trivias', () => {
     fetchHomeSummary,
     fetchLeaderboard,
     fetchTrivias,
+    fetchTriviaById,
     startTrivia,
     submitTrivia,
     translateTriviaError,

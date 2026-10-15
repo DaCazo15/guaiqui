@@ -143,16 +143,17 @@ test.describe('Guaiqueríes Fan Zone — Trivia Flow E2E Tests', () => {
     if (await startButton.isVisible()) {
       await startButton.click()
 
-      // Check quiz question is displayed
+      // Check quiz question and trivia title are displayed
+      await expect(page.locator('text=Trivia Clásico Oriental')).toBeVisible()
       await expect(page.locator('text=¿En qué año se fundó Guaiqueríes de Margarita?')).toBeVisible()
       // Select option
       await page.click('button:has-text("1977")')
 
-      // Submit
-      const finishButton = page.locator('button:has-text("Finalizar y Enviar")')
-      if (await finishButton.isVisible()) {
-        await finishButton.click()
-        await expect(page.locator('text=¡Trivia Completada!')).toBeVisible()
+      // Submit with actual button text
+      const submitButton = page.locator('button:has-text("Enviar Respuestas")')
+      if (await submitButton.isVisible()) {
+        await submitButton.click()
+        await expect(page.locator('text=¡Trivia Ganada!')).toBeVisible()
       }
     }
   })

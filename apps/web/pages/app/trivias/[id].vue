@@ -47,9 +47,11 @@ const isTriviaWon = computed(() => {
 })
 
 onMounted(async () => {
-  await triviaStore.fetchTrivias()
+  await Promise.all([
+    triviaStore.fetchTriviaById(triviaId),
+    triviaStore.fetchTrivias(),
+  ])
 })
-
 
 function onCaptchaVerified(token: string) {
   captchaToken.value = token
@@ -66,8 +68,9 @@ async function handleStartTrivia() {
     const token = captchaToken.value || 'test-valid-pass'
     await antiFraud.verifyCaptchaToken(token)
 
-    // UUID nuevo por cada intento
+    // UUID nuevo por cada intento y persistencia en attemptKey
     const key = crypto.randomUUID()
+    attemptKey.value = key
     await triviaStore.startTrivia(triviaId, key)
 
     if (attemptData.value) {
@@ -81,7 +84,6 @@ async function handleStartTrivia() {
     isVerifyingCaptcha.value = false
   }
 }
-
 
 function selectOption(questionId: string, optionId: string) {
   selectedAnswers.value[questionId] = optionId
@@ -107,6 +109,14 @@ async function handleFinalSubmit() {
   try {
     const attemptId = attemptData.value?.attempt_id
     if (!attemptId || !attemptKey.value) throw new Error('Intento no encontrado, vuelve a empezar la trivia.')
+
+    // Validar que todas las preguntas tengan respuesta seleccionada
+    const questions = attemptData.value?.questions || []
+    for (const q of questions) {
+      if (!selectedAnswers.value[q.question_id]) {
+        throw new Error('Debes seleccionar una respuesta para todas las preguntas.')
+      }
+    }
 
     await triviaStore.submitTrivia(attemptId, selectedAnswers.value, attemptKey.value)
     attemptKey.value = ''
@@ -145,7 +155,7 @@ async function handleFinalSubmit() {
           <span>Desafío de Fanáticos</span>
         </span>
         <h1 class="font-display text-2xl md:text-3xl font-bold text-guaiqui-text">
-          {{ currentTriviaInfo?.title || 'Trivia Guaiqueríes' }}
+          {{ currentTriviaInfo?.title || (triviaStore.isLoading ? 'Cargando trivia...' : 'Trivia Guaiqueríes') }}
         </h1>
         <p class="text-sm text-guaiqui-text-muted">
           {{ currentTriviaInfo?.description || 'Responde las preguntas para ganar perlitas y acumular días en tu racha.' }}
@@ -213,11 +223,25 @@ async function handleFinalSubmit() {
 
     <!-- Mode 2: PLAYING (QUIZ STUDIO) -->
     <div v-else-if="mode === 'playing' && currentQuestion" class="space-y-4">
-      <!-- Header with Progress -->
-      <BaseCard class="p-4 bg-white border-guaiqui-border rounded-guaiqui-lg flex items-center justify-between shadow-guaiqui-sm">
-        <div>
+      <!-- Header with Trivia Title & Progress -->
+      <BaseCard class="p-4 bg-white border-guaiqui-border rounded-guaiqui-lg space-y-3 shadow-guaiqui-sm">
+        <div class="flex items-center justify-between">
+          <div class="space-y-0.5">
+            <span class="text-[11px] font-bold uppercase tracking-wider text-guaiqui-primary flex items-center gap-1.5">
+              <i class="bi bi-patch-question-fill"></i>
+              <span>Trivia Oficial</span>
+            </span>
+            <h3 class="font-display text-lg font-bold text-guaiqui-text leading-tight">
+              {{ currentTriviaInfo?.title || 'Trivia Guaiqueríes' }}
+            </h3>
+          </div>
+          <div class="text-xs font-semibold text-guaiqui-primary bg-guaiqui-primary-soft px-2.5 py-1 rounded-full shrink-0">
+            Sin límite de tiempo
+          </div>
+        </div>
+        <div class="flex items-center justify-between pt-1 border-t border-guaiqui-border">
           <span class="text-xs text-guaiqui-text-muted font-medium">Progreso</span>
-          <p class="text-base font-bold text-guaiqui-text font-display">
+          <p class="text-sm font-bold text-guaiqui-text font-display">
             Pregunta {{ currentQuestionIndex + 1 }} de {{ totalQuestions }}
           </p>
         </div>
@@ -274,6 +298,7 @@ async function handleFinalSubmit() {
             v-if="currentQuestionIndex < totalQuestions - 1"
             variant="primary"
             size="sm"
+            :disabled="!selectedAnswers[currentQuestion.question_id]"
             @click="nextQuestion"
           >
             <span>Siguiente</span>
@@ -285,6 +310,7 @@ async function handleFinalSubmit() {
             variant="primary"
             size="md"
             :loading="isSubmitting"
+            :disabled="!selectedAnswers[currentQuestion.question_id]"
             @click="handleFinalSubmit"
           >
             <i class="bi bi-send-check mr-1.5"></i>
@@ -297,6 +323,9 @@ async function handleFinalSubmit() {
     <!-- Mode 3: RESULT SCREEN -->
     <BaseCard v-else-if="mode === 'result'" class="p-8 bg-white border-guaiqui-border rounded-guaiqui-xl text-center space-y-6 shadow-guaiqui-sm">
       <div class="space-y-2">
+        <span class="text-xs uppercase tracking-widest text-guaiqui-primary font-bold">
+          {{ currentTriviaInfo?.title || 'Trivia Guaiqueríes' }}
+        </span>
         <div
           class="w-14 h-14 rounded-full flex items-center justify-center text-3xl mx-auto"
           :class="(resultData?.pearls_awarded || 0) > 0 ? 'bg-amber-100 text-amber-500' : 'bg-guaiqui-primary-soft text-guaiqui-primary'"

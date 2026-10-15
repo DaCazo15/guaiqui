@@ -113,14 +113,12 @@ const openNewTrivia = () => {
     perfect_score_bonus: 100,
     questions: [
       {
-        question_text: '¿En qué año se fundó Guaiqueríes de Margarita?',
+        question_text: '',
         points: 50,
         order_index: 0,
         options: [
-          { option_text: '1977', is_correct: true },
-          { option_text: '1985', is_correct: false },
-          { option_text: '1992', is_correct: false },
-          { option_text: '2000', is_correct: false }
+          { option_text: '', is_correct: true },
+          { option_text: '', is_correct: false }
         ]
       }
     ]
