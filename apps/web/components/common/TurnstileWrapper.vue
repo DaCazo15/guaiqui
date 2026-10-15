@@ -12,7 +12,7 @@ const emit = defineEmits<{
 
 const container = ref<HTMLElement | null>(null)
 const config = useRuntimeConfig()
-const siteKey = props.siteKey || config.public.turnstileSiteKey || '1x00000000000000000000AA'
+const siteKey = props.siteKey || config.public.turnstileSiteKey || '0x4AAAAAAFTd4sjJvea-Cegw'
 let widgetId: string | null = null
 
 function loadTurnstileScript(): Promise<void> {

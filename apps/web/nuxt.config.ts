@@ -64,7 +64,7 @@ export default defineNuxtConfig({
 
   runtimeConfig: {
     public: {
-      turnstileSiteKey: process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY || '1x00000000000000000000AA',
+      turnstileSiteKey: process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAAFTd4sjJvea-Cegw',
       gaMeasurementId: process.env.NUXT_PUBLIC_GA_MEASUREMENT_ID || 'G-P6EY10HB0B',
       gamAdUnitPath: process.env.NUXT_PUBLIC_GAM_AD_UNIT_PATH || '/21775744923/example/rewarded',
     },

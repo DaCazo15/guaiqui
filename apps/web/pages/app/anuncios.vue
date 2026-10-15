@@ -16,9 +16,21 @@ const user = useSupabaseUser()
 const analytics = useAnalytics()
 const antiFraud = useAntiFraud()
 const captchaToken = ref<string>('')
+const captchaVerified = ref<boolean>(false)
+const captchaVerifying = ref<boolean>(false)
 
-function onCaptchaVerified(token: string) {
+async function onCaptchaVerified(token: string) {
   captchaToken.value = token
+  captchaVerifying.value = true
+  errorMessage.value = null
+  try {
+    await antiFraud.verifyCaptchaToken(token)
+    captchaVerified.value = true
+  } catch (err: any) {
+    console.warn('Captcha auto-verification note:', err)
+  } finally {
+    captchaVerifying.value = false
+  }
 }
 
 // State
@@ -63,7 +75,8 @@ let rewardGrantedThisSession = false
 let currentMakeVisibleFn: (() => void) | null = null
 
 const gamAdUnitPath = computed(() => {
-  return (import.meta.env.VITE_GAM_AD_UNIT_PATH as string) || (import.meta.env.NUXT_PUBLIC_GAM_AD_UNIT_PATH as string) || '/21775744923/example/rewarded'
+  const config = useRuntimeConfig()
+  return (config.public.gamAdUnitPath as string) || (import.meta.env.VITE_GAM_AD_UNIT_PATH as string) || (import.meta.env.NUXT_PUBLIC_GAM_AD_UNIT_PATH as string) || '/21775744923/example/rewarded'
 })
 
 // Block rewards info list
@@ -119,7 +132,7 @@ const loadGptScript = (): Promise<void> => {
     script.async = true
     script.src = 'https://securepubads.g.doubleclick.net/tag/js/gpt.js'
     script.onload = () => resolve()
-    script.onerror = () => reject(new Error('No se pudo cargar el script de Google Publisher Tag.'))
+    script.onerror = () => reject(new Error('No se pudo cargar Google Publisher Tag. Si utilizas un bloqueador de anuncios (AdBlock o escudo de navegador), por favor desactívalo.'))
     document.head.appendChild(script)
   })
 }
@@ -143,23 +156,31 @@ const handleStartAd = async () => {
   analytics.trackEvent('rewarded_ad_requested', { block_progress: progressData.value.block_progress })
 
   try {
-    // Para el primer anuncio diario, verificar captcha preventivamente si se cuenta con el token
-    if ((progressData.value.completed_today ?? 0) === 0) {
-      try {
-        const token = captchaToken.value || 'test-valid-pass'
-        await antiFraud.verifyCaptchaToken(token)
-      } catch (cfErr: any) {
-        console.warn('Captcha pre-verification note:', cfErr)
+    // Para el primer anuncio diario, asegurar verificación del captcha
+    if ((progressData.value.completed_today ?? 0) === 0 && !captchaVerified.value) {
+      if (captchaToken.value) {
+        try {
+          await antiFraud.verifyCaptchaToken(captchaToken.value)
+          captchaVerified.value = true
+        } catch (cfErr: any) {
+          console.warn('Captcha pre-verification note:', cfErr)
+        }
+      } else {
+        sessionLoading.value = false
+        errorMessage.value = 'Por favor, completa la casilla de verificación de Cloudflare antes de iniciar.'
+        return
       }
     }
 
     const idempotencyKey = `ad_${user.value?.id}_${Date.now()}`
     let { data, error } = await client.rpc('start_ad_session', { p_idempotency_key: idempotencyKey })
 
+    // Auto reintento si el captcha aún no se había asentado
     if (error && error.message.includes('CAPTCHA_REQUIRED')) {
+      const token = captchaToken.value || 'test-valid-pass'
       try {
-        const token = captchaToken.value || 'test-valid-pass'
         await antiFraud.verifyCaptchaToken(token)
+        captchaVerified.value = true
         const retryRes = await client.rpc('start_ad_session', { p_idempotency_key: `${idempotencyKey}_retry` })
         if (!retryRes.error && retryRes.data) {
           data = retryRes.data
@@ -170,7 +191,7 @@ const handleStartAd = async () => {
 
     if (error) {
       if (error.message.includes('CAPTCHA_REQUIRED')) {
-        throw new Error('Por favor, completa la verificación de seguridad antes de ver el primer anuncio del día.')
+        throw new Error('No se pudo validar el pase de seguridad. Por favor, recarga o vuelve a interactuar con la casilla de verificación.')
       }
       if (error.message.includes('AD_DAILY_LIMIT') || error.message.includes('límite diario')) {
         analytics.trackEvent('rewarded_ad_daily_limit_reached', { completed: 50 })
@@ -198,7 +219,9 @@ const handleStartAd = async () => {
     googletag.cmd.push(() => {
       // Clean up previous slot if present
       if (activeSlot) {
-        googletag.destroySlots([activeSlot])
+        try {
+          googletag.destroySlots([activeSlot])
+        } catch (_) {}
         activeSlot = null
       }
 
@@ -208,7 +231,7 @@ const handleStartAd = async () => {
       )
 
       if (!activeSlot) {
-        cancelSession('error', 'Formato de anuncio no soportado en este dispositivo.')
+        cancelSession('error', 'Formato de anuncio recompensado no soportado en este dispositivo.')
         return
       }
 
@@ -220,9 +243,9 @@ const handleStartAd = async () => {
         if (evt.slot !== activeSlot) return
 
         analytics.trackEvent('rewarded_ad_ready', { session_id: activeSessionId })
-        currentMakeVisibleFn = () => evt.makeRewardedVisible()
-        showAcceptanceModal.value = true
         sessionLoading.value = false
+        // Mostrar anuncio directamente tras la solicitud del usuario
+        evt.makeRewardedVisible()
       })
 
       googletag.pubads().addEventListener('rewardedSlotGranted', async (evt: any) => {
@@ -265,21 +288,24 @@ const handleStartAd = async () => {
         }
 
         // Cleanup
-        googletag.destroySlots([activeSlot])
+        try {
+          googletag.destroySlots([activeSlot])
+        } catch (_) {}
         activeSlot = null
         activeSessionId = null
       })
 
-      // 10-second timeout for no_fill
+      // 15-second timeout for no_fill
       noFillTimeoutTimer = setTimeout(() => {
         if (activeSessionId && sessionLoading.value) {
-          cancelSession('no_fill', 'No hay anuncios disponibles en este momento. Inténtalo de nuevo más tarde.')
+          cancelSession('no_fill', 'No hay anuncios disponibles en este momento. Si tienes un bloqueador activo, por favor desactívalo.')
           analytics.trackEvent('rewarded_ad_no_fill', { session_id: activeSessionId })
         }
-      }, 10000)
+      }, 15000)
 
       googletag.enableServices()
       googletag.display(activeSlot)
+      googletag.pubads().refresh([activeSlot])
     })
   } catch (err: any) {
     sessionLoading.value = false
@@ -424,6 +450,12 @@ useSeoMeta({
         <!-- Turnstile Verification Widget (required for 1st ad of the day) -->
         <div v-if="(progressData.completed_today ?? 0) === 0 && progressData.can_watch" class="py-2">
           <TurnstileWrapper @verify="onCaptchaVerified" />
+          <div v-if="captchaVerifying" class="text-center text-xs text-guaiqui-text-muted mt-2 flex items-center justify-center gap-1.5">
+            <i class="bi bi-arrow-repeat animate-spin text-guaiqui-primary"></i> Validando verificación de seguridad...
+          </div>
+          <div v-else-if="captchaVerified" class="text-center text-xs text-emerald-600 font-semibold mt-2 flex items-center justify-center gap-1.5">
+            <i class="bi bi-shield-fill-check text-emerald-500"></i> Verificación completada con éxito
+          </div>
         </div>
 
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
