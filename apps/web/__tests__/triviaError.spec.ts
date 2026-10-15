@@ -20,6 +20,16 @@ describe('translateTriviaError', () => {
     expect(msg).toBe('Esta trivia aún no ha comenzado. Estará disponible próximamente.')
   })
 
+  it('translates CAPTCHA_REQUIRED to friendly message', () => {
+    const msg = translateTriviaError('P0001: CAPTCHA_REQUIRED')
+    expect(msg).toBe('Por favor, completa la verificación de seguridad antes de comenzar.')
+  })
+
+  it('translates assert_active_verified_fan to friendly message', () => {
+    const msg = translateTriviaError('function public.assert_active_verified_fan(uuid) does not exist')
+    expect(msg).toBe('Debes tener tu correo electrónico verificado para participar.')
+  })
+
   it('handles unknown messages gracefully by returning original message', () => {
     const custom = 'Error de red inesperado'
     expect(translateTriviaError(custom)).toBe(custom)

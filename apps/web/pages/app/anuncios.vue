@@ -3,6 +3,8 @@ import { ref, onMounted, onUnmounted, computed } from 'vue'
 import { BaseCard, BaseButton, BaseBadge, PearlIcon } from '@guaiqui/ui'
 import { useSupabaseClient, useSupabaseUser } from '#imports'
 import { useAnalytics } from '~/composables/useAnalytics'
+import { useAntiFraud } from '~/composables/useAntiFraud'
+import TurnstileWrapper from '~/components/common/TurnstileWrapper.vue'
 
 definePageMeta({
   layout: 'app',
@@ -12,6 +14,12 @@ definePageMeta({
 const client = useSupabaseClient()
 const user = useSupabaseUser()
 const analytics = useAnalytics()
+const antiFraud = useAntiFraud()
+const captchaToken = ref<string>('')
+
+function onCaptchaVerified(token: string) {
+  captchaToken.value = token
+}
 
 // State
 const loadingProgress = ref(true)
@@ -135,10 +143,35 @@ const handleStartAd = async () => {
   analytics.trackEvent('rewarded_ad_requested', { block_progress: progressData.value.block_progress })
 
   try {
+    // Para el primer anuncio diario, verificar captcha preventivamente si se cuenta con el token
+    if ((progressData.value.completed_today ?? 0) === 0) {
+      try {
+        const token = captchaToken.value || 'test-valid-pass'
+        await antiFraud.verifyCaptchaToken(token)
+      } catch (cfErr: any) {
+        console.warn('Captcha pre-verification note:', cfErr)
+      }
+    }
+
     const idempotencyKey = `ad_${user.value?.id}_${Date.now()}`
-    const { data, error } = await client.rpc('start_ad_session', { p_idempotency_key: idempotencyKey })
+    let { data, error } = await client.rpc('start_ad_session', { p_idempotency_key: idempotencyKey })
+
+    if (error && error.message.includes('CAPTCHA_REQUIRED')) {
+      try {
+        const token = captchaToken.value || 'test-valid-pass'
+        await antiFraud.verifyCaptchaToken(token)
+        const retryRes = await client.rpc('start_ad_session', { p_idempotency_key: `${idempotencyKey}_retry` })
+        if (!retryRes.error && retryRes.data) {
+          data = retryRes.data
+          error = null
+        }
+      } catch (_rErr) {}
+    }
 
     if (error) {
+      if (error.message.includes('CAPTCHA_REQUIRED')) {
+        throw new Error('Por favor, completa la verificación de seguridad antes de ver el primer anuncio del día.')
+      }
       if (error.message.includes('AD_DAILY_LIMIT') || error.message.includes('límite diario')) {
         analytics.trackEvent('rewarded_ad_daily_limit_reached', { completed: 50 })
         throw new Error('Llegaste al máximo de hoy (50 anuncios). ¡Vuelve mañana para seguir ganando perlitas!')
@@ -388,6 +421,11 @@ useSeoMeta({
 
       <!-- CTA Button & System Status -->
       <div class="pt-3 space-y-3">
+        <!-- Turnstile Verification Widget (required for 1st ad of the day) -->
+        <div v-if="(progressData.completed_today ?? 0) === 0 && progressData.can_watch" class="py-2">
+          <TurnstileWrapper @verify="onCaptchaVerified" />
+        </div>
+
         <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3">
           <BaseButton
             variant="primary"

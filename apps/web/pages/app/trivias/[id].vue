@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { BaseCard, BaseButton, PearlAmount } from '@guaiqui/ui'
 import { formatCaracas } from '@guaiqui/shared'
-import { useTriviaStore } from '~/stores/trivias'
+import { useTriviaStore, translateTriviaError } from '~/stores/trivias'
 import { useAntiFraud } from '~/composables/useAntiFraud'
 import TurnstileWrapper from '~/components/common/TurnstileWrapper.vue'
 
@@ -79,7 +79,7 @@ async function handleStartTrivia() {
       selectedAnswers.value = {}
     }
   } catch (err: any) {
-    localError.value = err.message
+    localError.value = translateTriviaError(err.message || '')
   } finally {
     isVerifyingCaptcha.value = false
   }

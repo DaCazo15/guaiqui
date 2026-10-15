@@ -280,7 +280,10 @@ export function translateTriviaError(msg: string): string {
   if (msg.includes('time window is closed')) {
     return 'La ventana de participación de esta trivia no está activa en este momento.'
   }
-  if (msg.includes('verificado')) {
+  if (msg.includes('CAPTCHA_REQUIRED')) {
+    return 'Por favor, completa la verificación de seguridad antes de comenzar.'
+  }
+  if (msg.includes('verificado') || msg.includes('assert_active_verified_fan')) {
     return 'Debes tener tu correo electrónico verificado para participar.'
   }
   if (msg.includes('inactiva, suspendida')) {
