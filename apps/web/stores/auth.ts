@@ -245,21 +245,28 @@ export const useAuthStore = defineStore('auth', () => {
     errorMessage.value = null
     try {
       await fetchActiveLegalVersions()
-      const now = new Date().toISOString()
-      const { error } = await supabase
-        .from('profiles')
-        .update({
-          terms_accepted_at: now,
-          terms_version: activeLegalVersions.value.terminos || 'v1.0',
-          privacy_accepted_at: now,
-          privacy_version: activeLegalVersions.value.privacidad || 'v1.0',
-          pearls_rules_accepted_at: now,
-          pearls_rules_version: activeLegalVersions.value.perlitas || 'v1.0',
-        })
-        .eq('id', user.value.id)
-
+      const { error } = await supabase.rpc('accept_terms')
       if (error) throw error
       await fetchProfile()
+    } catch (err: any) {
+      errorMessage.value = err.message
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function setBirthDate(birthDate: string) {
+    if (!user.value?.id) return
+    isLoading.value = true
+    errorMessage.value = null
+    try {
+      const { data, error } = await supabase.rpc('set_birth_date', {
+        p_birth_date: birthDate,
+      })
+      if (error) throw error
+      await fetchProfile()
+      return data
     } catch (err: any) {
       errorMessage.value = err.message
       throw err
@@ -273,12 +280,42 @@ export const useAuthStore = defineStore('auth', () => {
     isLoading.value = true
     errorMessage.value = null
     try {
-      const { error } = await supabase
-        .from('profiles')
-        .update(updates)
-        .eq('id', user.value.id)
+      // 1. If birth_date is provided and user has no birth_date yet, register via set_birth_date RPC
+      if (updates.birth_date && !profile.value?.birth_date) {
+        const { error: birthErr } = await supabase.rpc('set_birth_date', {
+          p_birth_date: updates.birth_date,
+        })
+        if (birthErr) throw birthErr
+      }
 
-      if (error) throw error
+      // 2. Filter payload strictly to allowed updatable columns with GRANT UPDATE
+      const allowedKeys = [
+        'display_name',
+        'avatar_url',
+        'municipality',
+        'gender',
+        'favorite_player_id',
+        'shirt_size',
+        'referral_source',
+        'notification_prefs',
+      ] as const
+
+      const safeUpdates: Record<string, any> = {}
+      for (const key of allowedKeys) {
+        if (key in updates && (updates as any)[key] !== undefined) {
+          safeUpdates[key] = (updates as any)[key]
+        }
+      }
+
+      if (Object.keys(safeUpdates).length > 0) {
+        const { error } = await supabase
+          .from('profiles')
+          .update(safeUpdates)
+          .eq('id', user.value.id)
+
+        if (error) throw error
+      }
+
       await fetchProfile()
     } catch (err: any) {
       errorMessage.value = err.message
@@ -292,7 +329,7 @@ export const useAuthStore = defineStore('auth', () => {
     if (!user.value) throw new Error('Usuario no autenticado')
 
     // Client-side validations
-    const allowedTypes = ['image/jpeg', 'image/png', 'image/webp']
+    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/avif']
     if (!allowedTypes.includes(file.type)) {
       throw new Error('Formato no permitido. Usa JPG, PNG o WebP.')
     }
@@ -306,6 +343,27 @@ export const useAuthStore = defineStore('auth', () => {
     errorMessage.value = null
 
     try {
+      // 1. Attempt compression & conversion to .avif via backend Edge Function
+      try {
+        const formData = new FormData()
+        formData.append('file', file)
+
+        const { data: fnData, error: fnErr } = await supabase.functions.invoke('compress-avatar', {
+          body: formData,
+        })
+
+        if (!fnErr && fnData?.success && fnData?.avatar_url) {
+          const avatarUrl = fnData.avatar_url
+          if (profile.value) {
+            profile.value.avatar_url = avatarUrl
+          }
+          return avatarUrl
+        }
+      } catch (fnCatchErr) {
+        console.warn('Backend compress-avatar call failed, falling back to direct upload:', fnCatchErr)
+      }
+
+      // 2. Fallback: Direct storage upload
       const ext = file.name.split('.').pop()
       const path = `${user.value.id}/${crypto.randomUUID()}.${ext}`
 
@@ -514,6 +572,7 @@ export const useAuthStore = defineStore('auth', () => {
     signUpWithEmail,
     loginWithGoogle,
     acceptConsent,
+    setBirthDate,
     updateProfile,
     uploadAvatar,
     requestPasswordReset,

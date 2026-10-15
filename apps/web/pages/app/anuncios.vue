@@ -42,7 +42,6 @@ const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 
 // Modal states
-const showConsentNotice = ref(false)
 const showAcceptanceModal = ref(false)
 const showEarlyCloseConfirmModal = ref(false)
 const showResultModal = ref(false)
@@ -128,11 +127,6 @@ const configureGptPrivacy = () => {
 }
 
 const handleStartAd = async () => {
-  if (!analytics.hasAdvertisingConsent.value) {
-    showConsentNotice.value = true
-    return
-  }
-
   sessionLoading.value = true
   errorMessage.value = null
   successMessage.value = null
@@ -598,41 +592,5 @@ useSeoMeta({
       </div>
     </Teleport>
 
-    <!-- MODAL 4: Missing Advertising Consent Notice -->
-    <Teleport to="body">
-      <div
-        v-if="showConsentNotice"
-        class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-xs"
-      >
-        <div class="bg-white rounded-guaiqui-2xl max-w-md w-full p-6 space-y-5 shadow-2xl border border-guaiqui-border text-center">
-          <div class="w-12 h-12 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-2xl mx-auto">
-            <i class="bi bi-shield-lock-fill"></i>
-          </div>
-
-          <div class="space-y-2">
-            <h3 class="font-display font-bold text-xl text-guaiqui-text uppercase">
-              Consentimiento de Publicidad Requerido
-            </h3>
-            <p class="text-xs text-guaiqui-text-muted leading-relaxed">
-              Para reproducir anuncios de Google Ad Manager es necesario haber aceptado la categoría "Publicidad de Terceros" en las preferencias de privacidad.
-            </p>
-          </div>
-
-          <div class="flex gap-3 pt-1">
-            <BaseButton variant="secondary" size="md" class="flex-1" @click="showConsentNotice = false">
-              Cerrar
-            </BaseButton>
-            <BaseButton
-              variant="primary"
-              size="md"
-              class="flex-1 font-semibold"
-              @click="showConsentNotice = false; analytics.initConsent()"
-            >
-              Preferencias
-            </BaseButton>
-          </div>
-        </div>
-      </div>
-    </Teleport>
   </div>
 </template>

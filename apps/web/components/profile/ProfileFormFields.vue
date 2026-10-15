@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted } from 'vue'
+import { ref, watch, onMounted, computed } from 'vue'
 import { BaseInput, BaseSelect, BaseButton } from '@guaiqui/ui'
 import { MUNICIPALITIES, GENDERS, SHIRT_SIZES, REFERRAL_SOURCES, type Database } from '@guaiqui/shared'
 
@@ -9,6 +9,7 @@ const props = defineProps<{
   profile: ProfileRow | null
   loading?: boolean
   error?: string | null
+  success?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -27,7 +28,8 @@ const referralSource = ref(props.profile?.referral_source || '')
 
 const playersList = ref<{ value: string; label: string }[]>([])
 const localError = ref<string | null>(null)
-const successMessage = ref<string | null>(null)
+
+const isBirthDateSet = computed(() => !!props.profile?.birth_date)
 
 const municipalityOptions = MUNICIPALITIES.map((m) => ({ value: m, label: m }))
 const genderOptions = GENDERS.map((g) => ({ value: g, label: g }))
@@ -66,7 +68,6 @@ onMounted(async () => {
 
 function handleSave() {
   localError.value = null
-  successMessage.value = null
 
   if (!displayName.value.trim()) {
     localError.value = 'El nombre para mostrar es requerido.'
@@ -76,22 +77,20 @@ function handleSave() {
   emit('save', {
     display_name: displayName.value.trim(),
     municipality: municipality.value,
-    birth_date: birthDate.value || null,
+    birth_date: isBirthDateSet.value ? undefined : (birthDate.value || null),
     gender: gender.value || null,
     favorite_player_id: favoritePlayerId.value || null,
     shirt_size: shirtSize.value || null,
     referral_source: referralSource.value || null,
   })
-
-  successMessage.value = '¡Perfil actualizado con éxito!'
 }
 </script>
 
 <template>
   <form @submit.prevent="handleSave" class="space-y-4">
-    <div v-if="successMessage" class="p-3 bg-guaiqui-status-success-soft border border-guaiqui-status-success/30 rounded-guaiqui-md text-guaiqui-status-success text-sm flex items-center gap-2">
+    <div v-if="success" class="p-3 bg-guaiqui-status-success-soft border border-guaiqui-status-success/30 rounded-guaiqui-md text-guaiqui-status-success text-sm flex items-center gap-2">
       <i class="bi bi-check-circle-fill shrink-0"></i>
-      <span>{{ successMessage }}</span>
+      <span>{{ success }}</span>
     </div>
 
     <div v-if="localError || error" class="p-3 bg-guaiqui-status-danger-soft border border-guaiqui-status-danger/30 rounded-guaiqui-md text-guaiqui-status-danger text-sm flex items-center gap-2">
@@ -117,6 +116,8 @@ function handleSave() {
         v-model="birthDate"
         label="Fecha de nacimiento"
         type="date"
+        :disabled="isBirthDateSet"
+        :hint="isBirthDateSet ? 'Tu fecha de nacimiento no puede ser modificada una vez registrada.' : 'Solo se puede registrar una vez (para regalos de cumpleaños).'"
       />
 
       <BaseSelect

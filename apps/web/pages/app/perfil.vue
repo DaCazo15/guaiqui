@@ -13,13 +13,16 @@ definePageMeta({
 const authStore = useAuthStore()
 const avatarUploading = ref(false)
 const localError = ref<string | null>(null)
+const successMessage = ref<string | null>(null)
 const showBirthdayPrompt = ref(true)
 
 async function handleAvatarUpload(file: File) {
   avatarUploading.value = true
   localError.value = null
+  successMessage.value = null
   try {
     await authStore.uploadAvatar(file)
+    successMessage.value = '¡Foto de perfil actualizada con éxito!'
   } catch (err: any) {
     localError.value = err.message
   } finally {
@@ -29,8 +32,10 @@ async function handleAvatarUpload(file: File) {
 
 async function handleSaveProfile(updates: any) {
   localError.value = null
+  successMessage.value = null
   try {
     await authStore.updateProfile(updates)
+    successMessage.value = '¡Perfil actualizado con éxito!'
   } catch (err: any) {
     localError.value = err.message
   }
@@ -97,6 +102,7 @@ async function handleSaveProfile(updates: any) {
           :profile="authStore.profile"
           :loading="authStore.isLoading"
           :error="localError"
+          :success="successMessage"
           @save="handleSaveProfile"
         />
       </div>

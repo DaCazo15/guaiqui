@@ -381,7 +381,7 @@ async function handleFinalSubmit() {
           </NuxtLink>
         </template>
         <template v-else>
-          <BaseButton variant="primary" block @click="mode = 'detail'">
+          <BaseButton variant="primary" block @click="mode = 'detail'; localError = null">
             <i class="bi bi-arrow-repeat mr-1.5"></i>
             Reintentar Trivia
           </BaseButton>

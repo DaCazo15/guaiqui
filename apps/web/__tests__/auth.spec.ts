@@ -43,14 +43,20 @@ const mockSupabase = {
       getPublicUrl: () => ({ data: { publicUrl: 'https://example.com/avatar.png' } }),
     }),
   },
-  rpc: vi.fn().mockImplementation((fnName) => {
+  rpc: vi.fn().mockImplementation((fnName: string, args?: any) => {
     if (fnName === 'delete_my_account') {
       return Promise.resolve({ data: { success: true }, error: null })
+    }
+    if (fnName === 'accept_terms') {
+      return Promise.resolve({ data: { success: true, accepted_at: new Date().toISOString() }, error: null })
+    }
+    if (fnName === 'set_birth_date') {
+      return Promise.resolve({ data: { success: true, birth_date: args?.p_birth_date }, error: null })
     }
     return Promise.resolve({ data: null, error: null })
   }),
   functions: {
-    invoke: vi.fn().mockResolvedValue({ data: { success: true }, error: null }),
+    invoke: vi.fn().mockResolvedValue({ data: { success: true, avatar_url: 'https://example.com/avatar.avif' }, error: null }),
   },
 }
 
@@ -130,5 +136,30 @@ describe('Auth Store & Security Tests', () => {
   it('(d) confirms delete_my_account RPC receives no target ID parameter (self-only via auth.uid)', () => {
     const auth = useAuthStore()
     expect(auth.deleteAccount).toBeDefined()
+  })
+
+  it('invokes accept_terms RPC when acceptConsent is executed', async () => {
+    const auth = useAuthStore()
+    await auth.acceptConsent()
+    expect(mockSupabase.rpc).toHaveBeenCalledWith('accept_terms')
+  })
+
+  it('invokes set_birth_date RPC when birth_date is passed and user has no birth_date yet', async () => {
+    const auth = useAuthStore()
+    auth.profile = { id: 'u-1', display_name: 'Fan Test', birth_date: null } as any
+    await auth.updateProfile({ birth_date: '1999-08-15', display_name: 'Ziko Cazorla' })
+    expect(mockSupabase.rpc).toHaveBeenCalledWith('set_birth_date', { p_birth_date: '1999-08-15' })
+  })
+
+  it('invokes compress-avatar edge function when uploadAvatar is called', async () => {
+    const auth = useAuthStore()
+    auth.profile = { id: 'u-1', display_name: 'Fan Test', avatar_url: null } as any
+    const validFile = new File(['valid image data'], 'avatar.jpg', { type: 'image/jpeg' })
+    const resultUrl = await auth.uploadAvatar(validFile)
+    expect(mockSupabase.functions.invoke).toHaveBeenCalledWith('compress-avatar', expect.objectContaining({
+      body: expect.any(FormData),
+    }))
+    expect(resultUrl).toBe('https://example.com/avatar.avif')
+    expect(auth.profile?.avatar_url).toBe('https://example.com/avatar.avif')
   })
 })
