@@ -210,10 +210,12 @@ const handleStartAd = async () => {
     }
 
     activeSessionId = data.session_id
+    console.log('[Anuncios] 1. Sesión autorizada en base de datos:', activeSessionId)
 
     // Ensure GPT script is loaded
     await loadGptScript()
     configureGptPrivacy()
+    console.log('[Anuncios] 2. Script de Google Publisher Tag activo.')
 
     const googletag = (window as any).googletag
     googletag.cmd.push(() => {
@@ -224,6 +226,8 @@ const handleStartAd = async () => {
         } catch (_) {}
         activeSlot = null
       }
+
+      console.log('[Anuncios] 3. Solicitando anuncio recompensado a Google GAM:', gamAdUnitPath.value)
 
       activeSlot = googletag.defineOutOfPageSlot(
         gamAdUnitPath.value,
@@ -242,6 +246,7 @@ const handleStartAd = async () => {
         if (noFillTimeoutTimer) clearTimeout(noFillTimeoutTimer)
         if (evt.slot !== activeSlot) return
 
+        console.log('[Anuncios] 4. ¡Anuncio listo! Reproduciendo video...')
         analytics.trackEvent('rewarded_ad_ready', { session_id: activeSessionId })
         sessionLoading.value = false
         // Mostrar anuncio directamente tras la solicitud del usuario
