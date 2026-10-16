@@ -59,6 +59,13 @@ export default defineNuxtConfig({
       link: [
         { rel: 'manifest', href: '/manifest.json' },
       ],
+      script: [
+        {
+          src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7964863861174120',
+          async: true,
+          crossorigin: 'anonymous',
+        },
+      ],
     },
   },
 
