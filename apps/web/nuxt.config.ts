@@ -55,6 +55,7 @@ export default defineNuxtConfig({
           content: 'Plataforma de fidelización de Guaiqueries de Margarita',
         },
         { name: 'theme-color', content: '#005a36' },
+        { name: 'google-adsense-account', content: 'ca-pub-7964863861174120' },
       ],
       link: [
         { rel: 'manifest', href: '/manifest.json' },
