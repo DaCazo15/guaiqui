@@ -73,10 +73,12 @@ let activeSlot: any = null
 let noFillTimeoutTimer: any = null
 let rewardGrantedThisSession = false
 let currentMakeVisibleFn: (() => void) | null = null
+let gptListenersAttached = false
+let gptServicesEnabled = false
 
 const gamAdUnitPath = computed(() => {
   const config = useRuntimeConfig()
-  return (config.public.gamAdUnitPath as string) || (import.meta.env.VITE_GAM_AD_UNIT_PATH as string) || (import.meta.env.NUXT_PUBLIC_GAM_AD_UNIT_PATH as string) || '/21775744923/example/rewarded'
+  return (config.public.gamAdUnitPath as string) || (import.meta.env.VITE_GAM_AD_UNIT_PATH as string) || (import.meta.env.NUXT_PUBLIC_GAM_AD_UNIT_PATH as string) || '/22639388115/rewarded_web_example'
 })
 
 // Block rewards info list
@@ -218,31 +220,27 @@ const handleStartAd = async () => {
     console.log('[Anuncios] 2. Script de Google Publisher Tag activo.')
 
     const googletag = (window as any).googletag
-    googletag.cmd.push(() => {
-      // Clean up previous slot if present
-      if (activeSlot) {
-        try {
-          googletag.destroySlots([activeSlot])
-        } catch (_) {}
-        activeSlot = null
-      }
 
-      console.log('[Anuncios] 3. Solicitando anuncio recompensado a Google GAM:', gamAdUnitPath.value)
+    const initGptListeners = (gt: any) => {
+      if (gptListenersAttached) return
+      gptListenersAttached = true
 
-      activeSlot = googletag.defineOutOfPageSlot(
-        gamAdUnitPath.value,
-        googletag.enums.OutOfPageFormat.REWARDED
-      )
+      gt.pubads().addEventListener('slotResponseReceived', (evt: any) => {
+        if (evt.slot !== activeSlot) return
+        console.log('[Anuncios] Respuesta recibida de Google Ad Manager.')
+      })
 
-      if (!activeSlot) {
-        cancelSession('error', 'Formato de anuncio recompensado no soportado en este dispositivo.')
-        return
-      }
+      gt.pubads().addEventListener('slotRenderEnded', (evt: any) => {
+        if (evt.slot !== activeSlot) return
+        console.log('[Anuncios] slotRenderEnded recibido. Vacío (isEmpty):', evt.isEmpty)
+        if (evt.isEmpty) {
+          if (noFillTimeoutTimer) clearTimeout(noFillTimeoutTimer)
+          cancelSession('no_fill', 'Google Ad Manager no tiene inventario de anuncios en este momento para tu dispositivo o región.')
+          analytics.trackEvent('rewarded_ad_no_fill', { session_id: activeSessionId })
+        }
+      })
 
-      activeSlot.addService(googletag.pubads())
-
-      // Listeners
-      googletag.pubads().addEventListener('rewardedSlotReady', (evt: any) => {
+      gt.pubads().addEventListener('rewardedSlotReady', (evt: any) => {
         if (noFillTimeoutTimer) clearTimeout(noFillTimeoutTimer)
         if (evt.slot !== activeSlot) return
 
@@ -253,7 +251,7 @@ const handleStartAd = async () => {
         evt.makeRewardedVisible()
       })
 
-      googletag.pubads().addEventListener('rewardedSlotGranted', async (evt: any) => {
+      gt.pubads().addEventListener('rewardedSlotGranted', async (evt: any) => {
         if (evt.slot !== activeSlot) return
         rewardGrantedThisSession = true
         analytics.trackEvent('rewarded_ad_granted', { session_id: activeSessionId })
@@ -278,7 +276,7 @@ const handleStartAd = async () => {
         }
       })
 
-      googletag.pubads().addEventListener('rewardedSlotClosed', async (evt: any) => {
+      gt.pubads().addEventListener('rewardedSlotClosed', async (evt: any) => {
         if (evt.slot !== activeSlot) return
 
         if (!rewardGrantedThisSession) {
@@ -294,11 +292,37 @@ const handleStartAd = async () => {
 
         // Cleanup
         try {
-          googletag.destroySlots([activeSlot])
+          gt.destroySlots([activeSlot])
         } catch (_) {}
         activeSlot = null
         activeSessionId = null
       })
+    }
+
+    googletag.cmd.push(() => {
+      initGptListeners(googletag)
+
+      // Clean up previous slot if present
+      if (activeSlot) {
+        try {
+          googletag.destroySlots([activeSlot])
+        } catch (_) {}
+        activeSlot = null
+      }
+
+      console.log('[Anuncios] 3. Solicitando anuncio recompensado a Google GAM:', gamAdUnitPath.value)
+
+      activeSlot = googletag.defineOutOfPageSlot(
+        gamAdUnitPath.value,
+        googletag.enums.OutOfPageFormat.REWARDED
+      )
+
+      if (!activeSlot) {
+        cancelSession('error', 'Formato de anuncio recompensado no soportado en este dispositivo.')
+        return
+      }
+
+      activeSlot.addService(googletag.pubads())
 
       // 15-second timeout for no_fill
       noFillTimeoutTimer = setTimeout(() => {
@@ -308,9 +332,13 @@ const handleStartAd = async () => {
         }
       }, 15000)
 
-      googletag.enableServices()
+      if (!gptServicesEnabled) {
+        googletag.enableServices()
+        gptServicesEnabled = true
+      }
+
+      // Inicia la solicitud del anuncio a Google
       googletag.display(activeSlot)
-      googletag.pubads().refresh([activeSlot])
     })
   } catch (err: any) {
     sessionLoading.value = false

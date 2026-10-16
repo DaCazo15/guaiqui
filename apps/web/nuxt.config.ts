@@ -66,7 +66,7 @@ export default defineNuxtConfig({
     public: {
       turnstileSiteKey: process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAAFTd4sjJvea-Cegw',
       gaMeasurementId: process.env.NUXT_PUBLIC_GA_MEASUREMENT_ID || 'G-P6EY10HB0B',
-      gamAdUnitPath: process.env.NUXT_PUBLIC_GAM_AD_UNIT_PATH || '/21775744923/example/rewarded',
+      gamAdUnitPath: process.env.NUXT_PUBLIC_GAM_AD_UNIT_PATH || '/22639388115/rewarded_web_example',
     },
   },
 })
