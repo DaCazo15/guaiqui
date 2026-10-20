@@ -51,6 +51,7 @@ DECLARE
     v_random_suffix TEXT;
     v_meta JSONB;
     v_display_name TEXT;
+    v_avatar_url TEXT;
     v_municipality TEXT;
     v_birth_date DATE;
     v_gender TEXT;
@@ -83,6 +84,7 @@ BEGIN
         v_display_name := 'Fanático #' || v_random_suffix;
     END IF;
 
+    v_avatar_url := NULLIF(TRIM(COALESCE(v_meta->>'avatar_url', v_meta->>'picture')), '');
     v_municipality := NULLIF(TRIM(v_meta->>'municipality'), '');
     v_gender := NULLIF(TRIM(v_meta->>'gender'), '');
     v_shirt_size := NULLIF(TRIM(v_meta->>'shirt_size'), '');
@@ -138,6 +140,7 @@ BEGIN
     INSERT INTO public.profiles (
         id,
         display_name,
+        avatar_url,
         municipality,
         birth_date,
         gender,
@@ -156,6 +159,7 @@ BEGIN
     VALUES (
         NEW.id,
         v_display_name,
+        v_avatar_url,
         v_municipality,
         v_birth_date,
         v_gender,
@@ -173,6 +177,7 @@ BEGIN
     )
     ON CONFLICT (id) DO UPDATE SET
         display_name = COALESCE(NULLIF(EXCLUDED.display_name, ''), profiles.display_name),
+        avatar_url = COALESCE(NULLIF(profiles.avatar_url, ''), EXCLUDED.avatar_url),
         municipality = COALESCE(EXCLUDED.municipality, profiles.municipality),
         birth_date = COALESCE(EXCLUDED.birth_date, profiles.birth_date),
         gender = COALESCE(EXCLUDED.gender, profiles.gender),
@@ -227,6 +232,7 @@ DECLARE
     v_random_suffix TEXT;
     v_meta JSONB;
     v_display_name TEXT;
+    v_avatar_url TEXT;
     v_municipality TEXT;
     v_birth_date DATE;
     v_gender TEXT;
@@ -256,6 +262,15 @@ BEGIN
     END IF;
 
     IF v_current_status IS NOT NULL THEN
+        -- If profile exists but has no avatar, check if Google metadata has an avatar
+        SELECT raw_user_meta_data INTO v_meta FROM auth.users WHERE id = v_uid;
+        v_avatar_url := NULLIF(TRIM(COALESCE(v_meta->>'avatar_url', v_meta->>'picture')), '');
+        IF v_avatar_url IS NOT NULL THEN
+            UPDATE public.profiles
+            SET avatar_url = v_avatar_url
+            WHERE id = v_uid AND (avatar_url IS NULL OR TRIM(avatar_url) = '');
+        END IF;
+
         RETURN jsonb_build_object(
             'success', true,
             'created', false,
@@ -275,6 +290,7 @@ BEGIN
         NULLIF(TRIM(v_meta->>'name'), ''),
         'Fanático #' || v_random_suffix
     );
+    v_avatar_url := NULLIF(TRIM(COALESCE(v_meta->>'avatar_url', v_meta->>'picture')), '');
     v_municipality := NULLIF(TRIM(v_meta->>'municipality'), '');
     v_gender := NULLIF(TRIM(v_meta->>'gender'), '');
 
@@ -290,6 +306,7 @@ BEGIN
     INSERT INTO public.profiles (
         id,
         display_name,
+        avatar_url,
         municipality,
         birth_date,
         gender,
@@ -299,13 +316,15 @@ BEGIN
     VALUES (
         v_uid,
         v_display_name,
+        v_avatar_url,
         v_municipality,
         v_birth_date,
         v_gender,
         'active',
         NOW()
     )
-    ON CONFLICT (id) DO NOTHING;
+    ON CONFLICT (id) DO UPDATE SET
+        avatar_url = COALESCE(NULLIF(profiles.avatar_url, ''), EXCLUDED.avatar_url);
     v_created := true;
 
     -- Create wallet if missing
@@ -323,4 +342,13 @@ $$;
 
 REVOKE ALL ON FUNCTION public.ensure_profile() FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.ensure_profile() TO authenticated, service_role;
+
+-- 5. Safe backfill for existing Google users missing avatar_url
+UPDATE public.profiles p
+SET avatar_url = NULLIF(TRIM(COALESCE(u.raw_user_meta_data->>'avatar_url', u.raw_user_meta_data->>'picture')), '')
+FROM auth.users u
+WHERE p.id = u.id
+  AND (p.avatar_url IS NULL OR TRIM(p.avatar_url) = '')
+  AND NULLIF(TRIM(COALESCE(u.raw_user_meta_data->>'avatar_url', u.raw_user_meta_data->>'picture')), '') IS NOT NULL;
+
 

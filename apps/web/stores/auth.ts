@@ -146,6 +146,30 @@ export const useAuthStore = defineStore('auth', () => {
         }
       }
 
+      // Auto-populate Google OAuth profile photo if not yet set or if updated on Google
+      if (prof) {
+        const meta = targetUser?.user_metadata
+        let googlePhoto =
+          meta?.avatar_url ||
+          meta?.picture ||
+          (targetUser as any)?.identities?.find((i: any) => i?.provider === 'google')?.identity_data?.avatar_url ||
+          (targetUser as any)?.identities?.find((i: any) => i?.provider === 'google')?.identity_data?.picture
+
+        const currentAvatar = prof.avatar_url ? prof.avatar_url.trim() : ''
+        if (googlePhoto && typeof googlePhoto === 'string') {
+          const isGoogleAvatar = currentAvatar.includes('googleusercontent.com')
+          if (!currentAvatar || (isGoogleAvatar && currentAvatar !== googlePhoto)) {
+            prof.avatar_url = googlePhoto
+            supabase
+              .from('profiles')
+              .update({ avatar_url: googlePhoto, updated_at: new Date().toISOString() })
+              .eq('id', targetId)
+              .then(() => {})
+              .catch((err: any) => console.warn('Could not auto-sync Google avatar:', err))
+          }
+        }
+      }
+
       profile.value = prof
 
       const { data: wal, error: walErr } = await supabase

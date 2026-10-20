@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import AppSidebar from '~/components/app/AppSidebar.vue'
 import AppMobileNav from '~/components/app/AppMobileNav.vue'
@@ -8,11 +8,10 @@ import LoginModalCarousel from '~/components/app/LoginModalCarousel.vue'
 import IncompleteProfileBanner from '~/components/app/IncompleteProfileBanner.vue'
 import { formatPerlitas } from '@guaiqui/shared'
 import { PearlIcon } from '@guaiqui/ui'
-
-
 import { BaseSkeletonLayout } from '@guaiqui/ui'
 
 const authStore = useAuthStore()
+const avatarError = ref(false)
 
 onMounted(async () => {
   if (!authStore.profile) {
@@ -51,8 +50,22 @@ onMounted(async () => {
           <!-- Notification Bell -->
           <NotificationBell />
 
-          <NuxtLink to="/app/perfil" class="w-8 h-8 rounded-full bg-guaiqui-primary-soft border border-guaiqui-primary/30 text-guaiqui-primary flex items-center justify-center font-bold text-xs">
-            {{ authStore.profile?.display_name?.charAt(0).toUpperCase() || 'F' }}
+          <NuxtLink
+            to="/app/perfil"
+            class="w-8 h-8 rounded-full bg-guaiqui-primary-soft border border-guaiqui-primary/30 text-guaiqui-primary flex items-center justify-center font-bold text-xs overflow-hidden shrink-0"
+            title="Mi perfil"
+          >
+            <img
+              v-if="authStore.profile?.avatar_url && !avatarError"
+              :src="authStore.profile.avatar_url"
+              :alt="authStore.profile?.display_name || 'Perfil'"
+              class="w-full h-full object-cover"
+              referrerpolicy="no-referrer"
+              @error="avatarError = true"
+            />
+            <span v-else>
+              {{ authStore.profile?.display_name?.charAt(0).toUpperCase() || 'F' }}
+            </span>
           </NuxtLink>
         </div>
       </header>

@@ -77,7 +77,7 @@ async function handleTabChange(tabId: string) {
 
             <div class="flex items-center gap-2.5">
               <div class="w-9 h-9 rounded-full bg-guaiqui-primary-soft border border-guaiqui-primary/30 flex items-center justify-center font-bold text-xs text-guaiqui-primary overflow-hidden">
-                <img v-if="item.avatar_url" :src="item.avatar_url" class="w-full h-full object-cover" alt="Avatar" />
+                <img v-if="item.avatar_url" :src="item.avatar_url" referrerpolicy="no-referrer" class="w-full h-full object-cover" alt="Avatar" />
                 <span v-else>{{ item.display_name?.slice(0, 2).toUpperCase() || 'FA' }}</span>
               </div>
 

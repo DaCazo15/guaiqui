@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
 import { formatPerlitas } from '@guaiqui/shared'
@@ -6,6 +7,7 @@ import { PearlIcon } from '@guaiqui/ui'
 
 const route = useRoute()
 const authStore = useAuthStore()
+const avatarError = ref(false)
 
 const navItems = [
   { name: 'Inicio', path: '/app', icon: 'bi-house-door-fill' },
@@ -44,8 +46,18 @@ const handleLogout = async () => {
     <!-- User Mini Card & Pearls Balance -->
     <div class="bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-lg p-3 mb-6 flex items-center justify-between shadow-guaiqui-sm">
       <div class="flex items-center gap-2 overflow-hidden">
-        <div class="w-8 h-8 rounded-full bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center font-bold text-sm shrink-0">
-          {{ authStore.profile?.display_name?.charAt(0).toUpperCase() || 'F' }}
+        <div class="w-8 h-8 rounded-full bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden border border-guaiqui-primary/20">
+          <img
+            v-if="authStore.profile?.avatar_url && !avatarError"
+            :src="authStore.profile.avatar_url"
+            :alt="authStore.profile?.display_name || 'Avatar'"
+            class="w-full h-full object-cover"
+            referrerpolicy="no-referrer"
+            @error="avatarError = true"
+          />
+          <span v-else>
+            {{ authStore.profile?.display_name?.charAt(0).toUpperCase() || 'F' }}
+          </span>
         </div>
         <div class="truncate">
           <p class="text-xs font-semibold text-guaiqui-text truncate">

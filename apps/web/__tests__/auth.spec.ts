@@ -249,6 +249,22 @@ describe('Auth Store & Security Tests', () => {
 
     expect(auth.isProfileIncomplete).toBe(false)
   })
+
+  it('auto-populates Google profile photo if user logged in with Google and profile has no avatar', async () => {
+    const auth = useAuthStore()
+    const googleUser = {
+      id: 'u-1',
+      email: 'fan@gmail.com',
+      app_metadata: { provider: 'google' },
+      user_metadata: {
+        avatar_url: 'https://lh3.googleusercontent.com/a/ACg8ocTestPhoto=s96-c',
+        full_name: 'Fan Google',
+      },
+    } as any
+
+    await auth.fetchProfile(googleUser)
+    expect(auth.profile?.avatar_url).toBe('https://lh3.googleusercontent.com/a/ACg8ocTestPhoto=s96-c')
+  })
 })
 
 

@@ -17,7 +17,7 @@ const formatDate = (dateStr: string) => {
     <div class="flex items-center justify-between border-b border-slate-800 pb-4">
       <div class="flex items-center gap-3">
         <div class="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 text-emerald-400 flex items-center justify-center font-bold text-lg overflow-hidden">
-          <img v-if="fan.avatar_url" :src="fan.avatar_url" :alt="fan.display_name" class="w-full h-full object-cover" />
+          <img v-if="fan.avatar_url" :src="fan.avatar_url" referrerpolicy="no-referrer" :alt="fan.display_name" class="w-full h-full object-cover" />
           <span v-else>{{ (fan.display_name || 'F')[0] }}</span>
         </div>
         <div>

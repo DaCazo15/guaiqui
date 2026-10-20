@@ -13,6 +13,7 @@ const emit = defineEmits<{
 
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const localError = ref<string | null>(null)
+const imageLoadFailed = ref(false)
 
 function triggerFileInput() {
   fileInputRef.value?.click()
@@ -47,10 +48,12 @@ function handleFileChange(event: Event) {
       <!-- Avatar Preview Container -->
       <div class="w-24 h-24 md:w-28 md:h-28 rounded-full bg-guaiqui-surface border-2 border-guaiqui-primary/30 overflow-hidden flex items-center justify-center text-3xl font-bold text-guaiqui-primary shadow-guaiqui-sm relative">
         <img
-          v-if="avatarUrl"
+          v-if="avatarUrl && !imageLoadFailed"
           :src="avatarUrl"
           :alt="displayName || 'Avatar'"
           class="w-full h-full object-cover"
+          referrerpolicy="no-referrer"
+          @error="imageLoadFailed = true"
         />
         <span v-else>
           {{ displayName?.charAt(0).toUpperCase() || 'F' }}
