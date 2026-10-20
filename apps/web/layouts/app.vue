@@ -5,6 +5,7 @@ import AppSidebar from '~/components/app/AppSidebar.vue'
 import AppMobileNav from '~/components/app/AppMobileNav.vue'
 import NotificationBell from '~/components/app/NotificationBell.vue'
 import LoginModalCarousel from '~/components/app/LoginModalCarousel.vue'
+import IncompleteProfileBanner from '~/components/app/IncompleteProfileBanner.vue'
 import { formatPerlitas } from '@guaiqui/shared'
 import { PearlIcon } from '@guaiqui/ui'
 
@@ -58,6 +59,7 @@ onMounted(async () => {
 
       <!-- Page Content -->
       <main class="flex-1 p-4 md:p-8 max-w-5xl w-full mx-auto">
+        <IncompleteProfileBanner />
         <slot />
       </main>
     </div>

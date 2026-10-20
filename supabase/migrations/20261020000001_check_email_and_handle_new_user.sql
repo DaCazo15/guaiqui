@@ -77,8 +77,8 @@ BEGIN
     v_random_suffix := floor(random() * 900000 + 100000)::text;
     v_meta := COALESCE(NEW.raw_user_meta_data, '{}'::jsonb);
 
-    -- Extract display name with fallback to Fanático #XXXXXX
-    v_display_name := NULLIF(TRIM(v_meta->>'display_name'), '');
+    -- Extract display name with fallback to Google full_name, name, or Fanático #XXXXXX
+    v_display_name := NULLIF(TRIM(COALESCE(v_meta->>'display_name', v_meta->>'full_name', v_meta->>'name')), '');
     IF v_display_name IS NULL THEN
         v_display_name := 'Fanático #' || v_random_suffix;
     END IF;
@@ -212,3 +212,115 @@ DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
 CREATE TRIGGER on_auth_user_created
     AFTER INSERT ON auth.users
     FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
+-- 4. Fallback RPC ensure_profile() for authenticated users whose profile was not created by trigger
+CREATE OR REPLACE FUNCTION public.ensure_profile()
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'auth', 'pg_temp'
+AS $$
+DECLARE
+    v_uid UUID := auth.uid();
+    v_is_staff BOOLEAN := false;
+    v_current_status user_status;
+    v_random_suffix TEXT;
+    v_meta JSONB;
+    v_display_name TEXT;
+    v_municipality TEXT;
+    v_birth_date DATE;
+    v_gender TEXT;
+    v_created BOOLEAN := false;
+BEGIN
+    IF v_uid IS NULL THEN
+        RAISE EXCEPTION 'Authentication required.';
+    END IF;
+
+    -- 1. Check if user is a staff member
+    SELECT EXISTS (SELECT 1 FROM public.staff_members WHERE user_id = v_uid AND active = true) INTO v_is_staff;
+    IF v_is_staff THEN
+        RETURN jsonb_build_object(
+            'success', false,
+            'reason', 'User is a staff member. Fan profile creation skipped.'
+        );
+    END IF;
+
+    -- 2. Check if profile already exists and is deleted
+    SELECT status INTO v_current_status FROM public.profiles WHERE id = v_uid;
+    IF v_current_status = 'deleted' THEN
+        RETURN jsonb_build_object(
+            'success', false,
+            'reason', 'Account is permanently deleted.',
+            'status', 'deleted'
+        );
+    END IF;
+
+    IF v_current_status IS NOT NULL THEN
+        RETURN jsonb_build_object(
+            'success', true,
+            'created', false,
+            'status', v_current_status
+        );
+    END IF;
+
+    v_random_suffix := floor(random() * 900000 + 100000)::text;
+
+    -- Read user metadata from auth.users if available (including Google OAuth full_name/name/avatar_url)
+    SELECT raw_user_meta_data INTO v_meta FROM auth.users WHERE id = v_uid;
+    v_meta := COALESCE(v_meta, '{}'::jsonb);
+
+    v_display_name := COALESCE(
+        NULLIF(TRIM(v_meta->>'display_name'), ''),
+        NULLIF(TRIM(v_meta->>'full_name'), ''),
+        NULLIF(TRIM(v_meta->>'name'), ''),
+        'Fanático #' || v_random_suffix
+    );
+    v_municipality := NULLIF(TRIM(v_meta->>'municipality'), '');
+    v_gender := NULLIF(TRIM(v_meta->>'gender'), '');
+
+    IF v_meta->>'birth_date' IS NOT NULL AND TRIM(v_meta->>'birth_date') <> '' THEN
+        BEGIN
+            v_birth_date := (v_meta->>'birth_date')::date;
+        EXCEPTION WHEN OTHERS THEN
+            v_birth_date := NULL;
+        END;
+    END IF;
+
+    -- Create profile if missing
+    INSERT INTO public.profiles (
+        id,
+        display_name,
+        municipality,
+        birth_date,
+        gender,
+        status,
+        created_at
+    )
+    VALUES (
+        v_uid,
+        v_display_name,
+        v_municipality,
+        v_birth_date,
+        v_gender,
+        'active',
+        NOW()
+    )
+    ON CONFLICT (id) DO NOTHING;
+    v_created := true;
+
+    -- Create wallet if missing
+    INSERT INTO public.wallets (fan_id, balance_cache)
+    VALUES (v_uid, 0)
+    ON CONFLICT (fan_id) DO NOTHING;
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'created', v_created,
+        'user_id', v_uid
+    );
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.ensure_profile() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.ensure_profile() TO authenticated, service_role;
+

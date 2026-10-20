@@ -84,6 +84,17 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isActive = computed(() => profile.value?.status === 'active')
 
+  const isProfileIncomplete = computed(() => {
+    if (!profile.value) return false
+    return (
+      !profile.value.birth_date ||
+      !profile.value.municipality ||
+      !profile.value.favorite_player_id ||
+      !profile.value.shirt_size ||
+      Boolean(profile.value.display_name?.startsWith('Fanático #'))
+    )
+  })
+
   async function fetchProfile(overrideUser?: User | null) {
     if (overrideUser) {
       sessionUser.value = overrideUser
@@ -594,6 +605,9 @@ export const useAuthStore = defineStore('auth', () => {
     if (lower.includes('user already registered') || lower.includes('ya existe una cuenta registrada')) {
       return 'Ya existe una cuenta registrada con este correo. Por favor inicia sesión o utiliza otro correo.'
     }
+    if (lower.includes('error sending confirmation email') || lower.includes('sending confirmation email')) {
+      return 'Error al enviar el correo de confirmación. Revisa la configuración SMTP/Resend en Supabase o el límite de envíos.'
+    }
     if (lower.includes('email not confirmed')) return 'Tu correo aún no ha sido verificado. Revisa tu bandeja de entrada o spam.'
     if (lower.includes('password should be at least')) return 'La contraseña debe tener al menos 8 caracteres.'
     if (lower.includes('rate limit')) return 'Límite de envíos excedido. Espera unos minutos e inténtalo de nuevo.'
@@ -613,6 +627,7 @@ export const useAuthStore = defineStore('auth', () => {
     isEmailVerified,
     needsConsent,
     isActive,
+    isProfileIncomplete,
     fetchProfile,
     fetchActiveLegalVersions,
     checkEmailExists,

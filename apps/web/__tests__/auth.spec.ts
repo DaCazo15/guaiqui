@@ -219,5 +219,36 @@ describe('Auth Store & Security Tests', () => {
       })
     )
   })
+
+  it('detects incomplete profile when birth_date or municipality is missing', () => {
+    const auth = useAuthStore()
+    auth.profile = {
+      id: 'u-1',
+      display_name: 'Fanático #123456',
+      birth_date: null,
+      municipality: null,
+      favorite_player_id: null,
+      shirt_size: null,
+      status: 'active',
+    } as any
+
+    expect(auth.isProfileIncomplete).toBe(true)
+  })
+
+  it('detects profile is complete when all key preferences are filled', () => {
+    const auth = useAuthStore()
+    auth.profile = {
+      id: 'u-1',
+      display_name: 'Carlos Margarita',
+      birth_date: '1995-05-20',
+      municipality: 'Maneiro',
+      favorite_player_id: '11111111-1111-1111-1111-111111111111',
+      shirt_size: 'L',
+      status: 'active',
+    } as any
+
+    expect(auth.isProfileIncomplete).toBe(false)
+  })
 })
+
 
