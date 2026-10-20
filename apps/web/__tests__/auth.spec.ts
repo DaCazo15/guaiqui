@@ -10,7 +10,12 @@ const mockSupabase = {
       }
       return Promise.resolve({ data: { user: { id: 'u-1', email: 'test@guaiqui.test' } }, error: null })
     }),
-    signUp: vi.fn().mockResolvedValue({ data: { user: { id: 'u-2', email: 'new@guaiqui.test' } }, error: null }),
+    signUp: vi.fn().mockImplementation(({ email }) => {
+      if (email === 'taken@guaiqui.test') {
+        return Promise.resolve({ data: { user: { id: 'u-existing', identities: [] } }, error: null })
+      }
+      return Promise.resolve({ data: { user: { id: 'u-2', email: 'new@guaiqui.test', identities: [{ id: 'id-1' }] } }, error: null })
+    }),
     signOut: vi.fn().mockResolvedValue({ error: null }),
     signInWithOAuth: vi.fn().mockResolvedValue({ error: null }),
     resetPasswordForEmail: vi.fn().mockResolvedValue({ error: null }),
@@ -56,7 +61,13 @@ const mockSupabase = {
     return Promise.resolve({ data: null, error: null })
   }),
   functions: {
-    invoke: vi.fn().mockResolvedValue({ data: { success: true, avatar_url: 'https://example.com/avatar.avif' }, error: null }),
+    invoke: vi.fn().mockImplementation((fnName: string, opts?: any) => {
+      if (fnName === 'check-email') {
+        const target = opts?.body?.email
+        return Promise.resolve({ data: { exists: target === 'taken@guaiqui.test' }, error: null })
+      }
+      return Promise.resolve({ data: { success: true, avatar_url: 'https://example.com/avatar.avif' }, error: null })
+    }),
   },
 }
 
@@ -162,4 +173,51 @@ describe('Auth Store & Security Tests', () => {
     expect(resultUrl).toBe('https://example.com/avatar.avif')
     expect(auth.profile?.avatar_url).toBe('https://example.com/avatar.avif')
   })
+
+  it('verifies checkEmailExists returns true when email exists in database', async () => {
+    const auth = useAuthStore()
+    const exists = await auth.checkEmailExists('taken@guaiqui.test')
+    expect(exists).toBe(true)
+  })
+
+  it('verifies checkEmailExists returns false when email is available', async () => {
+    const auth = useAuthStore()
+    const exists = await auth.checkEmailExists('available@guaiqui.test')
+    expect(exists).toBe(false)
+  })
+
+  it('rejects signUpWithEmail when email is already registered', async () => {
+    const auth = useAuthStore()
+    await expect(
+      auth.signUpWithEmail('taken@guaiqui.test', 'Password123!', {
+        terms: true,
+        privacy: true,
+        pearlsRules: true,
+      })
+    ).rejects.toThrow('Ya existe una cuenta registrada con este correo.')
+  })
+
+  it('successfully executes signUpWithEmail with metadata when email is available', async () => {
+    const auth = useAuthStore()
+    const result = await auth.signUpWithEmail(
+      'new@guaiqui.test',
+      'Password123!',
+      { terms: true, privacy: true, pearlsRules: true },
+      { displayName: 'Nuevo Fan', municipality: 'Maneiro', birthDate: '1999-07-15' }
+    )
+    expect(result.user?.id).toBe('u-2')
+    expect(mockSupabase.auth.signUp).toHaveBeenCalledWith(
+      expect.objectContaining({
+        email: 'new@guaiqui.test',
+        options: expect.objectContaining({
+          data: expect.objectContaining({
+            display_name: 'Nuevo Fan',
+            municipality: 'Maneiro',
+            birth_date: '1999-07-15',
+          }),
+        }),
+      })
+    )
+  })
 })
+

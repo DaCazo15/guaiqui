@@ -177,6 +177,24 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function checkEmailExists(email: string): Promise<boolean> {
+    const cleanEmail = email?.trim().toLowerCase()
+    if (!cleanEmail) return false
+    try {
+      const { data, error } = await supabase.functions.invoke('check-email', {
+        body: { email: cleanEmail },
+      })
+      if (error) {
+        console.warn('Error checking email exists via Edge Function:', error)
+        return false
+      }
+      return Boolean(data?.exists)
+    } catch (err) {
+      console.warn('Error invoking check-email function:', err)
+      return false
+    }
+  }
+
   async function signUpWithEmail(
     email: string,
     pass: string,
@@ -184,35 +202,62 @@ export const useAuthStore = defineStore('auth', () => {
       terms: boolean
       privacy: boolean
       pearlsRules: boolean
+    },
+    profileData?: {
+      displayName?: string
+      municipality?: string
+      birthDate?: string | null
+      gender?: string | null
+      favoritePlayerId?: string | null
+      shirtSize?: string | null
+      referralSource?: string | null
     }
   ) {
     isLoading.value = true
     errorMessage.value = null
     try {
+      const cleanEmail = email.trim().toLowerCase()
+
+      // Double-check email availability before proceeding
+      const exists = await checkEmailExists(cleanEmail)
+      if (exists) {
+        throw new Error('Ya existe una cuenta registrada con este correo. Por favor inicia sesión o utiliza otro correo.')
+      }
+
+      const now = new Date().toISOString()
+      const metadata = {
+        display_name: profileData?.displayName || undefined,
+        municipality: profileData?.municipality || undefined,
+        birth_date: profileData?.birthDate || undefined,
+        gender: profileData?.gender || undefined,
+        favorite_player_id: profileData?.favoritePlayerId || undefined,
+        shirt_size: profileData?.shirtSize || undefined,
+        referral_source: profileData?.referralSource || undefined,
+        terms_accepted_at: consent.terms ? now : null,
+        terms_version: CURRENT_LEGAL_VERSIONS.terms,
+        privacy_accepted_at: consent.privacy ? now : null,
+        privacy_version: CURRENT_LEGAL_VERSIONS.privacy,
+        pearls_rules_accepted_at: consent.pearlsRules ? now : null,
+        pearls_rules_version: CURRENT_LEGAL_VERSIONS.pearls_rules,
+      }
+
       const { data, error } = await supabase.auth.signUp({
-        email,
+        email: cleanEmail,
         password: pass,
         options: {
           emailRedirectTo: `${window.location.origin}/confirm`,
+          data: metadata,
         },
       })
       if (error) throw error
 
-      if (data?.user?.id) {
-        // Save initial consent in profile
-        const now = new Date().toISOString()
-        await supabase
-          .from('profiles')
-          .update({
-            terms_accepted_at: consent.terms ? now : null,
-            terms_version: CURRENT_LEGAL_VERSIONS.terms,
-            privacy_accepted_at: consent.privacy ? now : null,
-            privacy_version: CURRENT_LEGAL_VERSIONS.privacy,
-            pearls_rules_accepted_at: consent.pearlsRules ? now : null,
-            pearls_rules_version: CURRENT_LEGAL_VERSIONS.pearls_rules,
-          })
-          .eq('id', data.user.id)
+      // If Supabase email enumeration protection returns empty identities, user already exists
+      if (data?.user && Array.isArray(data.user.identities) && data.user.identities.length === 0) {
+        throw new Error('Ya existe una cuenta registrada con este correo. Por favor inicia sesión o utiliza otro correo.')
+      }
 
+      if (data?.user?.id) {
+        sessionUser.value = data.user
         await fetchProfile(data.user)
       }
 
@@ -546,7 +591,9 @@ export const useAuthStore = defineStore('auth', () => {
     if (!msg) return 'Ocurrió un error inesperado.'
     const lower = msg.toLowerCase()
     if (lower.includes('invalid login credentials')) return 'Correo o contraseña incorrectos.'
-    if (lower.includes('user already registered')) return 'Ya existe una cuenta registrada con este correo.'
+    if (lower.includes('user already registered') || lower.includes('ya existe una cuenta registrada')) {
+      return 'Ya existe una cuenta registrada con este correo. Por favor inicia sesión o utiliza otro correo.'
+    }
     if (lower.includes('email not confirmed')) return 'Tu correo aún no ha sido verificado. Revisa tu bandeja de entrada o spam.'
     if (lower.includes('password should be at least')) return 'La contraseña debe tener al menos 8 caracteres.'
     if (lower.includes('rate limit')) return 'Límite de envíos excedido. Espera unos minutos e inténtalo de nuevo.'
@@ -568,6 +615,7 @@ export const useAuthStore = defineStore('auth', () => {
     isActive,
     fetchProfile,
     fetchActiveLegalVersions,
+    checkEmailExists,
     loginWithEmail,
     signUpWithEmail,
     loginWithGoogle,

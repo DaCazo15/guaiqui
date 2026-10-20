@@ -63,25 +63,21 @@ async function finishRegistration(optionalPreferences?: {
 
   localError.value = null
   try {
-    // 1. Sign Up in Supabase Auth
+    // Sign Up in Supabase Auth with full metadata
     await authStore.signUpWithEmail(
       formData.value.email,
       formData.value.password,
-      formData.value.consent
-    )
-
-    // 2. Update Profile with full details
-    if (authStore.user) {
-      await authStore.updateProfile({
-        display_name: formData.value.displayName,
+      formData.value.consent,
+      {
+        displayName: formData.value.displayName,
         municipality: formData.value.municipality,
-        birth_date: formData.value.birthDate || null,
+        birthDate: formData.value.birthDate || null,
         gender: formData.value.gender || null,
-        favorite_player_id: formData.value.favoritePlayerId || null,
-        shirt_size: formData.value.shirtSize || null,
-        referral_source: formData.value.referralSource || null,
-      })
-    }
+        favoritePlayerId: formData.value.favoritePlayerId || null,
+        shirtSize: formData.value.shirtSize || null,
+        referralSource: formData.value.referralSource || null,
+      }
+    )
 
     navigateTo('/verificar-correo')
   } catch (err: any) {

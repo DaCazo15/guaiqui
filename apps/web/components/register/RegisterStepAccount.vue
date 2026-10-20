@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { BaseInput, BaseButton, BaseCheckbox } from '@guaiqui/ui'
+import { useAuthStore } from '~/stores/auth'
 
 const props = defineProps<{
   initialEmail?: string
@@ -16,6 +17,8 @@ const emit = defineEmits<{
   }): void
 }>()
 
+const authStore = useAuthStore()
+
 const email = ref(props.initialEmail || '')
 const password = ref('')
 const confirmPassword = ref('')
@@ -24,8 +27,38 @@ const privacy = ref(false)
 const pearlsRules = ref(false)
 
 const localError = ref<string | null>(null)
+const isCheckingEmail = ref(false)
 
-function handleSubmit() {
+async function checkAvailability(): Promise<boolean> {
+  const cleanEmail = email.value.trim().toLowerCase()
+  if (!cleanEmail || !cleanEmail.includes('@') || !cleanEmail.includes('.')) {
+    return false
+  }
+
+  isCheckingEmail.value = true
+  try {
+    const exists = await authStore.checkEmailExists(cleanEmail)
+    if (exists) {
+      localError.value = 'Este correo electrónico ya está en uso. Por favor inicia sesión o utiliza otro correo.'
+      return false
+    }
+    return true
+  } finally {
+    isCheckingEmail.value = false
+  }
+}
+
+async function onEmailBlur() {
+  if (localError.value && localError.value.includes('correo')) {
+    localError.value = null
+  }
+  const cleanEmail = email.value.trim().toLowerCase()
+  if (cleanEmail && cleanEmail.includes('@') && cleanEmail.includes('.')) {
+    await checkAvailability()
+  }
+}
+
+async function handleSubmit() {
   localError.value = null
 
   if (!email.value || !email.value.includes('@')) {
@@ -48,8 +81,14 @@ function handleSubmit() {
     return
   }
 
+  // Strictly block proceeding if email is not available
+  const isAvailable = await checkAvailability()
+  if (!isAvailable) {
+    return
+  }
+
   emit('submit', {
-    email: email.value,
+    email: email.value.trim().toLowerCase(),
     pass: password.value,
     consent: {
       terms: terms.value,
@@ -73,6 +112,7 @@ function handleSubmit() {
       type="email"
       placeholder="tu@email.com"
       required
+      @blur="onEmailBlur"
     />
 
     <BaseInput
@@ -119,9 +159,10 @@ function handleSubmit() {
 
     <AuthTurnstileWrapper />
 
-    <BaseButton type="submit" variant="primary" block :loading="loading">
-      Continuar a Datos de Perfil
-      <i class="bi bi-arrow-right ml-1.5"></i>
+    <BaseButton type="submit" variant="primary" block :loading="loading || isCheckingEmail">
+      <span v-if="isCheckingEmail">Verificando correo...</span>
+      <span v-else>Continuar a Datos de Perfil</span>
+      <i v-if="!isCheckingEmail" class="bi bi-arrow-right ml-1.5"></i>
     </BaseButton>
   </form>
 </template>
