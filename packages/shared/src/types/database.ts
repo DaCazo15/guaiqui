@@ -37,6 +37,7 @@ export interface Profile {
   pearls_rules_accepted_at?: string | null
   pearls_rules_version?: string | null
   created_at: string
+  updated_at?: string | null
 }
 
 export interface StaffMember {
