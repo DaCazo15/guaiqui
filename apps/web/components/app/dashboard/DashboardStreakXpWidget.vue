@@ -72,9 +72,6 @@ const todayIndex = computed(() => {
           <h3 class="font-display font-extrabold text-base text-guaiqui-text uppercase tracking-wide">
             Racha
           </h3>
-          <p class="text-[11px] text-guaiqui-text-muted">
-            Constancia diaria en la Tribu
-          </p>
         </div>
       </div>
 
