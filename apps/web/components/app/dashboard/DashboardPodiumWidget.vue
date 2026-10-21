@@ -51,7 +51,7 @@ const myBalance = computed(() => {
         </div>
         <div>
           <h3 class="font-display font-extrabold text-base text-guaiqui-text uppercase tracking-wide">
-            Podio de la Tribu
+            Podio
           </h3>
           <p class="text-[11px] text-guaiqui-text-muted">
             Top Fanáticos del Mes
@@ -60,7 +60,7 @@ const myBalance = computed(() => {
       </div>
 
       <NuxtLink to="/app/ranking" class="text-xs text-guaiqui-primary hover:text-guaiqui-primary-dark font-bold inline-flex items-center gap-1 transition-colors">
-        <span>Tabla Completa</span>
+        <span>Tabla</span>
         <i class="bi bi-arrow-right"></i>
       </NuxtLink>
     </div>

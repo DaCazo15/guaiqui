@@ -62,7 +62,7 @@ function nextReward() {
         </div>
         <div>
           <h3 class="font-display font-extrabold text-base text-guaiqui-text uppercase tracking-wide">
-            Premios Canjeables
+            Premios
           </h3>
           <p class="text-[11px] text-guaiqui-text-muted">
             Catálogo Oficial de Fidelidad

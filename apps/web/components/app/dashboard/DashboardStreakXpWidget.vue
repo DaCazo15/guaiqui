@@ -70,7 +70,7 @@ const todayIndex = computed(() => {
         </div>
         <div>
           <h3 class="font-display font-extrabold text-base text-guaiqui-text uppercase tracking-wide">
-            Racha de Fanático
+            Racha
           </h3>
           <p class="text-[11px] text-guaiqui-text-muted">
             Constancia diaria en la Tribu

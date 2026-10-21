@@ -56,7 +56,7 @@ onBeforeUnmount(() => {
         <div>
           <div class="flex items-center gap-2">
             <h2 class="font-display font-extrabold text-xl text-guaiqui-text uppercase tracking-wide">
-              Gran Final SPB & Calendario
+              Calendario
             </h2>
             <span class="px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-guaiqui-accent text-white shadow-xs">
               Serie 3-1
@@ -71,7 +71,7 @@ onBeforeUnmount(() => {
       <NuxtLink to="/app/partidos">
         <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-guaiqui-md bg-guaiqui-surface hover:bg-gray-200 text-guaiqui-text text-xs font-bold uppercase tracking-wider border border-guaiqui-border transition-colors">
           <i class="bi bi-calendar-week text-guaiqui-primary"></i>
-          <span>Ver Calendario</span>
+          <span>Calendario</span>
           <i class="bi bi-chevron-right text-[10px]"></i>
         </button>
       </NuxtLink>
@@ -147,12 +147,6 @@ onBeforeUnmount(() => {
 
       <!-- Contador Regresivo Deportivo Visible -->
       <div class="mt-2 pt-4 border-t border-white/10 flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-        <div class="flex items-center gap-2">
-          <span class="px-2 py-0.5 rounded-md bg-guaiqui-accent text-white text-[10px] font-extrabold uppercase tracking-widest">
-            Tiempo para el Salto Entre Dos
-          </span>
-        </div>
-
         <!-- Dígitos del Countdown -->
         <div class="flex items-center gap-2 font-mono">
           <div class="bg-black/60 border border-emerald-500/30 rounded-lg px-2.5 py-1 text-center min-w-[46px]">
@@ -184,7 +178,7 @@ onBeforeUnmount(() => {
         <div class="flex items-center justify-between text-xs font-semibold text-guaiqui-text-muted">
           <span>Juego 4 · La Asunción</span>
           <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-wider">
-            Victoria Insular
+            victoria
           </span>
         </div>
         <div class="flex items-center justify-between text-sm">
@@ -201,7 +195,7 @@ onBeforeUnmount(() => {
         <div class="flex items-center justify-between text-xs font-semibold text-guaiqui-text-muted">
           <span>Juego 3 · La Asunción</span>
           <span class="px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-black uppercase tracking-wider">
-            Victoria Insular
+            victoria
           </span>
         </div>
         <div class="flex items-center justify-between text-sm">

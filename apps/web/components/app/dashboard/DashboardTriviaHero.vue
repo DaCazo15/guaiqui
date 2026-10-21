@@ -75,7 +75,7 @@ const estimatedReward = computed(() => {
               </span>
               <NuxtLink to="/app/trivias">
                 <button class="px-4 py-2 rounded-guaiqui-lg bg-guaiqui-surface hover:bg-gray-200 text-guaiqui-text font-bold text-xs uppercase tracking-wider border border-guaiqui-border transition-colors">
-                  Ver Historial
+                  Historial
                 </button>
               </NuxtLink>
             </div>
