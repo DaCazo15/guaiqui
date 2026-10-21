@@ -36,8 +36,13 @@ const referralOptions = REFERRAL_SOURCES.map((r) => ({ value: r, label: r }))
 
 onMounted(async () => {
   try {
-    const { data } = await supabase.from('players').select('id, name, jersey_number').eq('is_active', true)
-    if (data) {
+    const { data } = await supabase
+      .from('players')
+      .select('id, name, jersey_number')
+      .eq('is_active', true)
+      .order('jersey_number', { ascending: true })
+
+    if (data && data.length > 0) {
       playersList.value = data.map((p) => ({
         value: p.id,
         label: `#${p.jersey_number} ${p.name}`,

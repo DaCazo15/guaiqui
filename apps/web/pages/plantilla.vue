@@ -1,15 +1,18 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Navbar from '~/components/landing/Navbar.vue'
 import SiteFooter from '~/components/landing/SiteFooter.vue'
 import { BaseCard, BaseBadge, BaseButton } from '@guaiqui/ui'
 import { SOFASCORE_OFFICIAL_ROSTER, SOFASCORE_TEAM_INFO } from '@guaiqui/shared'
+import type { Database } from '@guaiqui/shared'
 
 useSeoMeta({
   title: 'Plantilla Oficial 2026 — Guaiqueríes de Margarita',
   description: 'Revisa la plantilla oficial completa de Guaiqueríes de Margarita sincronizada con Sofascore para la temporada 2026 de la SPB.',
 })
 
+const supabase = useSupabaseClient<Database>()
+const players = ref<any[]>(SOFASCORE_OFFICIAL_ROSTER)
 const activeFilter = ref<'all' | 'pg' | 'sg' | 'sf' | 'pf' | 'c'>('all')
 
 const filterOptions = [
@@ -21,24 +24,41 @@ const filterOptions = [
   { key: 'c', label: 'Pívots (C)' }
 ]
 
+onMounted(async () => {
+  try {
+    const { data } = await supabase
+      .from('players')
+      .select('*')
+      .eq('is_active', true)
+      .order('jersey_number', { ascending: true })
+
+    if (data && data.length > 0) {
+      players.value = data
+    }
+  } catch (err) {
+    console.warn('Error fetching players from Supabase, using local fallback:', err)
+  }
+})
+
 const filteredRoster = computed(() => {
-  if (activeFilter.value === 'all') return SOFASCORE_OFFICIAL_ROSTER
+  const list = players.value
+  if (activeFilter.value === 'all') return list
   if (activeFilter.value === 'pg') {
-    return SOFASCORE_OFFICIAL_ROSTER.filter(p => p.position.includes('Base') || p.position.includes('PG'))
+    return list.filter((p: any) => p.position.includes('Base') || p.position.includes('PG'))
   }
   if (activeFilter.value === 'sg') {
-    return SOFASCORE_OFFICIAL_ROSTER.filter(p => p.position.includes('Escolta') || p.position.includes('SG'))
+    return list.filter((p: any) => p.position.includes('Escolta') || p.position.includes('SG'))
   }
   if (activeFilter.value === 'sf') {
-    return SOFASCORE_OFFICIAL_ROSTER.filter(p => p.position.includes('Alero') || p.position.includes('SF'))
+    return list.filter((p: any) => p.position.includes('Alero') || p.position.includes('SF'))
   }
   if (activeFilter.value === 'pf') {
-    return SOFASCORE_OFFICIAL_ROSTER.filter(p => p.position.includes('Ala-Pívot') || p.position.includes('PF'))
+    return list.filter((p: any) => p.position.includes('Ala-Pívot') || p.position.includes('PF'))
   }
   if (activeFilter.value === 'c') {
-    return SOFASCORE_OFFICIAL_ROSTER.filter(p => p.position.includes('Pívot') || p.position.includes('C'))
+    return list.filter((p: any) => p.position.includes('Pívot') || p.position.includes('C'))
   }
-  return SOFASCORE_OFFICIAL_ROSTER
+  return list
 })
 </script>
 
