@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
-import perlaCoinImg from '@guaiqui/ui/src/assets/perla-coin.webp'
 
 interface Props {
   triviaId: string
@@ -148,7 +147,7 @@ onBeforeUnmount(() => {
           
           <!-- Imagen oficial de la perlita -->
           <img
-            :src="perlaCoinImg"
+            src="/perla-coin.webp"
             alt="Perlita Ganada"
             class="w-10 h-10 object-contain drop-shadow-md transform rotate-12 transition-transform duration-300"
           />
