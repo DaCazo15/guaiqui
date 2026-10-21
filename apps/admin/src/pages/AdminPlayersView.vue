@@ -2,7 +2,6 @@
 import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable } from '@guaiqui/ui'
-import { SOFASCORE_OFFICIAL_ROSTER, SOFASCORE_TEAM_INFO } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
 
 interface PlayerRow {
@@ -10,10 +9,10 @@ interface PlayerRow {
   name: string
   jersey_number: number
   position: string
-  height?: string
-  age?: number
+  height?: string | null
+  age?: number | null
   nationality: string
-  bio?: string
+  bio?: string | null
   is_active: boolean
   is_star: boolean
 }
@@ -21,7 +20,6 @@ interface PlayerRow {
 const players = ref<PlayerRow[]>([])
 const loading = ref(true)
 const actionLoading = ref(false)
-const syncLoading = ref(false)
 const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 
@@ -29,14 +27,14 @@ const showEditorModal = ref(false)
 const playerForm = ref({
   id: '',
   name: '',
-  jersey_number: 10,
+  jersey_number: 1,
   position: 'Base',
   height: '1.85m',
-  age: 25,
+  age: 24,
   nationality: 'Venezuela',
   bio: '',
   is_active: true,
-  is_star: false
+  is_star: false,
 })
 
 const columns = [
@@ -45,11 +43,12 @@ const columns = [
   { key: 'position', label: 'Posición' },
   { key: 'is_star', label: 'Estrella', align: 'center' as const },
   { key: 'is_active', label: 'Estado', align: 'center' as const },
-  { key: 'actions', label: 'Acciones', align: 'right' as const }
+  { key: 'actions', label: 'Acciones', align: 'right' as const },
 ]
 
 const loadPlayers = async () => {
   loading.value = true
+  errorMessage.value = null
   try {
     const { data, error } = await supabase
       .from('players')
@@ -65,52 +64,6 @@ const loadPlayers = async () => {
   }
 }
 
-const syncWithSofascore = async () => {
-  if (!confirm(`¿Deseas sincronizar la plantilla oficial desde Sofascore (ID: ${SOFASCORE_TEAM_INFO.sofascore_id})?\nEsto actualizará o registrará los 22 jugadores oficiales de la SPB.`)) {
-    return
-  }
-
-  syncLoading.value = true
-  errorMessage.value = null
-  successMessage.value = null
-
-  try {
-    let syncedCount = 0
-    // Recorremos los jugadores oficiales de Sofascore
-    for (const p of SOFASCORE_OFFICIAL_ROSTER) {
-      // Buscar si ya existe por nombre o número de camiseta
-      const existing = players.value.find(
-        ep => ep.name.toLowerCase() === p.name.toLowerCase() || ep.jersey_number === p.jersey_number
-      )
-
-      const payload = {
-        id: existing ? existing.id : undefined,
-        name: p.name,
-        jersey_number: p.jersey_number,
-        position: p.position,
-        height: p.height,
-        age: p.age,
-        nationality: p.nationality,
-        bio: p.bio,
-        is_active: p.is_active,
-        is_star: p.is_star
-      }
-
-      const { error } = await supabase.rpc('admin_upsert_player', { p_player: payload })
-      if (!error) {
-        syncedCount++
-      }
-    }
-
-    successMessage.value = `¡Sincronización completada! ${syncedCount} jugadores oficiales de Sofascore (SPB) sincronizados.`
-    await loadPlayers()
-  } catch (err: any) {
-    errorMessage.value = `Error en sincronización: ${err.message}`
-  } finally {
-    syncLoading.value = false
-  }
-}
-
 const openNewPlayer = () => {
   playerForm.value = {
     id: '',
@@ -122,7 +75,7 @@ const openNewPlayer = () => {
     nationality: 'Venezuela',
     bio: '',
     is_active: true,
-    is_star: false
+    is_star: false,
   }
   showEditorModal.value = true
 }
@@ -138,32 +91,51 @@ const editPlayer = (p: PlayerRow) => {
     nationality: p.nationality || 'Venezuela',
     bio: p.bio || '',
     is_active: p.is_active,
-    is_star: p.is_star
+    is_star: p.is_star,
   }
   showEditorModal.value = true
 }
 
 const savePlayer = async () => {
+  if (!playerForm.value.name.trim()) {
+    errorMessage.value = 'El nombre del jugador es obligatorio.'
+    return
+  }
+  if (!playerForm.value.jersey_number && playerForm.value.jersey_number !== 0) {
+    errorMessage.value = 'El número de camiseta es obligatorio.'
+    return
+  }
+
   actionLoading.value = true
   errorMessage.value = null
   try {
     const payload = {
-      id: playerForm.value.id || undefined,
-      name: playerForm.value.name,
+      name: playerForm.value.name.trim(),
       jersey_number: Number(playerForm.value.jersey_number),
-      position: playerForm.value.position,
-      height: playerForm.value.height,
-      age: Number(playerForm.value.age),
-      nationality: playerForm.value.nationality,
-      bio: playerForm.value.bio,
-      is_active: playerForm.value.is_active,
-      is_star: playerForm.value.is_star
+      position: playerForm.value.position.trim(),
+      height: playerForm.value.height?.trim() || null,
+      age: playerForm.value.age ? Number(playerForm.value.age) : null,
+      nationality: playerForm.value.nationality?.trim() || 'Venezuela',
+      bio: playerForm.value.bio?.trim() || null,
+      is_active: Boolean(playerForm.value.is_active),
+      is_star: Boolean(playerForm.value.is_star),
     }
 
-    const { error } = await supabase.rpc('admin_upsert_player', { p_player: payload })
-    if (error) throw error
+    if (playerForm.value.id) {
+      const { error } = await supabase
+        .from('players')
+        .update(payload)
+        .eq('id', playerForm.value.id)
+      if (error) throw error
+      successMessage.value = 'Jugador actualizado correctamente.'
+    } else {
+      const { error } = await supabase
+        .from('players')
+        .insert(payload)
+      if (error) throw error
+      successMessage.value = 'Jugador agregado exitosamente a la plantilla.'
+    }
 
-    successMessage.value = 'Jugador guardado correctamente.'
     showEditorModal.value = false
     await loadPlayers()
   } catch (err: any) {
@@ -173,13 +145,35 @@ const savePlayer = async () => {
   }
 }
 
-const deactivatePlayer = async (id: string) => {
-  if (!confirm('¿Desea desactivar a este jugador de la plantilla activa?')) return
+const togglePlayerStatus = async (p: PlayerRow) => {
   actionLoading.value = true
   try {
-    const { error } = await supabase.rpc('admin_delete_player', { p_player_id: id })
+    const { error } = await supabase
+      .from('players')
+      .update({ is_active: !p.is_active })
+      .eq('id', p.id)
     if (error) throw error
-    successMessage.value = 'Jugador desactivado.'
+    successMessage.value = p.is_active ? 'Jugador marcado como inactivo.' : 'Jugador activado en la plantilla.'
+    await loadPlayers()
+  } catch (err: any) {
+    errorMessage.value = err.message
+  } finally {
+    actionLoading.value = false
+  }
+}
+
+const deletePlayer = async (p: PlayerRow) => {
+  if (!confirm(`¿Desea eliminar de forma permanente al jugador ${p.name} (#${p.jersey_number})? Esta acción no se puede deshacer.`)) {
+    return
+  }
+  actionLoading.value = true
+  try {
+    const { error } = await supabase
+      .from('players')
+      .delete()
+      .eq('id', p.id)
+    if (error) throw error
+    successMessage.value = 'Jugador eliminado definitivamente de la base de datos.'
     await loadPlayers()
   } catch (err: any) {
     errorMessage.value = err.message
@@ -196,18 +190,12 @@ onMounted(loadPlayers)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <div class="flex items-center gap-3">
-            <h1 class="text-2xl font-bold font-title text-white">Plantilla de Jugadores</h1>
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-950/80 text-emerald-400 border border-emerald-800">
-              <i class="bi bi-link-45deg"></i> Sofascore ID: 248672
-            </span>
-          </div>
-          <p class="text-sm text-slate-400 mt-1">Gestión de la plantilla oficial de Guaiqueríes de Margarita sincronizada con Sofascore SPB.</p>
+          <h1 class="text-2xl font-bold font-title text-white">Plantilla de Jugadores</h1>
+          <p class="text-sm text-slate-400 mt-1">
+            Gestión exclusiva y manual de los jugadores oficiales de Guaiqueríes de Margarita.
+          </p>
         </div>
         <div class="flex items-center gap-3">
-          <BaseButton variant="outline" :loading="syncLoading" @click="syncWithSofascore">
-            <i class="bi bi-arrow-repeat mr-1.5" :class="{ 'animate-spin': syncLoading }"></i> Sincronizar con Sofascore
-          </BaseButton>
           <BaseButton variant="primary" @click="openNewPlayer">
             <i class="bi bi-person-plus mr-1.5"></i> Agregar Jugador
           </BaseButton>
@@ -216,14 +204,23 @@ onMounted(loadPlayers)
 
       <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="errorMessage = null" class="text-slate-400 hover:text-white">
+          <i class="bi bi-x-lg"></i>
+        </button>
       </div>
       <div v-if="successMessage" class="p-4 bg-emerald-950/60 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="successMessage = null" class="text-slate-400 hover:text-white">
+          <i class="bi bi-x-lg"></i>
+        </button>
       </div>
 
-      <BaseTable :columns="columns" :data="(players as any[])" :loading="loading" empty-text="No hay jugadores registrados">
+      <BaseTable
+        :columns="columns"
+        :data="(players as any[])"
+        :loading="loading"
+        empty-text="No hay jugadores registrados. Haz clic en 'Agregar Jugador' para registrar al primero."
+      >
         <template #cell-jersey_number="{ row }">
           <span class="font-bold font-mono text-emerald-400">#{{ (row as PlayerRow).jersey_number }}</span>
         </template>
@@ -243,11 +240,27 @@ onMounted(loadPlayers)
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1.5">
-            <button @click="editPlayer(row as PlayerRow)" class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg" title="Editar">
+            <button
+              @click="editPlayer(row as PlayerRow)"
+              class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg transition-colors"
+              title="Editar"
+            >
               <i class="bi bi-pencil"></i>
             </button>
-            <button v-if="(row as PlayerRow).is_active" @click="deactivatePlayer((row as PlayerRow).id)" class="p-1.5 text-red-400 hover:bg-red-950 rounded-lg" title="Desactivar">
-              <i class="bi bi-person-x"></i>
+            <button
+              @click="togglePlayerStatus(row as PlayerRow)"
+              class="p-1.5 rounded-lg transition-colors"
+              :class="(row as PlayerRow).is_active ? 'text-amber-400 hover:bg-amber-950/50' : 'text-emerald-400 hover:bg-emerald-950/50'"
+              :title="(row as PlayerRow).is_active ? 'Desactivar de la plantilla' : 'Activar en la plantilla'"
+            >
+              <i :class="(row as PlayerRow).is_active ? 'bi bi-person-dash' : 'bi bi-person-check'"></i>
+            </button>
+            <button
+              @click="deletePlayer(row as PlayerRow)"
+              class="p-1.5 text-red-400 hover:bg-red-950/60 rounded-lg transition-colors"
+              title="Eliminar permanentemente"
+            >
+              <i class="bi bi-trash"></i>
             </button>
           </div>
         </template>
@@ -255,18 +268,18 @@ onMounted(loadPlayers)
     </div>
 
     <!-- Modal Player Editor -->
-    <BaseModal v-if="showEditorModal" :is-open="showEditorModal" title="Ficha de Jugador" @close="showEditorModal = false">
+    <BaseModal v-if="showEditorModal" :is-open="showEditorModal" :title="playerForm.id ? 'Editar Jugador' : 'Nuevo Jugador'" @close="showEditorModal = false">
       <div class="space-y-4">
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <BaseInput label="Nombre del Jugador" v-model="playerForm.name" />
-          <BaseInput label="Número de Camiseta (#)" type="number" v-model="playerForm.jersey_number" />
-          <BaseInput label="Posición" v-model="playerForm.position" placeholder="Base, Escolta, Alero, Ala-Pívot, Pívot" />
-          <BaseInput label="Estatura" v-model="playerForm.height" placeholder="1.95m" />
-          <BaseInput label="Edad" type="number" v-model="playerForm.age" />
-          <BaseInput label="Nacionalidad" v-model="playerForm.nationality" />
+          <BaseInput label="Nombre del Jugador" v-model="playerForm.name" placeholder="Ej: Heissler Guillent" />
+          <BaseInput label="Número de Camiseta (#)" type="number" v-model="playerForm.jersey_number" placeholder="Ej: 10" />
+          <BaseInput label="Posición" v-model="playerForm.position" placeholder="Ej: Base (PG), Escolta (SG)" />
+          <BaseInput label="Estatura" v-model="playerForm.height" placeholder="Ej: 1.86 m" />
+          <BaseInput label="Edad" type="number" v-model="playerForm.age" placeholder="Ej: 28" />
+          <BaseInput label="Nacionalidad" v-model="playerForm.nationality" placeholder="Ej: Venezuela" />
         </div>
-        <BaseInput label="Biografía / Notas" v-model="playerForm.bio" placeholder="Trayectoria o méritos" />
-        
+        <BaseInput label="Biografía / Notas" v-model="playerForm.bio" placeholder="Trayectoria o méritos del jugador" />
+
         <div class="flex items-center gap-6 border-t border-slate-800 pt-3">
           <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
             <input type="checkbox" v-model="playerForm.is_active" class="accent-emerald-500 rounded" />

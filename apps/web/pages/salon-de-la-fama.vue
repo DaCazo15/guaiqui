@@ -37,7 +37,7 @@ useSeoMeta({
               ¿Cuánto sabes sobre estas leyendas?
             </h2>
             <p class="text-sm sm:text-base text-guaiqui-text-muted leading-relaxed">
-              Demuestra tu pasión por la Tribu Verde jugando trivias diarias en la aplicación oficial y gana perlitas para canjear por premios reales.
+              Demuestra tu pasión por la Tribu Verde jugando trivias diarias en la aplicación oficial y gana puntos para canjear por premios reales.
             </p>
           </div>
 

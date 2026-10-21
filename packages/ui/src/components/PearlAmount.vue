@@ -7,12 +7,14 @@ interface Props {
   amount: number
   size?: 'sm' | 'md' | 'lg' | 'xl'
   showLabel?: boolean
+  label?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   amount: 0,
   size: 'md',
   showLabel: false,
+  label: 'puntos',
 })
 
 const formatted = computed(() => formatPerlitas(props.amount))
@@ -56,7 +58,7 @@ const iconSize = computed<PearlIconSize>(() => {
     <PearlIcon :size="iconSize" animated />
     <span>{{ formatted }}</span>
     <span v-if="showLabel" class="font-body text-xs text-guaiqui-text-muted uppercase ml-0.5">
-      perlitas
+      {{ label }}
     </span>
   </span>
 </template>

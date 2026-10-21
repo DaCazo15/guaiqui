@@ -55,7 +55,7 @@ async function handleGoogleLogin() {
           Guaiqueríes <span class="text-guaiqui-primary">Fan Zone</span>
         </h1>
         <p class="text-sm text-guaiqui-text-muted">
-          Inicia sesión para jugar trivias, acumular perlitas y ganar premios.
+          Inicia sesión para jugar trivias, acumular puntos y ganar premios.
         </p>
       </div>
 

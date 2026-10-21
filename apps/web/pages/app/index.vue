@@ -11,7 +11,6 @@ import DashboardScoreboardWidget from '~/components/app/dashboard/DashboardScore
 import DashboardVideoPromo from '~/components/app/dashboard/DashboardVideoPromo.vue'
 import DashboardStreakXpWidget from '~/components/app/dashboard/DashboardStreakXpWidget.vue'
 import DashboardPodiumWidget from '~/components/app/dashboard/DashboardPodiumWidget.vue'
-import DashboardRewardsWidget from '~/components/app/dashboard/DashboardRewardsWidget.vue'
 
 definePageMeta({
   layout: 'app',
@@ -40,13 +39,13 @@ onMounted(async () => {
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
       <!-- Columna Principal (lg:col-span-8) -->
       <main class="lg:col-span-8 space-y-6 min-w-0">
-        <!-- Hero Card de la Trivia del Día con Micro-Interacción Balón -> Perlita -->
+        <!-- Hero Card de la Trivia del Día -->
         <DashboardTriviaHero />
 
         <!-- Jerarquía Deportiva: Marcador SPB, Escudos y Cuenta Regresiva -->
         <DashboardScoreboardWidget />
 
-        <!-- Banner de Videos Publicitarios con Gradiente Dinámico Recompensado -->
+        <!-- Banner de Videos Publicitarios con Recompensa en Puntos -->
         <DashboardVideoPromo />
       </main>
 
@@ -55,11 +54,8 @@ onMounted(async () => {
         <!-- Racha de 7 Días & Barra de Progreso XP / Nivel de Fidelidad -->
         <DashboardStreakXpWidget />
 
-        <!-- Podio Activo del Leaderboard (Top 3) con Posición del Fanático -->
+        <!-- Ranking de Fanáticos en Formato Lista con Posición del Fanático -->
         <DashboardPodiumWidget />
-
-        <!-- Mini-Carrusel de Premios Destacados de la Tienda de Canje -->
-        <DashboardRewardsWidget />
       </aside>
     </div>
   </div>

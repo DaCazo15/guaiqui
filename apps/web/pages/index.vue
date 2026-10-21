@@ -20,7 +20,7 @@ import InstagramSection from '~/components/landing/InstagramSection.vue'
 useSeoMeta({
   title: 'Guaiqueríes de Margarita — Fan Zone Oficial & Plataforma de Fidelización',
   ogTitle: 'Guaiqueríes de Margarita — Fan Zone Oficial',
-  description: 'Gana perlitas respondiendo trivias y canjea camisas, entradas y premios reales de Guaiqueríes de Margarita.',
+  description: 'Gana puntos respondiendo trivias y canjea camisas, entradas y premios reales de Guaiqueríes de Margarita.',
   ogDescription: 'La plataforma oficial de la tribu insular. 100% gratuita y sin dinero real.',
   ogType: 'website',
 })

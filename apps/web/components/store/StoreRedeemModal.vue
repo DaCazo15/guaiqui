@@ -77,15 +77,15 @@ const handleConfirmRedeem = async () => {
       <div class="space-y-2 text-sm border-t border-b border-guaiqui-border py-3">
         <div class="flex justify-between text-guaiqui-text-muted">
           <span>Tu saldo actual:</span>
-          <span class="font-semibold text-guaiqui-text">{{ userBalance.toLocaleString('es-VE') }} perlitas</span>
+          <span class="font-semibold text-guaiqui-text">{{ userBalance.toLocaleString('es-VE') }} puntos</span>
         </div>
         <div class="flex justify-between text-guaiqui-accent">
           <span>Costo a debitar:</span>
-          <span class="font-semibold">-{{ product.cost_pearls.toLocaleString('es-VE') }} perlitas</span>
+          <span class="font-semibold">-{{ product.cost_pearls.toLocaleString('es-VE') }} puntos</span>
         </div>
         <div class="flex justify-between text-guaiqui-text font-bold pt-1 border-t border-guaiqui-border/60">
           <span>Saldo tras el canje:</span>
-          <span class="text-guaiqui-primary">{{ remainingBalance.toLocaleString('es-VE') }} perlitas</span>
+          <span class="text-guaiqui-primary">{{ remainingBalance.toLocaleString('es-VE') }} puntos</span>
         </div>
       </div>
 
@@ -97,7 +97,7 @@ const handleConfirmRedeem = async () => {
 
       <!-- Aviso de entrega presencial -->
       <p class="text-xs text-guaiqui-text-muted leading-relaxed">
-        Al confirmar, se descontarán las perlitas de tu billetera y se generará tu canje pendiente. Podrás ver el código QR una vez sea aprobado para su retiro presencial.
+        Al confirmar, se descontarán los puntos de tu billetera y se generará tu canje pendiente. Podrás ver el código QR una vez sea aprobado para su retiro presencial.
       </p>
 
       <!-- Botones de Acción -->

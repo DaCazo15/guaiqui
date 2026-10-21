@@ -33,7 +33,7 @@ useSeoMeta({
 
           <section>
             <h2 class="font-display font-bold text-lg text-guaiqui-primary uppercase">3. Cancelaciones y Reembolsos</h2>
-            <p>Si un canje es cancelado por falta de stock o caducidad, el reembolso se procesa insertando una entrada compensatoria positiva en tu historial de perlitas. Nunca se borran registros anteriores.</p>
+            <p>Si un canje es cancelado por falta de stock o caducidad, el reembolso se procesa insertando una entrada compensatoria positiva en tu historial de puntos. Nunca se borran registros anteriores.</p>
           </section>
         </BaseCard>
       </div>

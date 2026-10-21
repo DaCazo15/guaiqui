@@ -98,7 +98,7 @@ describe('@guaiqui/ui components', () => {
         props: { amount: 1500, showLabel: true }
       })
       expect(wrapper.text()).toContain('1.500')
-      expect(wrapper.text()).toContain('perlitas')
+      expect(wrapper.text()).toContain('puntos')
     })
   })
 })

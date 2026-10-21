@@ -36,16 +36,6 @@ export interface RewardItem {
   icon?: string
 }
 
-export interface PlayerItem {
-  id: string
-  number: number
-  name: string
-  position: string
-  height: string
-  age: number
-  nationality: string
-  isStar?: boolean
-}
 
 export interface Milestone {
   year: string
@@ -80,7 +70,7 @@ export const carouselSlides: CarouselSlide[] = [
     id: 'slide-1',
     tag: 'Próximo Partido',
     title: 'Clásico Oriental: Guaiqueríes vs. Marinos',
-    subtitle: 'Responde la trivia del partido a las 6:45 PM y gana hasta 300 perlitas.',
+    subtitle: 'Responde la trivia del partido a las 6:45 PM y gana hasta 300 puntos.',
     ctaText: 'Ver Detalles del Partido',
     ctaUrl: '#proximo-partido',
     bgGradient: 'from-emerald-900 via-guaiqui-primary-dark to-slate-900',
@@ -90,7 +80,7 @@ export const carouselSlides: CarouselSlide[] = [
     id: 'slide-2',
     tag: 'Premio Destacado',
     title: 'Camiseta Oficial Edición 80 Aniversario',
-    subtitle: 'La verde de la tribu ya está disponible en la tienda de canje por 4.500 perlitas.',
+    subtitle: 'La verde de la tribu ya está disponible en la tienda de canje por 4.500 puntos.',
     ctaText: 'Ir a la Tienda de Canje',
     ctaUrl: '#premios',
     bgGradient: 'from-amber-950 via-emerald-950 to-guaiqui-primary-dark',
@@ -133,8 +123,8 @@ export const howItWorksSteps: HowItWorksStep[] = [
   },
   {
     step: 3,
-    title: 'Acumula Perlitas',
-    description: 'Tus aciertos se convierten automáticamente en perlitas en tu billetera digital inmutable.',
+    title: 'Acumula Puntos',
+    description: 'Tus aciertos se convierten automáticamente en puntos en tu billetera digital inmutable.',
     icon: 'pearl',
   },
   {
@@ -215,14 +205,6 @@ export const teamStats = [
   { label: 'Costo Real', value: '0$', note: 'Gratis. Todo es por fidelidad' },
 ]
 
-export const keyRoster: PlayerItem[] = [
-  { id: 'p-1', number: 7, name: 'Pedro Chourio', position: 'Escolta / Alero (SG/SF)', height: '1.86 m', age: 34, nationality: 'Venezuela', isStar: true },
-  { id: 'p-2', number: 10, name: 'Heissler Guillent', position: 'Base (PG)', height: '1.86 m', age: 37, nationality: 'Venezuela', isStar: true },
-  { id: 'p-3', number: 14, name: 'Windi Graterol', position: 'Pívot (C)', height: '2.05 m', age: 38, nationality: 'Venezuela', isStar: true },
-  { id: 'p-4', number: 2, name: 'Juan Guerrero', position: 'Ala-Pívot (PF)', height: '2.05 m', age: 31, nationality: 'Rep. Dominicana', isStar: true },
-  { id: 'p-5', number: 0, name: 'Tavario Miller', position: 'Pívot (C)', height: '2.03 m', age: 30, nationality: 'Bahamas', isStar: true },
-  { id: 'p-6', number: 1, name: 'Nahziah Carter', position: 'Alero (SF)', height: '1.98 m', age: 25, nationality: 'EE.UU.', isStar: false },
-]
 
 export const historyMilestones: Milestone[] = [
   {
@@ -248,7 +230,7 @@ export const historyMilestones: Milestone[] = [
   {
     year: '2026',
     title: 'Plataforma Digital Fan Zone',
-    description: 'Lanzamiento oficial de la app de fidelización con economía inmutable de perlitas para los fanáticos.',
+    description: 'Lanzamiento oficial de la app de fidelización con economía inmutable de puntos para los fanáticos.',
   },
 ]
 
@@ -263,33 +245,33 @@ export const staffMembers: StaffMember[] = [
 export const faqList: FaqItem[] = [
   {
     id: 'faq-1',
-    title: '¿Qué son las Perlitas y cómo las obtengo?',
-    content: 'Las perlitas son la moneda virtual oficial de fidelización de Guaiqueríes de Margarita. Se obtienen al acertar preguntas en las trivias diarias, registrar tu asistencia al gimnasio y completar desafíos de la tribu.',
+    title: '¿Qué son los Puntos y cómo los obtengo?',
+    content: 'Los puntos son la moneda virtual oficial de fidelización de Guaiqueríes de Margarita. Se obtienen al acertar preguntas en las trivias diarias, registrar tu asistencia al gimnasio y completar desafíos de la tribu.',
   },
   {
     id: 'faq-2',
     title: '¿Cuesta dinero real participar o descargar la app?',
-    content: 'No, absolutamente no. La plataforma es 100% gratuita. No se vende boletos ni se compran perlitas con dinero real.',
+    content: 'No, absolutamente no. La plataforma es 100% gratuita. No se vende boletos ni se compran puntos con dinero real.',
   },
   {
     id: 'faq-3',
-    title: '¿Cómo reclamo los premios que canjee con mis perlitas?',
+    title: '¿Cómo reclamo los premios que canjee con mis puntos?',
     content: 'Al realizar un canje en la app se generará un código QR único en tu billetera digital. Presenta este código QR al staff autorizado en el Gimnasio Ciudad de La Asunción para su escaneo y entrega inmediata.',
   },
   {
     id: 'faq-4',
     title: '¿Qué sucede si se agota el stock de un producto?',
-    content: 'El inventario se renueva periódicamente antes de cada serie de partidos locales. Si un producto se agota, puedes guardar tus perlitas para la siguiente reposición.',
+    content: 'El inventario se renueva periódicamente antes de cada serie de partidos locales. Si un producto se agota, puedes guardar tus puntos para la siguiente reposición.',
   },
   {
     id: 'faq-5',
-    title: '¿Puedo perder mis perlitas con el tiempo?',
-    content: 'No. Tus perlitas nunca expiran ni se eliminan. El libro contable digital del club es inmutable y seguro.',
+    title: '¿Puedo perder mis puntos con el tiempo?',
+    content: 'No. Tus puntos nunca expiran ni se eliminan. El libro contable digital del club es inmutable y seguro.',
   },
   {
     id: 'faq-6',
-    title: '¿Puedo transferir perlitas a otro usuario o amigo?',
-    content: 'Por razones de seguridad y equidad en el ranking, las perlitas son personales e intransferibles asociadas a tu cuenta de fanático.',
+    title: '¿Puedo transferir puntos a otro usuario o amigo?',
+    content: 'Por razones de seguridad y equidad en el ranking, los puntos son personales e intransferibles asociados a tu cuenta de fanático.',
   },
   {
     id: 'faq-7',

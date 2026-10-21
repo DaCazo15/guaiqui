@@ -42,8 +42,8 @@ onMounted(async () => {
 })
 
 useSeoMeta({
-  title: 'Mi Billetera de Perlitas — Guaiqueríes de Margarita',
-  description: 'Consulta tu saldo disponible, movimientos de perlitas e historial de canjes.',
+  title: 'Mi Billetera de Puntos — Guaiqueríes de Margarita',
+  description: 'Consulta tu saldo disponible, movimientos de puntos e historial de canjes.',
 })
 </script>
 
@@ -52,7 +52,7 @@ useSeoMeta({
     <!-- Header -->
     <div class="space-y-1">
       <h1 class="font-display text-2xl md:text-3xl font-bold text-guaiqui-text uppercase tracking-wider">
-        Billetera de <span class="text-guaiqui-primary">Perlitas</span>
+        Billetera de <span class="text-guaiqui-primary">Puntos</span>
       </h1>
       <p class="text-sm text-guaiqui-text-muted">
         Historial de transacciones y balance inmutable de fidelización de la Tribu Verde.
@@ -66,7 +66,7 @@ useSeoMeta({
       @show-held-info="isHeldModalOpen = true"
     />
 
-    <!-- Banner Sumar Perlitas con Anuncios (Asíncrono y Reactivo) -->
+    <!-- Banner Sumar Puntos con Anuncios (Asíncrono y Reactivo) -->
     <div
       v-if="adsProgress.isAdsEnabled.value"
       class="bg-guaiqui-primary-soft border border-guaiqui-primary/20 rounded-guaiqui-lg p-4 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-guaiqui-xs"
@@ -76,7 +76,7 @@ useSeoMeta({
           <i class="bi bi-play-btn-fill"></i>
         </div>
         <div>
-          <h2 class="text-sm font-bold text-guaiqui-text">¿Quieres sumar más perlitas a tu saldo?</h2>
+          <h2 class="text-sm font-bold text-guaiqui-text">¿Quieres sumar más puntos a tu saldo?</h2>
           <p class="text-xs text-guaiqui-text-muted">Mira videos publicitarios cortos y gana recompensas directas a tu billetera.</p>
         </div>
       </div>

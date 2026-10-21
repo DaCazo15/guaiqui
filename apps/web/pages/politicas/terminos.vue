@@ -27,8 +27,8 @@ useSeoMeta({
           </section>
 
           <section>
-            <h2 class="font-display font-bold text-lg text-guaiqui-primary uppercase">2. Perlitas y Moneda Virtual</h2>
-            <p>Las perlitas son puntos virtuales de fidelización y no representan dinero ni valor monetario canjeable por efectivo. No existe venta de boletos ni transacciones con dinero real dentro de la aplicación.</p>
+            <h2 class="font-display font-bold text-lg text-guaiqui-primary uppercase">2. Puntos y Moneda Virtual</h2>
+            <p>Los puntos son unidades virtuales de fidelización y no representan dinero ni valor monetario canjeable por efectivo. No existe venta de boletos ni transacciones con dinero real dentro de la aplicación.</p>
           </section>
 
           <section>

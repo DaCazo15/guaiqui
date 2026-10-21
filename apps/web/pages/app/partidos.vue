@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { BaseCard, BaseBadge, BaseButton, Skeleton } from '@guaiqui/ui'
-import { SOFASCORE_OFFICIAL_GAMES, SOFASCORE_TEAM_INFO } from '@guaiqui/shared'
+import { BaseCard, Skeleton } from '@guaiqui/ui'
+import { SOFASCORE_TEAM_INFO } from '@guaiqui/shared'
 import type { Database } from '@guaiqui/shared'
 
 type GameRow = Database['public']['Tables']['games']['Row']
@@ -13,68 +13,28 @@ definePageMeta({
 
 useSeoMeta({
   title: 'Partidos & Calendario — Guaiqueríes de Margarita',
-  description: 'Calendario oficial de partidos y resultados en vivo de Guaiqueríes de Margarita sincronizados con Sofascore.',
+  description: 'Calendario oficial de partidos y resultados en vivo de Guaiqueríes de Margarita en la SuperLiga Profesional de Baloncesto.',
 })
 
 const supabase = useSupabaseClient<Database>()
 
-const games = ref<Array<{
-  id: string
-  opponent: string
-  location: string
-  game_date: string
-  is_home: boolean
-  status: 'scheduled' | 'live' | 'finished' | 'cancelled'
-  our_score: number
-  opponent_score: number
-  tournament?: string
-}>>([])
-
+const games = ref<GameRow[]>([])
 const loading = ref(true)
 const activeTab = ref<'all' | 'scheduled' | 'finished'>('all')
 
 onMounted(async () => {
+  loading.value = true
   try {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('games')
       .select('*')
       .order('game_date', { ascending: false })
 
-    if (data && data.length >= 4) {
-      games.value = data.map(g => ({
-        ...g,
-        tournament: 'SuperLiga Profesional de Baloncesto'
-      }))
-    } else {
-      // Usar o fusionar con datos oficiales de Sofascore
-      const map = new Map<string, any>()
-      SOFASCORE_OFFICIAL_GAMES.forEach((sg, idx) => {
-        map.set(`${sg.opponent}-${sg.game_date.slice(0, 10)}`, {
-          id: `sofa-game-${idx}`,
-          ...sg
-        })
-      })
-
-      if (data) {
-        data.forEach(dg => {
-          const key = `${dg.opponent}-${dg.game_date ? dg.game_date.slice(0, 10) : ''}`
-          map.set(key, {
-            ...dg,
-            tournament: 'SuperLiga Profesional de Baloncesto'
-          })
-        })
-      }
-
-      games.value = Array.from(map.values()).sort(
-        (a, b) => new Date(b.game_date).getTime() - new Date(a.game_date).getTime()
-      )
-    }
+    if (error) throw error
+    games.value = data || []
   } catch (err) {
     console.error('Error fetching games:', err)
-    games.value = SOFASCORE_OFFICIAL_GAMES.map((sg, idx) => ({
-      id: `sofa-game-${idx}`,
-      ...sg
-    }))
+    games.value = []
   } finally {
     loading.value = false
   }
@@ -83,10 +43,10 @@ onMounted(async () => {
 const filteredGames = computed(() => {
   if (activeTab.value === 'all') return games.value
   if (activeTab.value === 'scheduled') {
-    return games.value.filter(g => g.status === 'scheduled' || g.status === 'live')
+    return games.value.filter((g) => g.status === 'scheduled' || g.status === 'live')
   }
   if (activeTab.value === 'finished') {
-    return games.value.filter(g => g.status === 'finished')
+    return games.value.filter((g) => g.status === 'finished')
   }
   return games.value
 })
@@ -100,7 +60,7 @@ const formatDate = (dateStr: string) => {
     month: 'short',
     year: 'numeric',
     hour: '2-digit',
-    minute: '2-digit'
+    minute: '2-digit',
   })
 }
 </script>
@@ -115,23 +75,20 @@ const formatDate = (dateStr: string) => {
             Partidos & <span class="text-guaiqui-primary">Resultados</span>
           </h1>
           <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-guaiqui-primary-soft text-guaiqui-primary border border-guaiqui-primary/20">
-            <i class="bi bi-link-45deg"></i> Sofascore SPB
+            <i class="bi bi-shield-check"></i> SPB Venezuela
           </span>
         </div>
         <p class="text-sm text-guaiqui-text-muted mt-0.5">
-          Calendario oficial de la Gran Final y temporada regular de Guaiqueríes de Margarita.
+          Calendario oficial de partidos y resultados de la temporada de Guaiqueríes de Margarita.
         </p>
       </div>
 
-      <a
-        :href="`https://www.sofascore.com/es/basketball/team/guaiqueries-de-margarita/${SOFASCORE_TEAM_INFO.sofascore_id}`"
-        target="_blank"
-        rel="noopener noreferrer"
-        class="inline-flex items-center gap-1.5 text-xs font-semibold text-guaiqui-primary hover:text-guaiqui-primary-dark underline"
-      >
-        <span>Ver en Sofascore</span>
-        <i class="bi bi-box-arrow-up-right text-[10px]"></i>
-      </a>
+      <NuxtLink to="/app">
+        <span class="text-xs text-guaiqui-primary hover:text-guaiqui-primary-dark underline font-medium inline-flex items-center gap-1">
+          <i class="bi bi-arrow-left"></i>
+          Volver al Inicio
+        </span>
+      </NuxtLink>
     </div>
 
     <!-- Arena Quick Info Banner -->
@@ -155,13 +112,13 @@ const formatDate = (dateStr: string) => {
 
       <div class="flex items-center gap-2 shrink-0">
         <span class="px-3 py-1.5 bg-emerald-900/60 border border-emerald-500/30 rounded-lg text-xs font-bold text-emerald-300">
-          <i class="bi bi-shield-check mr-1"></i> SPB 2026
+          <i class="bi bi-trophy-fill mr-1 text-amber-400"></i> SPB 2026
         </span>
       </div>
     </div>
 
-    <!-- Status Tabs -->
-    <div class="flex items-center gap-2 border-b border-guaiqui-border pb-3">
+    <!-- Status Tabs (only when games exist) -->
+    <div v-if="games.length > 0" class="flex items-center gap-2 border-b border-guaiqui-border pb-3">
       <button
         @click="activeTab = 'all'"
         class="px-4 py-2 rounded-lg text-xs font-bold uppercase transition-all duration-200"
@@ -190,8 +147,27 @@ const formatDate = (dateStr: string) => {
       <Skeleton v-for="i in 4" :key="i" class="h-28 rounded-guaiqui-xl bg-guaiqui-surface" />
     </div>
 
-    <!-- Empty State -->
-    <div v-else-if="filteredGames.length === 0" class="text-center py-12 text-guaiqui-text-muted space-y-2 bg-white rounded-guaiqui-xl border border-guaiqui-border">
+    <!-- Empty State: Zero games registered -->
+    <div
+      v-else-if="games.length === 0"
+      class="text-center py-16 text-guaiqui-text-muted space-y-3 bg-white rounded-guaiqui-xl border border-guaiqui-border p-6 max-w-lg mx-auto"
+    >
+      <div class="w-16 h-16 rounded-full bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center text-3xl mx-auto">
+        <i class="bi bi-calendar-event"></i>
+      </div>
+      <h3 class="font-display font-bold text-xl text-guaiqui-text uppercase">
+        Calendario en Programación
+      </h3>
+      <p class="text-sm">
+        No hay partidos programados ni resultados registrados actualmente. La administración publicará el calendario oficial de la temporada próximamente.
+      </p>
+    </div>
+
+    <!-- Filter Empty State -->
+    <div
+      v-else-if="filteredGames.length === 0"
+      class="text-center py-12 text-guaiqui-text-muted space-y-2 bg-white rounded-guaiqui-xl border border-guaiqui-border"
+    >
       <div class="w-12 h-12 rounded-full bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center text-2xl mx-auto">
         <i class="bi bi-calendar-x"></i>
       </div>
@@ -290,8 +266,8 @@ const formatDate = (dateStr: string) => {
             <i class="bi bi-geo-alt text-guaiqui-primary"></i>
             {{ game.location }}
           </span>
-          <span v-if="game.tournament" class="text-guaiqui-text-subtle italic">
-            {{ game.tournament }}
+          <span class="text-guaiqui-text-subtle italic">
+            SuperLiga Profesional de Baloncesto (SPB)
           </span>
         </div>
       </BaseCard>

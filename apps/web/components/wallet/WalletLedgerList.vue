@@ -143,7 +143,7 @@ const getEntryIcon = (type: string) => {
           >
             {{ entry.amount > 0 ? '+' : '' }}{{ entry.amount.toLocaleString('es-VE') }}
           </span>
-          <span class="text-xs text-guaiqui-text-muted block font-medium">perlitas</span>
+          <span class="text-xs text-guaiqui-text-muted block font-medium">puntos</span>
         </div>
       </div>
 

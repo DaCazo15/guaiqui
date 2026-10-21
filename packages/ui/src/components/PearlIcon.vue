@@ -38,12 +38,12 @@ const sizeClasses = computed(() => {
       sizeClasses,
       animated ? 'hover:scale-110 transition-transform duration-200' : '',
     ]"
-    title="Perlitas"
-    aria-label="Ícono de Perlita"
+    title="Puntos"
+    aria-label="Ícono de Puntos"
   >
     <img
       :src="perlaCoinImg"
-      alt="Perlita"
+      alt="Puntos"
       class="w-full h-full object-contain drop-shadow-xs"
     />
   </span>

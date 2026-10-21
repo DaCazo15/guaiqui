@@ -54,7 +54,7 @@ import BandanaSeparator from './BandanaSeparator.vue'
         <ul class="space-y-2 text-xs text-slate-300">
           <li><NuxtLink to="/politicas/terminos" class="hover:text-emerald-400 transition-colors">Términos y Condiciones</NuxtLink></li>
           <li><NuxtLink to="/politicas/privacidad" class="hover:text-emerald-400 transition-colors">Política de Privacidad</NuxtLink></li>
-          <li><NuxtLink to="/politicas/perlitas" class="hover:text-emerald-400 transition-colors">Reglas de la Economía de Perlitas</NuxtLink></li>
+          <li><NuxtLink to="/politicas/perlitas" class="hover:text-emerald-400 transition-colors">Reglas de la Economía de Puntos</NuxtLink></li>
           <li><NuxtLink to="/politicas/canjes" class="hover:text-emerald-400 transition-colors">Reglamento de Canje y Entregas</NuxtLink></li>
           <li><button class="hover:text-emerald-400 transition-colors text-left font-medium" @click="useAnalytics().setConsent(false)">Configuración de Cookies</button></li>
           <li><NuxtLink to="/faq" class="hover:text-emerald-400 transition-colors">Preguntas Frecuentes (FAQ)</NuxtLink></li>
@@ -67,7 +67,7 @@ import BandanaSeparator from './BandanaSeparator.vue'
           Atención al Fanático
         </h4>
         <p class="text-xs text-slate-300">
-          ¿Tienes alguna duda sobre tus perlitas o tu canje?
+          ¿Tienes alguna duda sobre tus puntos o tu canje?
         </p>
         <NuxtLink to="/contacto" class="inline-block text-xs font-semibold text-emerald-400 hover:underline">
           Contactar con Soporte →

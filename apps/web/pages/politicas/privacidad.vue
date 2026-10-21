@@ -46,7 +46,7 @@ useSeoMeta({
               La plataforma utiliza servicios de analítica web (Vercel Web Analytics, Speed Insights y PostHog) para medir el rendimiento de la aplicación y comprender la participación de la fanaticada.
             </p>
             <ul class="list-disc list-inside mt-2 space-y-1 text-xs text-guaiqui-text-muted">
-              <li><strong>Sin datos personales:</strong> Ningún evento recopila correos electrónicos, nombres, saldos de perlitas ni contraseñas.</li>
+              <li><strong>Sin datos personales:</strong> Ningún evento recopila correos electrónicos, nombres, saldos de puntos ni contraseñas.</li>
               <li><strong>Consentimiento previo:</strong> La analítica se activa únicamente si otorgas tu consentimiento en nuestro banner o ajustes.</li>
               <li><strong>Sin grabación de sesión:</strong> No realizamos grabaciones de pantalla ni seguimiento de pulsaciones de teclas.</li>
               <li><strong>Do Not Track:</strong> Respetamos la configuración de no rastreo de tu navegador.</li>

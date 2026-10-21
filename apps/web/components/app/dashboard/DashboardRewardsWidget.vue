@@ -83,13 +83,13 @@ function nextReward() {
           Catálogo en Preparación
         </h4>
         <p class="text-[11px] text-guaiqui-text-muted max-w-[240px] mx-auto mt-1 leading-relaxed">
-          Aún no hay productos registrados en el catálogo. ¡Acumula perlitas jugando trivias para los próximos lanzamientos!
+          Aún no hay productos registrados en el catálogo. ¡Acumula puntos jugando trivias para los próximos lanzamientos!
         </p>
       </div>
 
       <NuxtLink to="/app/trivias" class="inline-block pt-1">
         <span class="text-xs text-guaiqui-primary hover:text-guaiqui-primary-dark font-bold inline-flex items-center gap-1">
-          <span>Acumular perlitas</span>
+          <span>Acumular puntos</span>
           <i class="bi bi-chevron-right text-[10px]"></i>
         </span>
       </NuxtLink>

@@ -32,7 +32,7 @@ const handleHeroHowItWorks = () => {
 
         <!-- Headline -->
         <h1 class="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tight leading-none">
-          Juega, gana <span class="text-amber-400">perlitas</span> y canjea con tu equipo
+          Juega, gana <span class="text-amber-400">puntos</span> y canjea con tu equipo
         </h1>
 
         <!-- Subtitle -->

@@ -1,30 +1,18 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { BaseCard } from '@guaiqui/ui'
-import { SOFASCORE_OFFICIAL_GAMES } from '@guaiqui/shared'
 import type { Database } from '@guaiqui/shared'
 
 type GameRow = Database['public']['Tables']['games']['Row']
 
 const supabase = useSupabaseClient<Database>()
 
-const games = ref<Array<{
-  id: string
-  opponent: string
-  location: string
-  game_date: string
-  is_home: boolean
-  status: 'scheduled' | 'live' | 'finished' | 'cancelled'
-  our_score: number
-  opponent_score: number
-  tournament?: string
-}>>([])
-
+const games = ref<GameRow[]>([])
 const loading = ref(true)
 
 // Próximo partido programado
 const nextGame = computed(() => {
-  const scheduled = games.value.filter(g => g.status === 'scheduled' || g.status === 'live')
+  const scheduled = games.value.filter((g) => g.status === 'scheduled' || g.status === 'live')
   if (scheduled.length > 0) {
     // Ordenar de más cercano a más lejano
     return [...scheduled].sort((a, b) => new Date(a.game_date).getTime() - new Date(b.game_date).getTime())[0]
@@ -34,7 +22,7 @@ const nextGame = computed(() => {
 
 // Partidos finalizados recientes (últimos 2)
 const recentGames = computed(() => {
-  const finished = games.value.filter(g => g.status === 'finished')
+  const finished = games.value.filter((g) => g.status === 'finished')
   return [...finished]
     .sort((a, b) => new Date(b.game_date).getTime() - new Date(a.game_date).getTime())
     .slice(0, 2)
@@ -87,24 +75,11 @@ async function loadGames() {
       .select('*')
       .order('game_date', { ascending: false })
 
-    if (!error && data && data.length > 0) {
-      games.value = data.map(g => ({
-        ...g,
-        tournament: 'SuperLiga Profesional de Baloncesto (SPB)'
-      }))
-    } else {
-      // Fallback a los datos oficiales de Sofascore
-      games.value = SOFASCORE_OFFICIAL_GAMES.map((sg, idx) => ({
-        id: `sofascore-${idx}`,
-        ...sg
-      }))
-    }
+    if (error) throw error
+    games.value = data || []
   } catch (err) {
     console.error('Error cargando partidos:', err)
-    games.value = SOFASCORE_OFFICIAL_GAMES.map((sg, idx) => ({
-      id: `sofascore-${idx}`,
-      ...sg
-    }))
+    games.value = []
   } finally {
     loading.value = false
     updateCountdown()
@@ -249,9 +224,12 @@ onBeforeUnmount(() => {
     </div>
 
     <!-- Si no hay partido próximo -->
-    <div v-else class="p-4 rounded-guaiqui-lg bg-guaiqui-surface text-center text-xs text-guaiqui-text-muted">
-      <i class="bi bi-calendar-check text-xl text-guaiqui-primary block mb-1"></i>
-      Próximos partidos en programación oficial.
+    <div v-else class="p-6 rounded-guaiqui-xl bg-guaiqui-surface text-center text-xs text-guaiqui-text-muted space-y-2 border border-guaiqui-border/60">
+      <div class="w-10 h-10 rounded-full bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center text-xl mx-auto">
+        <i class="bi bi-calendar-event"></i>
+      </div>
+      <p class="font-semibold text-guaiqui-text">Sin partidos programados actualmente</p>
+      <p class="text-[11px] text-guaiqui-text-subtle">El calendario de la temporada será publicado próximamente.</p>
     </div>
 
     <!-- Resultados Recientes Dinámicos -->

@@ -315,7 +315,7 @@ useSeoMeta({
 
             <div class="p-3 bg-amber-50 rounded-guaiqui-md border border-amber-200 text-xs text-amber-900 flex items-center gap-2">
               <i class="bi bi-info-circle-fill text-amber-600 shrink-0"></i>
-              <span>Puedes cancelar esta solicitud en cualquier momento antes de ser aprobada y tus perlitas serán reembolsadas inmediatamente.</span>
+              <span>Puedes cancelar esta solicitud en cualquier momento antes de ser aprobada y tus puntos serán reembolsados inmediatamente.</span>
             </div>
           </BaseCard>
 
@@ -347,7 +347,7 @@ useSeoMeta({
               Canje {{ currentRedemption.status === 'cancelled' ? 'Cancelado' : 'Rechazado' }}
             </h3>
             <p class="text-xs text-guaiqui-text-muted leading-relaxed">
-              Las <strong>{{ currentRedemption.cost_pearls.toLocaleString('es-VE') }} perlitas</strong> fueron devueltas íntegramente a tu saldo disponible en la billetera.
+              Los <strong>{{ currentRedemption.cost_pearls.toLocaleString('es-VE') }} puntos</strong> fueron devueltos íntegramente a tu saldo disponible en la billetera.
             </p>
           </BaseCard>
         </div>
@@ -414,8 +414,8 @@ useSeoMeta({
 
         <div class="p-3.5 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-md space-y-1 text-xs">
           <div class="flex justify-between text-guaiqui-text-muted">
-            <span>Perlitas a reembolsar:</span>
-            <span class="font-bold text-guaiqui-primary">+{{ currentRedemption.cost_pearls.toLocaleString('es-VE') }} perlitas</span>
+            <span>Puntos a reembolsar:</span>
+            <span class="font-bold text-guaiqui-primary">+{{ currentRedemption.cost_pearls.toLocaleString('es-VE') }} puntos</span>
           </div>
           <p class="text-[11px] text-guaiqui-text-muted">
             El reembolso se reflejará inmediatamente en tu saldo disponible.

@@ -72,7 +72,7 @@ async function handleDeleteAccount() {
             Políticas de Privacidad
           </NuxtLink>
           <NuxtLink to="/politicas/perlitas" target="_blank" class="text-guaiqui-primary hover:text-guaiqui-primary-dark underline font-medium">
-            Reglas del Programa de Perlitas
+            Reglas del Programa de Puntos
           </NuxtLink>
         </div>
       </div>

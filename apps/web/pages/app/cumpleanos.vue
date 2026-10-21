@@ -71,7 +71,7 @@ async function handleClaimBonus() {
 
     if (data?.success) {
       cardData.value.has_claimed_bonus = true
-      claimMessage.value = `¡Felicidades! Has recibido ${cardData.value.bonus_pearls} perlitas de regalo por tu cumpleaños.`
+      claimMessage.value = `¡Felicidades! Has recibido ${cardData.value.bonus_pearls} puntos de regalo por tu cumpleaños.`
       trackEvent('birthday_bonus_claimed')
       // Refresh wallet balance
       await authStore.fetchProfile()

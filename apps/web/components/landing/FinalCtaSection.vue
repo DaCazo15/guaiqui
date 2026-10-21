@@ -21,7 +21,7 @@ const handleFinalCta = () => {
       </h2>
 
       <p class="text-emerald-100 text-base sm:text-lg max-w-xl mx-auto leading-relaxed">
-        El registro toma menos de 1 minuto y recibirás un bono de bienvenida de <strong>+100 perlitas</strong> para comenzar.
+        El registro toma menos de 1 minuto y recibirás un bono de bienvenida de <strong>+100 puntos</strong> para comenzar.
       </p>
 
       <div class="pt-2">

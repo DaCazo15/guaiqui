@@ -7,7 +7,7 @@ const benefits = [
     desc: 'Guarda la app en la pantalla de inicio de tu celular sin descargar tiendas de aplicaciones pesadas.',
   },
   {
-    title: 'Billetera Digital Inmutable de Perlitas',
+    title: 'Billetera Digital Inmutable de Puntos',
     desc: 'Tus saldo se almacena de forma segura e inalterable en la nube con respaldo de Supabase.',
   },
   {
@@ -34,13 +34,13 @@ const benefits = [
           <div class="bg-guaiqui-bg text-guaiqui-text rounded-[28px] p-4 space-y-4 overflow-hidden text-xs">
             <div class="flex items-center justify-between border-b pb-2">
               <span class="font-display font-extrabold text-guaiqui-primary uppercase text-sm">Fan Zone</span>
-              <BaseBadge variant="perlita" size="sm">1.500 Perlitas</BaseBadge>
+              <BaseBadge variant="perlita" size="sm">1.500 Puntos</BaseBadge>
             </div>
 
             <div class="bg-guaiqui-primary-dark text-white p-3 rounded-guaiqui-lg text-center space-y-1">
               <div class="text-[10px] uppercase font-bold text-emerald-200">Próxima Trivia</div>
               <div class="font-display font-bold text-sm">Guaiqueríes vs Marinos</div>
-              <div class="text-[10px] text-amber-300 font-bold">+300 Perlitas en juego</div>
+              <div class="text-[10px] text-amber-300 font-bold">+300 Puntos en juego</div>
             </div>
 
             <div class="bg-white border rounded-guaiqui-md p-2 flex items-center justify-between">

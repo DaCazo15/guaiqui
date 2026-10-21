@@ -22,7 +22,7 @@ const adsProgress = useAdsProgress()
       <div class="space-y-0.5">
         <div class="flex items-center gap-2">
           <span class="text-[10px] uppercase tracking-widest text-emerald-400 font-extrabold font-mono bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-400/30">
-            ¡Perlitas al Instante!
+            ¡Puntos al Instante!
           </span>
           <span
             v-if="adsProgress.progress.value"
@@ -36,7 +36,7 @@ const adsProgress = useAdsProgress()
           Videos Publicitarios Recompensados
         </h3>
         <p class="text-xs text-slate-300 max-w-xl">
-          Apoya al club viendo clips cortos y acumula perlitas automáticas para canjear en la tienda.
+          Apoya al club viendo clips cortos y acumula puntos automáticos para canjear en la tienda.
         </p>
       </div>
     </div>

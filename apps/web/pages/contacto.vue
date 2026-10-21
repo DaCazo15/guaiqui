@@ -39,7 +39,7 @@ useSeoMeta({
             Contacto con la Tribu
           </h1>
           <p class="text-sm text-guaiqui-text-muted">
-            ¿Tienes alguna consulta sobre tus perlitas o un premio canjeado? Escríbenos directamente.
+            ¿Tienes alguna consulta sobre tus puntos o un premio canjeado? Escríbenos directamente.
           </p>
         </div>
 

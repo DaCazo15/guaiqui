@@ -167,16 +167,16 @@ useSeoMeta({
           <div class="pt-3 border-t border-guaiqui-border/70 space-y-2 text-xs">
             <div class="flex justify-between text-guaiqui-text-muted">
               <span>Tu saldo disponible:</span>
-              <strong class="text-guaiqui-text font-semibold">{{ summary.balance.toLocaleString('es-VE') }} perlitas</strong>
+              <strong class="text-guaiqui-text font-semibold">{{ summary.balance.toLocaleString('es-VE') }} puntos</strong>
             </div>
 
             <div v-if="!isAffordable" class="flex justify-between text-guaiqui-accent font-semibold">
               <span>Te faltan para canjear:</span>
-              <span>{{ missingPearls.toLocaleString('es-VE') }} perlitas</span>
+              <span>{{ missingPearls.toLocaleString('es-VE') }} puntos</span>
             </div>
             <div v-else class="flex justify-between text-guaiqui-primary font-semibold">
               <span>Saldo restante estimado:</span>
-              <span>{{ (summary.balance - currentProduct.cost_pearls).toLocaleString('es-VE') }} perlitas</span>
+              <span>{{ (summary.balance - currentProduct.cost_pearls).toLocaleString('es-VE') }} puntos</span>
             </div>
           </div>
         </BaseCard>
@@ -231,7 +231,7 @@ useSeoMeta({
           <NuxtLink v-else-if="!isAffordable" to="/app/trivias" class="block">
             <BaseButton variant="outline" size="lg" block>
               <i class="bi bi-patch-question-fill mr-2 text-guaiqui-primary"></i>
-              Ganar Perlitas en Trivias
+              Ganar Puntos en Trivias
             </BaseButton>
           </NuxtLink>
 

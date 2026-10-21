@@ -304,7 +304,7 @@ function onImageError(e: Event) {
         </div>
         <div>
           <h2 class="font-display font-bold text-base uppercase">¿Sigues la actualidad de la Tribu?</h2>
-          <p class="text-xs text-emerald-100">Juega las trivias diarias y gana perlitas para la tienda oficial.</p>
+          <p class="text-xs text-emerald-100">Juega las trivias diarias y gana puntos para la tienda oficial.</p>
         </div>
       </div>
       <NuxtLink to="/app/trivias" class="shrink-0 w-full sm:w-auto">

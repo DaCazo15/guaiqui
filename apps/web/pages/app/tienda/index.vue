@@ -60,7 +60,7 @@ onMounted(async () => {
 
 useSeoMeta({
   title: 'Tienda de Canje — Guaiqueríes de Margarita',
-  description: 'Canjea tus perlitas por camisas, merchandising oficial y experiencias de la Tribu.',
+  description: 'Canjea tus puntos por camisas, merchandising oficial y experiencias de la Tribu.',
 })
 </script>
 
@@ -73,7 +73,7 @@ useSeoMeta({
           Tienda de <span class="text-guaiqui-primary">Canje</span>
         </h1>
         <p class="text-sm text-guaiqui-text-muted">
-          Canjea tus perlitas acumuladas por premios oficiales y experiencias exclusivas.
+          Canjea tus puntos acumulados por premios oficiales y experiencias exclusivas.
         </p>
       </div>
 
@@ -145,7 +145,7 @@ useSeoMeta({
             No se encontraron premios
           </h3>
           <p class="text-xs text-guaiqui-text-muted">
-            {{ onlyAffordable ? 'Aún no tienes suficientes perlitas para estos premios. ¡Sigue participando en trivias!' : 'Pronto agregaremos más premios a esta categoría.' }}
+            {{ onlyAffordable ? 'Aún no tienes suficientes puntos para estos premios. ¡Sigue participando en trivias!' : 'Pronto agregaremos más premios a esta categoría.' }}
           </p>
         </div>
         <NuxtLink v-if="onlyAffordable" to="/app/trivias">

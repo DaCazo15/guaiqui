@@ -15,7 +15,7 @@ async function handleAccept() {
   localError.value = null
 
   if (!terms.value || !privacy.value || !pearlsRules.value) {
-    localError.value = 'Debes aceptar los Términos, Políticas de Privacidad y Reglas de Perlitas para continuar.'
+    localError.value = 'Debes aceptar los Términos, Políticas de Privacidad y Reglas de Puntos para continuar.'
     return
   }
 
@@ -69,7 +69,7 @@ async function handleAccept() {
           <BaseCheckbox v-model="pearlsRules">
             Acepto las
             <NuxtLink to="/politicas/perlitas" target="_blank" class="text-guaiqui-primary underline hover:text-guaiqui-primary-dark font-medium">
-              Reglas del Programa de Perlitas
+              Reglas del Programa de Puntos
             </NuxtLink>
             *
           </BaseCheckbox>

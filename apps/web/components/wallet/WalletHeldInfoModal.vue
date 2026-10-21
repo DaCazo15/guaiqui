@@ -12,16 +12,16 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <BaseModal :is-open="isOpen" title="Perlitas en Revisión" @close="emit('close')">
+  <BaseModal :is-open="isOpen" title="Puntos en Revisión" @close="emit('close')">
     <div class="space-y-4">
       <div class="flex items-center gap-3 p-4 bg-amber-50 border border-amber-200 rounded-guaiqui-lg text-amber-900">
         <i class="bi bi-info-circle-fill text-2xl text-amber-600 shrink-0"></i>
         <div class="text-xs space-y-1">
           <p class="font-bold text-sm">
-            Tienes {{ heldAmount.toLocaleString('es-VE') }} perlitas en proceso de verificación
+            Tienes {{ heldAmount.toLocaleString('es-VE') }} puntos en proceso de verificación
           </p>
           <p class="text-amber-800">
-            Estas perlitas corresponden a participaciones recientes en actividades especiales o trivias que están pasando por la validación automática de auditoría.
+            Estos puntos corresponden a participaciones recientes en actividades especiales o trivias que están pasando por la validación automática de auditoría.
           </p>
         </div>
       </div>

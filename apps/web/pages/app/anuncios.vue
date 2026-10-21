@@ -197,7 +197,7 @@ const handleStartAd = async () => {
       }
       if (error.message.includes('AD_DAILY_LIMIT') || error.message.includes('límite diario')) {
         analytics.trackEvent('rewarded_ad_daily_limit_reached', { completed: 50 })
-        throw new Error('Llegaste al máximo de hoy (50 anuncios). ¡Vuelve mañana para seguir ganando perlitas!')
+        throw new Error('Llegaste al máximo de hoy (50 anuncios). ¡Vuelve mañana para seguir ganando puntos!')
       }
       if (error.message.includes('ADS_DISABLED')) {
         throw new Error('Los anuncios están deshabilitados temporalmente por mantenimiento.')
@@ -393,7 +393,7 @@ onUnmounted(() => {
 
 useSeoMeta({
   title: 'Anuncios Recompensados — Guaiqueríes de Margarita',
-  description: 'Mira videos cortos voluntariamente y gana perlitas para la tienda de canjes de la Tribu.',
+  description: 'Mira videos cortos voluntariamente y gana puntos para la tienda de canjes de la Tribu.',
 })
 </script>
 
@@ -407,7 +407,7 @@ useSeoMeta({
         </BaseBadge>
       </div>
       <h1 class="font-display text-2xl md:text-4xl font-bold text-guaiqui-text uppercase tracking-wider">
-        Gana <span class="text-guaiqui-primary">Perlitas</span> Viendo Anuncios
+        Gana <span class="text-guaiqui-primary">Puntos</span> Viendo Anuncios
       </h1>
       <p class="text-sm text-guaiqui-text-muted leading-relaxed">
         Gana puntos viendo videos cortos.
@@ -450,7 +450,7 @@ useSeoMeta({
             <span class="font-display font-extrabold text-2xl text-guaiqui-text">
               +{{ progressData.pearls_earned_today ?? 0 }}
             </span>
-            <span class="text-xs text-guaiqui-text-muted font-medium">perlitas</span>
+            <span class="text-xs text-guaiqui-text-muted font-medium">puntos</span>
           </div>
         </div>
       </div>
@@ -462,7 +462,7 @@ useSeoMeta({
             Avance bloque actual ({{ progressData.block_progress ?? 0 }} / {{ progressData.block_size ?? 10 }})
           </span>
           <span class="text-guaiqui-primary font-bold">
-            Recompensa al completar: +{{ currentBlockPearlReward }} perlitas
+            Recompensa al completar: +{{ currentBlockPearlReward }} puntos
           </span>
         </div>
 
@@ -474,7 +474,7 @@ useSeoMeta({
         </div>
 
         <p class="text-[11px] text-guaiqui-text-muted">
-          Completa {{ Math.max(0, (progressData.block_size || 10) - (progressData.block_progress ?? 0)) }} anuncio(s) más para reclamar las {{ currentBlockPearlReward }} perlitas de este bloque.
+          Completa {{ Math.max(0, (progressData.block_size || 10) - (progressData.block_progress ?? 0)) }} anuncio(s) más para reclamar los {{ currentBlockPearlReward }} puntos de este bloque.
         </p>
       </div>
 
@@ -556,7 +556,7 @@ useSeoMeta({
         <i class="bi bi-trophy-fill text-amber-500"></i> Tabla de Recompensas por Bloques
       </h3>
       <p class="text-xs text-guaiqui-text-muted">
-        Las perlitas se acreditan automáticamente al completar cada bloque de 10 anuncios vistos.
+        Los puntos se acreditan automáticamente al completar cada bloque de 10 anuncios vistos.
       </p>
 
       <div class="grid grid-cols-1 sm:grid-cols-5 gap-3 pt-2">
@@ -577,7 +577,7 @@ useSeoMeta({
             {{ tier.range }}
           </span>
           <div class="mt-2 font-display font-extrabold text-xl text-guaiqui-primary">
-            +{{ tier.pearls }} <span class="text-xs font-medium text-guaiqui-text-muted">perlitas</span>
+            +{{ tier.pearls }} <span class="text-xs font-medium text-guaiqui-text-muted">puntos</span>
           </div>
         </div>
       </div>
@@ -601,7 +601,7 @@ useSeoMeta({
               ¿Listo para ver el anuncio?
             </h3>
             <p class="text-xs text-guaiqui-text-muted leading-relaxed">
-              Mira el video completo para avanzar en tu bloque del día. Si cierras el video antes de finalizar, no se otorgará el avance ni las perlitas.
+              Mira el video completo para avanzar en tu bloque del día. Si cierras el video antes de finalizar, no se otorgará el avance ni los puntos.
             </p>
           </div>
 
@@ -667,10 +667,10 @@ useSeoMeta({
           <div v-if="resultDetails.pearls > 0" class="p-4 bg-emerald-50 border border-emerald-200 rounded-guaiqui-xl space-y-1">
             <span class="text-xs font-bold text-emerald-800 uppercase block">¡Bloque Completado!</span>
             <div class="font-display font-extrabold text-3xl text-emerald-600 flex items-center justify-center gap-1">
-              +{{ resultDetails.pearls }} <span class="text-sm font-medium">perlitas</span>
+              +{{ resultDetails.pearls }} <span class="text-sm font-medium">puntos</span>
             </div>
             <p v-if="resultDetails.held" class="text-[11px] text-amber-700 font-medium pt-1">
-              <i class="bi bi-clock-history mr-1"></i> Las perlitas han quedado en revisión preventiva por el sistema de seguridad.
+              <i class="bi bi-clock-history mr-1"></i> Los puntos han quedado en revisión preventiva por el sistema de seguridad.
             </p>
           </div>
 

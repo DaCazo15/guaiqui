@@ -6,7 +6,7 @@ import AppShowcaseSection from '~/components/landing/AppShowcaseSection.vue'
 
 useSeoMeta({
   title: '¿Cómo Funciona? — Fan Zone Guaiqueríes de Margarita',
-  description: 'Aprende a jugar trivias, ganar perlitas y canjear tus premios sin pagar un solo bolívar.',
+  description: 'Aprende a jugar trivias, ganar puntos y canjear tus premios sin pagar un solo bolívar.',
 })
 </script>
 

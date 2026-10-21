@@ -103,7 +103,7 @@ const estimatedReward = computed(() => {
           Próxima Trivia en Preparación
         </h3>
         <p class="text-xs text-guaiqui-text-muted max-w-sm mx-auto">
-          Los árbitros están afinando las preguntas. Vuelve en unas horas para sumar más perlitas a tu cuenta.
+          Los árbitros están afinando las preguntas. Vuelve en unas horas para sumar más puntos a tu cuenta.
         </p>
       </div>
       <NuxtLink to="/app/trivias">

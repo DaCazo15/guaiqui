@@ -72,7 +72,7 @@ const handleSocialClick = (network: string) => {
           <span class="font-display text-sm font-semibold">"¡Llenazo total en el gimnasio!"</span>
         </div>
         <div class="h-40 rounded-guaiqui-lg bg-gradient-to-br from-amber-800 to-emerald-950 p-4 text-white flex flex-col justify-between shadow-xs">
-          <span class="text-xs font-bold uppercase text-amber-300">Perlitas</span>
+          <span class="text-xs font-bold uppercase text-amber-300">Puntos</span>
           <span class="font-display text-sm font-semibold">"¡Canjeé mi camisa oficial!"</span>
         </div>
         <div class="h-40 rounded-guaiqui-lg bg-gradient-to-br from-emerald-950 to-teal-900 p-4 text-white flex flex-col justify-between shadow-xs">

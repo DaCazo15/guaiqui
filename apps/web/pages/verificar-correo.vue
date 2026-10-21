@@ -128,7 +128,7 @@ async function checkVerification() {
         </div>
 
         <p class="text-xs text-guaiqui-text-muted leading-relaxed">
-          Debes hacer clic en el enlace del correo para activar tu cuenta y comenzar a ganar y canjear perlitas.
+          Debes hacer clic en el enlace del correo para activar tu cuenta y comenzar a ganar y canjear puntos.
         </p>
 
         <div class="space-y-3 pt-2">

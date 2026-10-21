@@ -2,17 +2,20 @@
 import { ref, computed, onMounted } from 'vue'
 import Navbar from '~/components/landing/Navbar.vue'
 import SiteFooter from '~/components/landing/SiteFooter.vue'
-import { BaseCard, BaseBadge, BaseButton } from '@guaiqui/ui'
-import { SOFASCORE_OFFICIAL_ROSTER, SOFASCORE_TEAM_INFO } from '@guaiqui/shared'
+import { BaseCard, BaseBadge, BaseButton, Skeleton } from '@guaiqui/ui'
+import { SOFASCORE_TEAM_INFO } from '@guaiqui/shared'
 import type { Database } from '@guaiqui/shared'
+
+type PlayerRow = Database['public']['Tables']['players']['Row']
 
 useSeoMeta({
   title: 'Plantilla Oficial 2026 — Guaiqueríes de Margarita',
-  description: 'Revisa la plantilla oficial completa de Guaiqueríes de Margarita sincronizada con Sofascore para la temporada 2026 de la SPB.',
+  description: 'Revisa la plantilla oficial de Guaiqueríes de Margarita para la temporada 2026 de la SuperLiga Profesional de Baloncesto (SPB).',
 })
 
 const supabase = useSupabaseClient<Database>()
-const players = ref<any[]>(SOFASCORE_OFFICIAL_ROSTER)
+const players = ref<PlayerRow[]>([])
+const loading = ref(true)
 const activeFilter = ref<'all' | 'pg' | 'sg' | 'sf' | 'pf' | 'c'>('all')
 
 const filterOptions = [
@@ -21,22 +24,25 @@ const filterOptions = [
   { key: 'sg', label: 'Escoltas (SG)' },
   { key: 'sf', label: 'Aleros (SF)' },
   { key: 'pf', label: 'Ala-Pívots (PF)' },
-  { key: 'c', label: 'Pívots (C)' }
+  { key: 'c', label: 'Pívots (C)' },
 ]
 
 onMounted(async () => {
+  loading.value = true
   try {
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('players')
       .select('*')
       .eq('is_active', true)
       .order('jersey_number', { ascending: true })
 
-    if (data && data.length > 0) {
-      players.value = data
-    }
+    if (error) throw error
+    players.value = data || []
   } catch (err) {
-    console.warn('Error fetching players from Supabase, using local fallback:', err)
+    console.error('Error fetching players from Supabase:', err)
+    players.value = []
+  } finally {
+    loading.value = false
   }
 })
 
@@ -44,19 +50,19 @@ const filteredRoster = computed(() => {
   const list = players.value
   if (activeFilter.value === 'all') return list
   if (activeFilter.value === 'pg') {
-    return list.filter((p: any) => p.position.includes('Base') || p.position.includes('PG'))
+    return list.filter((p) => p.position.includes('Base') || p.position.includes('PG'))
   }
   if (activeFilter.value === 'sg') {
-    return list.filter((p: any) => p.position.includes('Escolta') || p.position.includes('SG'))
+    return list.filter((p) => p.position.includes('Escolta') || p.position.includes('SG'))
   }
   if (activeFilter.value === 'sf') {
-    return list.filter((p: any) => p.position.includes('Alero') || p.position.includes('SF'))
+    return list.filter((p) => p.position.includes('Alero') || p.position.includes('SF'))
   }
   if (activeFilter.value === 'pf') {
-    return list.filter((p: any) => p.position.includes('Ala-Pívot') || p.position.includes('PF'))
+    return list.filter((p) => p.position.includes('Ala-Pívot') || p.position.includes('PF'))
   }
   if (activeFilter.value === 'c') {
-    return list.filter((p: any) => p.position.includes('Pívot') || p.position.includes('C'))
+    return list.filter((p) => p.position.includes('Pívot') || p.position.includes('C'))
   }
   return list
 })
@@ -68,11 +74,11 @@ const filteredRoster = computed(() => {
 
     <main class="py-12 px-4 sm:px-8">
       <div class="max-w-6xl mx-auto space-y-10">
-        <!-- Header & Sofascore Badge -->
+        <!-- Header -->
         <div class="space-y-4 text-center max-w-3xl mx-auto">
           <div class="inline-flex items-center gap-2 bg-guaiqui-primary-soft text-guaiqui-primary px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-guaiqui-primary/20">
-            <i class="bi bi-link-45deg"></i>
-            <span>Sincronizado con Sofascore · SPB Venezuela</span>
+            <i class="bi bi-shield-check"></i>
+            <span>Nómina Oficial · SPB Venezuela</span>
           </div>
 
           <h1 class="font-display font-extrabold text-4xl sm:text-5xl text-guaiqui-text uppercase tracking-tight">
@@ -93,15 +99,15 @@ const filteredRoster = computed(() => {
               <i class="bi bi-trophy-fill text-amber-500"></i>
               {{ SOFASCORE_TEAM_INFO.tournament }}
             </span>
-            <span class="inline-flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-guaiqui-border shadow-guaiqui-sm">
+            <span v-if="players.length > 0" class="inline-flex items-center gap-1.5 bg-white px-3 py-1.5 rounded-lg border border-guaiqui-border shadow-guaiqui-sm">
               <i class="bi bi-people-fill text-blue-500"></i>
-              Edad Promedio: {{ SOFASCORE_TEAM_INFO.average_age }}
+              Jugadores Inscritos: {{ players.length }}
             </span>
           </div>
         </div>
 
-        <!-- Position Filter Pills -->
-        <div class="flex items-center justify-center gap-2 flex-wrap">
+        <!-- Position Filter Pills (only when players exist) -->
+        <div v-if="players.length > 0" class="flex items-center justify-center gap-2 flex-wrap">
           <button
             v-for="opt in filterOptions"
             :key="opt.key"
@@ -113,8 +119,40 @@ const filteredRoster = computed(() => {
           </button>
         </div>
 
+        <!-- Loading State -->
+        <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Skeleton v-for="i in 6" :key="i" class="h-56 rounded-guaiqui-xl bg-guaiqui-surface" />
+        </div>
+
+        <!-- Empty State (No players in database) -->
+        <div
+          v-else-if="players.length === 0"
+          class="text-center py-16 px-6 bg-white rounded-guaiqui-xl border border-guaiqui-border shadow-guaiqui-sm max-w-2xl mx-auto space-y-4"
+        >
+          <div class="w-16 h-16 rounded-full bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center text-3xl mx-auto">
+            <i class="bi bi-people"></i>
+          </div>
+          <h3 class="font-display font-bold text-2xl text-guaiqui-text uppercase">
+            Plantilla en Preparación
+          </h3>
+          <p class="text-sm text-guaiqui-text-muted leading-relaxed">
+            Actualmente no hay jugadores registrados en la plantilla oficial. La nómina para la temporada será publicada próximamente por la gerencia deportiva de la Tribu.
+          </p>
+        </div>
+
+        <!-- Filter Empty State -->
+        <div
+          v-else-if="filteredRoster.length === 0"
+          class="text-center py-12 px-4 bg-white rounded-guaiqui-xl border border-guaiqui-border text-guaiqui-text-muted space-y-2 max-w-md mx-auto"
+        >
+          <div class="w-12 h-12 rounded-full bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center text-2xl mx-auto">
+            <i class="bi bi-person-slash"></i>
+          </div>
+          <p class="text-sm font-medium">No se encontraron jugadores en esta posición.</p>
+        </div>
+
         <!-- Roster Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           <BaseCard
             v-for="p in filteredRoster"
             :key="p.jersey_number"

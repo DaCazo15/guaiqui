@@ -166,7 +166,7 @@ const downloadCodes = () => {
       <div>
         <h3 class="text-base font-semibold text-guaiqui-text">Verificación en Dos Pasos (2FA)</h3>
         <p class="text-xs text-guaiqui-text-muted">
-          Añade una capa extra de seguridad para proteger tus perlitas, canjes y datos personales.
+          Añade una capa extra de seguridad para proteger tus puntos, canjes y datos personales.
         </p>
       </div>
       <div class="flex items-center gap-2">

@@ -98,7 +98,7 @@ async function finishRegistration(optionalPreferences?: {
           Únete a la <span class="text-guaiqui-primary">Tribu</span>
         </h1>
         <p class="text-sm text-guaiqui-text-muted">
-          Paso {{ currentStep }} de 3 — Registra tu cuenta y empieza a ganar perlitas.
+          Paso {{ currentStep }} de 3 — Registra tu cuenta y empieza a ganar puntos.
         </p>
 
         <!-- Step Indicator -->

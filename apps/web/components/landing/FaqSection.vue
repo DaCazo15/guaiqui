@@ -20,7 +20,7 @@ const accordionItems = faqList.map((f) => ({
           Preguntas Frecuentes
         </h2>
         <p class="text-guaiqui-text-muted text-sm sm:text-base">
-          Resolvemos tus dudas sobre las perlitas, trivias y el canje de premios.
+          Resolvemos tus dudas sobre los puntos, trivias y el canje de premios.
         </p>
       </div>
 

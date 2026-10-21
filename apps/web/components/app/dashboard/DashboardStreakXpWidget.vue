@@ -125,7 +125,7 @@ const streakMilestones = [1, 2, 3, 4, 5, 6, 7]
           <i class="bi bi-gift-fill text-amber-600"></i>
           <span>Bonus al completar 7 días:</span>
         </span>
-        <span class="font-bold text-amber-800 font-mono">+50 Perlitas extra</span>
+        <span class="font-bold text-amber-800 font-mono">+50 Puntos extra</span>
       </div>
     </div>
 
@@ -154,7 +154,7 @@ const streakMilestones = [1, 2, 3, 4, 5, 6, 7]
       </div>
 
       <div class="flex items-center justify-between text-[11px] text-guaiqui-text-subtle font-medium">
-        <span>{{ currentBalance }} Perlitas</span>
+        <span>{{ currentBalance }} Puntos</span>
         <span v-if="xpNeeded > 0">Faltan {{ xpNeeded }} para Nivel {{ nextLevelData.level }}</span>
         <span v-else class="text-amber-600 font-bold">¡Nivel Máximo de Fanático!</span>
       </div>

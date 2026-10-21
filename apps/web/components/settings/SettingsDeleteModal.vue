@@ -52,7 +52,7 @@ function handleConfirm() {
         <div class="pt-2 border-t border-guaiqui-status-danger/20 space-y-1">
           <p class="font-semibold text-guaiqui-text">Lo que se conserva (Integridad Contable):</p>
           <p class="text-guaiqui-text-muted">
-            Los registros históricos de perlitas ganadas y canjes entregados se conservan de forma anonimizada para auditoría inmutable del programa.
+            Los registros históricos de puntos ganados y canjes entregados se conservan de forma anonimizada para auditoría inmutable del programa.
           </p>
         </div>
       </div>

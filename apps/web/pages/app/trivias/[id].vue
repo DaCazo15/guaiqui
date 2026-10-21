@@ -158,7 +158,7 @@ async function handleFinalSubmit() {
           {{ currentTriviaInfo?.title || (triviaStore.isLoading ? 'Cargando trivia...' : 'Trivia Guaiqueríes') }}
         </h1>
         <p class="text-sm text-guaiqui-text-muted">
-          {{ currentTriviaInfo?.description || 'Responde las preguntas para ganar perlitas y acumular días en tu racha.' }}
+          {{ currentTriviaInfo?.description || 'Responde las preguntas para ganar puntos y acumular días en tu racha.' }}
         </p>
       </div>
 
@@ -170,7 +170,7 @@ async function handleFinalSubmit() {
       <!-- Banner de estado si ya ganó, aún no inicia o expiró -->
       <div v-if="isTriviaWon" class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-guaiqui-lg text-xs font-semibold text-emerald-900 flex items-center gap-2">
         <i class="bi bi-trophy-fill text-emerald-600 text-base shrink-0"></i>
-        <span>¡Ya has ganado esta trivia! Las perlitas obtenidas ya fueron acreditadas a tu billetera.</span>
+        <span>¡Ya has ganado esta trivia! Los puntos obtenidos ya fueron acreditados a tu billetera.</span>
       </div>
 
       <div v-else-if="isTriviaUpcoming" class="p-3.5 bg-amber-50 border border-amber-200 rounded-guaiqui-lg text-xs font-semibold text-amber-900 flex items-center gap-2">
@@ -189,7 +189,7 @@ async function handleFinalSubmit() {
           <span>Reglas del Juego:</span>
         </h4>
         <ul class="space-y-1.5 list-disc list-inside text-xs text-guaiqui-text-muted">
-          <li>Debes acertar todas las preguntas para ganar la trivia y recibir tus perlitas.</li>
+          <li>Debes acertar todas las preguntas para ganar la trivia y recibir tus puntos.</li>
           <li>Si no aciertas todas, puedes volver a intentarlo las veces que desees hasta ganarla.</li>
           <li>Responde con calma y revisa tus respuestas antes de enviar.</li>
         </ul>
@@ -338,8 +338,8 @@ async function handleFinalSubmit() {
         <p class="text-sm text-guaiqui-text-muted">
           {{
             (resultData?.pearls_awarded || 0) > 0
-              ? '¡Excelente! Acertaste todas las preguntas y tus perlitas han sido acreditadas.'
-              : 'Para ganar las perlitas debes responder correctamente todas las preguntas. ¡Puedes volver a jugar de inmediato!'
+              ? '¡Excelente! Acertaste todas las preguntas y tus puntos han sido acreditados.'
+              : 'Para ganar los puntos debes responder correctamente todas las preguntas. ¡Puedes volver a jugar de inmediato!'
           }}
         </p>
       </div>
@@ -354,7 +354,7 @@ async function handleFinalSubmit() {
         </div>
 
         <div class="p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-lg space-y-1">
-          <span class="text-xs text-guaiqui-text-muted font-medium">Perlitas Ganadas</span>
+          <span class="text-xs text-guaiqui-text-muted font-medium">Puntos Ganados</span>
           <div class="flex justify-center pt-1">
             <PearlAmount :amount="resultData?.pearls_awarded || 0" size="lg" animated />
           </div>
@@ -363,7 +363,7 @@ async function handleFinalSubmit() {
 
       <div v-if="resultData?.suspicious" class="p-4 bg-guaiqui-status-warning-soft border border-guaiqui-status-warning/30 rounded-guaiqui-lg text-guaiqui-status-warning text-xs flex items-center gap-2 text-left">
         <i class="bi bi-info-circle-fill shrink-0"></i>
-        <span>Tus perlitas están en revisión preventiva por nuestro sistema de auditoría.</span>
+        <span>Tus puntos están en revisión preventiva por nuestro sistema de auditoría.</span>
       </div>
 
       <div class="pt-4 flex flex-col sm:flex-row gap-3 justify-center">

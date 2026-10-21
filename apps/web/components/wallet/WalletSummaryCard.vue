@@ -19,7 +19,7 @@ const emit = defineEmits<{
       <div class="space-y-2 relative z-10">
         <div class="flex items-center justify-between">
           <span class="text-xs font-bold text-guaiqui-primary uppercase tracking-wider bg-guaiqui-primary-soft px-2.5 py-1 rounded-full">
-            Saldo de Perlitas
+            Saldo de Puntos
           </span>
           <NuxtLink to="/app/canjes">
             <BaseButton variant="outline" size="sm" class="text-xs font-medium">

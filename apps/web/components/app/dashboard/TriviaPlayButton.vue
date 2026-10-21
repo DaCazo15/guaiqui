@@ -102,7 +102,7 @@ onBeforeUnmount(() => {
           : 'w-14 h-14 rounded-full p-0 flex items-center justify-center bg-white shadow-2xl shadow-amber-500/50 scale-110 border-2 border-amber-300 animate-bounce'
       ]"
       :aria-label="label"
-      :title="state === 'holding' ? '¡Suelta para lanzar la perlita!' : label"
+      :title="state === 'holding' ? '¡Suelta para lanzar!' : label"
     >
       <!-- ESTADO 1: Idle (Botón CTA con textura y badge energético) -->
       <template v-if="state === 'idle'">
@@ -139,16 +139,16 @@ onBeforeUnmount(() => {
         </div>
       </template>
 
-      <!-- ESTADO 3: Morphing (Transformación en Perlita Dorada y Destello) -->
+      <!-- ESTADO 3: Morphing (Transformación en Moneda Dorada y Destello) -->
       <template v-else>
         <div class="relative w-full h-full rounded-full flex items-center justify-center bg-gradient-to-br from-amber-100 via-white to-amber-200 p-1">
           <!-- Anillo de destello radiante -->
           <div class="absolute -inset-2 rounded-full bg-amber-400/30 blur-sm animate-ping"></div>
           
-          <!-- Imagen oficial de la perlita -->
+          <!-- Imagen oficial de la moneda de puntos -->
           <img
             src="/perla-coin.webp"
-            alt="Perlita Ganada"
+            alt="Puntos Ganados"
             class="w-10 h-10 object-contain drop-shadow-md transform rotate-12 transition-transform duration-300"
           />
         </div>

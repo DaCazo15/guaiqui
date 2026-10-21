@@ -183,7 +183,7 @@ useSeoMeta({
             No tienes canjes en esta sección
           </h3>
           <p class="text-xs text-guaiqui-text-muted">
-            Acumula perlitas jugando trivias y canjéalas por indumentaria y experiencias exclusivas.
+            Acumula puntos jugando trivias y canjéalos por indumentaria y experiencias exclusivas.
           </p>
         </div>
         <NuxtLink to="/app/tienda">

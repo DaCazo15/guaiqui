@@ -5,7 +5,7 @@ import FaqSection from '~/components/landing/FaqSection.vue'
 
 useSeoMeta({
   title: 'Preguntas Frecuentes — Guaiqueríes de Margarita',
-  description: 'Centro de ayuda con las respuestas a todas tus dudas sobre perlitas, trivias y canjes.',
+  description: 'Centro de ayuda con las respuestas a todas tus dudas sobre puntos, trivias y canjes.',
 })
 </script>
 

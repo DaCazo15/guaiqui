@@ -55,7 +55,7 @@ function getEstimatedReward(t: any): number {
           Trivias <span class="text-guaiqui-primary">Guaiqueríes</span>
         </h1>
         <p class="text-sm text-guaiqui-text-muted">
-          Demuestra tu pasión por el baloncesto y gana perlitas para canjear en la tienda oficial.
+          Demuestra tu pasión por el baloncesto y gana puntos para canjear en la tienda oficial.
         </p>
       </div>
     </div>
@@ -124,7 +124,7 @@ function getEstimatedReward(t: any): number {
       </div>
       <h3 class="text-lg font-bold text-guaiqui-text">No hay trivias publicadas</h3>
       <p class="text-sm text-guaiqui-text-muted max-w-sm mx-auto">
-        Pronto publicaremos nuevas trivias para que sumes perlitas. ¡Mantente atento a los anuncios!
+        Pronto publicaremos nuevas trivias para que sumes puntos. ¡Mantente atento a los anuncios!
       </p>
     </BaseCard>
   </div>
