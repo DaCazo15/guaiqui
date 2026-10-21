@@ -25,11 +25,7 @@ const estimatedReward = computed(() => {
         <div class="flex items-center gap-2">
           <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-guaiqui-primary-soft text-guaiqui-primary border border-guaiqui-primary/20">
             <i class="bi bi-patch-question-fill text-sm"></i>
-            <span>Trivia Oficial del Día</span>
-          </span>
-          <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-rose-50 text-guaiqui-accent border border-rose-200">
-            <span class="w-1.5 h-1.5 rounded-full bg-guaiqui-accent animate-ping"></span>
-            ¡En Juego!
+            <span>Trivia</span>
           </span>
         </div>
 
@@ -46,7 +42,7 @@ const estimatedReward = computed(() => {
           {{ activeTrivia.title }}
         </h2>
         <p class="text-sm text-guaiqui-text-muted leading-relaxed max-w-2xl">
-          {{ activeTrivia.description || 'Pone a prueba tu pasión por la Tribu' }}
+          {{ activeTrivia.description || 'Pon a prueba tu pasión por la Tribu' }}
         </p>
       </div>
 

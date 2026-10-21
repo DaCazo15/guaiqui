@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { BaseCard, PearlAmount } from '@guaiqui/ui'
-import { useCatalog, type Product } from '~/composables/useCatalog'
-import { featuredRewards } from '~/data/landingData'
+import { useCatalog } from '~/composables/useCatalog'
 
 const { products, loading, fetchProducts } = useCatalog()
 
@@ -14,27 +13,17 @@ onMounted(async () => {
   }
 })
 
-// Lista unificada dinámica: productos de la DB o recompensas destacadas del club
+// Mapeo 100% dinámico de los productos reales cargados desde la base de datos
 const items = computed(() => {
-  if (products.value && products.value.length > 0) {
-    return products.value.map(p => ({
-      id: p.id,
-      name: p.name,
-      category: p.category === 'physical' ? 'Indumentaria' : p.category === 'experience' ? 'Experiencia' : 'Sorteo',
-      cost: p.cost_pearls,
-      stock: p.stock,
-      image: p.images?.[0] || null,
-      icon: p.category === 'experience' ? 'bi-camera-video-fill' : p.category === 'raffle' ? 'bi-ticket-perforated-fill' : 'bi-bag-check-fill'
-    }))
-  }
-  return featuredRewards.map(r => ({
-    id: r.id,
-    name: r.name,
-    category: r.category,
-    cost: r.perlitasCost,
-    stock: r.stock,
-    image: null,
-    icon: r.icon
+  if (!products.value || products.value.length === 0) return []
+  return products.value.map(p => ({
+    id: p.id,
+    name: p.name,
+    category: p.category === 'physical' ? 'Indumentaria' : p.category === 'experience' ? 'Experiencia' : 'Sorteo',
+    cost: p.cost_pearls,
+    stock: p.stock,
+    image: p.images?.[0] || null,
+    icon: p.category === 'experience' ? 'bi-camera-video-fill' : p.category === 'raffle' ? 'bi-ticket-perforated-fill' : 'bi-bag-check-fill'
   }))
 })
 
@@ -66,9 +55,6 @@ function nextReward() {
           <h3 class="font-display font-extrabold text-base text-guaiqui-text uppercase tracking-wide leading-tight">
             Premios
           </h3>
-          <p class="text-[11px] text-guaiqui-text-muted">
-            Catálogo
-          </p>
         </div>
       </div>
 
@@ -78,8 +64,39 @@ function nextReward() {
       </NuxtLink>
     </div>
 
-    <!-- Carrusel de Premios Limpio (Sin tarjeta doble) -->
-    <div v-if="currentItem" class="rounded-guaiqui-lg border border-guaiqui-border bg-guaiqui-surface p-3.5 space-y-3">
+    <!-- 1. Estado Cargando -->
+    <div v-if="loading" class="py-8 text-center text-xs text-guaiqui-text-muted space-y-2">
+      <i class="bi bi-arrow-repeat animate-spin text-xl text-guaiqui-primary block"></i>
+      <span>Cargando catálogo oficial...</span>
+    </div>
+
+    <!-- 2. Estado Vacío Real: No hay productos registrados aún en Supabase -->
+    <div
+      v-else-if="items.length === 0"
+      class="rounded-guaiqui-lg border border-dashed border-guaiqui-border bg-guaiqui-surface/50 p-6 text-center space-y-2.5"
+    >
+      <div class="w-10 h-10 rounded-full bg-guaiqui-surface border border-guaiqui-border flex items-center justify-center mx-auto text-guaiqui-text-muted">
+        <i class="bi bi-gift text-lg"></i>
+      </div>
+      <div>
+        <h4 class="font-display font-bold text-sm uppercase text-guaiqui-text tracking-wide">
+          Catálogo en Preparación
+        </h4>
+        <p class="text-[11px] text-guaiqui-text-muted max-w-[240px] mx-auto mt-1 leading-relaxed">
+          Aún no hay productos registrados en el catálogo. ¡Acumula perlitas jugando trivias para los próximos lanzamientos!
+        </p>
+      </div>
+
+      <NuxtLink to="/app/trivias" class="inline-block pt-1">
+        <span class="text-xs text-guaiqui-primary hover:text-guaiqui-primary-dark font-bold inline-flex items-center gap-1">
+          <span>Acumular perlitas</span>
+          <i class="bi bi-chevron-right text-[10px]"></i>
+        </span>
+      </NuxtLink>
+    </div>
+
+    <!-- 3. Carrusel Dinámico (ÚNICAMENTE si existen productos reales registrados) -->
+    <div v-else-if="currentItem" class="rounded-guaiqui-lg border border-guaiqui-border bg-guaiqui-surface p-3.5 space-y-3">
       <!-- Tarjeta del Producto Actual -->
       <div class="flex items-center gap-3">
         <!-- Thumbnail del producto -->
@@ -150,6 +167,5 @@ function nextReward() {
         </div>
       </div>
     </div>
-
   </BaseCard>
 </template>

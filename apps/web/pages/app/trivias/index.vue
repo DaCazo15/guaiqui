@@ -86,7 +86,7 @@ function getEstimatedReward(t: any): number {
             </div>
 
             <p class="text-sm text-guaiqui-text-muted">
-              {{ t.description || 'Pone a prueba tus conocimientos sobre la historia y plantilla del equipo.' }}
+              {{ t.description || 'Pon a prueba tus conocimientos sobre la historia y plantilla del equipo.' }}
             </p>
 
             <div class="flex flex-wrap items-center gap-4 text-xs text-guaiqui-text-muted pt-1">

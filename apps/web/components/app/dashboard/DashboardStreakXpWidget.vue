@@ -70,11 +70,8 @@ const streakMilestones = [1, 2, 3, 4, 5, 6, 7]
         </div>
         <div>
           <h3 class="font-display font-extrabold text-base text-guaiqui-text uppercase tracking-wide leading-tight">
-            Racha Diaria
+            Racha
           </h3>
-          <p class="text-[11px] text-guaiqui-text-muted">
-            Juega trivias y acumula días
-          </p>
         </div>
       </div>
 

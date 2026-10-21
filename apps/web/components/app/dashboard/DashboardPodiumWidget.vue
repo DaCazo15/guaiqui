@@ -45,16 +45,13 @@ const myBalance = computed(() => {
         </div>
         <div>
           <h3 class="font-display font-extrabold text-base text-guaiqui-text uppercase tracking-wide leading-tight">
-            Podio Mensual
+            Podio
           </h3>
-          <p class="text-[11px] text-guaiqui-text-muted">
-            Top Fanáticos de la Tribu
-          </p>
         </div>
       </div>
 
       <NuxtLink to="/app/ranking" class="text-xs text-guaiqui-primary hover:text-guaiqui-primary-dark font-bold inline-flex items-center gap-1 transition-colors">
-        <span>Tabla completa</span>
+        <span>Tabla</span>
         <i class="bi bi-arrow-right"></i>
       </NuxtLink>
     </div>
@@ -80,10 +77,6 @@ const myBalance = computed(() => {
               2
             </span>
           </div>
-
-          <span class="font-display font-bold text-xs uppercase truncate max-w-[85px] text-guaiqui-text">
-            {{ secondPlace ? secondPlace.display_name : 'Disponible' }}
-          </span>
           <div class="text-[11px] font-mono font-bold text-slate-600">
             {{ secondPlace ? secondPlace.pearls_earned : 0 }} <span class="text-[9px]">pts</span>
           </div>
@@ -114,10 +107,6 @@ const myBalance = computed(() => {
               1
             </span>
           </div>
-
-          <span class="font-display font-extrabold text-xs uppercase truncate max-w-[95px] text-guaiqui-text">
-            {{ firstPlace ? firstPlace.display_name : 'Disponible' }}
-          </span>
           <div class="text-[11px] font-mono font-bold text-amber-700">
             {{ firstPlace ? firstPlace.pearls_earned : 0 }} <span class="text-[9px]">pts</span>
           </div>
@@ -146,10 +135,6 @@ const myBalance = computed(() => {
               3
             </span>
           </div>
-
-          <span class="font-display font-bold text-xs uppercase truncate max-w-[85px] text-guaiqui-text">
-            {{ thirdPlace ? thirdPlace.display_name : 'Disponible' }}
-          </span>
           <div class="text-[11px] font-mono font-bold text-amber-900">
             {{ thirdPlace ? thirdPlace.pearls_earned : 0 }} <span class="text-[9px]">pts</span>
           </div>
@@ -165,7 +150,7 @@ const myBalance = computed(() => {
     <!-- Franja Destacada: Tu Posición Actual Calculada -->
     <div class="flex items-center justify-between p-3 rounded-guaiqui-lg bg-guaiqui-primary-soft border border-guaiqui-primary/20 text-xs font-semibold">
       <div class="flex items-center gap-2">
-        <div class="w-6 h-6 rounded-full bg-guaiqui-primary text-white flex items-center justify-center text-[11px] font-bold font-mono">
+        <div class="w-6 h-6 rounded-full bg-guaiqui-primary text-white flex items-center justify-center text-[11px] font-bold font-mono shrink-0">
           {{ myRank ? `#${myRank}` : '—' }}
         </div>
         <span class="text-guaiqui-primary-dark font-bold">Tu Posición</span>
