@@ -378,6 +378,7 @@ export const useAuthStore = defineStore('auth', () => {
         'shirt_size',
         'referral_source',
         'notification_prefs',
+        'cover_url',
       ] as const
 
       const safeUpdates: Record<string, any> = {}

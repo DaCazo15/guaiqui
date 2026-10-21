@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, computed } from 'vue'
 import { BaseCard, BaseButton } from '@guaiqui/ui'
 import { useAuthStore } from '~/stores/auth'
-import ProfileAvatarUploader from '~/components/profile/ProfileAvatarUploader.vue'
+import { useTriviaStore } from '~/stores/trivias'
+import ProfileCoverHeader from '~/components/profile/ProfileCoverHeader.vue'
 import ProfileFormFields from '~/components/profile/ProfileFormFields.vue'
 
 definePageMeta({
@@ -10,11 +11,26 @@ definePageMeta({
   middleware: ['auth'],
 })
 
+useSeoMeta({
+  title: 'Mi Perfil — Guaiqueríes de Margarita',
+  description: 'Gestiona tu perfil oficial de fanático de Guaiqueríes de Margarita, personaliza tu avatar y foto de portada.',
+})
+
 const authStore = useAuthStore()
+const triviaStore = useTriviaStore()
+
 const avatarUploading = ref(false)
 const localError = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 const showBirthdayPrompt = ref(true)
+
+const currentBalance = computed(() => {
+  return triviaStore.homeSummary?.balance ?? authStore.wallet?.balance_cache ?? 0
+})
+
+const streakDays = computed(() => {
+  return triviaStore.homeSummary?.streak?.streak_days || 0
+})
 
 async function handleAvatarUpload(file: File) {
   avatarUploading.value = true
@@ -27,6 +43,17 @@ async function handleAvatarUpload(file: File) {
     localError.value = err.message
   } finally {
     avatarUploading.value = false
+  }
+}
+
+async function handleCoverUpdate(coverUrl: string) {
+  localError.value = null
+  successMessage.value = null
+  try {
+    await authStore.updateProfile({ cover_url: coverUrl } as any)
+    successMessage.value = '¡Foto de portada actualizada!'
+  } catch (err: any) {
+    localError.value = err.message
   }
 }
 
@@ -44,26 +71,44 @@ async function handleSaveProfile(updates: any) {
 
 <template>
   <div class="space-y-6">
-    <!-- Header with Roster Link Button -->
-    <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
-      <div>
-        <h1 class="font-display text-2xl md:text-3xl font-bold text-guaiqui-text uppercase tracking-wider">
-          Mi <span class="text-guaiqui-primary">Perfil</span>
-        </h1>
-        <p class="text-sm text-guaiqui-text-muted">
-          Gestiona tus datos de fanático y personaliza tu avatar.
-        </p>
-      </div>
+    <!-- 1. HEADER ESTILO FACEBOOK: FOTO DE PORTADA Y AVATAR SUPERPUESTO -->
+    <ProfileCoverHeader
+      :profile="authStore.profile"
+      :balance="currentBalance"
+      :streak-days="streakDays"
+      :uploading-avatar="avatarUploading"
+      @upload-avatar="handleAvatarUpload"
+      @update-cover="handleCoverUpdate"
+    />
 
-      <NuxtLink to="/app/plantilla">
-        <BaseButton variant="outline" size="sm" class="flex items-center gap-2">
-          <i class="bi bi-people-fill text-guaiqui-primary"></i>
-          <span>Ver Plantilla de Jugadores</span>
-        </BaseButton>
-      </NuxtLink>
+    <!-- Mensajes Globales de Éxito o Error -->
+    <div
+      v-if="successMessage"
+      class="p-3.5 bg-emerald-50 border border-emerald-300 rounded-guaiqui-xl text-emerald-800 text-sm flex items-center justify-between shadow-xs animate-in fade-in"
+    >
+      <div class="flex items-center gap-2">
+        <i class="bi bi-check-circle-fill text-emerald-600 text-base"></i>
+        <span class="font-medium">{{ successMessage }}</span>
+      </div>
+      <button @click="successMessage = null" class="text-emerald-700 hover:text-emerald-900 text-xs p-1">
+        <i class="bi bi-x-lg"></i>
+      </button>
     </div>
 
-    <!-- Discrete ignorable Birthday Prompt Card if birth_date is not loaded -->
+    <div
+      v-if="localError"
+      class="p-3.5 bg-rose-50 border border-rose-300 rounded-guaiqui-xl text-rose-800 text-sm flex items-center justify-between shadow-xs animate-in fade-in"
+    >
+      <div class="flex items-center gap-2">
+        <i class="bi bi-exclamation-circle-fill text-rose-600 text-base"></i>
+        <span class="font-medium">{{ localError }}</span>
+      </div>
+      <button @click="localError = null" class="text-rose-700 hover:text-rose-900 text-xs p-1">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <!-- Aviso Discreto de Cumpleaños para saludo del equipo -->
     <div
       v-if="!authStore.profile?.birth_date && showBirthdayPrompt"
       class="p-4 bg-emerald-50 border border-emerald-200 rounded-guaiqui-xl flex items-center justify-between gap-4 shadow-guaiqui-sm text-guaiqui-text"
@@ -87,25 +132,36 @@ async function handleSaveProfile(updates: any) {
       </button>
     </div>
 
-    <!-- Main Card -->
-    <BaseCard class="bg-white border-guaiqui-border p-6 rounded-guaiqui-xl space-y-8 shadow-guaiqui-sm">
-      <!-- Avatar Section -->
-      <ProfileAvatarUploader
-        :avatar-url="authStore.profile?.avatar_url"
-        :display-name="authStore.profile?.display_name"
-        :uploading="avatarUploading"
-        @upload="handleAvatarUpload"
-      />
+    <!-- 2. TARJETA PRINCIPAL DE DATOS Y PREFERENCIAS DEL FANÁTICO -->
+    <BaseCard class="bg-white border-guaiqui-border p-5 sm:p-6 rounded-guaiqui-2xl space-y-6 shadow-guaiqui-sm">
+      <!-- Encabezado de la Tarjeta con Enlace a la Plantilla Oficial -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-guaiqui-border">
+        <div>
+          <h2 class="font-display font-extrabold text-xl text-guaiqui-text uppercase tracking-wide">
+            Información del Fanático
+          </h2>
+          <p class="text-xs text-guaiqui-text-muted">
+            Actualiza tus preferencias para personalizar tu experiencia en la plataforma.
+          </p>
+        </div>
 
-      <div class="border-t border-guaiqui-border pt-6">
-        <ProfileFormFields
-          :profile="authStore.profile"
-          :loading="authStore.isLoading"
-          :error="localError"
-          :success="successMessage"
-          @save="handleSaveProfile"
-        />
+        <NuxtLink to="/app/plantilla">
+          <button class="inline-flex items-center gap-2 px-3 py-1.5 rounded-guaiqui-md bg-guaiqui-surface hover:bg-gray-200 text-guaiqui-text text-xs font-bold uppercase tracking-wider border border-guaiqui-border transition-colors">
+            <i class="bi bi-people-fill text-guaiqui-primary"></i>
+            <span>Ver Plantilla Oficial SPB</span>
+            <i class="bi bi-chevron-right text-[10px]"></i>
+          </button>
+        </NuxtLink>
       </div>
+
+      <!-- Formulario de Campos de Perfil -->
+      <ProfileFormFields
+        :profile="authStore.profile"
+        :loading="authStore.isLoading"
+        :error="localError"
+        :success="null"
+        @save="handleSaveProfile"
+      />
     </BaseCard>
   </div>
 </template>

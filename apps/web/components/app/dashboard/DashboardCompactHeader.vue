@@ -51,7 +51,6 @@ const fanLevel = computed(() => {
         <div class="space-y-1">
           <div class="flex flex-wrap items-center gap-2">
             <span class="text-xs uppercase font-extrabold tracking-widest text-emerald-400 flex items-center gap-1.5">
-              <span class="w-1.5 h-1.5 rounded-full bg-guaiqui-accent animate-pulse"></span>
               Fan Zone Oficial
             </span>
             <span
@@ -66,7 +65,7 @@ const fanLevel = computed(() => {
             <span>¡Hola, {{ authStore.profile?.display_name || 'Fanático' }}!</span>
           </h1>
           <p class="text-xs text-slate-300">
-            Listo para defender el tabloncillo insular y sumar para la Tribu.
+            Listo para defender el tabloncillo y sumar para la Tribu.
           </p>
         </div>
       </div>

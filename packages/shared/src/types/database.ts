@@ -21,6 +21,7 @@ export interface Profile {
   id: string
   display_name: string
   avatar_url?: string | null
+  cover_url?: string | null
   municipality?: string | null
   birth_date?: string | null
   gender?: string | null

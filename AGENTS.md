@@ -48,6 +48,7 @@ Hero, carrusel, cinta de anuncios, cómo funciona, plantilla, historia, equipo d
 6. **Idioma del código vs. interfaz.** Identificadores de código, tablas y rutas en inglés; textos de interfaz en español (Venezuela). Textos preparados para i18n.
 7. **Mobile-first y accesible.** Contraste AA, navegación por teclado, `alt` en imágenes, respetar `prefers-reduced-motion`, imágenes con carga diferida.
 8. **Sin secretos en el repositorio.** Usar `.env.example`.
+9. **Cero datos hardcodeados y sin seeds ficticios.** Toda la información de la interfaz (podio, tienda, partidos, rachas) debe ser 100% real, reactiva y asíncrona desde Supabase o Sofascore. Prohibido inventar datos, mocks o usuarios de relleno (como Carlos R. o María G.). Si hay pocos datos, mostrar únicamente los reales o estados vacíos. Prohibido sembrar seeds con datos ficticios.
 
 ---
 
