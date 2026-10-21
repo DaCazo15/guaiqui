@@ -70,10 +70,6 @@ function nextReward() {
         </div>
       </div>
 
-      <NuxtLink to="/app/tienda" class="text-xs text-guaiqui-primary hover:text-guaiqui-primary-dark font-bold inline-flex items-center gap-1 transition-colors">
-        <span>Tienda</span>
-        <i class="bi bi-arrow-right"></i>
-      </NuxtLink>
     </div>
 
     <!-- Mini-Carrusel Interactivo de Premios -->
@@ -146,7 +142,7 @@ function nextReward() {
     <NuxtLink to="/app/tienda" class="block">
       <button class="w-full py-2.5 rounded-guaiqui-lg bg-guaiqui-surface hover:bg-guaiqui-primary-soft text-guaiqui-primary border border-guaiqui-primary/30 font-display font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-150">
         <i class="bi bi-bag-heart-fill"></i>
-        <span>Canjear Premios en la Tienda</span>
+        <span>Tienda</span>
       </button>
     </NuxtLink>
   </BaseCard>

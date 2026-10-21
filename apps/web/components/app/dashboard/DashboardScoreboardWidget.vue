@@ -62,9 +62,6 @@ onBeforeUnmount(() => {
               Serie 3-1
             </span>
           </div>
-          <p class="text-xs text-guaiqui-text-muted">
-            Superliga Profesional de Baloncesto · Edición Oficial 2026
-          </p>
         </div>
       </div>
 
