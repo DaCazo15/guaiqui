@@ -42,7 +42,7 @@ const myBalance = computed(() => {
 </script>
 
 <template>
-  <BaseCard class="p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm space-y-4">
+  <BaseCard class="p-2 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm space-y-4">
     <!-- Encabezado con Trofeo y Enlace -->
     <div class="flex items-center justify-between">
       <div class="flex items-center gap-2">
