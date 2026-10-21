@@ -67,7 +67,7 @@ function nextReward() {
             Premios
           </h3>
           <p class="text-[11px] text-guaiqui-text-muted">
-            Catálogo Oficial de Fidelidad
+            Catálogo
           </p>
         </div>
       </div>
@@ -151,12 +151,5 @@ function nextReward() {
       </div>
     </div>
 
-    <!-- Botón directo a la Tienda de Canje -->
-    <NuxtLink to="/app/tienda" class="block">
-      <button class="w-full py-2.5 px-3 rounded-guaiqui-lg bg-guaiqui-surface hover:bg-guaiqui-primary-soft text-guaiqui-primary border border-guaiqui-primary/30 font-display font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all duration-150 active:scale-[0.99]">
-        <i class="bi bi-bag-check-fill text-sm"></i>
-        <span>Canjear Premios en la Tienda</span>
-      </button>
-    </NuxtLink>
   </BaseCard>
 </template>

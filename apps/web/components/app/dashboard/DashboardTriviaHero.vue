@@ -46,7 +46,7 @@ const estimatedReward = computed(() => {
           {{ activeTrivia.title }}
         </h2>
         <p class="text-sm text-guaiqui-text-muted leading-relaxed max-w-2xl">
-          {{ activeTrivia.description || 'Pone a prueba tu pasión por la Tribu Insular, acierta las preguntas y gana perlitas directas para tu billetera.' }}
+          {{ activeTrivia.description || 'Pone a prueba tu pasión por la Tribu' }}
         </p>
       </div>
 
