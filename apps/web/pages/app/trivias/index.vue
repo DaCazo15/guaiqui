@@ -3,6 +3,7 @@ import { onMounted } from 'vue'
 import { BaseCard, BaseButton, PearlAmount } from '@guaiqui/ui'
 import { formatCaracas } from '@guaiqui/shared'
 import { useTriviaStore } from '~/stores/trivias'
+import TriviaPlayButton from '~/components/app/dashboard/TriviaPlayButton.vue'
 
 definePageMeta({
   layout: 'app',
@@ -107,12 +108,10 @@ function getEstimatedReward(t: any): number {
               </BaseButton>
             </template>
             <template v-else>
-              <NuxtLink :to="`/app/trivias/${t.id}`">
-                <BaseButton variant="primary" size="md">
-                  <span>Ver Detalles & Jugar</span>
-                  <i class="bi bi-arrow-right ml-1.5"></i>
-                </BaseButton>
-              </NuxtLink>
+              <TriviaPlayButton
+                :trivia-id="t.id"
+                label="Jugar Trivia"
+              />
             </template>
           </div>
         </div>

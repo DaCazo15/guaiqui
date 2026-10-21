@@ -410,7 +410,7 @@ useSeoMeta({
         Gana <span class="text-guaiqui-primary">Perlitas</span> Viendo Anuncios
       </h1>
       <p class="text-sm text-guaiqui-text-muted leading-relaxed">
-        Apoya al equipo viendo videos publicitarios cortos. Acumula bloques de 10 anuncios para recibir recompensas automáticas en tu billetera.
+        Gana puntos viendo videos cortos.
       </p>
     </div>
 
@@ -506,7 +506,7 @@ useSeoMeta({
                 ? 'Cargando anuncio...'
                 : !progressData.can_watch && progressData.cant_reason === 'ADS_DISABLED'
                   ? 'Anuncios en pausa temporal'
-                  : 'Ver anuncio para ganar perlitas'
+                  : 'Ver anuncio'
             }}
           </BaseButton>
         </div>
@@ -583,15 +583,7 @@ useSeoMeta({
       </div>
     </BaseCard>
 
-    <!-- Policy Notice Card -->
-    <div class="p-4 bg-guaiqui-surface/80 border border-guaiqui-border rounded-guaiqui-xl text-xs text-guaiqui-text-muted space-y-1">
-      <p class="font-semibold text-guaiqui-text">
-        <i class="bi bi-shield-check text-guaiqui-primary mr-1"></i> Transparencia e Inmutabilidad:
-      </p>
-      <p>
-        Las perlitas no tienen valor monetario, no son transferibles y solo se canjean en nuestra plataforma. Ningún texto o botón te solicitará hacer clic en el contenido del anuncio.
-      </p>
-    </div>
+
 
     <!-- MODAL 1: Acceptance Opt-in Modal -->
     <Teleport to="body">
