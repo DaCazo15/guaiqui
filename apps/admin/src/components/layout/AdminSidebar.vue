@@ -19,8 +19,8 @@ const platformNavItems = [
   { name: 'admin-trivias', path: '/admin/trivias', label: 'Trivias', icon: 'bi-question-circle' },
   { name: 'admin-productos', path: '/admin/productos', label: 'Productos', icon: 'bi-box-seam' },
   { name: 'admin-economia', path: '/admin/economia', label: 'Economía', icon: 'bi-coin' },
-  { name: 'admin-rewarded-ads', path: '/admin/anuncios-recompensados', label: 'Videos Patrocinadores', icon: 'bi-play-btn-fill' },
-  { name: 'admin-personal', path: '/admin/personal', label: 'Personal & Roles', icon: 'bi-person-gear' },
+  { name: 'admin-rewarded-ads', path: '/admin/anuncios-recompensados', label: 'Videos', icon: 'bi-play-btn-fill' },
+  { name: 'admin-personal', path: '/admin/personal', label: 'Personal', icon: 'bi-person-gear' },
   { name: 'admin-fanaticos', path: '/admin/fanaticos', label: 'Fanáticos', icon: 'bi-people' },
   { name: 'admin-segmentos', path: '/admin/segmentos', label: 'Segmentos', icon: 'bi-pie-chart' },
   { name: 'admin-riesgo', path: '/admin/riesgo', label: 'Control Riesgo', icon: 'bi-shield-exclamation' },
@@ -29,18 +29,18 @@ const platformNavItems = [
 ]
 
 const cmsNavItems = [
-  { name: 'admin-landing', path: '/admin/landing', label: 'Landing & Hero (Tema)', icon: 'bi-layout-text-window-reverse' },
+  { name: 'admin-landing', path: '/admin/landing', label: 'Hero', icon: 'bi-layout-text-window-reverse' },
   { name: 'admin-carrusel', path: '/admin/carrusel', label: 'Carrusel Hero', icon: 'bi-images' },
-  { name: 'admin-login-modal', path: '/admin/contenido/modal-de-bienvenida', label: 'Pop-up Bienvenida (5 Anuncios)', icon: 'bi-window-stack' },
-  { name: 'admin-anuncios', path: '/admin/anuncios', label: 'Cinta Anuncios (Marquee)', icon: 'bi-megaphone' },
-  { name: 'admin-partidos', path: '/admin/partidos', label: 'Partidos & Clasificación', icon: 'bi-calendar-event' },
-  { name: 'admin-jugadores', path: '/admin/jugadores', label: 'Plantilla Jugadores', icon: 'bi-person-bounding-box' },
-  { name: 'admin-equipo', path: '/admin/equipo', label: 'Cuerpo Técnico & Staff', icon: 'bi-person-lines-fill' },
-  { name: 'admin-instagram', path: '/admin/instagram', label: 'Mosaico Instagram', icon: 'bi-instagram' },
-  { name: 'admin-faq', path: '/admin/faq', label: 'Preguntas FAQ', icon: 'bi-patch-question' },
+  { name: 'admin-login-modal', path: '/admin/contenido/modal-de-bienvenida', label: 'Pop-up Bienvenida', icon: 'bi-window-stack' },
+  { name: 'admin-anuncios', path: '/admin/anuncios', label: 'Cinta Anuncios', icon: 'bi-megaphone' },
+  { name: 'admin-partidos', path: '/admin/partidos', label: 'Calendario', icon: 'bi-calendar-event' },
+  { name: 'admin-jugadores', path: '/admin/jugadores', label: 'Plantilla', icon: 'bi-person-bounding-box' },
+  { name: 'admin-equipo', path: '/admin/equipo', label: 'Cuerpo Técnico', icon: 'bi-person-lines-fill' },
+  { name: 'admin-instagram', path: '/admin/instagram', label: 'Instagram', icon: 'bi-instagram' },
+  { name: 'admin-faq', path: '/admin/faq', label: 'Preguntas Frecuentes', icon: 'bi-patch-question' },
   { name: 'admin-historia', path: '/admin/historia', label: 'Historia', icon: 'bi-hourglass-split' },
-  { name: 'admin-politicas', path: '/admin/politicas', label: 'Políticas Legales', icon: 'bi-journal-check' },
-  { name: 'admin-cumpleanos', path: '/admin/cumpleanos', label: 'Saludo Cumpleaños', icon: 'bi-gift' }
+  { name: 'admin-politicas', path: '/admin/politicas', label: 'Políticas', icon: 'bi-journal-check' },
+  { name: 'admin-cumpleanos', path: '/admin/cumpleanos', label: 'Cumpleaños', icon: 'bi-gift' }
 ]
 
 const isActive = (path: string) => route.path.startsWith(path)

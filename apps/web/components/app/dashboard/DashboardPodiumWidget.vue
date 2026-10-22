@@ -93,10 +93,7 @@ const myBalance = computed(() => {
           <div class="truncate">
             <p class="text-xs font-bold text-guaiqui-text truncate flex items-center gap-1.5">
               <span>{{ item.display_name }}</span>
-              <span v-if="item.is_current_user" class="text-[9px] font-semibold px-1.5 py-0.2 rounded-full bg-guaiqui-primary text-white">
-                Tú
-              </span>
-            </p>
+          </p>
           </div>
         </div>
 
