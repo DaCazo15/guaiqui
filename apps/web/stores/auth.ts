@@ -395,6 +395,10 @@ export const useAuthStore = defineStore('auth', () => {
           .eq('id', user.value.id)
 
         if (error) throw error
+
+        if (profile.value) {
+          Object.assign(profile.value, safeUpdates)
+        }
       }
 
       await fetchProfile()

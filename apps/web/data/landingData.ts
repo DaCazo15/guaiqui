@@ -56,55 +56,37 @@ export interface FaqItem {
   content: string
 }
 
-export const nextMatchData: MatchInfo = {
-  opponent: 'Marinos de Anzoátegui',
-  location: 'Gimnasio Ciudad de La Asunción, Nueva Esparta',
-  date: 'Hoy, 07 de Octubre',
-  time: '7:00 PM',
-  isHome: true,
-  league: 'Superliga Profesional de Baloncesto (SPB)',
-}
 
 export const carouselSlides: CarouselSlide[] = [
   {
     id: 'slide-1',
-    tag: 'Próximo Partido',
-    title: 'Clásico Oriental: Guaiqueríes vs. Marinos',
-    subtitle: 'Responde la trivia del partido a las 6:45 PM y gana hasta 300 puntos.',
-    ctaText: 'Ver Detalles del Partido',
-    ctaUrl: '#proximo-partido',
+    tag: 'Fan Zone 2026',
+    title: 'Bienvenido a la Tribu Guaiquerí',
+    subtitle: 'La plataforma oficial de fidelización del equipo nueve veces campeón de Venezuela.',
+    ctaText: 'Únete a la Tribu',
+    ctaUrl: '/registro',
     bgGradient: 'from-emerald-900 via-guaiqui-primary-dark to-slate-900',
     badgeVariant: 'accent',
   },
   {
     id: 'slide-2',
-    tag: 'Premio Destacado',
-    title: 'Camiseta Oficial Edición 80 Aniversario',
-    subtitle: 'La verde de la tribu ya está disponible en la tienda de canje por 4.500 puntos.',
-    ctaText: 'Ir a la Tienda de Canje',
-    ctaUrl: '#premios',
-    bgGradient: 'from-amber-950 via-emerald-950 to-guaiqui-primary-dark',
-    badgeVariant: 'perlita',
-  },
-  {
-    id: 'slide-3',
-    tag: 'Trivia Diaria',
-    title: 'Desafío Histórico: ¿Quién anotó 42 puntos en 1991?',
-    subtitle: 'Demuestra cuánto sabes de la tribu insular. 5 preguntas rápidas te esperan.',
-    ctaText: 'Jugar Trivia Ahora',
+    tag: 'Trivias Oficiales',
+    title: 'Demuestra tu Conocimiento Insular',
+    subtitle: 'Responde preguntas sobre la historia del club, estadísticas y partidos para acumular puntos.',
+    ctaText: 'Ver Cómo Funciona',
     ctaUrl: '#como-funciona',
     bgGradient: 'from-guaiqui-primary-dark via-emerald-900 to-black',
     badgeVariant: 'primary',
   },
   {
-    id: 'slide-4',
-    tag: 'Comunidad Fanáticos',
-    title: 'Entrenamiento Abierto a la Fanaticada',
-    subtitle: 'Canjea un pase VIP para conocer al equipo este viernes en La Asunción.',
-    ctaText: 'Canjear Pase VIP',
-    ctaUrl: '#premios',
-    bgGradient: 'from-teal-950 via-guaiqui-primary to-emerald-900',
-    badgeVariant: 'info',
+    id: 'slide-3',
+    tag: 'Premios y Experiencias',
+    title: 'Canjea Premios Reales con tus Puntos',
+    subtitle: 'Acumula puntos de fidelidad en tu billetera inmutable y canjéalos por artículos y experiencias.',
+    ctaText: 'Conoce Más',
+    ctaUrl: '#como-funciona',
+    bgGradient: 'from-amber-950 via-emerald-950 to-guaiqui-primary-dark',
+    badgeVariant: 'perlita',
   },
 ]
 
@@ -135,68 +117,8 @@ export const howItWorksSteps: HowItWorksStep[] = [
   },
 ]
 
-export const featuredRewards: RewardItem[] = [
-  {
-    id: 'prod-1',
-    name: 'Camiseta Oficial Guaiqueríes 2026',
-    category: 'Indumentaria',
-    perlitasCost: 4500,
-    stock: 15,
-    badge: 'Popular',
-    imageBg: 'from-emerald-700 via-green-800 to-emerald-950',
-    icon: 'bi-bag-check-fill',
-  },
-  {
-    id: 'prod-2',
-    name: 'Bandana Verde Guaiquerí Original',
-    category: 'Accesorios',
-    perlitasCost: 1200,
-    stock: 40,
-    badge: 'Nuevo',
-    imageBg: 'from-green-700 via-emerald-800 to-green-950',
-    icon: 'bi-patch-check-fill',
-  },
-  {
-    id: 'prod-3',
-    name: 'Saludo en Video Personalizado de Jugador',
-    category: 'Experiencia',
-    perlitasCost: 2800,
-    stock: 8,
-    badge: 'Exclusivo',
-    imageBg: 'from-amber-600 via-amber-700 to-amber-950',
-    icon: 'bi-camera-video-fill',
-  },
-  {
-    id: 'prod-4',
-    name: 'Entrada Preferencial Abono 1 Partido',
-    category: 'Entradas',
-    perlitasCost: 3500,
-    stock: 20,
-    badge: 'Limitado',
-    imageBg: 'from-rose-800 via-red-900 to-rose-950',
-    icon: 'bi-ticket-perforated-fill',
-  },
-  {
-    id: 'prod-5',
-    name: 'Balón Oficial Autografiado por la Plantilla',
-    category: 'Coleccionable',
-    perlitasCost: 8500,
-    stock: 3,
-    badge: 'Colección',
-    imageBg: 'from-teal-800 via-emerald-900 to-slate-900',
-    icon: 'bi-dribbble',
-  },
-  {
-    id: 'prod-6',
-    name: 'Gorra Oficial de la Tribu Insular',
-    category: 'Accesorios',
-    perlitasCost: 1800,
-    stock: 25,
-    badge: 'Popular',
-    imageBg: 'from-green-800 via-emerald-900 to-emerald-950',
-    icon: 'bi-award-fill',
-  },
-]
+export const featuredRewards: RewardItem[] = []
+
 
 export const teamStats = [
   { label: 'Años de Historia', value: '80+', note: 'Fundado en 1977 en Nueva Esparta' },

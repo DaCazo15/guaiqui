@@ -1,7 +1,6 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
-import { BaseBadge, PearlIcon } from '@guaiqui/ui'
-import { nextMatchData } from '~/data/landingData'
+import { BaseBadge } from '@guaiqui/ui'
 
 const supabase = useSupabaseClient()
 const isVisible = ref(true)
@@ -26,19 +25,19 @@ onMounted(async () => {
       announcementLink.value = data[0].link_url || null
     }
   } catch (_e) {
-    // Keep default nextMatchData banner
+    announcementText.value = null
   }
 })
 </script>
 
 <template>
   <div
-    v-if="isVisible"
+    v-if="isVisible && announcementText"
     class="bg-guaiqui-primary-dark text-white text-xs sm:text-sm py-2 px-4 flex items-center justify-between border-b border-emerald-800 relative z-50 select-none"
   >
     <div class="max-w-6xl mx-auto flex items-center justify-center gap-2 text-center flex-1 pr-6">
       <BaseBadge variant="accent" size="sm" class="hidden sm:inline-flex">ANUNCIO</BaseBadge>
-      <span v-if="announcementText" class="font-medium text-emerald-100 flex items-center gap-1.5 flex-wrap justify-center">
+      <span class="font-medium text-emerald-100 flex items-center gap-1.5 flex-wrap justify-center">
         <a v-if="announcementLink" :href="announcementLink" target="_blank" class="hover:underline flex items-center gap-1">
           <i class="bi bi-megaphone text-emerald-400"></i>
           <span>{{ announcementText }}</span>
@@ -46,16 +45,6 @@ onMounted(async () => {
         <span v-else class="flex items-center gap-1">
           <i class="bi bi-megaphone text-emerald-400"></i>
           <span>{{ announcementText }}</span>
-        </span>
-      </span>
-      <span v-else class="font-medium text-emerald-100 flex items-center gap-1.5 flex-wrap justify-center">
-        <span class="flex items-center gap-1">
-          <i class="bi bi-dribbble text-emerald-400"></i>
-          <span>{{ nextMatchData.opponent }}</span>
-        </span>
-        <span class="hidden md:inline">• {{ nextMatchData.time }}</span>
-        <span class="bg-emerald-800/80 px-2 py-0.5 rounded text-xs font-semibold text-amber-300 flex items-center gap-1">
-          <PearlIcon size="xs" /> Trivia activa a las 6:45 PM
         </span>
       </span>
     </div>

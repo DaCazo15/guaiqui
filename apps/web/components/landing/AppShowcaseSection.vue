@@ -38,15 +38,15 @@ const benefits = [
             </div>
 
             <div class="bg-guaiqui-primary-dark text-white p-3 rounded-guaiqui-lg text-center space-y-1">
-              <div class="text-[10px] uppercase font-bold text-emerald-200">Próxima Trivia</div>
-              <div class="font-display font-bold text-sm">Guaiqueríes vs Marinos</div>
-              <div class="text-[10px] text-amber-300 font-bold">+300 Puntos en juego</div>
+              <div class="text-[10px] uppercase font-bold text-emerald-200">Trivia Diaria</div>
+              <div class="font-display font-bold text-sm">Historia de la Tribu</div>
+              <div class="text-[10px] text-amber-300 font-bold">+100 Puntos en juego</div>
             </div>
 
             <div class="bg-white border rounded-guaiqui-md p-2 flex items-center justify-between">
               <div class="flex items-center gap-2">
                 <PearlIcon size="xs" />
-                <span class="font-bold text-[11px]">Camiseta Oficial 2026</span>
+                <span class="font-bold text-[11px]">Recompensas Oficiales</span>
               </div>
               <span class="text-guaiqui-primary font-bold text-[10px]">Canjear</span>
             </div>

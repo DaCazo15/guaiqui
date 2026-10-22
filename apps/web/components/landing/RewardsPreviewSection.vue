@@ -1,9 +1,30 @@
 <script setup lang="ts">
-import { BaseCard, BaseBadge, BaseButton, PearlAmount } from '@guaiqui/ui'
-import { featuredRewards } from '~/data/landingData'
+import { ref, onMounted } from 'vue'
+import { BaseCard, BaseBadge, BaseButton, PearlAmount, Skeleton } from '@guaiqui/ui'
 import { useAnalytics } from '~/composables/useAnalytics'
 
 const { trackEvent } = useAnalytics()
+const supabase = useSupabaseClient()
+
+const products = ref<any[]>([])
+const loading = ref(true)
+
+onMounted(async () => {
+  loading.value = true
+  try {
+    const { data } = await supabase
+      .from('products')
+      .select('*')
+      .eq('is_active', true)
+      .order('created_at', { ascending: false })
+      .limit(6)
+    products.value = data || []
+  } catch (_err) {
+    products.value = []
+  } finally {
+    loading.value = false
+  }
+})
 
 const handleRewardClick = (name: string) => {
   trackEvent('click_reward_preview', { rewardName: name })
@@ -26,45 +47,71 @@ const handleRewardClick = (name: string) => {
 
         <NuxtLink to="/registro">
           <BaseButton variant="primary" size="md">
-            Ver Todos los Premios (24+)
+            {{ products.length > 0 ? `Ver Todos los Premios (${products.length}+)` : 'Explorar la Tribu' }}
           </BaseButton>
         </NuxtLink>
       </div>
 
-      <!-- Rewards Grid -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      <!-- Loading State -->
+      <div v-if="loading" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <Skeleton v-for="i in 3" :key="i" class="h-64 rounded-guaiqui-xl bg-guaiqui-surface" />
+      </div>
+
+      <!-- Empty State: Zero products in database -->
+      <div
+        v-else-if="products.length === 0"
+        class="text-center py-16 px-6 bg-guaiqui-surface rounded-guaiqui-xl border border-guaiqui-border shadow-guaiqui-sm max-w-2xl mx-auto space-y-4"
+      >
+        <div class="w-16 h-16 rounded-full bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center text-3xl mx-auto">
+          <i class="bi bi-gift"></i>
+        </div>
+        <h3 class="font-display font-bold text-2xl text-guaiqui-text uppercase">
+          Catálogo en Preparación
+        </h3>
+        <p class="text-sm text-guaiqui-text-muted leading-relaxed">
+          Los artículos oficiales, indumentaria y experiencias exclusivas para canje con puntos serán anunciados próximamente por la directiva del club. ¡Acumula puntos jugando trivias desde ahora!
+        </p>
+        <div class="pt-2">
+          <NuxtLink to="/registro">
+            <BaseButton variant="primary" size="sm">
+              Registrarme para Acumular Puntos
+            </BaseButton>
+          </NuxtLink>
+        </div>
+      </div>
+
+      <!-- Real Products Grid -->
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
         <BaseCard
-          v-for="item in featuredRewards"
+          v-for="item in products"
           :key="item.id"
           variant="interactive"
           padding="md"
           class="flex flex-col justify-between"
-          @click="handleRewardClick(item.name)"
+          @click="handleRewardClick(item.title)"
         >
           <template #image>
-            <div :class="['w-full h-44 bg-gradient-to-br flex items-center justify-center p-4 relative overflow-hidden', item.imageBg]">
-              <!-- Decorative background glow -->
-              <div class="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-white/10 blur-xl pointer-events-none"></div>
+            <div class="w-full h-44 bg-gradient-to-br from-emerald-800 to-guaiqui-primary-dark flex items-center justify-center p-4 relative overflow-hidden">
+              <img
+                v-if="item.image_url"
+                :src="item.image_url"
+                :alt="item.title"
+                class="w-full h-full object-cover"
+              />
+              <div v-else class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-3xl font-bold border border-white/30 shadow-md">
+                <i class="bi bi-gift-fill"></i>
+              </div>
 
-              <BaseBadge variant="perlita" size="sm" class="absolute top-3 left-3 shadow-xs">
+              <BaseBadge v-if="item.category" variant="perlita" size="sm" class="absolute top-3 left-3 shadow-xs">
                 {{ item.category }}
               </BaseBadge>
-
-              <BaseBadge variant="accent" size="sm" class="absolute top-3 right-3 shadow-xs">
-                {{ item.badge }}
-              </BaseBadge>
-
-              <!-- Product Category Icon -->
-              <div class="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-md flex items-center justify-center text-white text-3xl font-bold border border-white/30 shadow-md">
-                <i :class="['bi', item.icon || 'bi-gift-fill']"></i>
-              </div>
             </div>
           </template>
 
           <div class="space-y-3 pt-2 flex-1 flex flex-col justify-between">
             <div>
               <h3 class="font-display font-bold text-lg text-guaiqui-text uppercase leading-snug">
-                {{ item.name }}
+                {{ item.title }}
               </h3>
               <p class="text-xs text-guaiqui-text-muted mt-1">
                 Disponibles: <strong class="text-guaiqui-text">{{ item.stock }} unidades</strong>
@@ -72,7 +119,7 @@ const handleRewardClick = (name: string) => {
             </div>
 
             <div class="flex items-center justify-between pt-3 border-t border-guaiqui-border">
-              <PearlAmount :amount="item.perlitasCost" size="lg" show-label />
+              <PearlAmount :amount="item.points_cost || item.price_points || 0" size="lg" show-label />
               <BaseButton variant="ghost" size="sm">
                 Canjear
               </BaseButton>

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { PearlAmount } from '@guaiqui/ui'
 
 const props = defineProps<{
@@ -17,6 +17,11 @@ const emit = defineEmits<{
 const avatarInputRef = ref<HTMLInputElement | null>(null)
 const showCoverPicker = ref(false)
 const imageLoadFailed = ref(false)
+const coverLoadFailed = ref(false)
+
+watch(() => props.profile?.cover_url, () => {
+  coverLoadFailed.value = false
+})
 
 // Presets oficiales de portada de Guaiqueríes de Margarita
 const officialCovers = [
@@ -91,12 +96,25 @@ function selectCover(url: string) {
     <!-- 1. FOTO DE PORTADA (ESTILO FACEBOOK) -->
     <div class="relative h-44 sm:h-56 md:h-64 w-full overflow-hidden bg-gradient-to-r from-emerald-950 via-guaiqui-primary-dark to-stone-950">
       <img
+        v-if="!coverLoadFailed && activeCoverUrl"
         :src="activeCoverUrl"
         alt="Foto de Portada"
         class="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+        referrerpolicy="no-referrer"
+        @error="coverLoadFailed = true"
       />
+      <!-- Fallback institucional con textura de tabloncillo si la imagen remota no carga -->
+      <div
+        v-else
+        class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-emerald-950 via-guaiqui-primary-dark to-slate-950 relative"
+      >
+        <div class="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-white/40 text-2xl">
+          <i class="bi bi-dribbble"></i>
+        </div>
+        <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-300/70 mt-2">Guaiqueríes de Margarita</span>
+      </div>
       <!-- Gradiente oscuro inferior para contraste -->
-      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent"></div>
+      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none"></div>
 
       <!-- Botón Flotante: Cambiar Portada -->
       <div class="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-10">
@@ -134,7 +152,7 @@ function selectCover(url: string) {
             @click="selectCover(cov.url)"
             class="group relative h-20 rounded-guaiqui-md overflow-hidden border border-guaiqui-border hover:border-guaiqui-primary focus:outline-none transition-all"
           >
-            <img :src="cov.url" :alt="cov.name" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+            <img :src="cov.url" :alt="cov.name" referrerpolicy="no-referrer" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
             <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-end p-1.5">
               <span class="text-[10px] font-bold text-white uppercase tracking-tight truncate leading-none">
                 {{ cov.name }}

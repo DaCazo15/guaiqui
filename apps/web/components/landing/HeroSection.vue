@@ -1,9 +1,44 @@
 <script setup lang="ts">
+import { ref, computed, onMounted } from 'vue'
 import { BaseButton, BaseBadge, PearlIcon } from '@guaiqui/ui'
-import { nextMatchData } from '~/data/landingData'
 import { useAnalytics } from '~/composables/useAnalytics'
 
 const { trackEvent } = useAnalytics()
+const supabase = useSupabaseClient()
+
+const nextGame = ref<any>(null)
+const loadingGame = ref(true)
+
+const formattedGameDate = computed(() => {
+  if (!nextGame.value?.game_date) return null
+  const d = new Date(nextGame.value.game_date)
+  return d.toLocaleDateString('es-VE', { weekday: 'short', day: 'numeric', month: 'short' })
+})
+
+const formattedGameTime = computed(() => {
+  if (!nextGame.value?.game_date) return null
+  const d = new Date(nextGame.value.game_date)
+  return d.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })
+})
+
+onMounted(async () => {
+  loadingGame.value = true
+  try {
+    const { data } = await supabase
+      .from('games')
+      .select('*')
+      .in('status', ['scheduled', 'live'])
+      .order('game_date', { ascending: true })
+      .limit(1)
+      .maybeSingle()
+
+    nextGame.value = data || null
+  } catch (_err) {
+    nextGame.value = null
+  } finally {
+    loadingGame.value = false
+  }
+})
 
 const handleHeroRegister = () => {
   trackEvent('click_register', { source: 'hero_primary' })
@@ -26,7 +61,7 @@ const handleHeroHowItWorks = () => {
         <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 text-xs font-semibold text-emerald-200">
           <BaseBadge variant="soft" size="sm">Fan Zone 2026</BaseBadge>
           <span class="flex items-center gap-1">
-            +100.000 fanáticos conectados 
+            Plataforma Oficial de Fidelización
           </span>
         </div>
 
@@ -63,32 +98,35 @@ const handleHeroHowItWorks = () => {
         </div>
       </div>
 
-      <!-- Right Content: Mini Next Match Card -->
+      <!-- Right Content: Dynamic Next Match Card OR Institutional Fan Zone Card -->
       <div class="lg:col-span-5 w-full max-w-md mx-auto">
-        <div class="bg-white/10 backdrop-blur-xl border border-white/20 rounded-guaiqui-xl p-6 shadow-2xl relative overflow-hidden">
+        <!-- Case 1: Real scheduled match in database -->
+        <div
+          v-if="nextGame"
+          class="bg-white/10 backdrop-blur-xl border border-white/20 rounded-guaiqui-xl p-6 shadow-2xl relative overflow-hidden"
+        >
           <div class="absolute top-0 right-0 bg-guaiqui-accent text-white text-[10px] font-extrabold uppercase px-3 py-1 rounded-bl-lg">
-            Próximo Juego
+            {{ nextGame.status === 'live' ? 'En Vivo' : 'Próximo Juego' }}
           </div>
 
           <div class="text-xs uppercase font-bold text-emerald-300 tracking-wider mb-2">
-            {{ nextMatchData.league }}
+            Superliga Profesional de Baloncesto
           </div>
 
           <h2 class="font-display font-extrabold text-2xl text-white uppercase mb-1">
-            Guaiqueríes <span class="text-emerald-400">vs</span> {{ nextMatchData.opponent }}
+            Guaiqueríes <span class="text-emerald-400">vs</span> {{ nextGame.opponent }}
           </h2>
 
           <p class="text-xs text-emerald-100/80 mb-6 flex items-center gap-1.5">
             <i class="bi bi-geo-alt-fill text-emerald-400"></i>
-            <span>{{ nextMatchData.location }}</span>
+            <span>{{ nextGame.location }}</span>
           </p>
 
-          <!-- Match Time Box -->
           <div class="bg-black/40 rounded-guaiqui-lg p-4 border border-white/10 flex items-center justify-between mb-6">
             <div>
               <div class="text-[10px] uppercase text-emerald-300 font-bold">Fecha y Hora</div>
-              <div class="text-sm font-bold text-white">{{ nextMatchData.date }}</div>
-              <div class="text-xs text-emerald-200">{{ nextMatchData.time }}</div>
+              <div class="text-sm font-bold text-white">{{ formattedGameDate }}</div>
+              <div class="text-xs text-emerald-200">{{ formattedGameTime }}</div>
             </div>
 
             <div class="text-right">
@@ -103,6 +141,52 @@ const handleHeroHowItWorks = () => {
           <NuxtLink to="/registro">
             <BaseButton variant="primary" block size="md" @click="handleHeroRegister">
               Participar en la Trivia del Partido
+            </BaseButton>
+          </NuxtLink>
+        </div>
+
+        <!-- Case 2: Institutional Fan Zone Card (zero games in database) -->
+        <div
+          v-else
+          class="bg-white/10 backdrop-blur-xl border border-white/20 rounded-guaiqui-xl p-6 shadow-2xl relative overflow-hidden space-y-5"
+        >
+          <div class="absolute top-0 right-0 bg-guaiqui-primary text-white text-[10px] font-extrabold uppercase px-3 py-1 rounded-bl-lg">
+            Fan Zone Oficial
+          </div>
+
+          <div>
+            <div class="text-xs uppercase font-bold text-emerald-300 tracking-wider mb-1">
+              Temporada 2026
+            </div>
+            <h2 class="font-display font-extrabold text-2xl text-white uppercase">
+              La Tribu Verde
+            </h2>
+            <p class="text-xs text-emerald-100/80 flex items-center gap-1.5 mt-1">
+              <i class="bi bi-geo-alt-fill text-emerald-400"></i>
+              <span>Gimnasio Ciudad de La Asunción</span>
+            </p>
+          </div>
+
+          <div class="bg-black/40 rounded-guaiqui-lg p-4 border border-white/10 space-y-3">
+            <div class="flex items-center justify-between border-b border-white/10 pb-2.5">
+              <span class="text-xs text-slate-300">Historia Nacional</span>
+              <span class="font-display font-bold text-sm text-amber-300">9 Estrellas</span>
+            </div>
+            <div class="flex items-center justify-between">
+              <span class="text-xs text-slate-300">Moneda de Fidelidad</span>
+              <span class="font-bold text-xs text-emerald-300 flex items-center gap-1">
+                Puntos Gratis <PearlIcon size="xs" />
+              </span>
+            </div>
+          </div>
+
+          <p class="text-xs text-emerald-200/90 leading-relaxed">
+            Acumula puntos respondiendo las trivias de la historia del club y prepárate para los próximos partidos oficiales.
+          </p>
+
+          <NuxtLink to="/registro">
+            <BaseButton variant="primary" block size="md" @click="handleHeroRegister">
+              Únete a la Tribu Gratis
             </BaseButton>
           </NuxtLink>
         </div>
