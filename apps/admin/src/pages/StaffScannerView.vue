@@ -139,21 +139,21 @@ const clearScan = () => {
       <!-- Header -->
       <div class="flex items-center justify-between">
         <div>
-          <h1 class="text-2xl font-bold text-white tracking-wide">Escáner de Canjes QR</h1>
-          <p class="text-xs text-slate-400">Verificación e inspección rápida de boletos y premios en taquilla</p>
+          <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-wide font-title">Escáner de Canjes QR</h1>
+          <p class="text-xs text-slate-600">Verificación e inspección rápida de boletos y premios en taquilla</p>
         </div>
 
         <!-- Offline indicator -->
-        <div v-if="isOffline" class="px-3 py-1 bg-red-950/80 border border-red-800 text-red-300 rounded-full text-xs font-semibold flex items-center gap-1.5 animate-pulse">
-          <span class="w-2 h-2 rounded-full bg-red-400"></span>
+        <div v-if="isOffline" class="px-3 py-1 bg-red-100 border border-red-300 text-red-800 rounded-full text-xs font-semibold flex items-center gap-1.5 animate-pulse">
+          <span class="w-2 h-2 rounded-full bg-red-600"></span>
           <span>Sin Conexión</span>
         </div>
       </div>
 
       <!-- Result Card (shown when scan result is available) -->
-      <div v-if="isVerifying" class="p-12 text-center bg-slate-900 border border-slate-800 rounded-2xl">
-        <i class="bi bi-arrow-repeat animate-spin text-3xl text-emerald-400 block mb-2"></i>
-        <span class="text-xs text-slate-300 font-semibold">Validando código con Supabase...</span>
+      <div v-if="isVerifying" class="p-12 text-center bg-white border border-slate-200 rounded-2xl shadow-xs">
+        <i class="bi bi-arrow-repeat animate-spin text-3xl text-emerald-600 block mb-2"></i>
+        <span class="text-xs text-slate-700 font-semibold">Validando código con Supabase...</span>
       </div>
 
       <ScannerResultCard

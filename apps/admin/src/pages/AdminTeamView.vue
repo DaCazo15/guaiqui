@@ -149,33 +149,33 @@ onMounted(loadMembers)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold font-title text-white">Equipo de Trabajo y Directiva</h1>
-          <p class="text-sm text-slate-400">Administrar el personal técnico, directiva y staff mostrados en la landing pública.</p>
+          <h1 class="text-2xl sm:text-3xl font-bold font-title text-slate-900">Equipo de Trabajo y Directiva</h1>
+          <p class="text-sm text-slate-600">Administrar el personal técnico, directiva y staff mostrados en la landing pública.</p>
         </div>
         <BaseButton variant="primary" @click="openNew">
           <i class="bi bi-plus-lg mr-1.5"></i> Agregar Integrante
         </BaseButton>
       </div>
 
-      <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="errorMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-950/60 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="successMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
       </div>
 
       <BaseTable :columns="columns" :data="members" :loading="loading" empty-text="No hay integrantes registrados">
         <template #cell-name="{ row }">
           <div class="flex items-center gap-3">
-            <img :src="(row as any).photo_url || 'https://placehold.co/100x100?text=Guaiqueri'" class="w-9 h-9 rounded-full object-cover bg-slate-800 border border-slate-700" />
-            <span class="font-semibold text-slate-100">{{ (row as any).name }}</span>
+            <img :src="(row as any).photo_url || 'https://placehold.co/100x100?text=Guaiqueri'" class="w-9 h-9 rounded-full object-cover bg-slate-100 border border-slate-200" />
+            <span class="font-semibold text-slate-900">{{ (row as any).name }}</span>
           </div>
         </template>
 
         <template #cell-role="{ row }">
-          <span class="text-sm text-slate-300">{{ (row as any).role }}</span>
+          <span class="text-sm text-slate-700">{{ (row as any).role }}</span>
         </template>
 
         <template #cell-group_category="{ row }">
@@ -185,7 +185,7 @@ onMounted(loadMembers)
         </template>
 
         <template #cell-order_index="{ row }">
-          <span class="text-xs text-slate-400 font-mono">{{ (row as any).order_index }}</span>
+          <span class="text-xs text-slate-600 font-mono">{{ (row as any).order_index }}</span>
         </template>
 
         <template #cell-is_published="{ row }">
@@ -196,10 +196,10 @@ onMounted(loadMembers)
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1.5">
-            <button @click="editRow(row as any)" class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg" title="Editar">
+            <button @click="editRow(row as any)" class="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" title="Editar">
               <i class="bi bi-pencil"></i>
             </button>
-            <button @click="deleteRow((row as any).id)" class="p-1.5 text-red-400 hover:bg-red-950 rounded-lg" title="Eliminar">
+            <button @click="deleteRow((row as any).id)" class="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
               <i class="bi bi-trash"></i>
             </button>
           </div>
@@ -226,8 +226,8 @@ onMounted(loadMembers)
         <BaseInput label="URL de Foto (Opcional)" v-model="form.photo_url" placeholder="https://..." />
         <BaseInput label="Orden de Aparición" type="number" v-model.number="form.order_index" />
 
-        <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer pt-2">
-          <input type="checkbox" v-model="form.is_published" class="accent-emerald-500 rounded" />
+        <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer pt-2">
+          <input type="checkbox" v-model="form.is_published" class="accent-emerald-600 rounded" />
           <span>Publicado / Visible en la Web</span>
         </label>
       </div>

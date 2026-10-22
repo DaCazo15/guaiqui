@@ -172,6 +172,7 @@ export interface Player {
   bio?: string | null
   is_active: boolean
   is_star: boolean
+  instagram_url?: string | null
   created_at: string
 }
 

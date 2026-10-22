@@ -201,8 +201,8 @@ onMounted(loadStaffAuditData)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold font-title text-white">Auditoría y Gestión de Personal de Taquilla</h1>
-          <p class="text-sm text-slate-400">Monitorear actividad del staff, sesiones activas, atención a fanáticos y ubicación en mapa.</p>
+          <h1 class="text-2xl sm:text-3xl font-bold font-title text-slate-900">Auditoría y Gestión de Personal de Taquilla</h1>
+          <p class="text-sm text-slate-600">Monitorear actividad del staff, sesiones activas, atención a fanáticos y ubicación en mapa.</p>
         </div>
         <BaseButton variant="primary" @click="showInviteModal = true">
           <i class="bi bi-person-plus-fill mr-1.5"></i> Invitar Miembro
@@ -211,39 +211,39 @@ onMounted(loadStaffAuditData)
 
       <!-- Quick Metrics Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <BaseCard class="bg-slate-900 border-slate-800 p-4">
-          <div class="text-xs font-semibold uppercase text-slate-400">Total Operadores Staff</div>
-          <div class="text-2xl font-bold text-white font-mono mt-1">{{ staffList.length }}</div>
+        <BaseCard class="bg-white border-slate-200 p-4 shadow-xs">
+          <div class="text-xs font-semibold uppercase text-slate-500">Total Operadores Staff</div>
+          <div class="text-2xl font-bold text-slate-900 font-mono mt-1">{{ staffList.length }}</div>
         </BaseCard>
 
-        <BaseCard class="bg-slate-900 border-slate-800 p-4">
-          <div class="text-xs font-semibold uppercase text-emerald-400">Sesiones Activas</div>
-          <div class="text-2xl font-bold text-emerald-400 font-mono mt-1">
+        <BaseCard class="bg-white border-slate-200 p-4 shadow-xs">
+          <div class="text-xs font-semibold uppercase text-emerald-700">Sesiones Activas</div>
+          <div class="text-2xl font-bold text-emerald-600 font-mono mt-1">
             {{ staffList.filter(s => s.active).length }}
           </div>
         </BaseCard>
 
-        <BaseCard class="bg-slate-900 border-slate-800 p-4">
-          <div class="text-xs font-semibold uppercase text-amber-400">Total Canjes Entregados</div>
-          <div class="text-2xl font-bold text-amber-400 font-mono mt-1">
+        <BaseCard class="bg-white border-slate-200 p-4 shadow-xs">
+          <div class="text-xs font-semibold uppercase text-amber-700">Total Canjes Entregados</div>
+          <div class="text-2xl font-bold text-amber-600 font-mono mt-1">
             {{ staffList.reduce((acc, s) => acc + (s.attended_fans_count || 0), 0) }}
           </div>
         </BaseCard>
       </div>
 
-      <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="errorMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-950/60 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="successMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
       </div>
 
       <BaseTable :columns="columns" :data="(staffList as any[])" :loading="loading" empty-text="No hay personal registrado">
         <template #cell-user_id="{ row }">
           <div>
-            <div class="font-semibold text-slate-100 flex items-center gap-2">
+            <div class="font-semibold text-slate-900 flex items-center gap-2">
               <span>{{ (row as StaffMemberRow).display_name }}</span>
             </div>
             <div class="text-xs font-mono text-slate-500">{{ (row as StaffMemberRow).user_id }}</div>
@@ -258,15 +258,15 @@ onMounted(loadStaffAuditData)
 
         <template #cell-session="{ row }">
           <div class="flex items-center justify-center gap-1.5">
-            <span :class="['w-2.5 h-2.5 rounded-full animate-pulse', (row as StaffMemberRow).active ? 'bg-emerald-400' : 'bg-red-500']"></span>
-            <span class="text-xs font-semibold" :class="(row as StaffMemberRow).active ? 'text-emerald-400' : 'text-slate-500'">
+            <span :class="['w-2.5 h-2.5 rounded-full animate-pulse', (row as StaffMemberRow).active ? 'bg-emerald-500' : 'bg-red-500']"></span>
+            <span class="text-xs font-semibold" :class="(row as StaffMemberRow).active ? 'text-emerald-700' : 'text-slate-500'">
               {{ (row as StaffMemberRow).active ? 'En Línea / Activo' : 'Inactivo' }}
             </span>
           </div>
         </template>
 
         <template #cell-attended_fans="{ row }">
-          <span class="text-sm font-bold font-mono text-emerald-400">
+          <span class="text-sm font-bold font-mono text-emerald-700">
             {{ (row as StaffMemberRow).attended_fans_count || 0 }} fanáticos
           </span>
         </template>

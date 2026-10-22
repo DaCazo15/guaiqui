@@ -9,6 +9,13 @@ const supabase = useSupabaseClient()
 const nextGame = ref<any>(null)
 const loadingGame = ref(true)
 
+const heroTitle = ref('Juega, gana puntos y canjea con tu equipo')
+const heroSubtitle = ref('La plataforma oficial de fidelización de Guaiqueríes de Margarita. Responde trivias diarias, demuestra tu pasión insular y reclama camisetas, pases y premios reales gratis.')
+const ctaPrimaryText = ref('Regístrate Gratis Ahora')
+const ctaPrimaryUrl = ref('/registro')
+const ctaSecondaryText = ref('Ver cómo funciona')
+const ctaSecondaryUrl = ref('/#como-funciona')
+
 const formattedGameDate = computed(() => {
   if (!nextGame.value?.game_date) return null
   const d = new Date(nextGame.value.game_date)
@@ -24,15 +31,32 @@ const formattedGameTime = computed(() => {
 onMounted(async () => {
   loadingGame.value = true
   try {
-    const { data } = await supabase
-      .from('games')
-      .select('*')
-      .in('status', ['scheduled', 'live'])
-      .order('game_date', { ascending: true })
-      .limit(1)
-      .maybeSingle()
+    const [gameRes, settsRes] = await Promise.all([
+      supabase
+        .from('games')
+        .select('*')
+        .in('status', ['scheduled', 'live'])
+        .order('game_date', { ascending: true })
+        .limit(1)
+        .maybeSingle(),
+      supabase
+        .from('landing_settings')
+        .select('*')
+        .eq('id', 1)
+        .maybeSingle()
+    ])
 
-    nextGame.value = data || null
+    nextGame.value = gameRes.data || null
+
+    if (settsRes.data) {
+      const s = settsRes.data
+      if (s.hero_title) heroTitle.value = s.hero_title
+      if (s.hero_subtitle) heroSubtitle.value = s.hero_subtitle
+      if (s.cta_primary_text) ctaPrimaryText.value = s.cta_primary_text
+      if (s.cta_primary_url) ctaPrimaryUrl.value = s.cta_primary_url === '/register' ? '/registro' : s.cta_primary_url
+      if (s.cta_secondary_text) ctaSecondaryText.value = s.cta_secondary_text
+      if (s.cta_secondary_url) ctaSecondaryUrl.value = s.cta_secondary_url
+    }
   } catch (_err) {
     nextGame.value = null
   } finally {
@@ -67,25 +91,25 @@ const handleHeroHowItWorks = () => {
 
         <!-- Headline -->
         <h1 class="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tight leading-none">
-          Juega, gana <span class="text-amber-400">puntos</span> y canjea con tu equipo
+          {{ heroTitle }}
         </h1>
 
         <!-- Subtitle -->
         <p class="text-emerald-100 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed">
-          La plataforma oficial de fidelización de <strong>Guaiqueríes de Margarita</strong>. Responde trivias diarias, demuestra tu pasión insular y reclama camisetas, pases y premios reales gratis.
+          {{ heroSubtitle }}
         </p>
 
         <!-- Double CTA Buttons -->
         <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-          <NuxtLink to="/registro" class="w-full sm:w-auto">
+          <NuxtLink :to="ctaPrimaryUrl" class="w-full sm:w-auto">
             <BaseButton variant="primary" size="lg" block @click="handleHeroRegister">
-              Regístrate Gratis Ahora
+              {{ ctaPrimaryText }}
             </BaseButton>
           </NuxtLink>
 
-          <NuxtLink to="/#como-funciona" class="w-full sm:w-auto">
+          <NuxtLink :to="ctaSecondaryUrl" class="w-full sm:w-auto">
             <BaseButton variant="secondary" size="lg" block @click="handleHeroHowItWorks">
-              Ver cómo funciona
+              {{ ctaSecondaryText }}
             </BaseButton>
           </NuxtLink>
         </div>

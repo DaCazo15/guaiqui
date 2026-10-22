@@ -299,21 +299,21 @@ onMounted(loadTriviasAndSegments)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold font-title text-white">Gestión de Trivias</h1>
-          <p class="text-sm text-slate-400">Crear, modificar, tiempo limitado, segmentación de fanáticos y eliminación de trivias.</p>
+          <h1 class="text-2xl sm:text-3xl font-bold font-title text-slate-900">Gestión de Trivias</h1>
+          <p class="text-sm text-slate-600">Crear, modificar, tiempo limitado, segmentación de fanáticos y eliminación de trivias.</p>
         </div>
         <BaseButton variant="primary" @click="openNewTrivia">
           <i class="bi bi-plus-lg mr-1.5"></i> Nueva Trivia
         </BaseButton>
       </div>
 
-      <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="errorMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-950/60 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="successMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
       </div>
 
       <BaseTable :columns="columns" :data="trivias" :loading="loading" empty-text="No hay trivias registradas">
@@ -324,34 +324,34 @@ onMounted(loadTriviasAndSegments)
         </template>
 
         <template #cell-starts_at="{ row }">
-          <span class="text-xs text-slate-300">{{ (row as any).starts_at ? formatCaracas((row as any).starts_at) : '' }}</span>
+          <span class="text-xs text-slate-600">{{ (row as any).starts_at ? formatCaracas((row as any).starts_at) : '' }}</span>
         </template>
 
         <template #cell-ends_at="{ row }">
-          <span class="text-xs text-slate-300">{{ (row as any).ends_at ? formatCaracas((row as any).ends_at) : '' }}</span>
+          <span class="text-xs text-slate-600">{{ (row as any).ends_at ? formatCaracas((row as any).ends_at) : '' }}</span>
         </template>
 
         <template #cell-reward_rules="{ row }">
-          <span class="text-xs font-mono text-emerald-400">
+          <span class="text-xs font-mono font-bold text-emerald-600">
             +{{ (row as any).reward_rules?.per_correct_pearls || 0 }} / preg
           </span>
         </template>
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1.5">
-            <button @click="previewTrivia(row as any)" class="p-1.5 text-sky-400 hover:bg-sky-950 rounded-lg" title="Vista previa">
+            <button @click="previewTrivia(row as any)" class="p-1.5 text-sky-600 hover:bg-sky-50 rounded-lg transition-colors" title="Vista previa">
               <i class="bi bi-eye"></i>
             </button>
-            <button @click="editTrivia(row as any)" class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg" title="Editar trivia">
+            <button @click="editTrivia(row as any)" class="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" title="Editar trivia">
               <i class="bi bi-pencil"></i>
             </button>
-            <button v-if="(row as any).status === 'draft'" @click="publishTrivia((row as any).id)" class="p-1.5 text-emerald-400 hover:bg-emerald-950 rounded-lg" title="Publicar trivia">
+            <button v-if="(row as any).status === 'draft'" @click="publishTrivia((row as any).id)" class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Publicar trivia">
               <i class="bi bi-send"></i>
             </button>
-            <button @click="duplicateTrivia((row as any).id)" class="p-1.5 text-purple-400 hover:bg-purple-950 rounded-lg" title="Duplicar">
+            <button @click="duplicateTrivia((row as any).id)" class="p-1.5 text-purple-600 hover:bg-purple-50 rounded-lg transition-colors" title="Duplicar">
               <i class="bi bi-copy"></i>
             </button>
-            <button @click="confirmDeleteTrivia(row as any)" class="p-1.5 text-red-400 hover:bg-red-950 rounded-lg" title="Eliminar trivia">
+            <button @click="confirmDeleteTrivia(row as any)" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar trivia">
               <i class="bi bi-trash"></i>
             </button>
           </div>
@@ -383,27 +383,27 @@ onMounted(loadTriviasAndSegments)
         </div>
 
         <div class="space-y-4">
-          <div class="flex items-center justify-between border-t border-slate-800 pt-4">
-            <h3 class="font-bold text-slate-100">Preguntas y Opciones</h3>
+          <div class="flex items-center justify-between border-t border-slate-200 pt-4">
+            <h3 class="font-bold text-slate-900">Preguntas y Opciones</h3>
             <BaseButton size="sm" variant="secondary" @click="addQuestion">
               <i class="bi bi-plus-lg mr-1"></i> Agregar Pregunta
             </BaseButton>
           </div>
 
-          <div v-for="(q, qIdx) in triviaForm.questions" :key="qIdx" class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
+          <div v-for="(q, qIdx) in triviaForm.questions" :key="qIdx" class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
             <div class="flex items-center justify-between gap-3">
-              <span class="text-xs font-bold uppercase text-emerald-400 font-mono">Pregunta #{{ qIdx + 1 }}</span>
-              <button @click="removeQuestion(qIdx)" class="text-red-400 hover:text-red-300 text-xs">
+              <span class="text-xs font-bold uppercase text-emerald-700 font-mono">Pregunta #{{ qIdx + 1 }}</span>
+              <button @click="removeQuestion(qIdx)" class="text-red-600 hover:text-red-700 text-xs">
                 <i class="bi bi-trash"></i> Eliminar Pregunta
               </button>
             </div>
 
             <BaseInput v-model="q.question_text" placeholder="Texto de la pregunta" />
 
-            <div class="space-y-2 pl-4 border-l-2 border-slate-800">
-              <div class="text-xs font-semibold text-slate-400 flex items-center justify-between">
+            <div class="space-y-2 pl-4 border-l-2 border-slate-200">
+              <div class="text-xs font-semibold text-slate-600 flex items-center justify-between">
                 <span>Opciones de respuesta</span>
-                <button @click="addOption(qIdx)" class="text-emerald-400 hover:underline text-xs">+ Opción</button>
+                <button @click="addOption(qIdx)" class="text-emerald-700 hover:underline text-xs">+ Opción</button>
               </div>
 
               <div v-for="(opt, oIdx) in q.options" :key="oIdx" class="flex items-center gap-2">
@@ -412,15 +412,15 @@ onMounted(loadTriviasAndSegments)
                   :name="`correct-${qIdx}`"
                   :checked="opt.is_correct"
                   @change="setCorrectOption(qIdx, oIdx)"
-                  class="accent-emerald-500 w-4 h-4 cursor-pointer"
+                  class="accent-emerald-600 w-4 h-4 cursor-pointer"
                 />
                 <input
                   type="text"
                   v-model="opt.option_text"
                   placeholder="Opción de respuesta"
-                  class="flex-1 bg-slate-950 border border-slate-800 text-sm text-slate-100 rounded-lg px-3 py-1.5 focus:border-emerald-500 focus:outline-none"
+                  class="flex-1 bg-white border border-slate-300 text-sm text-slate-900 rounded-lg px-3 py-1.5 focus:border-emerald-500 focus:outline-none"
                 />
-                <button @click="removeOption(qIdx, oIdx)" class="text-slate-500 hover:text-red-400 text-sm">
+                <button @click="removeOption(qIdx, oIdx)" class="text-slate-400 hover:text-red-600 text-sm">
                   <i class="bi bi-x-lg"></i>
                 </button>
               </div>
@@ -440,10 +440,10 @@ onMounted(loadTriviasAndSegments)
     <!-- Delete Modal -->
     <BaseModal v-if="showDeleteModal" :is-open="showDeleteModal" title="Eliminar Trivia" @close="showDeleteModal = false">
       <div class="space-y-4">
-        <p class="text-sm text-slate-300">
-          ¿Está seguro de eliminar permanentemente la trivia <strong>{{ selectedTrivia?.title }}</strong>?
+        <p class="text-sm text-slate-700">
+          ¿Está seguro de eliminar permanentemente la trivia <strong class="text-slate-900">{{ selectedTrivia?.title }}</strong>?
         </p>
-        <div class="p-3 bg-red-950/40 border border-red-800 text-xs text-red-300 rounded-lg">
+        <div class="p-3 bg-red-50 border border-red-200 text-xs text-red-800 rounded-lg">
           Esta acción eliminará la trivia y sus preguntas de forma definitiva.
         </div>
       </div>
@@ -458,18 +458,18 @@ onMounted(loadTriviasAndSegments)
     <!-- Preview Modal -->
     <BaseModal v-if="showPreviewModal" :is-open="showPreviewModal" title="Vista Previa de Trivia" @close="showPreviewModal = false">
       <div class="space-y-6">
-        <div class="p-4 rounded-xl bg-emerald-950/40 border border-emerald-800/60">
-          <h3 class="text-xl font-bold font-title text-white">{{ triviaForm.title }}</h3>
-          <p class="text-xs text-slate-300 mt-1">Recompensa: +{{ triviaForm.per_correct_pearls }} perlitas por acierto</p>
+        <div class="p-4 rounded-xl bg-emerald-50 border border-emerald-200">
+          <h3 class="text-xl font-bold font-title text-emerald-950">{{ triviaForm.title }}</h3>
+          <p class="text-xs text-emerald-800 mt-1">Recompensa: +{{ triviaForm.per_correct_pearls }} perlitas por acierto</p>
         </div>
 
         <div class="space-y-4">
-          <div v-for="(q, idx) in triviaForm.questions" :key="idx" class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
-            <div class="font-semibold text-slate-100 text-sm">{{ idx + 1 }}. {{ q.question_text }}</div>
+          <div v-for="(q, idx) in triviaForm.questions" :key="idx" class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3">
+            <div class="font-semibold text-slate-900 text-sm">{{ idx + 1 }}. {{ q.question_text }}</div>
             <div class="space-y-2">
-              <div v-for="(opt, oIdx) in q.options" :key="oIdx" class="p-3 rounded-lg bg-slate-950 border border-slate-800 text-sm text-slate-300 flex items-center justify-between">
+              <div v-for="(opt, oIdx) in q.options" :key="oIdx" class="p-3 rounded-lg bg-white border border-slate-200 text-sm text-slate-800 flex items-center justify-between">
                 <span>{{ opt.option_text }}</span>
-                <span v-if="opt.is_correct" class="text-xs text-emerald-400 font-mono font-bold">(Respuesta Correcta)</span>
+                <span v-if="opt.is_correct" class="text-xs text-emerald-700 font-mono font-bold">(Respuesta Correcta)</span>
               </div>
             </div>
           </div>

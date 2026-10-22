@@ -101,30 +101,30 @@ onMounted(loadIssues)
   <AdminLayout>
     <div class="max-w-7xl mx-auto space-y-6">
       <div>
-        <h1 class="text-2xl font-bold font-title text-white">Resolución de Incidencias de Canje</h1>
-        <p class="text-sm text-slate-400">Atender y resolver solicitudes problemáticas mediante reemisión, reembolso o cierre.</p>
+        <h1 class="text-2xl sm:text-3xl font-bold font-title text-slate-900">Resolución de Incidencias de Canje</h1>
+        <p class="text-sm text-slate-600">Atender y resolver solicitudes problemáticas mediante reemisión, reembolso o cierre.</p>
       </div>
 
-      <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="errorMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-950/60 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="successMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
       </div>
 
       <BaseTable :columns="columns" :data="(issues as any[])" :loading="loading" empty-text="No hay incidencias abiertas actualmente">
         <template #cell-fan_name="{ row }">
-          <span class="font-semibold text-slate-100">{{ (row as IssueRow).fan_name }}</span>
+          <span class="font-semibold text-slate-900">{{ (row as IssueRow).fan_name }}</span>
         </template>
 
         <template #cell-product_name="{ row }">
-          <span class="text-slate-300">{{ (row as IssueRow).product_name }}</span>
+          <span class="text-slate-700">{{ (row as IssueRow).product_name }}</span>
         </template>
 
         <template #cell-cost_pearls="{ row }">
-          <span class="font-mono text-emerald-400 font-bold text-xs">{{ (row as IssueRow).cost_pearls }} perlitas</span>
+          <span class="font-mono text-emerald-600 font-bold text-xs">{{ (row as IssueRow).cost_pearls }} perlitas</span>
         </template>
 
         <template #cell-status="{ row }">
@@ -132,7 +132,7 @@ onMounted(loadIssues)
         </template>
 
         <template #cell-created_at="{ row }">
-          <span class="text-xs text-slate-400 font-mono">{{ (row as IssueRow).created_at ? formatCaracas((row as IssueRow).created_at) : '' }}</span>
+          <span class="text-xs text-slate-500 font-mono">{{ (row as IssueRow).created_at ? formatCaracas((row as IssueRow).created_at) : '' }}</span>
         </template>
 
         <template #cell-actions="{ row }">
@@ -148,10 +148,10 @@ onMounted(loadIssues)
     <!-- Resolve Modal -->
     <BaseModal v-if="showResolveModal" :is-open="showResolveModal" title="Resolución de Incidencia" @close="showResolveModal = false">
       <div class="space-y-4">
-        <div class="p-3 rounded-lg bg-slate-900 border border-slate-800 text-xs text-slate-300 space-y-1">
-          <div><strong>Fanático:</strong> {{ selectedIssue?.fan_name }}</div>
-          <div><strong>Producto:</strong> {{ selectedIssue?.product_name }}</div>
-          <div><strong>Monto:</strong> {{ selectedIssue?.cost_pearls }} perlitas</div>
+        <div class="p-3 rounded-lg bg-slate-50 border border-slate-200 text-xs text-slate-700 space-y-1">
+          <div><strong class="text-slate-900">Fanático:</strong> {{ selectedIssue?.fan_name }}</div>
+          <div><strong class="text-slate-900">Producto:</strong> {{ selectedIssue?.product_name }}</div>
+          <div><strong class="text-slate-900">Monto:</strong> {{ selectedIssue?.cost_pearls }} perlitas</div>
         </div>
 
         <BaseSelect
@@ -166,7 +166,7 @@ onMounted(loadIssues)
 
         <BaseInput label="Nota / Explicación del Administrador (Obligatorio)" v-model="resolveNote" placeholder="Describa el motivo de la resolución" />
 
-        <div v-if="actionType === 'refund'" class="p-3 rounded-lg bg-emerald-950/60 border border-emerald-800 text-xs text-emerald-300">
+        <div v-if="actionType === 'refund'" class="p-3 rounded-lg bg-emerald-50 border border-emerald-200 text-xs text-emerald-800">
           El reembolso acreditará <strong>+{{ selectedIssue?.cost_pearls }} perlitas</strong> en el saldo del fanático insertando una entrada atómica en el libro de transacciones.
         </div>
       </div>

@@ -182,9 +182,9 @@ onMounted(loadGames)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold font-title text-white">Calendario y Resultados de Partidos</h1>
-          <p class="text-sm text-slate-400 mt-1">
-            Gestión manual y oficial del calendario de la temporada y marcadores de Guaiqueríes de Margarita.
+          <h1 class="text-2xl font-bold font-title text-slate-900">Calendario Oficial de Partidos</h1>
+          <p class="text-sm text-slate-600 mt-1">
+            Programación de encuentros del club, asignación de sedes y carga de resultados oficiales.
           </p>
         </div>
         <div class="flex items-center gap-3">
@@ -194,15 +194,15 @@ onMounted(loadGames)
         </div>
       </div>
 
-      <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-slate-400 hover:text-white">
+        <button @click="errorMessage = null" class="text-red-500 hover:text-red-700">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-950/60 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-slate-400 hover:text-white">
+        <button @click="successMessage = null" class="text-emerald-600 hover:text-emerald-800">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
@@ -214,27 +214,30 @@ onMounted(loadGames)
         empty-text="No hay partidos registrados en el calendario. Haz clic en 'Programar Partido' para registrar el primero."
       >
         <template #cell-opponent="{ row }">
-          <span class="font-bold text-slate-100">Guaiqueríes vs {{ (row as GameRow).opponent }}</span>
+          <span class="font-bold text-slate-900">Guaiqueríes vs {{ (row as GameRow).opponent }}</span>
         </template>
 
         <template #cell-game_date="{ row }">
-          <span class="text-xs text-slate-300">{{ (row as GameRow).game_date ? formatCaracas((row as GameRow).game_date) : '' }}</span>
+          <span class="text-xs text-slate-600">{{ (row as GameRow).game_date ? formatCaracas((row as GameRow).game_date) : '' }}</span>
         </template>
 
         <template #cell-is_home="{ row }">
-          <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-900 border border-slate-800 text-slate-300">
+          <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-100 border border-slate-200 text-slate-700">
             {{ (row as GameRow).is_home ? 'Casa (La Asunción)' : 'Visitante' }}
           </span>
         </template>
 
         <template #cell-score="{ row }">
-          <span class="font-mono text-sm font-bold text-emerald-400">
+          <span v-if="(row as GameRow).status === 'scheduled'" class="text-xs text-slate-400 font-mono italic">
+            Por disputar
+          </span>
+          <span v-else class="font-mono text-sm font-bold text-guaiqui-primary">
             {{ (row as GameRow).our_score }} - {{ (row as GameRow).opponent_score }}
           </span>
         </template>
 
         <template #cell-status="{ row }">
-          <BaseBadge :variant="(row as GameRow).status === 'finished' ? 'success' : (row as GameRow).status === 'live' ? 'danger' : 'soft'">
+          <BaseBadge :variant="(row as GameRow).status === 'finished' ? 'success' : (row as GameRow).status === 'live' ? 'danger' : (row as GameRow).status === 'scheduled' ? 'accent' : 'soft'">
             {{ (row as GameRow).status === 'finished' ? 'Finalizado' : (row as GameRow).status === 'live' ? 'EN VIVO' : (row as GameRow).status === 'scheduled' ? 'Programado' : 'Cancelado' }}
           </BaseBadge>
         </template>
@@ -243,7 +246,7 @@ onMounted(loadGames)
           <div class="flex items-center justify-end gap-1.5">
             <button
               @click="editGame(row as GameRow)"
-              class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg transition-colors"
+              class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
               title="Editar / Actualizar Marcador"
             >
               <i class="bi bi-pencil"></i>
@@ -251,14 +254,14 @@ onMounted(loadGames)
             <button
               v-if="(row as GameRow).status !== 'cancelled'"
               @click="cancelGame((row as GameRow).id)"
-              class="p-1.5 text-amber-400 hover:bg-amber-950/50 rounded-lg transition-colors"
+              class="p-1.5 text-amber-600 hover:bg-amber-50 rounded-lg transition-colors"
               title="Cancelar Partido"
             >
               <i class="bi bi-calendar-x"></i>
             </button>
             <button
               @click="deleteGame(row as GameRow)"
-              class="p-1.5 text-red-400 hover:bg-red-950/60 rounded-lg transition-colors"
+              class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
               title="Eliminar permanentemente"
             >
               <i class="bi bi-trash"></i>
@@ -269,7 +272,12 @@ onMounted(loadGames)
     </div>
 
     <!-- Modal Game Editor -->
-    <BaseModal v-if="showEditorModal" :is-open="showEditorModal" :title="gameForm.id ? 'Editar Partido / Marcador' : 'Programar Partido'" @close="showEditorModal = false">
+    <BaseModal
+      v-if="showEditorModal"
+      :is-open="showEditorModal"
+      :title="gameForm.id ? 'Editar Partido / Cargar Marcador' : 'Programar Partido en Calendario'"
+      @close="showEditorModal = false"
+    >
       <div class="space-y-4">
         <BaseInput label="Equipo Rival" v-model="gameForm.opponent" placeholder="Ej: Trotamundos de Carabobo" />
         <BaseInput label="Ubicación / Gimnasio" v-model="gameForm.location" placeholder="Ej: Gimnasio Ciudad de La Asunción" />
@@ -280,22 +288,29 @@ onMounted(loadGames)
             label="Estado del Partido"
             v-model="gameForm.status"
             :options="[
-              { value: 'scheduled', label: 'Programado' },
+              { value: 'scheduled', label: 'Programado (Por disputar)' },
               { value: 'live', label: 'EN VIVO' },
               { value: 'finished', label: 'Finalizado' },
               { value: 'cancelled', label: 'Cancelado' }
             ]"
           />
           <div class="flex items-center pt-6">
-            <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
-              <input type="checkbox" v-model="gameForm.is_home" class="accent-emerald-500 rounded" />
+            <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+              <input type="checkbox" v-model="gameForm.is_home" class="accent-emerald-600 rounded" />
               <span>Juego como Local (Casa)</span>
             </label>
           </div>
         </div>
 
-        <div class="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3">
-          <h4 class="text-xs font-bold uppercase text-slate-400">Marcador del Partido</h4>
+        <!-- Marcador: solo visible al editar un partido o cuando está en vivo o finalizado -->
+        <div
+          v-if="gameForm.id || gameForm.status === 'live' || gameForm.status === 'finished'"
+          class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3"
+        >
+          <div class="flex items-center justify-between">
+            <h4 class="text-xs font-bold uppercase text-slate-700">Marcador del Partido</h4>
+            <span class="text-[11px] text-slate-500">Actualiza los puntos oficiales</span>
+          </div>
           <div class="grid grid-cols-2 gap-4">
             <BaseInput label="Puntos Guaiqueríes" type="number" v-model="gameForm.our_score" />
             <BaseInput label="Puntos Rival" type="number" v-model="gameForm.opponent_score" />
@@ -306,7 +321,10 @@ onMounted(loadGames)
       <template #footer>
         <div class="flex items-center justify-end gap-3">
           <BaseButton variant="secondary" @click="showEditorModal = false">Cancelar</BaseButton>
-          <BaseButton variant="primary" :loading="actionLoading" @click="saveGame">Guardar Partido</BaseButton>
+          <BaseButton variant="primary" :loading="actionLoading" @click="saveGame">
+            <i class="bi bi-check2 mr-1.5"></i>
+            {{ gameForm.id ? 'Guardar Cambios' : 'Programar Partido' }}
+          </BaseButton>
         </div>
       </template>
     </BaseModal>

@@ -1,9 +1,45 @@
 <script setup lang="ts">
-import { historyMilestones } from '~/data/landingData'
+import { ref, onMounted } from 'vue'
+
+interface MilestoneItem {
+  id: string
+  year: string
+  title: string
+  description: string
+}
+
+const supabase = useSupabaseClient()
+const milestones = ref<MilestoneItem[]>([])
+const loading = ref(true)
+
+onMounted(async () => {
+  try {
+    const { data } = await supabase
+      .from('history_milestones')
+      .select('*')
+      .eq('is_published', true)
+      .order('order_index', { ascending: true })
+
+    if (data && data.length > 0) {
+      milestones.value = data.map((m: any) => ({
+        id: m.id,
+        year: m.year,
+        title: m.title,
+        description: m.text,
+      }))
+    } else {
+      milestones.value = []
+    }
+  } catch {
+    milestones.value = []
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <template>
-  <section class="py-16 sm:py-24 bg-white px-4 sm:px-8">
+  <section v-if="!loading && milestones.length > 0" class="py-16 sm:py-24 bg-white px-4 sm:px-8">
     <div class="max-w-6xl mx-auto space-y-12">
       <div class="text-center max-w-3xl mx-auto space-y-3">
         <span class="text-xs uppercase font-bold text-guaiqui-primary tracking-widest bg-guaiqui-primary-soft px-3 py-1 rounded-full">
@@ -19,8 +55,8 @@ import { historyMilestones } from '~/data/landingData'
 
       <div class="relative border-l-2 border-guaiqui-primary/30 ml-4 sm:ml-32 space-y-8">
         <div
-          v-for="(m, i) in historyMilestones"
-          :key="i"
+          v-for="m in milestones"
+          :key="m.id"
           class="relative pl-6 sm:pl-8 group"
         >
           <!-- Bullet Dot -->

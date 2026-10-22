@@ -137,15 +137,27 @@ const filteredPlayers = computed(() => {
         class="bg-white border-guaiqui-border hover:border-guaiqui-primary p-5 rounded-guaiqui-xl space-y-3 transition-all duration-200 relative group overflow-hidden shadow-guaiqui-sm flex flex-col justify-between"
       >
         <div class="space-y-3">
-          <!-- Jersey Number Tag -->
+          <!-- Jersey Number Tag & Badges -->
           <div class="flex items-center justify-between">
             <span class="font-display text-3xl font-bold text-guaiqui-primary">
               #{{ player.jersey_number }}
             </span>
-            <BaseBadge v-if="player.is_star" variant="warning" class="flex items-center gap-1">
-              <i class="bi bi-star-fill text-[10px]"></i>
-              <span>Estrella</span>
-            </BaseBadge>
+            <div class="flex items-center gap-1.5">
+              <a
+                v-if="player.instagram_url"
+                :href="player.instagram_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-7 h-7 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-600 flex items-center justify-center text-sm transition-colors"
+                title="Ver Instagram del jugador"
+              >
+                <i class="bi bi-instagram"></i>
+              </a>
+              <BaseBadge v-if="player.is_star" variant="warning" class="flex items-center gap-1">
+                <i class="bi bi-star-fill text-[10px]"></i>
+                <span>Estrella</span>
+              </BaseBadge>
+            </div>
           </div>
 
           <div>
@@ -162,19 +174,34 @@ const filteredPlayers = computed(() => {
           </p>
         </div>
 
-        <div class="grid grid-cols-3 gap-2 text-xs pt-3 border-t border-guaiqui-border text-guaiqui-text-muted text-center">
-          <div>
-            <span class="text-guaiqui-text-subtle block text-[10px] uppercase font-semibold">Altura</span>
-            <span class="font-bold text-guaiqui-text">{{ player.height || 'N/D' }}</span>
+        <div class="space-y-3">
+          <div class="grid grid-cols-3 gap-2 text-xs pt-3 border-t border-guaiqui-border text-guaiqui-text-muted text-center">
+            <div>
+              <span class="text-guaiqui-text-subtle block text-[10px] uppercase font-semibold">Altura</span>
+              <span class="font-bold text-guaiqui-text">{{ player.height || 'N/D' }}</span>
+            </div>
+            <div>
+              <span class="text-guaiqui-text-subtle block text-[10px] uppercase font-semibold">Edad</span>
+              <span class="font-bold text-guaiqui-text">{{ player.age ? `${player.age} años` : 'N/D' }}</span>
+            </div>
+            <div>
+              <span class="text-guaiqui-text-subtle block text-[10px] uppercase font-semibold">País</span>
+              <span class="font-bold text-guaiqui-text truncate block">{{ player.nationality }}</span>
+            </div>
           </div>
-          <div>
-            <span class="text-guaiqui-text-subtle block text-[10px] uppercase font-semibold">Edad</span>
-            <span class="font-bold text-guaiqui-text">{{ player.age ? `${player.age} años` : 'N/D' }}</span>
-          </div>
-          <div>
-            <span class="text-guaiqui-text-subtle block text-[10px] uppercase font-semibold">País</span>
-            <span class="font-bold text-guaiqui-text truncate block">{{ player.nationality }}</span>
-          </div>
+
+          <!-- Botón de acceso directo a Instagram si el jugador lo tiene -->
+          <a
+            v-if="player.instagram_url"
+            :href="player.instagram_url"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="w-full py-1.5 px-3 bg-gradient-to-r from-pink-50 to-rose-50 hover:from-pink-100 hover:to-rose-100 text-pink-700 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all border border-pink-200/60 shadow-xs"
+          >
+            <i class="bi bi-instagram"></i>
+            <span>Instagram Oficial</span>
+            <i class="bi bi-box-arrow-up-right text-[10px]"></i>
+          </a>
         </div>
       </BaseCard>
     </div>

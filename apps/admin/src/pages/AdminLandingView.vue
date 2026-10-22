@@ -170,43 +170,43 @@ onMounted(loadData)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold font-title text-white">Configuración General de Landing Page</h1>
-          <p class="text-sm text-slate-400">Edita el Hero principal, modo oscuro, tabla de clasificación y accesos a secciones.</p>
+          <h1 class="text-2xl font-bold font-title text-slate-900">Configuración General de Landing Page</h1>
+          <p class="text-sm text-slate-600 mt-1">Edita el Hero principal, modo oscuro, tabla de clasificación y accesos a secciones.</p>
         </div>
 
-        <div class="flex items-center gap-2">
-          <RouterLink to="/admin/carrusel" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5">
-            <i class="bi bi-images text-emerald-400"></i> Carrusel
+        <div class="flex items-center gap-2 flex-wrap">
+          <RouterLink to="/admin/carrusel" class="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-1.5 shadow-xs">
+            <i class="bi bi-images text-guaiqui-primary"></i> Carrusel
           </RouterLink>
-          <RouterLink to="/admin/jugadores" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5">
-            <i class="bi bi-person-bounding-box text-emerald-400"></i> Plantilla
+          <RouterLink to="/admin/jugadores" class="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-1.5 shadow-xs">
+            <i class="bi bi-person-bounding-box text-guaiqui-primary"></i> Plantilla
           </RouterLink>
-          <RouterLink to="/admin/equipo" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5">
-            <i class="bi bi-person-lines-fill text-emerald-400"></i> C. Técnico
+          <RouterLink to="/admin/equipo" class="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-1.5 shadow-xs">
+            <i class="bi bi-person-lines-fill text-guaiqui-primary"></i> C. Técnico
           </RouterLink>
-          <RouterLink to="/admin/instagram" class="px-3 py-1.5 rounded-xl bg-slate-800 hover:bg-slate-700 text-xs font-semibold text-slate-200 flex items-center gap-1.5">
-            <i class="bi bi-instagram text-emerald-400"></i> Instagram
+          <RouterLink to="/admin/instagram" class="px-3 py-1.5 rounded-xl bg-white border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 flex items-center gap-1.5 shadow-xs">
+            <i class="bi bi-instagram text-pink-600"></i> Instagram
           </RouterLink>
         </div>
       </div>
 
       <!-- Alert Messages -->
-      <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="errorMessage = null" class="text-red-500 hover:text-red-700"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-950/60 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="successMessage = null" class="text-emerald-600 hover:text-emerald-800"><i class="bi bi-x-lg"></i></button>
       </div>
 
       <!-- Navigation Tabs -->
-      <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+      <div class="flex items-center gap-2 border-b border-slate-200 pb-2">
         <button
           @click="activeTab = 'hero'"
           :class="[
             'px-4 py-2 rounded-xl text-sm font-semibold transition-all',
-            activeTab === 'hero' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            activeTab === 'hero' ? 'bg-guaiqui-primary text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           ]"
         >
           <i class="bi bi-layout-text-window-reverse mr-1.5"></i> Hero Section & Tema
@@ -215,7 +215,7 @@ onMounted(loadData)
           @click="activeTab = 'standings'"
           :class="[
             'px-4 py-2 rounded-xl text-sm font-semibold transition-all',
-            activeTab === 'standings' ? 'bg-emerald-600 text-white shadow-md' : 'text-slate-400 hover:text-white hover:bg-slate-800'
+            activeTab === 'standings' ? 'bg-guaiqui-primary text-white shadow-xs' : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100'
           ]"
         >
           <i class="bi bi-trophy mr-1.5"></i> Tabla de Clasificación
@@ -224,41 +224,41 @@ onMounted(loadData)
 
       <!-- TAB 1: Hero Section & Theme -->
       <div v-if="activeTab === 'hero'" class="space-y-6">
-        <BaseCard class="bg-slate-900 border-slate-800 p-6 space-y-6">
-          <h3 class="text-lg font-bold text-white flex items-center gap-2">
-            <i class="bi bi-pen text-emerald-400"></i> Contenido Principal del Hero
+        <BaseCard class="bg-white border-slate-200 shadow-sm p-6 space-y-6">
+          <h3 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+            <i class="bi bi-pen text-guaiqui-primary"></i> Contenido Principal del Hero
           </h3>
 
           <div class="grid grid-cols-1 gap-4">
             <BaseInput label="Título Principal de la Landing" v-model="settings.hero_title" />
             <div>
-              <label class="block text-xs font-semibold text-slate-300 mb-1">Subtítulo / Descripción Hero</label>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">Subtítulo / Descripción Hero</label>
               <textarea
                 v-model="settings.hero_subtitle"
                 rows="3"
-                class="w-full bg-slate-950 border border-slate-800 text-slate-100 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-500"
+                class="w-full bg-slate-50 border border-slate-300 text-slate-900 rounded-xl p-3 text-sm focus:outline-none focus:border-emerald-600"
               ></textarea>
             </div>
           </div>
 
-          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-800">
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 pt-4 border-t border-slate-200">
             <BaseInput label="Texto Botón Principal (CTA)" v-model="settings.cta_primary_text" />
             <BaseInput label="Enlace Botón Principal" v-model="settings.cta_primary_url" />
             <BaseInput label="Texto Botón Secundario" v-model="settings.cta_secondary_text" />
             <BaseInput label="Enlace Botón Secundario" v-model="settings.cta_secondary_url" />
           </div>
 
-          <div class="p-4 rounded-xl bg-slate-950 border border-slate-800 space-y-3 pt-4">
-            <h4 class="text-xs font-bold uppercase text-slate-400">Personalización de Apariencia</h4>
+          <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 space-y-3 pt-4">
+            <h4 class="text-xs font-bold uppercase text-slate-700">Personalización de Apariencia</h4>
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <label class="flex items-center gap-3 text-sm text-slate-200 cursor-pointer">
-                <input type="checkbox" v-model="settings.dark_mode_enabled" class="w-5 h-5 accent-emerald-500 rounded" />
+              <label class="flex items-center gap-3 text-sm text-slate-700 cursor-pointer">
+                <input type="checkbox" v-model="settings.dark_mode_enabled" class="w-5 h-5 accent-emerald-600 rounded" />
                 <span>Modo Oscuro Predeterminado para Nuevos Visitantes</span>
               </label>
 
               <div class="flex items-center gap-3">
-                <label class="text-xs text-slate-400">Color Primario de Énfasis:</label>
-                <input type="color" v-model="settings.theme_color" class="w-8 h-8 rounded-lg cursor-pointer bg-slate-900 border border-slate-700" />
+                <label class="text-xs text-slate-600">Color Primario de Énfasis:</label>
+                <input type="color" v-model="settings.theme_color" class="w-8 h-8 rounded-lg cursor-pointer bg-white border border-slate-300" />
               </div>
             </div>
           </div>
@@ -274,7 +274,7 @@ onMounted(loadData)
       <!-- TAB 2: Standings / Tabla de Clasificación -->
       <div v-if="activeTab === 'standings'" class="space-y-6">
         <div class="flex items-center justify-between">
-          <p class="text-sm text-slate-400">Tabla de Posiciones de la Temporada SPB.</p>
+          <p class="text-sm text-slate-600">Tabla de Posiciones de la Temporada SPB.</p>
           <BaseButton variant="primary" size="sm" @click="openNewStanding">
             <i class="bi bi-plus-lg mr-1.5"></i> Agregar Equipo
           </BaseButton>

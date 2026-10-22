@@ -7,7 +7,7 @@ import { useAnalytics } from '~/composables/useAnalytics'
 const supabase = useSupabaseClient()
 const { trackEvent } = useAnalytics()
 
-const slides = ref<CarouselSlide[]>(fallbackSlides)
+const slides = ref<CarouselSlide[]>([])
 const currentIndex = ref(0)
 const isPaused = ref(false)
 let timer: ReturnType<typeof setInterval> | null = null
@@ -66,16 +66,18 @@ onMounted(async () => {
         bgGradient: row.bg_gradient || 'from-emerald-900 via-guaiqui-primary-dark to-slate-900',
         badgeVariant: (row.badge_variant as any) || 'primary'
       }))
+    } else {
+      slides.value = []
     }
   } catch (_err) {
-    // Keep fallback
+    slides.value = []
   }
 
   // Respect prefers-reduced-motion
   const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
   if (!prefersReducedMotion) {
     timer = setInterval(() => {
-      if (!isPaused.value) {
+      if (!isPaused.value && slides.value.length > 0) {
         nextSlide()
       }
     }, 5000)
@@ -88,7 +90,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-  <section class="py-12 bg-guaiqui-surface border-y border-guaiqui-border px-4 sm:px-8">
+  <section v-if="slides.length > 0" class="py-12 bg-guaiqui-surface border-y border-guaiqui-border px-4 sm:px-8">
     <div class="max-w-6xl mx-auto">
       <div class="flex items-center justify-between mb-6">
         <div>

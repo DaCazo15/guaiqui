@@ -166,10 +166,22 @@ const filteredRoster = computed(() => {
                 <div class="w-14 h-14 rounded-guaiqui-lg bg-gradient-to-br from-emerald-800 to-guaiqui-primary-dark text-amber-400 font-display font-extrabold text-2xl flex items-center justify-center border-2 border-emerald-500 shadow-sm">
                   #{{ p.jersey_number }}
                 </div>
-                <BaseBadge v-if="p.is_star" variant="accent" size="sm" class="flex items-center gap-1">
-                  <i class="bi bi-star-fill text-[10px]"></i>
-                  <span>Estrella</span>
-                </BaseBadge>
+                <div class="flex items-center gap-1.5">
+                  <a
+                    v-if="p.instagram_url"
+                    :href="p.instagram_url"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    class="w-8 h-8 rounded-full bg-pink-50 hover:bg-pink-100 text-pink-600 flex items-center justify-center text-sm transition-colors"
+                    title="Ver Instagram del jugador"
+                  >
+                    <i class="bi bi-instagram"></i>
+                  </a>
+                  <BaseBadge v-if="p.is_star" variant="accent" size="sm" class="flex items-center gap-1">
+                    <i class="bi bi-star-fill text-[10px]"></i>
+                    <span>Estrella</span>
+                  </BaseBadge>
+                </div>
               </div>
 
               <!-- Name & Position -->
@@ -202,6 +214,20 @@ const filteredRoster = computed(() => {
                 <span class="text-[10px] text-guaiqui-text-subtle uppercase block font-semibold">País</span>
                 <span class="font-bold text-guaiqui-text truncate block">{{ p.nationality }}</span>
               </div>
+            </div>
+
+            <!-- Instagram CTA Button if available -->
+            <div v-if="p.instagram_url" class="p-3 bg-white border-t border-guaiqui-border/60">
+              <a
+                :href="p.instagram_url"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="w-full py-2 px-3 bg-gradient-to-r from-pink-50 to-rose-50 hover:from-pink-100 hover:to-rose-100 text-pink-700 text-xs font-bold rounded-lg flex items-center justify-center gap-1.5 transition-all border border-pink-200/60 shadow-xs"
+              >
+                <i class="bi bi-instagram"></i>
+                <span>Instagram Oficial</span>
+                <i class="bi bi-box-arrow-up-right text-[10px]"></i>
+              </a>
             </div>
           </BaseCard>
         </div>

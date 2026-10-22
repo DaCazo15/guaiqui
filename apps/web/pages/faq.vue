@@ -14,7 +14,7 @@ useSeoMeta({
     <Navbar />
 
     <main class="py-12 px-4 sm:px-8">
-      <FaqSection />
+      <FaqSection :hide-if-empty="false" />
     </main>
 
     <SiteFooter />

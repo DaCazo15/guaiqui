@@ -228,8 +228,8 @@ onMounted(loadProducts)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold font-title text-white">Catálogo de Productos</h1>
-          <p class="text-sm text-slate-400">Crear, modificar, eliminar y gestionar stock de productos canjeables.</p>
+          <h1 class="text-2xl sm:text-3xl font-bold font-title text-slate-900">Catálogo de Productos</h1>
+          <p class="text-sm text-slate-600">Crear, modificar, eliminar y gestionar stock de productos canjeables.</p>
         </div>
         <BaseButton variant="primary" @click="openNewProduct">
           <i class="bi bi-plus-lg mr-1.5"></i> Nuevo Producto
@@ -237,7 +237,7 @@ onMounted(loadProducts)
       </div>
 
       <!-- Filters Toolbar -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-900 p-4 rounded-xl border border-slate-800">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
         <BaseInput v-model="filterSearch" placeholder="Buscar por nombre..." />
         <BaseSelect
           v-model="filterCategory"
@@ -249,44 +249,44 @@ onMounted(loadProducts)
             { value: 'raffle', label: 'Sorteo' }
           ]"
         />
-        <div class="flex items-center justify-end text-xs text-slate-400 font-mono">
+        <div class="flex items-center justify-end text-xs text-slate-500 font-mono">
           Total: {{ filteredProducts.length }} productos
         </div>
       </div>
 
-      <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="errorMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-950/60 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="successMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
       </div>
 
       <BaseTable :columns="columns" :data="(filteredProducts as any[])" :loading="loading" empty-text="No hay productos en el catálogo">
         <template #cell-name="{ row }">
           <div class="flex items-center gap-3">
-            <div class="w-10 h-10 rounded-lg bg-slate-900 border border-slate-800 flex items-center justify-center overflow-hidden shrink-0">
+            <div class="w-10 h-10 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center overflow-hidden shrink-0">
               <img v-if="(row as ProductRow).images && (row as ProductRow).images.length > 0" :src="(row as ProductRow).images[0]" class="w-full h-full object-cover" />
-              <i v-else class="bi bi-box-seam text-slate-500 text-lg"></i>
+              <i v-else class="bi bi-box-seam text-slate-400 text-lg"></i>
             </div>
             <div>
-              <div class="font-semibold text-slate-100">{{ (row as ProductRow).name }}</div>
-              <div class="text-xs text-slate-400 truncate max-w-xs">{{ (row as ProductRow).description }}</div>
+              <div class="font-semibold text-slate-900">{{ (row as ProductRow).name }}</div>
+              <div class="text-xs text-slate-500 truncate max-w-xs">{{ (row as ProductRow).description }}</div>
             </div>
           </div>
         </template>
 
         <template #cell-category="{ row }">
-          <span class="text-xs capitalize font-medium text-slate-300">{{ (row as ProductRow).category }}</span>
+          <span class="text-xs capitalize font-medium text-slate-700">{{ (row as ProductRow).category }}</span>
         </template>
 
         <template #cell-cost_pearls="{ row }">
-          <span class="text-sm font-bold font-mono text-emerald-400">{{ (row as ProductRow).cost_pearls }} perlitas</span>
+          <span class="text-sm font-bold font-mono text-emerald-600">{{ (row as ProductRow).cost_pearls }} perlitas</span>
         </template>
 
         <template #cell-stock="{ row }">
-          <span :class="['text-xs font-semibold px-2 py-0.5 rounded-full border font-mono', Number((row as ProductRow).stock) === 0 ? 'bg-red-950 text-red-400 border-red-800' : Number((row as ProductRow).stock) <= 5 ? 'bg-amber-950 text-amber-300 border-amber-800' : 'bg-slate-900 text-slate-300 border-slate-800']">
+          <span :class="['text-xs font-semibold px-2 py-0.5 rounded-full border font-mono', Number((row as ProductRow).stock) === 0 ? 'bg-red-50 text-red-700 border-red-200' : Number((row as ProductRow).stock) <= 5 ? 'bg-amber-50 text-amber-800 border-amber-200' : 'bg-slate-100 text-slate-700 border-slate-200']">
             {{ (row as ProductRow).stock === 0 ? 'Agotado' : `${(row as ProductRow).stock} unid.` }}
           </span>
         </template>
@@ -299,10 +299,10 @@ onMounted(loadProducts)
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-2">
-            <button @click="editProduct(row as ProductRow)" class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg" title="Editar producto">
+            <button @click="editProduct(row as ProductRow)" class="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" title="Editar producto">
               <i class="bi bi-pencil"></i>
             </button>
-            <button @click="confirmDeleteProduct(row as ProductRow)" class="p-1.5 text-red-400 hover:bg-red-950 rounded-lg" title="Eliminar producto">
+            <button @click="confirmDeleteProduct(row as ProductRow)" class="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar producto">
               <i class="bi bi-trash"></i>
             </button>
           </div>
@@ -337,17 +337,17 @@ onMounted(loadProducts)
           <BaseInput label="Válido Hasta (Opcional) — Hora de Caracas (GMT-4)" type="datetime-local" v-model="productForm.valid_until" />
         </div>
 
-        <div class="space-y-2 border-t border-slate-800 pt-3">
-          <label class="block text-xs font-semibold text-slate-400">Imágenes del Producto</label>
+        <div class="space-y-2 border-t border-slate-200 pt-3">
+          <label class="block text-xs font-semibold text-slate-700">Imágenes del Producto</label>
           <div class="flex flex-wrap items-center gap-3">
-            <div v-for="(img, idx) in productForm.images" :key="idx" class="w-16 h-16 rounded-lg bg-slate-900 border border-slate-800 relative group overflow-hidden">
+            <div v-for="(img, idx) in productForm.images" :key="idx" class="w-16 h-16 rounded-lg bg-slate-100 border border-slate-200 relative group overflow-hidden">
               <img :src="img" class="w-full h-full object-cover" />
               <button @click="removeImage(idx)" class="absolute inset-0 bg-red-950/80 text-white flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                 <i class="bi bi-trash"></i>
               </button>
             </div>
 
-            <label class="w-16 h-16 rounded-lg border-2 border-dashed border-slate-800 hover:border-emerald-500 flex flex-col items-center justify-center cursor-pointer transition-colors text-slate-500 hover:text-emerald-400">
+            <label class="w-16 h-16 rounded-lg border-2 border-dashed border-slate-300 hover:border-emerald-500 flex flex-col items-center justify-center cursor-pointer transition-colors text-slate-500 hover:text-emerald-600">
               <i v-if="!uploadingImage" class="bi bi-upload text-xl"></i>
               <i v-else class="bi bi-arrow-repeat animate-spin text-xl"></i>
               <span class="text-[10px] mt-1">Subir</span>
@@ -368,10 +368,10 @@ onMounted(loadProducts)
     <!-- Delete Confirmation Modal -->
     <BaseModal v-if="showDeleteModal" :is-open="showDeleteModal" title="Eliminar Producto" @close="showDeleteModal = false">
       <div class="space-y-4">
-        <p class="text-sm text-slate-300">
-          ¿Está seguro de eliminar permanentemente el producto <strong>{{ selectedProduct?.name }}</strong> del catálogo?
+        <p class="text-sm text-slate-700">
+          ¿Está seguro de eliminar permanentemente el producto <strong class="text-slate-900">{{ selectedProduct?.name }}</strong> del catálogo?
         </p>
-        <div class="p-3 bg-red-950/40 border border-red-800 text-xs text-red-300 rounded-lg">
+        <div class="p-3 bg-red-50 border border-red-200 text-xs text-red-800 rounded-lg">
           Esta acción no afectará los canjes históricos ya procesados.
         </div>
       </div>

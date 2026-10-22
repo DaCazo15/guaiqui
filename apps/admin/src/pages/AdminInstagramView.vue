@@ -22,6 +22,7 @@ const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 
 const showAddModal = ref(false)
+const showAdvancedOptions = ref(false)
 const fileInputRef = ref<HTMLInputElement | null>(null)
 const selectedImageFile = ref<File | null>(null)
 const previewImageUrl = ref<string | null>(null)
@@ -31,6 +32,8 @@ const postForm = ref({
   caption: '',
   image_url: '',
 })
+
+const DEFAULT_POST_IMAGE = 'https://images.unsplash.com/photo-1546519638-68e109498ffc?w=600&auto=format&fit=crop'
 
 const loadPosts = async () => {
   loading.value = true
@@ -77,6 +80,7 @@ const resetForm = () => {
   }
   selectedImageFile.value = null
   previewImageUrl.value = null
+  showAdvancedOptions.value = false
   postForm.value = {
     post_url: '',
     caption: '',
@@ -86,7 +90,8 @@ const resetForm = () => {
 }
 
 const addPost = async () => {
-  if (!postForm.value.post_url) {
+  const cleanUrl = postForm.value.post_url.trim()
+  if (!cleanUrl) {
     errorMessage.value = 'Ingrese una URL válida de publicación de Instagram.'
     return
   }
@@ -96,20 +101,14 @@ const addPost = async () => {
     return
   }
 
-  const hasImage = selectedImageFile.value || postForm.value.image_url.trim()
-  if (!hasImage) {
-    errorMessage.value = 'Debes subir una foto para la publicación o ingresar una URL de imagen.'
-    return
-  }
-
   actionLoading.value = true
   errorMessage.value = null
 
   try {
-    const shortcode = parseShortcode(postForm.value.post_url)
-    let finalImageUrl = postForm.value.image_url.trim()
+    const shortcode = parseShortcode(cleanUrl)
+    let finalImageUrl = postForm.value.image_url.trim() || DEFAULT_POST_IMAGE
 
-    // Si el admin seleccionó un archivo local, subirlo a Supabase Storage (site-media)
+    // Si el usuario adjuntó una imagen personalizada, subirla a Supabase Storage
     if (selectedImageFile.value) {
       const ext = selectedImageFile.value.type.includes('png') ? 'png' : 'webp'
       const filePath = `instagram/${shortcode || crypto.randomUUID()}_${Date.now()}.${ext}`
@@ -121,31 +120,34 @@ const addPost = async () => {
           upsert: true,
         })
 
-      if (uploadErr) throw uploadErr
-
-      const { data: urlData } = supabase.storage
-        .from('site-media')
-        .getPublicUrl(filePath)
-
-      finalImageUrl = urlData.publicUrl
+      if (!uploadErr) {
+        const { data: pubData } = supabase.storage
+          .from('site-media')
+          .getPublicUrl(filePath)
+        if (pubData?.publicUrl) {
+          finalImageUrl = pubData.publicUrl
+        }
+      }
     }
 
+    const finalCaption = postForm.value.caption.trim() || 'Publicación oficial en Instagram @guaiqueriesbbc'
+
     const { error } = await supabase.from('instagram_posts').insert({
-      post_url: postForm.value.post_url.trim(),
+      post_url: cleanUrl,
       shortcode: shortcode || undefined,
       image_url: finalImageUrl,
-      caption: postForm.value.caption.trim() || 'Publicación oficial de Guaiqueríes de Margarita',
+      caption: finalCaption,
       order_index: posts.value.length + 1,
       is_published: true,
     })
 
     if (error) throw error
 
-    successMessage.value = 'Publicación de Instagram agregada al mosaico exitosamente.'
+    successMessage.value = 'Publicación de Instagram agregada exitosamente.'
     resetForm()
     await loadPosts()
   } catch (err: any) {
-    errorMessage.value = err.message || 'Error al guardar la publicación de Instagram.'
+    errorMessage.value = err.message
   } finally {
     actionLoading.value = false
   }
@@ -159,12 +161,13 @@ const movePost = async (index: number, direction: 'up' | 'down') => {
   errorMessage.value = null
   try {
     const current = posts.value[index]
-    const other = posts.value[targetIndex]
+    const target = posts.value[targetIndex]
 
-    await supabase.from('instagram_posts').update({ order_index: other.order_index }).eq('id', current.id)
-    await supabase.from('instagram_posts').update({ order_index: current.order_index }).eq('id', other.id)
+    await supabase.from('instagram_posts').update({ order_index: target.order_index }).eq('id', current.id)
+    await supabase.from('instagram_posts').update({ order_index: current.order_index }).eq('id', target.id)
 
     await loadPosts()
+    successMessage.value = 'Orden actualizado correctamente.'
   } catch (err: any) {
     errorMessage.value = err.message
   } finally {
@@ -173,14 +176,14 @@ const movePost = async (index: number, direction: 'up' | 'down') => {
 }
 
 const deletePost = async (id: string) => {
-  if (!confirm('¿Desea eliminar esta publicación del mosaico de Instagram?')) return
+  if (!confirm('¿Desea eliminar esta publicación de las noticias / mosaico?')) return
   actionLoading.value = true
   errorMessage.value = null
   try {
     const { error } = await supabase.from('instagram_posts').delete().eq('id', id)
     if (error) throw error
 
-    successMessage.value = 'Publicación removida del mosaico.'
+    successMessage.value = 'Publicación eliminada.'
     await loadPosts()
   } catch (err: any) {
     errorMessage.value = err.message
@@ -189,11 +192,9 @@ const deletePost = async (id: string) => {
   }
 }
 
-function onImageError(e: Event) {
-  const target = e.target as HTMLImageElement
-  if (target && !target.src.includes('noticia-1.jpg')) {
-    target.src = '/images/noticias/noticia-1.jpg'
-  }
+const onImageError = (e: Event) => {
+  const img = e.target as HTMLImageElement
+  img.src = DEFAULT_POST_IMAGE
 }
 
 onMounted(loadPosts)
@@ -202,113 +203,126 @@ onMounted(loadPosts)
 <template>
   <AdminLayout>
     <div class="max-w-7xl mx-auto space-y-6">
+      <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold font-title text-white flex items-center gap-2">
-            <i class="bi bi-instagram text-pink-500"></i> Mosaico de Instagram Landing (Máx 8)
+          <h1 class="text-2xl font-bold font-title text-slate-900 flex items-center gap-2">
+            <i class="bi bi-instagram text-pink-600"></i> Mosaico de Instagram y Noticias
           </h1>
-          <p class="text-sm text-slate-400">Pegue el enlace oficial de una publicación de Instagram para renderizarla en el mosaico de la landing.</p>
+          <p class="text-sm text-slate-600 mt-0.5">
+            Agrega los enlaces oficiales de las publicaciones de Instagram de Guaiqueríes. Las primeras 6 publicaciones nutren la sección de Noticias.
+          </p>
         </div>
         <BaseButton variant="primary" :disabled="posts.length >= 8" @click="showAddModal = true">
           <i class="bi bi-plus-lg mr-1.5"></i> Agregar Publicación
         </BaseButton>
       </div>
 
-      <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
+      <!-- Messages -->
+      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="errorMessage = null" class="text-red-500 hover:text-red-700"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-950/60 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-slate-400 hover:text-white"><i class="bi bi-x-lg"></i></button>
+        <button @click="successMessage = null" class="text-emerald-600 hover:text-emerald-800"><i class="bi bi-x-lg"></i></button>
       </div>
 
-      <!-- Mosaic Grid Preview (Up to 8 items, Top 6 for News) -->
-      <div v-if="loading" class="text-center py-12 text-slate-400">
+      <!-- Mosaic Grid Preview -->
+      <div v-if="loading" class="text-center py-12 text-slate-500">
         <i class="bi bi-arrow-repeat animate-spin text-2xl"></i>
       </div>
 
-      <div v-else-if="posts.length === 0" class="text-center py-16 bg-slate-900 rounded-2xl border border-slate-800">
-        <i class="bi bi-instagram text-4xl text-slate-600 block mb-2"></i>
-        <h3 class="text-lg font-bold text-white">Mosaico de Instagram Vacío</h3>
-        <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">
-          Agrega los enlaces de los posts de Instagram de Guaiqueríes. Los primeros 6 se mostrarán automáticamente en la sección de Noticias.
+      <div v-else-if="posts.length === 0" class="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
+        <div class="w-16 h-16 rounded-full bg-pink-50 text-pink-600 flex items-center justify-center text-3xl mx-auto mb-3">
+          <i class="bi bi-instagram"></i>
+        </div>
+        <h3 class="text-lg font-bold text-slate-900">Sin publicaciones registradas</h3>
+        <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+          Pega el enlace de las publicaciones de Instagram oficiales (@guaiqueriesbbc) para que aparezcan en la app y la landing.
         </p>
       </div>
 
       <div v-else class="space-y-4">
-        <div class="p-3 bg-emerald-950/40 border border-emerald-800/60 rounded-xl text-xs text-emerald-300 flex items-center justify-between">
+        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <i class="bi bi-info-circle-fill text-emerald-400"></i>
+            <i class="bi bi-check-circle-fill text-emerald-600"></i>
             <span>
-              <strong>Noticias activas:</strong> Las primeras 6 publicaciones (#1 al #6) se sincronizan en vivo en la Landing y en la app de fanáticos (/app/noticias).
+              <strong>Noticias Oficiales:</strong> Los primeros 6 posts se sincronizan en vivo en la Landing y en la app de fanáticos (/app/noticias).
             </span>
           </div>
-          <span class="font-bold bg-emerald-900/60 px-2 py-0.5 rounded text-[11px]">{{ posts.length }} / 8 posts</span>
+          <span class="font-bold bg-white text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[11px]">{{ posts.length }} / 8 posts</span>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <BaseCard
             v-for="(post, index) in posts"
             :key="post.id"
-            class="bg-slate-900 border-slate-800 overflow-hidden group relative flex flex-col justify-between"
+            class="bg-white border-slate-200 shadow-sm overflow-hidden group relative flex flex-col justify-between rounded-xl"
           >
-            <div class="relative h-48 bg-slate-950 overflow-hidden">
+            <div class="relative h-48 bg-slate-100 overflow-hidden">
               <img
                 :src="post.image_url"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                 referrerpolicy="no-referrer"
                 @error="onImageError"
               />
-              <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-transparent to-transparent opacity-80" />
-              
-              <!-- Badge de Posición / Noticia -->
-              <div class="absolute top-2 left-2">
-                <span
-                  :class="[
-                    'px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 shadow-md',
-                    index < 6 ? 'bg-emerald-600 text-white' : 'bg-slate-800 text-slate-300'
-                  ]"
-                >
-                  <i class="bi bi-newspaper"></i> #{{ index + 1 }} {{ index < 6 ? '(Noticia)' : '' }}
-                </span>
+              <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent opacity-80" />
+
+              <!-- Badge con posición de noticia -->
+              <div
+                class="absolute top-2 left-2 px-2 py-0.5 rounded text-[10px] font-bold flex items-center gap-1 shadow-sm"
+                :class="index < 6 ? 'bg-emerald-600 text-white' : 'bg-slate-700 text-white'"
+              >
+                <i class="bi" :class="index < 6 ? 'bi-newspaper' : 'bi-instagram'"></i>
+                <span>{{ index < 6 ? `Noticia #${index + 1}` : `Extra #${index + 1}` }}</span>
               </div>
 
-              <!-- Botones de Reordenamiento Rápido -->
+              <!-- Flechas de reordenamiento -->
               <div class="absolute top-2 right-2 flex items-center gap-1 bg-black/60 backdrop-blur-md rounded-lg p-0.5">
                 <button
                   type="button"
+                  :disabled="index === 0"
                   @click="movePost(index, 'up')"
-                  :disabled="index === 0 || actionLoading"
-                  class="p-1 text-slate-300 hover:text-white disabled:opacity-30 transition-colors"
-                  title="Subir posición"
+                  class="p-1 text-white hover:text-emerald-400 disabled:opacity-30 disabled:hover:text-white transition-colors"
+                  title="Subir prioridad"
                 >
-                  <i class="bi bi-chevron-left sm:bi-chevron-up"></i>
+                  <i class="bi bi-chevron-up"></i>
                 </button>
                 <button
                   type="button"
+                  :disabled="index === posts.length - 1"
                   @click="movePost(index, 'down')"
-                  :disabled="index === posts.length - 1 || actionLoading"
-                  class="p-1 text-slate-300 hover:text-white disabled:opacity-30 transition-colors"
-                  title="Bajar posición"
+                  class="p-1 text-white hover:text-emerald-400 disabled:opacity-30 disabled:hover:text-white transition-colors"
+                  title="Bajar prioridad"
                 >
-                  <i class="bi bi-chevron-right sm:bi-chevron-down"></i>
+                  <i class="bi bi-chevron-down"></i>
                 </button>
               </div>
             </div>
 
-            <div class="p-3.5 space-y-2.5">
-              <p class="text-xs text-white font-medium line-clamp-2">{{ post.caption || 'Publicación oficial' }}</p>
-              
-              <div class="flex items-center justify-between pt-2 border-t border-slate-800 text-[11px]">
-                <a :href="post.post_url" target="_blank" class="text-sky-400 hover:text-sky-300 flex items-center gap-1 font-semibold">
-                  <i class="bi bi-instagram text-pink-400"></i> Ver Post <i class="bi bi-box-arrow-up-right text-[10px]"></i>
+            <div class="p-3.5 space-y-2 bg-white flex-1 flex flex-col justify-between">
+              <div>
+                <p class="text-xs font-semibold text-slate-800 line-clamp-2">{{ post.caption || 'Publicación oficial en Instagram' }}</p>
+                <span v-if="post.shortcode" class="text-[10px] text-slate-400 font-mono mt-1 block">
+                  ID: {{ post.shortcode }}
+                </span>
+              </div>
+
+              <div class="flex items-center justify-between pt-2.5 border-t border-slate-100 mt-2">
+                <a
+                  :href="post.post_url"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  class="text-[11px] text-guaiqui-primary hover:text-guaiqui-primary-dark font-bold flex items-center gap-1"
+                >
+                  <i class="bi bi-instagram"></i>
+                  <span>Ver Post</span>
+                  <i class="bi bi-box-arrow-up-right text-[10px]"></i>
                 </a>
                 <button
-                  type="button"
                   @click="deletePost(post.id)"
-                  :disabled="actionLoading"
-                  class="text-red-400 hover:text-red-300 p-1 transition-colors"
+                  class="text-red-600 hover:text-red-700 p-1 text-xs"
                   title="Eliminar publicación"
                 >
                   <i class="bi bi-trash"></i>
@@ -320,83 +334,65 @@ onMounted(loadPosts)
       </div>
     </div>
 
-    <!-- Modal para Agregar Post de Instagram -->
-    <BaseModal v-if="showAddModal" :is-open="showAddModal" title="Agregar Noticia / Post de Instagram" @close="resetForm">
+    <!-- Modal Simplificado: Solo URL de Instagram -->
+    <BaseModal
+      v-if="showAddModal"
+      :is-open="showAddModal"
+      title="Agregar Post de Instagram"
+      @close="resetForm"
+    >
       <div class="space-y-4">
-        <!-- 1. Enlace de Instagram -->
         <div>
           <BaseInput
-            label="URL de la publicación de Instagram"
+            label="URL de la Publicación de Instagram"
             v-model="postForm.post_url"
             placeholder="https://www.instagram.com/p/DA_5rXbM-c1/"
           />
-          <span v-if="parseShortcode(postForm.post_url)" class="text-[11px] text-pink-400 font-mono mt-1 block">
-            <i class="bi bi-check-circle-fill"></i> ID de publicación: {{ parseShortcode(postForm.post_url) }}
+          <span v-if="parseShortcode(postForm.post_url)" class="text-[11px] text-emerald-600 font-mono mt-1 block">
+            <i class="bi bi-check-circle-fill"></i> ID identificado: {{ parseShortcode(postForm.post_url) }}
           </span>
+          <p class="text-[11px] text-slate-500 mt-1">
+            Copia y pega el enlace del post del perfil oficial @guaiqueriesbbc.
+          </p>
         </div>
 
-        <!-- 2. Titular / Caption -->
-        <BaseInput
-          label="Titular / Título para la noticia"
-          v-model="postForm.caption"
-          placeholder="Ej: PRÓXIMOS ENCUENTROS VS PIRATAS DE LA GUAIRA"
-        />
-
-        <!-- 3. Subida de Foto del Post (Almacenamiento permanente en Supabase) -->
-        <div class="space-y-2">
-          <label class="block text-xs font-semibold text-slate-300">
-            Foto del Post (Se almacena permanentemente en Supabase Storage)
-          </label>
-
-          <!-- Input oculto para archivo -->
-          <input
-            ref="fileInputRef"
-            type="file"
-            accept="image/jpeg,image/png,image/webp"
-            class="hidden"
-            @change="handleFileSelect"
-          />
-
-          <!-- Botón o Dropzone para subir imagen -->
-          <div
-            @click="triggerFileInput"
-            class="border-2 border-dashed border-slate-700 hover:border-emerald-500 rounded-xl p-4 text-center cursor-pointer transition-colors bg-slate-900/50 flex flex-col items-center justify-center gap-2"
-          >
-            <!-- Previsualización si ya hay archivo o URL -->
-            <div v-if="previewImageUrl || postForm.image_url" class="relative w-full aspect-[16/10] max-h-48 rounded-lg overflow-hidden bg-slate-950 border border-slate-800">
-              <img
-                :src="previewImageUrl || postForm.image_url"
-                alt="Vista previa"
-                class="w-full h-full object-cover"
-                @error="onImageError"
-              />
-              <div class="absolute inset-0 bg-black/40 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity">
-                <span class="text-xs font-bold text-white bg-black/70 px-3 py-1.5 rounded-lg border border-white/20">
-                  <i class="bi bi-arrow-repeat"></i> Cambiar imagen
-                </span>
-              </div>
-            </div>
-
-            <!-- Estado sin imagen seleccionada -->
-            <div v-else class="space-y-1 py-3 text-slate-400">
-              <i class="bi bi-cloud-arrow-up text-3xl text-emerald-400 block mb-1"></i>
-              <span class="text-xs font-bold text-white block">Haz clic para seleccionar o arrastrar la foto del post</span>
-              <span class="text-[11px] text-slate-400 block">PNG, JPG o WebP (Hasta 5 MB)</span>
-            </div>
-          </div>
-        </div>
-
-        <!-- Opción alternativa: URL externa si no sube archivo -->
-        <div class="pt-1">
+        <!-- Toggle Opciones Personalizadas (Opcional) -->
+        <div class="pt-2 border-t border-slate-200">
           <button
             type="button"
-            class="text-[11px] text-slate-400 hover:text-slate-200 underline"
-            @click="postForm.image_url = postForm.image_url ? '' : 'https://'"
+            class="text-xs text-slate-600 hover:text-slate-900 font-semibold flex items-center gap-1"
+            @click="showAdvancedOptions = !showAdvancedOptions"
           >
-            {{ postForm.image_url ? 'Ocultar campo de URL directa' : 'O pegar URL directa de imagen externa' }}
+            <i :class="showAdvancedOptions ? 'bi bi-chevron-down' : 'bi bi-chevron-right'"></i>
+            <span>Personalizar Título o Foto (Opcional)</span>
           </button>
-          <div v-if="postForm.image_url" class="mt-2">
-            <BaseInput label="URL directa de la imagen" v-model="postForm.image_url" placeholder="https://..." />
+
+          <div v-if="showAdvancedOptions" class="mt-3 space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <BaseInput
+              label="Titular para la noticia (Opcional)"
+              v-model="postForm.caption"
+              placeholder="Ej: PRÓXIMOS ENCUENTROS VS PIRATAS"
+            />
+
+            <div>
+              <label class="block text-xs font-semibold text-slate-700 mb-1">
+                Foto representativa (Opcional)
+              </label>
+              <input
+                ref="fileInputRef"
+                type="file"
+                accept="image/jpeg,image/png,image/webp"
+                class="hidden"
+                @change="handleFileSelect"
+              />
+              <div
+                @click="triggerFileInput"
+                class="border border-dashed border-slate-300 hover:border-emerald-500 rounded-lg p-3 text-center cursor-pointer bg-white text-xs text-slate-600"
+              >
+                <span v-if="selectedImageFile">{{ selectedImageFile.name }}</span>
+                <span v-else><i class="bi bi-upload mr-1"></i> Subir imagen personalizada (PNG / JPG / WebP)</span>
+              </div>
+            </div>
           </div>
         </div>
       </div>
@@ -405,7 +401,7 @@ onMounted(loadPosts)
         <div class="flex items-center justify-end gap-3">
           <BaseButton variant="secondary" @click="resetForm">Cancelar</BaseButton>
           <BaseButton variant="primary" :loading="actionLoading" @click="addPost">
-            <i class="bi bi-check2-circle mr-1.5"></i> Guardar Noticia
+            <i class="bi bi-check2 mr-1.5"></i> Agregar Publicación
           </BaseButton>
         </div>
       </template>
