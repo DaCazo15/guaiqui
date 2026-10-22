@@ -21,7 +21,7 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div v-if="authStore.loading && !authStore.profile">
+  <div v-if="authStore.isLoading && !authStore.profile">
     <BaseSkeletonLayout :dark="true" :show-sidebar="true" />
   </div>
 

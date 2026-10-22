@@ -2,9 +2,9 @@
 import { ref, computed, onMounted } from 'vue'
 import { BaseCard, Skeleton } from '@guaiqui/ui'
 import { SOFASCORE_TEAM_INFO } from '@guaiqui/shared'
-import type { Database } from '@guaiqui/shared'
+import type { Game } from '@guaiqui/shared'
 
-type GameRow = Database['public']['Tables']['games']['Row']
+type GameRow = Game
 
 definePageMeta({
   layout: 'app',
@@ -16,7 +16,7 @@ useSeoMeta({
   description: 'Calendario oficial de partidos y resultados en vivo de Guaiqueríes de Margarita en la SuperLiga Profesional de Baloncesto.',
 })
 
-const supabase = useSupabaseClient<Database>()
+const supabase = useSupabaseClient()
 
 const games = ref<GameRow[]>([])
 const loading = ref(true)

@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { BaseCard } from '@guaiqui/ui'
-import type { Database } from '@guaiqui/shared'
+import type { Game } from '@guaiqui/shared'
 
-type GameRow = Database['public']['Tables']['games']['Row']
+type GameRow = Game
 
-const supabase = useSupabaseClient<Database>()
+const supabase = useSupabaseClient()
 
 const games = ref<GameRow[]>([])
 const loading = ref(true)

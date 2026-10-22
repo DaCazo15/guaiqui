@@ -1,14 +1,14 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { User } from '@supabase/supabase-js'
-import type { Database } from '@guaiqui/shared'
+import type { Profile, Wallet } from '@guaiqui/shared'
 import { CURRENT_LEGAL_VERSIONS } from '@guaiqui/shared'
 
-export type ProfileRow = Database['public']['Tables']['profiles']['Row']
-export type WalletRow = Database['public']['Tables']['wallets']['Row']
+export type ProfileRow = Profile
+export type WalletRow = Wallet
 
 export const useAuthStore = defineStore('auth', () => {
-  const supabase = useSupabaseClient<Database>()
+  const supabase = useSupabaseClient()
   const supabaseUser = useSupabaseUser()
   const sessionUser = ref<User | null>(null)
   const explicitLoggedOut = ref(false)
@@ -164,8 +164,10 @@ export const useAuthStore = defineStore('auth', () => {
               .from('profiles')
               .update({ avatar_url: googlePhoto, updated_at: new Date().toISOString() })
               .eq('id', targetId)
-              .then(() => {})
-              .catch((err: any) => console.warn('Could not auto-sync Google avatar:', err))
+              .then(
+                () => {},
+                (err: any) => console.warn('Could not auto-sync Google avatar:', err)
+              )
           }
         }
       }
@@ -570,7 +572,7 @@ export const useAuthStore = defineStore('auth', () => {
           if (reg && reg.pushManager) {
             const sub = await reg.pushManager.getSubscription()
             if (sub) {
-              await supabase.rpc('unregister_push_subscription', { p_endpoint: sub.endpoint }).catch(() => {})
+              await Promise.resolve(supabase.rpc('unregister_push_subscription', { p_endpoint: sub.endpoint })).catch(() => {})
               await sub.unsubscribe().catch(() => {})
             }
           }

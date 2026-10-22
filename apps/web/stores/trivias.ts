@@ -1,6 +1,5 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import type { Database } from '@guaiqui/shared'
 
 export interface QuestionOption {
   option_id: string
@@ -60,7 +59,7 @@ export interface HomeSummaryData {
 }
 
 export const useTriviaStore = defineStore('trivias', () => {
-  const supabase = useSupabaseClient<Database>()
+  const supabase = useSupabaseClient()
 
   const homeSummary = ref<HomeSummaryData | null>(null)
   const leaderboard = ref<LeaderboardItem[]>([])

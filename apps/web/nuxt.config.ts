@@ -55,17 +55,9 @@ export default defineNuxtConfig({
           content: 'Plataforma de fidelización de Guaiqueries de Margarita',
         },
         { name: 'theme-color', content: '#005a36' },
-        { name: 'google-adsense-account', content: 'ca-pub-7964863861174120' },
       ],
       link: [
         { rel: 'manifest', href: '/manifest.json' },
-      ],
-      script: [
-        {
-          src: 'https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7964863861174120',
-          async: true,
-          crossorigin: 'anonymous',
-        },
       ],
     },
   },
@@ -74,7 +66,6 @@ export default defineNuxtConfig({
     public: {
       turnstileSiteKey: process.env.NUXT_PUBLIC_TURNSTILE_SITE_KEY || '0x4AAAAAAFTd4sjJvea-Cegw',
       gaMeasurementId: process.env.NUXT_PUBLIC_GA_MEASUREMENT_ID || 'G-P6EY10HB0B',
-      gamAdUnitPath: process.env.NUXT_PUBLIC_GAM_AD_UNIT_PATH || '/22639388115/rewarded_web_example',
     },
   },
 })

@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { ref, watch, onMounted, computed } from 'vue'
 import { BaseInput, BaseSelect, BaseButton } from '@guaiqui/ui'
-import { MUNICIPALITIES, GENDERS, SHIRT_SIZES, REFERRAL_SOURCES, type Database } from '@guaiqui/shared'
+import { MUNICIPALITIES, GENDERS, SHIRT_SIZES, REFERRAL_SOURCES, type Profile } from '@guaiqui/shared'
 
-type ProfileRow = Database['public']['Tables']['profiles']['Row']
+type ProfileRow = Profile
 
 const props = defineProps<{
   profile: ProfileRow | null
@@ -16,7 +16,7 @@ const emit = defineEmits<{
   (e: 'save', payload: Partial<ProfileRow>): void
 }>()
 
-const supabase = useSupabaseClient<Database>()
+const supabase = useSupabaseClient()
 
 const displayName = ref(props.profile?.display_name || '')
 const municipality = ref(props.profile?.municipality || 'Mariño')

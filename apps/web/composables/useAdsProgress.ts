@@ -17,11 +17,12 @@ export interface AdsProgressData {
 export function useAdsProgress() {
   const supabase = useSupabaseClient()
   const progress = ref<AdsProgressData | null>(null)
+  const activeVideosCount = ref(0)
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const isAdsEnabled = computed(() => progress.value?.ads_enabled ?? false)
-  const canWatch = computed(() => progress.value?.can_watch ?? false)
+  const isAdsEnabled = computed(() => activeVideosCount.value > 0 || (progress.value?.ads_enabled ?? false))
+  const canWatch = computed(() => activeVideosCount.value > 0 || (progress.value?.can_watch ?? false))
   const remainingToday = computed(() => {
     if (!progress.value) return 0
     return Math.max(0, progress.value.daily_limit - progress.value.completed_today)
@@ -31,9 +32,19 @@ export function useAdsProgress() {
     loading.value = true
     error.value = null
     try {
+      const { count } = await supabase
+        .from('sponsor_videos')
+        .select('*', { count: 'exact', head: true })
+        .eq('is_active', true)
+
+      if (count !== null) {
+        activeVideosCount.value = count
+      }
+
       const { data, error: err } = await supabase.rpc('get_ads_progress')
-      if (err) throw err
-      progress.value = data as AdsProgressData
+      if (!err && data) {
+        progress.value = data as AdsProgressData
+      }
     } catch (err: any) {
       error.value = err?.message || 'Error al obtener el estado de anuncios'
     } finally {
@@ -43,6 +54,7 @@ export function useAdsProgress() {
 
   return {
     progress,
+    activeVideosCount,
     loading,
     error,
     isAdsEnabled,

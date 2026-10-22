@@ -1,1 +1,1 @@
-export type { Database } from '@guaiqui/shared'
+export type Database = any

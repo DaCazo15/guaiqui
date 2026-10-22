@@ -4,16 +4,16 @@ import Navbar from '~/components/landing/Navbar.vue'
 import SiteFooter from '~/components/landing/SiteFooter.vue'
 import { BaseCard, BaseBadge, BaseButton, Skeleton } from '@guaiqui/ui'
 import { SOFASCORE_TEAM_INFO } from '@guaiqui/shared'
-import type { Database } from '@guaiqui/shared'
+import type { Player } from '@guaiqui/shared'
 
-type PlayerRow = Database['public']['Tables']['players']['Row']
+type PlayerRow = Player
 
 useSeoMeta({
   title: 'Plantilla Oficial 2026 — Guaiqueríes de Margarita',
   description: 'Revisa la plantilla oficial de Guaiqueríes de Margarita para la temporada 2026 de la SuperLiga Profesional de Baloncesto (SPB).',
 })
 
-const supabase = useSupabaseClient<Database>()
+const supabase = useSupabaseClient()
 const players = ref<PlayerRow[]>([])
 const loading = ref(true)
 const activeFilter = ref<'all' | 'pg' | 'sg' | 'sf' | 'pf' | 'c'>('all')

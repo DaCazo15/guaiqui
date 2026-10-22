@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { BaseInput, BaseSelect, BaseButton } from '@guaiqui/ui'
-import { GENDERS, SHIRT_SIZES, REFERRAL_SOURCES, type Database } from '@guaiqui/shared'
+import { GENDERS, SHIRT_SIZES, REFERRAL_SOURCES } from '@guaiqui/shared'
 
 const props = defineProps<{
   loading?: boolean
@@ -20,7 +20,7 @@ const emit = defineEmits<{
   (e: 'back'): void
 }>()
 
-const supabase = useSupabaseClient<Database>()
+const supabase = useSupabaseClient()
 
 const birthDate = ref('')
 const gender = ref('')

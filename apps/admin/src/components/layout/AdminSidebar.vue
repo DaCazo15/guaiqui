@@ -19,7 +19,7 @@ const platformNavItems = [
   { name: 'admin-trivias', path: '/admin/trivias', label: 'Trivias', icon: 'bi-question-circle' },
   { name: 'admin-productos', path: '/admin/productos', label: 'Productos', icon: 'bi-box-seam' },
   { name: 'admin-economia', path: '/admin/economia', label: 'Economía', icon: 'bi-coin' },
-  { name: 'admin-rewarded-ads', path: '/admin/anuncios-recompensados', label: 'Anuncios Recompensados', icon: 'bi-play-btn-fill' },
+  { name: 'admin-rewarded-ads', path: '/admin/anuncios-recompensados', label: 'Videos Patrocinadores', icon: 'bi-play-btn-fill' },
   { name: 'admin-personal', path: '/admin/personal', label: 'Personal & Roles', icon: 'bi-person-gear' },
   { name: 'admin-fanaticos', path: '/admin/fanaticos', label: 'Fanáticos', icon: 'bi-people' },
   { name: 'admin-segmentos', path: '/admin/segmentos', label: 'Segmentos', icon: 'bi-pie-chart' },

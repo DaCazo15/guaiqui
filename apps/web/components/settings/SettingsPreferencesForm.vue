@@ -8,7 +8,7 @@ import PushPermissionCard from '~/components/settings/PushPermissionCard.vue'
 const authStore = useAuthStore()
 const notifStore = useNotificationsStore()
 
-const prefs = authStore.profile?.notification_prefs || {}
+const prefs = (authStore.profile?.notification_prefs as Record<string, any>) || {}
 
 const redemptionsPref = ref(true) // Always enabled for transactional inbox
 const triviasMatchesPref = ref(prefs.trivias_matches ?? true)

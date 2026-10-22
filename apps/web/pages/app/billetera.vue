@@ -77,7 +77,7 @@ useSeoMeta({
         </div>
         <div>
           <h2 class="text-sm font-bold text-guaiqui-text">¿Quieres sumar más puntos a tu saldo?</h2>
-          <p class="text-xs text-guaiqui-text-muted">Mira videos publicitarios cortos y gana recompensas directas a tu billetera.</p>
+          <p class="text-xs text-guaiqui-text-muted">Mira videos de marcas patrocinadoras y gana recompensas directas a tu billetera.</p>
         </div>
       </div>
       <NuxtLink to="/app/anuncios" class="shrink-0 w-full sm:w-auto">
@@ -85,7 +85,7 @@ useSeoMeta({
           type="button"
           class="w-full sm:w-auto px-4 py-2 bg-guaiqui-primary hover:bg-guaiqui-primary-dark text-white text-xs font-bold uppercase tracking-wider rounded-guaiqui-md transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-guaiqui-xs"
         >
-          <span>Ver Anuncios</span>
+          <span>Ver Videos</span>
           <i class="bi bi-arrow-right"></i>
         </button>
       </NuxtLink>

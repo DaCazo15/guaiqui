@@ -188,7 +188,7 @@ export const useNotificationsStore = defineStore('notifications', () => {
         const subscription = await registration.pushManager.getSubscription()
         if (subscription) {
           const supabase = useSupabaseClient()
-          await supabase.rpc('unregister_push_subscription', { p_endpoint: subscription.endpoint }).catch(() => {})
+          await Promise.resolve(supabase.rpc('unregister_push_subscription', { p_endpoint: subscription.endpoint })).catch(() => {})
           await subscription.unsubscribe().catch(() => {})
         }
       }

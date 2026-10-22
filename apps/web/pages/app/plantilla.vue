@@ -1,16 +1,16 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { BaseCard, BaseBadge, Skeleton } from '@guaiqui/ui'
-import type { Database } from '@guaiqui/shared'
+import type { Player } from '@guaiqui/shared'
 
-type PlayerRow = Database['public']['Tables']['players']['Row']
+type PlayerRow = Player
 
 definePageMeta({
   layout: 'app',
   middleware: ['auth'],
 })
 
-const supabase = useSupabaseClient<Database>()
+const supabase = useSupabaseClient()
 
 const players = ref<PlayerRow[]>([])
 const loading = ref(true)

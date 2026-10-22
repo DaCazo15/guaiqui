@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { BaseCard, BaseBadge, BaseButton, Skeleton } from '@guaiqui/ui'
-import type { Database } from '@guaiqui/shared'
+import type { Player } from '@guaiqui/shared'
 
-type PlayerRow = Database['public']['Tables']['players']['Row']
+type PlayerRow = Player
 
-const supabase = useSupabaseClient<Database>()
+const supabase = useSupabaseClient()
 const players = ref<PlayerRow[]>([])
 const loading = ref(true)
 

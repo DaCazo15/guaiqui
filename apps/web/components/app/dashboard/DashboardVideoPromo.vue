@@ -1,12 +1,32 @@
 <script setup lang="ts">
-import { useAdsProgress } from '~/composables/useAdsProgress'
+import { ref, onMounted } from 'vue'
+import { useSupabaseClient } from '#imports'
 
-const adsProgress = useAdsProgress()
+const client = useSupabaseClient()
+const activeCount = ref(0)
+const loading = ref(true)
+
+onMounted(async () => {
+  try {
+    const { count, error } = await client
+      .from('sponsor_videos')
+      .select('*', { count: 'exact', head: true })
+      .eq('is_active', true)
+
+    if (!error && count !== null) {
+      activeCount.value = count
+    }
+  } catch (err) {
+    console.warn('Error loading sponsor videos count:', err)
+  } finally {
+    loading.value = false
+  }
+})
 </script>
 
 <template>
   <div
-    v-if="adsProgress.isAdsEnabled.value"
+    v-if="!loading && activeCount > 0"
     class="relative overflow-hidden rounded-guaiqui-xl bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 border border-emerald-500/40 p-5 shadow-guaiqui-md text-white flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 group"
   >
     <!-- Efecto de brillo de fondo y ribete bandana -->
@@ -24,26 +44,23 @@ const adsProgress = useAdsProgress()
           <span class="text-[10px] uppercase tracking-widest text-emerald-400 font-extrabold font-mono bg-emerald-500/15 px-2 py-0.5 rounded border border-emerald-400/30">
             ¡Puntos al Instante!
           </span>
-          <span
-            v-if="adsProgress.progress.value"
-            class="text-[11px] font-mono font-semibold text-slate-300"
-          >
-            {{ adsProgress.progress.value.completed_today }} / {{ adsProgress.progress.value.daily_limit }} completados hoy
+          <span class="text-[11px] font-mono font-semibold text-slate-300">
+            {{ activeCount }} video{{ activeCount > 1 ? 's' : '' }} disponible{{ activeCount > 1 ? 's' : '' }}
           </span>
         </div>
 
         <h3 class="font-display font-extrabold text-lg uppercase tracking-wide text-white">
-          Videos Publicitarios Recompensados
+          Videos de Patrocinadores Oficiales
         </h3>
         <p class="text-xs text-slate-300 max-w-xl">
-          Apoya al club viendo clips cortos y acumula puntos automáticos para canjear en la tienda.
+          Apoya a la Tribu Verde viendo los videos de nuestras marcas aliadas y acumula perlitas para la tienda de canjes.
         </p>
       </div>
     </div>
 
     <!-- CTA con energía deportiva -->
     <NuxtLink to="/app/anuncios" class="shrink-0 w-full sm:w-auto relative z-10">
-      <button class="w-full sm:w-auto px-5 py-2.5 rounded-guaiqui-lg bg-gradient-to-r from-emerald-500 to-guaiqui-primary hover:from-emerald-400 hover:to-emerald-600 text-white font-display font-black text-xs uppercase tracking-wider shadow-md shadow-emerald-950/50 flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98]">
+      <button class="w-full sm:w-auto px-5 py-2.5 rounded-guaiqui-lg bg-gradient-to-r from-emerald-500 to-guaiqui-primary hover:from-emerald-400 hover:to-emerald-600 text-white font-display font-black text-xs uppercase tracking-wider shadow-md shadow-emerald-950/50 flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
         <span>Ver Videos</span>
         <i class="bi bi-arrow-right"></i>
       </button>

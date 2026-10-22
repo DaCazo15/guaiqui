@@ -3,8 +3,8 @@ export type Json =
   | number
   | boolean
   | null
-  | { [key: string]: Json | undefined }
-  | Json[]
+  | { [key: string]: any }
+  | any[]
 
 export type UserStatus = 'active' | 'suspended'
 export type StaffRole = 'staff' | 'admin'
@@ -417,6 +417,22 @@ export interface BirthdayCardResponse {
   has_claimed_bonus?: boolean
 }
 
+export interface SponsorVideo {
+  id: string
+  title: string
+  sponsor_name?: string | null
+  video_url: string
+  drive_file_id: string
+  redirect_url?: string | null
+  cta_text: string
+  min_seconds: number
+  reward_points: number
+  is_active: boolean
+  order_index: number
+  created_at: string
+  updated_at: string
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -447,10 +463,26 @@ export interface Database {
       social_links: { Row: SocialLink; Insert: Partial<SocialLink>; Update: Partial<SocialLink>; Relationships: [] }
       policy_documents: { Row: PolicyDocument; Insert: Partial<PolicyDocument>; Update: Partial<PolicyDocument>; Relationships: [] }
       birthday_settings: { Row: BirthdaySettings; Insert: Partial<BirthdaySettings>; Update: Partial<BirthdaySettings>; Relationships: [] }
+      sponsor_videos: { Row: SponsorVideo; Insert: Partial<SponsorVideo>; Update: Partial<SponsorVideo>; Relationships: [] }
     }
-    Views: Record<string, never>
-    Functions: Record<string, never>
-    Enums: Record<string, never>
-    CompositeTypes: Record<string, never>
+    Views: Record<string, any>
+    Functions: {
+      claim_video_points: {
+        Args: { p_video_id: string }
+        Returns: {
+          success: boolean
+          already_claimed: boolean
+          message: string
+          balance: number
+          points_awarded: number
+        }
+      }
+      [key: string]: {
+        Args: any
+        Returns: any
+      }
+    }
+    Enums: Record<string, any>
+    CompositeTypes: Record<string, any>
   }
 }

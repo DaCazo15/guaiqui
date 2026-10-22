@@ -12,6 +12,7 @@ export * from './types/database'
 export type { Database } from './types/database'
 export * from './envValidation'
 export * from './sofascoreData'
+export * from './googleDrive'
 
 
 // ─── Helpers ───────────────────────────────────────────────
