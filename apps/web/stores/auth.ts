@@ -3,6 +3,9 @@ import { ref, computed } from 'vue'
 import type { User } from '@supabase/supabase-js'
 import type { Profile, Wallet } from '@guaiqui/shared'
 import { CURRENT_LEGAL_VERSIONS } from '@guaiqui/shared'
+import { translateAuthError } from '../utils/authErrors'
+import { clearClientAuthSession } from '../utils/sessionCleanup'
+import { uploadAvatarToStorage, uploadCoverToStorage } from '../utils/profileStorage'
 
 export type ProfileRow = Profile
 export type WalletRow = Wallet
@@ -412,63 +415,42 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
-  async function uploadAvatar(file: File) {
+  async function uploadAvatar(file: File): Promise<string> {
     if (!user.value) throw new Error('Usuario no autenticado')
-
-    // Client-side validations
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/avif']
-    if (!allowedTypes.includes(file.type)) {
-      throw new Error('Formato no permitido. Usa JPG, PNG o WebP.')
-    }
-
-    const maxSize = 2 * 1024 * 1024 // 2MB
-    if (file.size > maxSize) {
-      throw new Error('El archivo excede el tamaño máximo permitido de 2 MB.')
-    }
 
     isLoading.value = true
     errorMessage.value = null
 
     try {
-      // 1. Attempt compression & conversion to .avif via backend Edge Function
-      try {
-        const formData = new FormData()
-        formData.append('file', file)
-
-        const { data: fnData, error: fnErr } = await supabase.functions.invoke('compress-avatar', {
-          body: formData,
-        })
-
-        if (!fnErr && fnData?.success && fnData?.avatar_url) {
-          const avatarUrl = fnData.avatar_url
-          if (profile.value) {
-            profile.value.avatar_url = avatarUrl
-          }
-          return avatarUrl
-        }
-      } catch (fnCatchErr) {
-        console.warn('Backend compress-avatar call failed, falling back to direct upload:', fnCatchErr)
-      }
-
-      // 2. Fallback: Direct storage upload
-      const ext = file.name.split('.').pop()
-      const path = `${user.value.id}/${crypto.randomUUID()}.${ext}`
-
-      const { error: uploadErr } = await supabase.storage
-        .from('avatars')
-        .upload(path, file, { upsert: true })
-
-      if (uploadErr) throw uploadErr
-
-      const { data: publicUrlData } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(path)
-
-      const avatarUrl = publicUrlData.publicUrl
+      const avatarUrl = await uploadAvatarToStorage(supabase, user.value.id, file)
       await updateProfile({ avatar_url: avatarUrl })
+      if (profile.value) {
+        profile.value.avatar_url = avatarUrl
+      }
       return avatarUrl
     } catch (err: any) {
       errorMessage.value = err.message || 'Error al subir la imagen'
+      throw err
+    } finally {
+      isLoading.value = false
+    }
+  }
+
+  async function uploadCover(file: File): Promise<string> {
+    if (!user.value) throw new Error('Usuario no autenticado')
+
+    isLoading.value = true
+    errorMessage.value = null
+
+    try {
+      const coverUrl = await uploadCoverToStorage(supabase, user.value.id, file)
+      await updateProfile({ cover_url: coverUrl })
+      if (profile.value) {
+        profile.value.cover_url = coverUrl
+      }
+      return coverUrl
+    } catch (err: any) {
+      errorMessage.value = err.message || 'Error al subir la foto de portada'
       throw err
     } finally {
       isLoading.value = false
@@ -556,65 +538,8 @@ export const useAuthStore = defineStore('auth', () => {
     explicitLoggedOut.value = true
     isLoading.value = true
 
-    // a) Call supabase.auth.signOut({ scope: 'local' }) first inside try/catch
     try {
-      await supabase.auth.signOut({ scope: 'local' }).catch((err) => console.warn('SignOut warning:', err))
-    } catch (err) {
-      console.warn('SignOut error:', err)
-    }
-
-    // b) Background push cleanup using navigator.serviceWorker.getRegistration() + Promise.race (2000ms timeout)
-    if (typeof window !== 'undefined' && 'serviceWorker' in navigator) {
-      try {
-        const timeoutPromise = new Promise<null>((resolve) => setTimeout(() => resolve(null), 2000))
-        const pushCleanup = (async () => {
-          const reg = await navigator.serviceWorker.getRegistration()
-          if (reg && reg.pushManager) {
-            const sub = await reg.pushManager.getSubscription()
-            if (sub) {
-              await Promise.resolve(supabase.rpc('unregister_push_subscription', { p_endpoint: sub.endpoint })).catch(() => {})
-              await sub.unsubscribe().catch(() => {})
-            }
-          }
-        })()
-        await Promise.race([pushCleanup, timeoutPromise])
-      } catch (_swErr) {
-        // Ignore SW push cleanup errors
-      }
-    }
-
-    // c) In finally block: clean selective keys (sb- or supabase), clear cookies, reset profile, wallet, sessionUser, isLoading, redirect
-    try {
-      if (typeof window !== 'undefined') {
-        const localKeysToRemove: string[] = []
-        for (let i = 0; i < localStorage.length; i++) {
-          const k = localStorage.key(i)
-          if (k && (k.startsWith('sb-') || k.includes('supabase'))) {
-            localKeysToRemove.push(k)
-          }
-        }
-        localKeysToRemove.forEach((k) => localStorage.removeItem(k))
-
-        const sessionKeysToRemove: string[] = []
-        for (let i = 0; i < sessionStorage.length; i++) {
-          const k = sessionStorage.key(i)
-          if (k && (k.startsWith('sb-') || k.includes('supabase'))) {
-            sessionKeysToRemove.push(k)
-          }
-        }
-        sessionKeysToRemove.forEach((k) => sessionStorage.removeItem(k))
-
-        document.cookie.split(';').forEach((c) => {
-          const eqPos = c.indexOf('=')
-          const name = eqPos > -1 ? c.substring(0, eqPos).trim() : c.trim()
-          if (name.startsWith('sb-') || name.includes('supabase') || name.includes('token') || name.includes('auth')) {
-            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;`
-            document.cookie = `${name}=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=${window.location.hostname};`
-          }
-        })
-      }
-    } catch (_clearErr) {
-      // Ignore storage/cookie clear errors
+      await clearClientAuthSession(supabase)
     } finally {
       profile.value = null
       wallet.value = null
@@ -627,25 +552,6 @@ export const useAuthStore = defineStore('auth', () => {
         await navigateTo('/login')
       }
     }
-  }
-
-  function translateAuthError(msg: string): string {
-    if (!msg) return 'Ocurrió un error inesperado.'
-    const lower = msg.toLowerCase()
-    if (lower.includes('invalid login credentials')) return 'Correo o contraseña incorrectos.'
-    if (lower.includes('user already registered') || lower.includes('ya existe una cuenta registrada')) {
-      return 'Ya existe una cuenta registrada con este correo. Por favor inicia sesión o utiliza otro correo.'
-    }
-    if (lower.includes('error sending confirmation email') || lower.includes('sending confirmation email')) {
-      return 'Error al enviar el correo de confirmación. Revisa la configuración SMTP/Resend en Supabase o el límite de envíos.'
-    }
-    if (lower.includes('email not confirmed')) return 'Tu correo aún no ha sido verificado. Revisa tu bandeja de entrada o spam.'
-    if (lower.includes('password should be at least')) return 'La contraseña debe tener al menos 8 caracteres.'
-    if (lower.includes('rate limit')) return 'Límite de envíos excedido. Espera unos minutos e inténtalo de nuevo.'
-    if (lower.includes('unsupported provider') || lower.includes('provider is not enabled')) {
-      return 'El inicio de sesión con Google aún no está configurado en el servidor Supabase.'
-    }
-    return msg
   }
 
   return {
@@ -669,6 +575,7 @@ export const useAuthStore = defineStore('auth', () => {
     setBirthDate,
     updateProfile,
     uploadAvatar,
+    uploadCover,
     requestPasswordReset,
     updatePassword,
     resendVerificationEmail,

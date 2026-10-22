@@ -13,8 +13,7 @@ export type { Database } from './types/database'
 export * from './envValidation'
 export * from './sofascoreData'
 export * from './googleDrive'
-
-
+export * from './imageCompression'
 // ─── Helpers ───────────────────────────────────────────────
 /** Formatea un saldo de perlitas para la UI (locale es-VE) */
 export function formatPerlitas(amount: number): string {

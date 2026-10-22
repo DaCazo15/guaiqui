@@ -1,59 +1,39 @@
 <script setup lang="ts">
 import { ref, computed, watch } from 'vue'
 import { PearlAmount } from '@guaiqui/ui'
+import ProfileCoverCropperModal from './ProfileCoverCropperModal.vue'
 
 const props = defineProps<{
   profile: any
   balance: number
   streakDays: number
   uploadingAvatar?: boolean
+  uploadingCover?: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'uploadAvatar', file: File): void
+  (e: 'uploadCover', file: File): void
   (e: 'updateCover', coverUrl: string): void
 }>()
 
 const avatarInputRef = ref<HTMLInputElement | null>(null)
-const showCoverPicker = ref(false)
+const coverInputRef = ref<HTMLInputElement | null>(null)
+const selectedCoverFile = ref<File | null>(null)
+const isCropperOpen = ref(false)
 const imageLoadFailed = ref(false)
 const coverLoadFailed = ref(false)
 
-watch(() => props.profile?.cover_url, () => {
-  coverLoadFailed.value = false
-})
-
-// Presets oficiales de portada de Guaiqueríes de Margarita
-const officialCovers = [
-  {
-    id: 'la-asuncion',
-    name: 'Gimnasio La Asunción',
-    url: 'https://images.unsplash.com/photo-1546519638-68e109498ffc?auto=format&fit=crop&w=1200&q=80',
-    description: 'La caldera de la tribu insular'
-  },
-  {
-    id: 'tabloncillo',
-    name: 'Tabloncillo Verde & Oro',
-    url: 'https://images.unsplash.com/photo-1504450758481-7338eba7524a?auto=format&fit=crop&w=1200&q=80',
-    description: 'Tabloncillo oficial de campeonato SPB'
-  },
-  {
-    id: 'cancha-nocturna',
-    name: 'Noche de Baloncesto',
-    url: 'https://images.unsplash.com/photo-1519861531473-9200262188bf?auto=format&fit=crop&w=1200&q=80',
-    description: 'Ambiente vibrante de juego'
-  },
-  {
-    id: 'verde-insular',
-    name: 'Esmalte Verde Guaiquerí',
-    url: 'https://images.unsplash.com/photo-1574629810360-7efbbe195018?auto=format&fit=crop&w=1200&q=80',
-    description: 'Textura deportiva verde insular'
+watch(
+  () => props.profile?.cover_url,
+  () => {
+    coverLoadFailed.value = false
   }
-]
+)
 
-// Portada activa: guardada en perfil o por defecto la primera oficial
+// Portada activa guardada en el perfil del usuario (o null si aún no ha subido portada)
 const activeCoverUrl = computed(() => {
-  return props.profile?.cover_url || officialCovers[0].url
+  return props.profile?.cover_url || null
 })
 
 // Fecha de registro formateada
@@ -85,87 +65,94 @@ function handleAvatarChange(event: Event) {
   }
 }
 
-function selectCover(url: string) {
-  emit('updateCover', url)
-  showCoverPicker.value = false
+function triggerCoverInput() {
+  coverInputRef.value?.click()
+}
+
+function handleCoverFileChange(event: Event) {
+  const target = event.target as HTMLInputElement
+  const file = target.files?.[0]
+  if (file) {
+    selectedCoverFile.value = file
+    isCropperOpen.value = true
+  }
+  // Reset input para permitir seleccionar el mismo archivo si es necesario
+  target.value = ''
+}
+
+function handleCropperClose() {
+  isCropperOpen.value = false
+  selectedCoverFile.value = null
+}
+
+function handleCoverCroppedConfirmed(croppedFile: File) {
+  isCropperOpen.value = false
+  selectedCoverFile.value = null
+  emit('uploadCover', croppedFile)
 }
 </script>
 
 <template>
   <div class="bg-white rounded-guaiqui-2xl border border-guaiqui-border shadow-guaiqui-sm overflow-hidden">
-    <!-- 1. FOTO DE PORTADA (ESTILO FACEBOOK) -->
+    <!-- 1. FOTO DE PORTADA HORIZONTAL (PROPORCIÓN 8:3) -->
     <div class="relative h-44 sm:h-56 md:h-64 w-full overflow-hidden bg-gradient-to-r from-emerald-950 via-guaiqui-primary-dark to-stone-950">
+      <!-- Portada personalizada del usuario -->
       <img
         v-if="!coverLoadFailed && activeCoverUrl"
         :src="activeCoverUrl"
-        alt="Foto de Portada"
-        class="w-full h-full object-cover transition-transform duration-700 hover:scale-105"
+        alt="Foto de Portada Personalizada"
+        class="w-full h-full object-cover transition-transform duration-700 hover:scale-102"
         referrerpolicy="no-referrer"
         @error="coverLoadFailed = true"
       />
-      <!-- Fallback institucional con textura de tabloncillo si la imagen remota no carga -->
+
+      <!-- Fondo predeterminado institucional de Guaiqueríes de Margarita si el fan aún no tiene portada -->
       <div
         v-else
-        class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-emerald-950 via-guaiqui-primary-dark to-slate-950 relative"
+        class="w-full h-full flex flex-col items-center justify-center bg-gradient-to-br from-emerald-950 via-guaiqui-primary-dark to-slate-950 relative select-none"
       >
-        <div class="w-14 h-14 rounded-full bg-white/10 flex items-center justify-center text-white/40 text-2xl">
+        <div class="w-14 h-14 rounded-full bg-white/10 border border-white/20 flex items-center justify-center text-white/60 text-2xl shadow-inner">
           <i class="bi bi-dribbble"></i>
         </div>
-        <span class="text-[11px] font-bold uppercase tracking-widest text-emerald-300/70 mt-2">Guaiqueríes de Margarita</span>
+        <span class="text-xs font-bold uppercase tracking-widest text-emerald-300/80 mt-2">
+          Guaiqueríes de Margarita
+        </span>
+        <span class="text-[10px] text-white/50 tracking-wider">
+          Personaliza tu perfil con tu foto de portada
+        </span>
       </div>
-      <!-- Gradiente oscuro inferior para contraste -->
-      <div class="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent pointer-events-none"></div>
 
-      <!-- Botón Flotante: Cambiar Portada -->
+      <!-- Gradiente oscuro inferior para contraste de texto y avatar -->
+      <div class="absolute inset-0 bg-gradient-to-t from-black/75 via-black/25 to-transparent pointer-events-none"></div>
+
+      <!-- Overlay cargando portada -->
+      <div v-if="uploadingCover" class="absolute inset-0 bg-black/60 flex items-center justify-center text-white z-20 backdrop-blur-xs">
+        <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider bg-black/60 px-4 py-2 rounded-full border border-white/20">
+          <i class="bi bi-arrow-repeat animate-spin text-emerald-400 text-lg"></i>
+          <span>Guardando portada recortada...</span>
+        </div>
+      </div>
+
+      <!-- Botón Flotante: Subir / Cambiar Portada Personalizada -->
       <div class="absolute bottom-3 right-3 sm:bottom-4 sm:right-4 z-10">
         <button
           type="button"
-          @click="showCoverPicker = !showCoverPicker"
-          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-guaiqui-md bg-black/60 hover:bg-black/80 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-md border border-white/20 shadow-md transition-all active:scale-95"
+          @click="triggerCoverInput"
+          :disabled="uploadingCover"
+          class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-guaiqui-md bg-black/60 hover:bg-black/85 text-white text-xs font-bold uppercase tracking-wider backdrop-blur-md border border-white/20 shadow-md transition-all active:scale-95 disabled:opacity-50"
+          :title="activeCoverUrl ? 'Cambiar foto de portada' : 'Subir foto de portada'"
         >
           <i class="bi bi-camera-fill text-sm"></i>
-          <span class="hidden sm:inline">Cambiar Portada</span>
+          <span>{{ activeCoverUrl ? 'Cambiar Portada' : 'Subir Portada' }}</span>
         </button>
-      </div>
 
-      <!-- Selector Desplegable de Portadas Oficiales -->
-      <div
-        v-if="showCoverPicker"
-        class="absolute bottom-12 sm:bottom-14 right-3 sm:right-4 w-72 sm:w-80 bg-white rounded-guaiqui-xl shadow-xl border border-guaiqui-border p-3 z-30 space-y-2 animate-in fade-in zoom-in-95 duration-150"
-      >
-        <div class="flex items-center justify-between pb-2 border-b border-guaiqui-border">
-          <span class="font-display font-extrabold text-xs text-guaiqui-text uppercase tracking-wider">
-            Portadas Oficiales
-          </span>
-          <button
-            @click="showCoverPicker = false"
-            class="text-slate-400 hover:text-slate-600 text-xs p-1"
-          >
-            <i class="bi bi-x-lg"></i>
-          </button>
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <button
-            v-for="cov in officialCovers"
-            :key="cov.id"
-            @click="selectCover(cov.url)"
-            class="group relative h-20 rounded-guaiqui-md overflow-hidden border border-guaiqui-border hover:border-guaiqui-primary focus:outline-none transition-all bg-emerald-950"
-          >
-            <img
-              :src="cov.url"
-              :alt="cov.name"
-              referrerpolicy="no-referrer"
-              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-              @error="($event.target as HTMLElement).style.display = 'none'"
-            />
-            <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-end p-1.5">
-              <span class="text-[10px] font-bold text-white uppercase tracking-tight truncate leading-none">
-                {{ cov.name }}
-              </span>
-            </div>
-          </button>
-        </div>
+        <input
+          ref="coverInputRef"
+          type="file"
+          accept="image/jpeg,image/jpg,image/png,image/webp,image/avif,image/heic,image/heif"
+          class="hidden"
+          @change="handleCoverFileChange"
+        />
       </div>
     </div>
 
@@ -209,7 +196,7 @@ function selectCover(url: string) {
             <input
               ref="avatarInputRef"
               type="file"
-              accept="image/jpeg,image/png,image/webp,image/avif"
+              accept="image/jpeg,image/jpg,image/png,image/webp,image/avif"
               class="hidden"
               @change="handleAvatarChange"
             />
@@ -260,5 +247,13 @@ function selectCover(url: string) {
         </div>
       </div>
     </div>
+
+    <!-- Modal de Encuadre y Recorte Horizontal -->
+    <ProfileCoverCropperModal
+      :is-open="isCropperOpen"
+      :file="selectedCoverFile"
+      @close="handleCropperClose"
+      @confirm="handleCoverCroppedConfirmed"
+    />
   </div>
 </template>

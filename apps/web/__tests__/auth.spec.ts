@@ -40,11 +40,13 @@ const mockSupabase = {
         if (file.type !== 'image/png' && file.type !== 'image/jpeg' && file.type !== 'image/webp') {
           return Promise.resolve({ data: null, error: { message: 'mime type not allowed' } })
         }
-        if (file.size > 2 * 1024 * 1024) {
+        if (file.size > 20 * 1024 * 1024) {
           return Promise.resolve({ data: null, error: { message: 'file size limit exceeded' } })
         }
         return Promise.resolve({ data: { path }, error: null })
       }),
+      list: vi.fn().mockResolvedValue({ data: [] }),
+      remove: vi.fn().mockResolvedValue({ data: [] }),
       getPublicUrl: () => ({ data: { publicUrl: 'https://example.com/avatar.png' } }),
     }),
   },
@@ -132,10 +134,10 @@ describe('Auth Store & Security Tests', () => {
     )
   })
 
-  it('(c) rejects avatar upload client-side when file size exceeds 2 MB', async () => {
+  it('(c) rejects avatar upload client-side when file size exceeds 20 MB', async () => {
     const auth = useAuthStore()
-    const bigFile = new File([new ArrayBuffer(3 * 1024 * 1024)], 'big.png', { type: 'image/png' })
-    await expect(auth.uploadAvatar(bigFile)).rejects.toThrow('El archivo excede el tamaño máximo permitido de 2 MB.')
+    const bigFile = new File([new ArrayBuffer(21 * 1024 * 1024)], 'big.png', { type: 'image/png' })
+    await expect(auth.uploadAvatar(bigFile)).rejects.toThrow('El archivo excede el tamaño máximo permitido de 20 MB.')
   })
 
   it('(c) rejects avatar upload client-side when MIME type is not allowed', async () => {
@@ -162,16 +164,22 @@ describe('Auth Store & Security Tests', () => {
     expect(mockSupabase.rpc).toHaveBeenCalledWith('set_birth_date', { p_birth_date: '1999-08-15' })
   })
 
-  it('invokes compress-avatar edge function when uploadAvatar is called', async () => {
+  it('comprimes avatar to WebP thumbnail and uploads to avatars bucket when uploadAvatar is called', async () => {
     const auth = useAuthStore()
     auth.profile = { id: 'u-1', display_name: 'Fan Test', avatar_url: null } as any
     const validFile = new File(['valid image data'], 'avatar.jpg', { type: 'image/jpeg' })
     const resultUrl = await auth.uploadAvatar(validFile)
-    expect(mockSupabase.functions.invoke).toHaveBeenCalledWith('compress-avatar', expect.objectContaining({
-      body: expect.any(FormData),
-    }))
-    expect(resultUrl).toBe('https://example.com/avatar.avif')
-    expect(auth.profile?.avatar_url).toBe('https://example.com/avatar.avif')
+    expect(resultUrl).toBe('https://example.com/avatar.png')
+    expect(auth.profile?.avatar_url).toBe('https://example.com/avatar.png')
+  })
+
+  it('uploads cropped WebP cover to avatars bucket and updates profile cover_url', async () => {
+    const auth = useAuthStore()
+    auth.profile = { id: 'u-1', display_name: 'Fan Test', cover_url: null } as any
+    const validCoverFile = new File(['valid cover webp data'], 'my_cover.webp', { type: 'image/webp' })
+    const resultUrl = await auth.uploadCover(validCoverFile)
+    expect(resultUrl).toBe('https://example.com/avatar.png')
+    expect(auth.profile?.cover_url).toBe('https://example.com/avatar.png')
   })
 
   it('verifies checkEmailExists returns true when email exists in database', async () => {

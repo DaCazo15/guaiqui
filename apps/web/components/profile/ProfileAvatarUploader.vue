@@ -32,9 +32,9 @@ function handleFileChange(event: Event) {
     return
   }
 
-  // Validate size (max 2MB)
-  if (file.size > 2 * 1024 * 1024) {
-    localError.value = 'El archivo supera el límite de 2 MB.'
+  // Validate size (max 20MB)
+  if (file.size > 20 * 1024 * 1024) {
+    localError.value = 'El archivo supera el límite de 20 MB.'
     return
   }
 
@@ -90,7 +90,7 @@ function handleFileChange(event: Event) {
       <span>{{ localError }}</span>
     </p>
     <p class="text-[11px] text-guaiqui-text-muted">
-      Formatos aceptados: JPG, PNG, WebP (máx. 2 MB)
+      Formatos aceptados: JPG, PNG, WebP (máx. 20 MB)
     </p>
   </div>
 </template>

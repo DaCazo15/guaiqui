@@ -112,7 +112,7 @@ const filteredPlayers = computed(() => {
     <!-- Empty State: Zero players registered -->
     <div
       v-else-if="players.length === 0"
-      class="text-center py-16 text-guaiqui-text-muted space-y-3 bg-white rounded-guaiqui-xl border border-guaiqui-border p-6 max-w-lg mx-auto"
+      class="text-center py-16 text-guaiqui-text-muted space-y-3 bg-white rounded-guaiqui-xl border border-guaiqui-border p-6 max-w-5xl mx-auto"
     >
       <div class="w-16 h-16 rounded-full bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center text-3xl mx-auto">
         <i class="bi bi-people"></i>

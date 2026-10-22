@@ -1,23 +1,71 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import Navbar from '~/components/landing/Navbar.vue'
 import SiteFooter from '~/components/landing/SiteFooter.vue'
 import NewsInstagramHeader from '~/components/noticias/NewsInstagramHeader.vue'
 import NewsInstagramModal from '~/components/noticias/NewsInstagramModal.vue'
 import { newsInstagramPosts, type InstagramNewsPost } from '~/data/newsInstagramData'
+import { useSupabaseClient } from '#imports'
 
 useSeoMeta({
   title: 'Noticias y Actualidad — Guaiqueríes de Margarita',
   description: 'Sigue todas las noticias oficiales, resultados de playoffs, fichajes y coberturas de la Tribu Verde en formato Instagram.',
 })
 
+const supabase = useSupabaseClient()
+const dbPosts = ref<InstagramNewsPost[]>([])
 const activeFilter = ref<'all' | 'playoffs' | 'roster' | 'clasico' | 'community'>('all')
 const selectedPost = ref<InstagramNewsPost | null>(null)
 const likedPosts = ref<Record<string, boolean>>({})
 
+onMounted(async () => {
+  try {
+    const { data } = await supabase
+      .from('instagram_posts')
+      .select('*')
+      .eq('is_published', true)
+      .order('order_index', { ascending: true })
+
+    if (data && data.length > 0) {
+      dbPosts.value = data.map((d: any, idx: number) => ({
+        id: d.id,
+        title: d.caption,
+        badge: 'OFICIAL',
+        caption: d.caption,
+        image_url: d.image_url,
+        date_formatted: d.created_at
+          ? new Date(d.created_at).toLocaleDateString('es-VE', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })
+          : 'Reciente',
+        timestamp: d.created_at || new Date().toISOString(),
+        category: 'playoffs',
+        post_url: d.post_url,
+        likes_count: 1420 + idx * 180,
+        comments_count: 94 + idx * 14,
+        tags: ['#Guaiqueríes', '#LaTribuVerde', '#SomosLaTribu'],
+        is_verified: true,
+        author: {
+          username: 'guaiqueriesbbc',
+          name: 'Guaiqueríes de Margarita',
+          avatar: '/logo.png',
+        },
+      }))
+    }
+  } catch {
+    // Keep fallback
+  }
+})
+
+const postsList = computed(() => {
+  return dbPosts.value.length > 0 ? dbPosts.value : newsInstagramPosts
+})
+
 const filteredPosts = computed(() => {
-  if (activeFilter.value === 'all') return newsInstagramPosts
-  return newsInstagramPosts.filter((p) => p.category === activeFilter.value)
+  if (activeFilter.value === 'all') return postsList.value
+  return postsList.value.filter((p) => p.category === activeFilter.value)
 })
 
 function toggleLike(postId: string) {
@@ -62,7 +110,7 @@ function onImageError(e: Event) {
                 : 'bg-white text-guaiqui-text-muted hover:text-guaiqui-text border border-guaiqui-border'
             ]"
           >
-            Todas ({{ newsInstagramPosts.length }})
+            Todas ({{ postsList.length }})
           </button>
           <button
             type="button"

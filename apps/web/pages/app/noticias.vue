@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
+import { ref, computed, onMounted } from 'vue'
 import { BaseCard, BaseButton } from '@guaiqui/ui'
 import { newsInstagramPosts, type InstagramNewsPost } from '~/data/newsInstagramData'
+import { useSupabaseClient } from '#imports'
 
 definePageMeta({
   layout: 'app',
@@ -13,15 +14,62 @@ useSeoMeta({
   description: 'Actualidad oficial, partidos, coberturas de playoffs y anuncios del equipo en formato social.',
 })
 
+const supabase = useSupabaseClient()
+const dbPosts = ref<InstagramNewsPost[]>([])
 const activeFilter = ref<'all' | 'playoffs' | 'roster' | 'clasico' | 'community'>('all')
 const likedPosts = ref<Record<string, boolean>>({})
 const savedPosts = ref<Record<string, boolean>>({})
 const expandedCaptions = ref<Record<string, boolean>>({})
 const shareFeedback = ref<string | null>(null)
 
+onMounted(async () => {
+  try {
+    const { data } = await supabase
+      .from('instagram_posts')
+      .select('*')
+      .eq('is_published', true)
+      .order('order_index', { ascending: true })
+
+    if (data && data.length > 0) {
+      dbPosts.value = data.map((d: any, idx: number) => ({
+        id: d.id,
+        title: d.caption,
+        badge: 'OFICIAL',
+        caption: d.caption,
+        image_url: d.image_url,
+        date_formatted: d.created_at
+          ? new Date(d.created_at).toLocaleDateString('es-VE', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })
+          : 'Reciente',
+        timestamp: d.created_at || new Date().toISOString(),
+        category: 'playoffs',
+        post_url: d.post_url,
+        likes_count: 1540 + idx * 160,
+        comments_count: 88 + idx * 12,
+        tags: ['#Guaiqueríes', '#LaTribuVerde', '#SomosLaTribu'],
+        is_verified: true,
+        author: {
+          username: 'guaiqueriesbbc',
+          name: 'Guaiqueríes de Margarita',
+          avatar: '/logo.png',
+        },
+      }))
+    }
+  } catch {
+    // Keep fallback
+  }
+})
+
+const postsList = computed(() => {
+  return dbPosts.value.length > 0 ? dbPosts.value : newsInstagramPosts
+})
+
 const filteredPosts = computed(() => {
-  if (activeFilter.value === 'all') return newsInstagramPosts
-  return newsInstagramPosts.filter((p) => p.category === activeFilter.value)
+  if (activeFilter.value === 'all') return postsList.value
+  return postsList.value.filter((p) => p.category === activeFilter.value)
 })
 
 function toggleLike(id: string) {
@@ -183,13 +231,13 @@ function onImageError(e: Event) {
           </div>
 
           <a
-            href="https://www.instagram.com/guaiqueriesbbc/"
+            :href="post.post_url || 'https://www.instagram.com/guaiqueriesbbc/'"
             target="_blank"
             rel="noopener noreferrer"
             class="text-xs text-guaiqui-primary hover:text-guaiqui-primary-dark font-bold flex items-center gap-1"
           >
             <i class="bi bi-instagram"></i>
-            <span class="hidden sm:inline">Instagram</span>
+            <span class="hidden sm:inline">Ver Post</span>
           </a>
         </div>
 

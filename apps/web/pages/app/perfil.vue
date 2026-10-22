@@ -20,6 +20,7 @@ const authStore = useAuthStore()
 const triviaStore = useTriviaStore()
 
 const avatarUploading = ref(false)
+const coverUploading = ref(false)
 const localError = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 const showBirthdayPrompt = ref(true)
@@ -43,6 +44,20 @@ async function handleAvatarUpload(file: File) {
     localError.value = err.message
   } finally {
     avatarUploading.value = false
+  }
+}
+
+async function handleCoverUpload(file: File) {
+  coverUploading.value = true
+  localError.value = null
+  successMessage.value = null
+  try {
+    await authStore.uploadCover(file)
+    successMessage.value = '¡Foto de portada actualizada con éxito!'
+  } catch (err: any) {
+    localError.value = err.message
+  } finally {
+    coverUploading.value = false
   }
 }
 
@@ -77,7 +92,9 @@ async function handleSaveProfile(updates: any) {
       :balance="currentBalance"
       :streak-days="streakDays"
       :uploading-avatar="avatarUploading"
+      :uploading-cover="coverUploading"
       @upload-avatar="handleAvatarUpload"
+      @upload-cover="handleCoverUpload"
       @update-cover="handleCoverUpdate"
     />
 

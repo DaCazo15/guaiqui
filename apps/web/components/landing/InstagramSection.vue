@@ -22,10 +22,23 @@ onMounted(async () => {
       .select('*')
       .eq('is_published', true)
       .order('order_index', { ascending: true })
-      .limit(8)
+      .limit(6)
 
     if (data && data.length > 0) {
-      posts.value = data
+      posts.value = data.map((d: any) => ({
+        id: d.id,
+        post_url: d.post_url,
+        image_url: d.image_url,
+        caption: d.caption,
+        badge: 'OFICIAL',
+        date_formatted: d.created_at
+          ? new Date(d.created_at).toLocaleDateString('es-VE', {
+              day: 'numeric',
+              month: 'long',
+              year: 'numeric',
+            })
+          : 'Reciente',
+      }))
     } else {
       // Usar las noticias oficiales de la SPB scrapeadas
       posts.value = newsInstagramPosts.map((p) => ({
