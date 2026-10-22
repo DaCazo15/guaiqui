@@ -97,7 +97,7 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-  <BaseCard class="p-4 sm:p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm space-y-4">
+  <BaseCard class="p-4 sm:p-2.5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm space-y-4">
     <!-- Encabezado de Sección -->
     <div class="flex items-center justify-between pb-3 border-b border-guaiqui-border">
       <div class="flex items-center gap-2.5">
@@ -125,7 +125,7 @@ onBeforeUnmount(() => {
     <!-- Matchup Hero: Próximo Partido Dinámico -->
     <div
       v-if="nextGame"
-      class="relative overflow-hidden rounded-guaiqui-xl bg-gradient-to-br from-stone-950 via-emerald-950 to-slate-900 border border-emerald-500/30 p-4 sm:p-5 text-white shadow-md"
+      class="relative overflow-hidden rounded-guaiqui-xl bg-gradient-to-br from-stone-950 via-emerald-950 to-slate-900 border border-emerald-500/30 p-4 sm:p-2.5 text-white shadow-md"
     >
       <!-- Glow ambiental sutil -->
       <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-72 h-36 bg-emerald-500/15 blur-3xl pointer-events-none"></div>

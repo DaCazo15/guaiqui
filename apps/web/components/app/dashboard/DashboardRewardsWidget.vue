@@ -44,7 +44,7 @@ function nextReward() {
 </script>
 
 <template>
-  <BaseCard class="p-4 sm:p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm space-y-4">
+  <BaseCard class="p-4 sm:p-2.5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm space-y-4">
     <!-- Encabezado con Enlace -->
     <div class="flex items-center justify-between pb-3 border-b border-guaiqui-border">
       <div class="flex items-center gap-2.5">

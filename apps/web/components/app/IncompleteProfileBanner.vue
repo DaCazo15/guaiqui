@@ -26,7 +26,7 @@ function dismiss() {
 <template>
   <div
     v-if="authStore.isProfileIncomplete && !isDismissed && route.path !== '/app/perfil'"
-    class="mb-6 p-4 sm:p-5 bg-white border border-guaiqui-primary/30 rounded-guaiqui-xl shadow-guaiqui-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300"
+    class="mb-6 p-4 sm:p-2.5 bg-white border border-guaiqui-primary/30 rounded-guaiqui-xl shadow-guaiqui-sm flex flex-col sm:flex-row sm:items-center justify-between gap-4 transition-all duration-300"
     role="region"
     aria-label="Aviso de perfil incompleto"
   >
