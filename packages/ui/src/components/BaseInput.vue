@@ -69,12 +69,12 @@ const handleInput = (event: Event) => {
         :aria-invalid="!!error"
         :aria-describedby="error ? `${inputId}-error` : hint ? `${inputId}-hint` : undefined"
         :class="[
-          'w-full h-10 px-3.5 text-sm bg-white border rounded-guaiqui-md text-guaiqui-text placeholder-guaiqui-text-subtle transition-colors duration-150',
+          'w-full h-10 px-3.5 text-sm bg-guaiqui-surface border rounded-guaiqui-md text-guaiqui-text placeholder-guaiqui-text-subtle transition-colors duration-150',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-1',
           error
             ? 'border-guaiqui-status-danger focus-visible:ring-guaiqui-status-danger'
-            : 'border-guaiqui-border hover:border-gray-400 focus-visible:ring-guaiqui-primary focus-visible:border-guaiqui-primary',
-          disabled ? 'bg-guaiqui-surface opacity-60 cursor-not-allowed' : '',
+            : 'border-guaiqui-border hover:border-guaiqui-primary focus-visible:ring-guaiqui-primary focus-visible:border-guaiqui-primary',
+          disabled ? 'bg-guaiqui-surface-hover opacity-60 cursor-not-allowed' : '',
         ]"
         @input="handleInput"
         @blur="emit('blur', $event)"

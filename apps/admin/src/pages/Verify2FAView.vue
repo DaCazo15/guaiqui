@@ -89,62 +89,72 @@ const handleVerify = async () => {
 </script>
 
 <template>
-  <div class="min-h-screen flex items-center justify-center bg-gray-100 p-4">
-    <div class="max-w-md w-full bg-white rounded-xl shadow-lg p-6 space-y-6">
+  <div class="min-h-screen bg-slate-950 flex flex-col justify-center items-center px-4 py-12 font-body">
+    <div class="w-full max-w-md bg-slate-900 border border-slate-800 rounded-2xl p-8 shadow-2xl space-y-6">
       <div class="text-center space-y-2">
-        <div class="w-12 h-12 bg-green-100 text-green-700 rounded-full flex items-center justify-center mx-auto">
+        <div class="w-14 h-14 bg-emerald-950/80 border border-emerald-700/60 text-emerald-400 rounded-2xl flex items-center justify-center mx-auto shadow-inner">
           <i class="bi bi-shield-check text-2xl"></i>
         </div>
-        <h1 class="text-xl font-bold text-gray-900">Verificación en Dos Pasos (2FA)</h1>
-        <p class="text-sm text-gray-600">
+        <h1 class="text-2xl font-bold text-white tracking-wide font-title">Verificación en Dos Pasos (2FA)</h1>
+        <p class="text-sm text-slate-400">
           {{ useRecovery ? 'Ingresa uno de tus códigos de recuperación de un solo uso.' : 'Ingresa el código de 6 dígitos de tu aplicación de autenticación.' }}
         </p>
       </div>
 
-      <div v-if="errorMsg" class="p-3 bg-red-50 border border-red-200 rounded-lg text-sm text-red-700 flex items-center gap-2">
-        <i class="bi bi-exclamation-triangle-fill"></i>
-        <span>{{ errorMsg }}</span>
+      <div v-if="errorMsg" class="p-4 bg-red-950/50 border border-red-800/80 rounded-xl text-red-200 text-sm flex items-start gap-3">
+        <i class="bi bi-exclamation-octagon-fill text-red-400 text-lg flex-shrink-0 mt-0.5"></i>
+        <div>
+          <span class="font-semibold block">Error de autenticación</span>
+          <span class="text-red-300 text-xs">{{ errorMsg }}</span>
+        </div>
       </div>
 
-      <form @submit.prevent="handleVerify" class="space-y-4">
+      <form @submit.prevent="handleVerify" class="space-y-5">
         <div v-if="!useRecovery">
-          <label class="block text-sm font-medium text-gray-700 mb-1">Código de 6 dígitos</label>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 text-center">
+            Código de 6 dígitos
+          </label>
           <input
             v-model="code"
             type="text"
             maxlength="6"
             placeholder="123456"
-            class="w-full px-4 py-2 border rounded-lg text-center text-2xl tracking-widest font-mono focus:ring-2 focus:ring-green-500 focus:outline-none"
+            class="w-full py-3.5 px-4 bg-slate-950 border border-slate-800 rounded-xl text-center text-3xl tracking-[0.3em] font-mono text-emerald-400 placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all shadow-inner"
             required
+            autofocus
           />
         </div>
 
         <div v-else>
-          <label class="block text-sm font-medium text-gray-700 mb-1">Código de recuperación</label>
+          <label class="block text-xs font-semibold text-slate-300 uppercase tracking-wider mb-2 text-center">
+            Código de recuperación
+          </label>
           <input
             v-model="recoveryCode"
             type="text"
             placeholder="XXXX-XXXX"
-            class="w-full px-4 py-2 border rounded-lg text-center font-mono uppercase focus:ring-2 focus:ring-green-500 focus:outline-none"
+            class="w-full py-3 px-4 bg-slate-950 border border-slate-800 rounded-xl text-center font-mono uppercase text-lg text-emerald-400 placeholder-slate-600 focus:outline-none focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 transition-all shadow-inner"
             required
+            autofocus
           />
         </div>
 
         <button
           type="submit"
           :disabled="isSubmitting"
-          class="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2 px-4 rounded-lg transition disabled:opacity-50 flex items-center justify-center gap-2"
+          class="w-full py-3.5 px-4 bg-emerald-600 hover:bg-emerald-500 active:bg-emerald-700 text-white font-semibold rounded-xl transition-all duration-150 flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/50 disabled:opacity-50 disabled:cursor-not-allowed text-sm mt-2"
         >
-          <i v-if="isSubmitting" class="bi bi-arrow-repeat animate-spin"></i>
+          <i v-if="isSubmitting" class="bi bi-arrow-repeat animate-spin text-lg"></i>
+          <i v-else class="bi bi-shield-lock text-lg"></i>
           <span>{{ isSubmitting ? 'Verificando...' : 'Verificar e Ingresar' }}</span>
         </button>
       </form>
 
-      <div class="text-center">
+      <div class="pt-2 border-t border-slate-800/80 text-center">
         <button
           type="button"
           @click="useRecovery = !useRecovery; errorMsg = ''"
-          class="text-xs text-green-700 hover:underline font-medium"
+          class="text-xs text-emerald-400 hover:text-emerald-300 hover:underline font-medium transition-colors"
         >
           {{ useRecovery ? '← Volver a código de autenticador (TOTP)' : '¿Perdiste tu dispositivo? Usar código de recuperación' }}
         </button>

@@ -141,37 +141,37 @@ onMounted(() => {
       <div class="flex items-center gap-3">
         <button
           @click="router.back()"
-          class="p-2 bg-white hover:bg-slate-100 text-slate-700 rounded-xl border border-slate-200 transition-colors shadow-xs"
+          class="p-2 bg-slate-900 hover:bg-slate-800 text-slate-300 rounded-xl border border-slate-800 transition-colors shadow-xs"
         >
           <i class="bi bi-arrow-left text-lg"></i>
         </button>
         <div>
-          <h1 class="text-xl sm:text-2xl font-bold font-title text-slate-900">Detalle de Canje #{{ redemptionId.slice(0, 8) }}</h1>
-          <p class="text-xs text-slate-600">Historial completo, escaneos y trazabilidad del canje</p>
+          <h1 class="text-xl sm:text-2xl font-bold font-title text-white">Detalle de Canje #{{ redemptionId.slice(0, 8) }}</h1>
+          <p class="text-xs text-slate-400">Historial completo, escaneos y trazabilidad del canje</p>
         </div>
       </div>
 
-      <div v-if="isLoading" class="p-12 text-center bg-white rounded-2xl border border-slate-200 shadow-xs">
-        <i class="bi bi-arrow-repeat animate-spin text-3xl text-emerald-600 block mb-2"></i>
-        <span class="text-xs text-slate-600">Cargando detalles...</span>
+      <div v-if="isLoading" class="p-12 text-center bg-slate-900 rounded-2xl border border-slate-800 shadow-xs">
+        <i class="bi bi-arrow-repeat animate-spin text-3xl text-emerald-400 block mb-2"></i>
+        <span class="text-xs text-slate-400">Cargando detalles...</span>
       </div>
 
       <div v-else-if="item" class="space-y-6">
         <!-- Main Card Info -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
-          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-100 pb-4">
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
+          <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-slate-800 pb-4">
             <div class="flex items-center gap-3">
-              <div class="w-12 h-12 rounded-full bg-slate-100 border border-slate-200 text-emerald-700 flex items-center justify-center font-bold text-lg">
+              <div class="w-12 h-12 rounded-full bg-slate-800 border border-slate-700 text-emerald-400 flex items-center justify-center font-bold text-lg">
                 {{ (item.fan_display_name || 'F')[0] }}
               </div>
               <div>
-                <div class="text-xs text-slate-500 uppercase font-semibold">Fanático</div>
-                <div class="font-bold text-base text-slate-900">{{ item.fan_display_name }}</div>
+                <div class="text-xs text-slate-400 uppercase font-semibold">Fanático</div>
+                <div class="font-bold text-base text-white">{{ item.fan_display_name }}</div>
               </div>
             </div>
 
             <div class="flex items-center gap-2">
-              <span class="px-3 py-1 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-xs font-bold uppercase">
+              <span class="px-3 py-1 bg-emerald-950/80 border border-emerald-800 text-emerald-300 rounded-full text-xs font-bold uppercase">
                 {{ item.status }}
               </span>
             </div>
@@ -179,27 +179,27 @@ onMounted(() => {
 
           <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
             <div>
-              <span class="text-slate-500 uppercase font-semibold block mb-0.5">Premio</span>
-              <span class="font-bold text-slate-900 text-sm">{{ item.product_name }}</span>
+              <span class="text-slate-400 uppercase font-semibold block mb-0.5">Premio</span>
+              <span class="font-bold text-white text-sm">{{ item.product_name }}</span>
             </div>
 
             <div>
-              <span class="text-slate-500 uppercase font-semibold block mb-0.5">Variante</span>
-              <span class="font-mono text-slate-700">{{ item.variant || '-' }}</span>
+              <span class="text-slate-400 uppercase font-semibold block mb-0.5">Variante</span>
+              <span class="font-mono text-slate-300">{{ item.variant || '-' }}</span>
             </div>
 
             <div>
-              <span class="text-slate-500 uppercase font-semibold block mb-0.5">Perlitas Canjeadas</span>
-              <span class="font-bold text-emerald-700 text-sm">{{ item.cost_pearls }} perlitas</span>
+              <span class="text-slate-400 uppercase font-semibold block mb-0.5">Perlitas Canjeadas</span>
+              <span class="font-bold text-emerald-400 text-sm">{{ item.cost_pearls }} perlitas</span>
             </div>
           </div>
 
           <!-- Actions if allowed -->
-          <div class="pt-4 border-t border-slate-100 flex items-center justify-end gap-2">
+          <div class="pt-4 border-t border-slate-800 flex items-center justify-end gap-2">
             <button
               v-if="item.status === 'pending'"
               @click="isRejectModalOpen = true"
-              class="px-4 py-2 bg-red-50 hover:bg-red-100 border border-red-200 text-red-800 text-xs font-semibold rounded-xl transition-colors"
+              class="px-4 py-2 bg-red-950/60 hover:bg-red-900/60 border border-red-800 text-red-300 text-xs font-semibold rounded-xl transition-colors"
             >
               Rechazar
             </button>
@@ -207,7 +207,7 @@ onMounted(() => {
             <button
               v-if="item.status === 'approved' || item.status === 'scheduled'"
               @click="isIssueModalOpen = true"
-              class="px-4 py-2 bg-amber-50 hover:bg-amber-100 border border-amber-200 text-amber-800 text-xs font-semibold rounded-xl transition-colors"
+              class="px-4 py-2 bg-amber-950/60 hover:bg-amber-900/60 border border-amber-800 text-amber-300 text-xs font-semibold rounded-xl transition-colors"
             >
               Reportar Incidencia
             </button>
@@ -223,26 +223,26 @@ onMounted(() => {
         </div>
 
         <!-- History Timeline -->
-        <div class="bg-white border border-slate-200 rounded-2xl p-6 shadow-xs space-y-4">
-          <h3 class="font-bold text-sm text-slate-900 flex items-center gap-2">
-            <i class="bi bi-clock-history text-emerald-600"></i>
+        <div class="bg-slate-900 border border-slate-800 rounded-2xl p-6 shadow-xs space-y-4">
+          <h3 class="font-bold text-sm text-white flex items-center gap-2">
+            <i class="bi bi-clock-history text-emerald-400"></i>
             Historial de Cambios de Estado
           </h3>
 
-          <div v-if="history.length === 0" class="text-xs text-slate-500 italic">No hay eventos registrados en el historial.</div>
+          <div v-if="history.length === 0" class="text-xs text-slate-400 italic">No hay eventos registrados en el historial.</div>
 
           <div v-else class="space-y-3">
             <div
               v-for="h in history"
               :key="h.id"
-              class="p-3 bg-slate-50 rounded-xl border border-slate-200 text-xs flex items-center justify-between"
+              class="p-3 bg-slate-950/60 rounded-xl border border-slate-800 text-xs flex items-center justify-between"
             >
               <div>
-                <span class="font-semibold text-slate-800 uppercase mr-2">{{ h.to_status }}</span>
-                <span v-if="h.note" class="text-slate-600">({{ h.note }})</span>
+                <span class="font-semibold text-slate-200 uppercase mr-2">{{ h.to_status }}</span>
+                <span v-if="h.note" class="text-slate-400">({{ h.note }})</span>
               </div>
 
-              <span class="font-mono text-[11px] text-slate-500">
+              <span class="font-mono text-[11px] text-slate-400">
                 {{ formatCaracas(h.created_at) }}
               </span>
             </div>

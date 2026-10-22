@@ -23,9 +23,9 @@ withDefaults(defineProps<Props>(), {
 </script>
 
 <template>
-  <div class="w-full overflow-x-auto rounded-guaiqui-lg border border-guaiqui-border bg-white shadow-guaiqui-sm">
+  <div class="w-full overflow-x-auto rounded-guaiqui-lg border border-guaiqui-border bg-guaiqui-surface shadow-guaiqui-sm">
     <table class="w-full text-left border-collapse text-sm">
-      <thead class="bg-guaiqui-surface border-b border-guaiqui-border text-xs uppercase tracking-wider text-guaiqui-text-muted font-bold">
+      <thead class="bg-guaiqui-surface-hover/30 border-b border-guaiqui-border text-xs uppercase tracking-wider text-guaiqui-text-muted font-bold">
         <tr>
           <th
             v-for="col in columns"
@@ -66,7 +66,7 @@ withDefaults(defineProps<Props>(), {
           v-for="(row, rowIndex) in data"
           v-else
           :key="rowIndex"
-          class="hover:bg-guaiqui-surface/60 transition-colors duration-150"
+          class="hover:bg-guaiqui-surface-hover/50 transition-colors duration-150"
         >
           <td
             v-for="col in columns"

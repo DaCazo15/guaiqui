@@ -17,14 +17,14 @@ const props = withDefaults(defineProps<Props>(), {
 const variantClasses = computed(() => {
   switch (props.variant) {
     case 'flat':
-      return 'bg-guaiqui-surface border-none'
+      return 'bg-guaiqui-surface border-none text-guaiqui-text'
     case 'outline':
-      return 'bg-white border border-guaiqui-border'
+      return 'bg-guaiqui-surface border border-guaiqui-border text-guaiqui-text'
     case 'interactive':
-      return 'bg-white border border-guaiqui-border hover:border-guaiqui-primary hover:shadow-guaiqui-md cursor-pointer transition-all duration-200'
+      return 'bg-guaiqui-surface border border-guaiqui-border hover:border-guaiqui-primary hover:shadow-guaiqui-md cursor-pointer transition-all duration-200 text-guaiqui-text'
     case 'default':
     default:
-      return 'bg-white border border-guaiqui-border shadow-guaiqui-sm'
+      return 'bg-guaiqui-surface border border-guaiqui-border shadow-guaiqui-sm text-guaiqui-text'
   }
 })
 

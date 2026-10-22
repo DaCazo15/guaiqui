@@ -36,15 +36,15 @@ const isActive = (path: string) => route.path.startsWith(path)
     <!-- Sidebar menu container -->
     <aside
       :class="[
-        'fixed lg:static top-0 bottom-0 left-0 z-50 w-64 h-full shrink-0 bg-white border-r border-gray-200 flex flex-col transition-transform duration-200 ease-in-out shadow-xs',
+        'fixed lg:static top-0 bottom-0 left-0 z-50 w-64 h-full shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col transition-transform duration-200 ease-in-out shadow-xl',
         isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       ]"
     >
-      <div class="h-16 flex items-center justify-between px-5 lg:hidden border-b border-gray-200">
-        <span class="font-bold text-gray-900 font-title">Menú de Taquilla</span>
+      <div class="h-16 flex items-center justify-between px-5 lg:hidden border-b border-slate-800">
+        <span class="font-bold text-white font-title">Menú de Taquilla</span>
         <button
           @click="emit('close')"
-          class="p-1.5 text-gray-400 hover:text-gray-700 rounded-md"
+          class="p-1.5 text-slate-400 hover:text-white rounded-md"
           aria-label="Cerrar menú"
         >
           <i class="bi bi-x-lg text-lg"></i>
@@ -52,7 +52,7 @@ const isActive = (path: string) => route.path.startsWith(path)
       </div>
 
       <nav class="flex-1 p-3.5 space-y-2 overflow-y-auto">
-        <div class="px-3 py-1.5 text-xs font-bold text-gray-400 uppercase tracking-wider">
+        <div class="px-3 py-1.5 text-xs font-bold text-slate-400 uppercase tracking-wider">
           Módulos de Taquilla
         </div>
 
@@ -64,31 +64,31 @@ const isActive = (path: string) => route.path.startsWith(path)
           :class="[
             'flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-150',
             isActive(item.path)
-              ? 'bg-emerald-50 text-emerald-800 font-semibold border-l-4 border-emerald-600 shadow-2xs'
-              : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+              ? 'bg-emerald-950/80 text-emerald-300 font-semibold border-l-4 border-emerald-500 shadow-inner'
+              : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
           ]"
         >
-          <i :class="['bi', item.icon, 'text-base', isActive(item.path) ? 'text-emerald-700' : 'text-gray-400']"></i>
+          <i :class="['bi', item.icon, 'text-base', isActive(item.path) ? 'text-emerald-400' : 'text-slate-500']"></i>
           <span>{{ item.label }}</span>
         </RouterLink>
 
         <!-- Link back to Admin for users with admin role -->
-        <div v-if="authStore.staffMember?.role === 'admin'" class="pt-4 border-t border-gray-200">
+        <div v-if="authStore.staffMember?.role === 'admin'" class="pt-4 border-t border-slate-800">
           <RouterLink
             to="/admin/dashboard"
             @click="emit('close')"
-            class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-semibold text-xs text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-all shadow-2xs"
+            class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-semibold text-xs text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900/80 border border-emerald-700 transition-all shadow-inner"
           >
-            <i class="bi bi-speedometer2 text-base text-emerald-700"></i>
+            <i class="bi bi-speedometer2 text-base text-emerald-400"></i>
             <span>Volver a Panel Admin</span>
           </RouterLink>
         </div>
       </nav>
 
-      <div class="p-3.5 border-t border-gray-200 text-xs text-gray-500 flex items-center justify-between bg-gray-50/50">
-        <span class="font-medium text-gray-600">Guaiqueríes Taquilla</span>
-        <span class="inline-flex items-center gap-1.5 text-emerald-700 font-mono text-[11px] font-semibold">
-          <span class="w-2 h-2 rounded-full bg-emerald-600"></span> Operativo
+      <div class="p-3.5 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between bg-slate-950/40">
+        <span class="font-medium text-slate-400">Guaiqueríes Taquilla</span>
+        <span class="inline-flex items-center gap-1.5 text-emerald-400 font-mono text-[11px] font-semibold">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Operativo
         </span>
       </div>
     </aside>

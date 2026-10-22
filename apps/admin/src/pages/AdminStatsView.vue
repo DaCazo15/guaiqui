@@ -148,36 +148,36 @@ onMounted(loadStats)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl sm:text-3xl font-bold font-title text-slate-900">Cifras del Club y Patrocinantes</h1>
-          <p class="text-sm text-slate-600">Gestionar métricas clave y logos de aliados estratégicos en la landing.</p>
+          <h1 class="text-2xl sm:text-3xl font-bold font-title text-white">Cifras del Club y Patrocinantes</h1>
+          <p class="text-sm text-slate-400">Gestionar métricas clave y logos de aliados estratégicos en la landing.</p>
         </div>
         <BaseButton variant="primary" @click="openNew">
           <i class="bi bi-plus-lg mr-1.5"></i> Agregar Cifra / Sponsor
         </BaseButton>
       </div>
 
-      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="errorMessage" class="p-4 bg-red-950/80 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
+        <button @click="errorMessage = null" class="text-red-400 hover:text-red-200"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="successMessage" class="p-4 bg-emerald-950/80 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
+        <button @click="successMessage = null" class="text-emerald-400 hover:text-emerald-200"><i class="bi bi-x-lg"></i></button>
       </div>
 
       <BaseTable :columns="columns" :data="stats" :loading="loading" empty-text="No hay cifras ni patrocinantes registrados">
         <template #cell-label="{ row }">
           <div class="flex items-center gap-3">
-            <img v-if="(row as any).logo_url" :src="(row as any).logo_url" class="w-8 h-8 rounded object-contain bg-slate-100 p-0.5 border border-slate-200" />
+            <img v-if="(row as any).logo_url" :src="(row as any).logo_url" class="w-8 h-8 rounded object-contain bg-slate-800 p-0.5 border border-slate-700" />
             <div>
-              <p class="font-semibold text-slate-900">{{ (row as any).label }}</p>
-              <p v-if="(row as any).note" class="text-xs text-slate-500">{{ (row as any).note }}</p>
+              <p class="font-semibold text-white">{{ (row as any).label }}</p>
+              <p v-if="(row as any).note" class="text-xs text-slate-400">{{ (row as any).note }}</p>
             </div>
           </div>
         </template>
 
         <template #cell-value="{ row }">
-          <span class="font-title font-bold text-emerald-600 text-base">{{ (row as any).value }}</span>
+          <span class="font-title font-bold text-emerald-400 text-base">{{ (row as any).value }}</span>
         </template>
 
         <template #cell-is_sponsor="{ row }">
@@ -187,7 +187,7 @@ onMounted(loadStats)
         </template>
 
         <template #cell-order_index="{ row }">
-          <span class="text-xs text-slate-600 font-mono">{{ (row as any).order_index }}</span>
+          <span class="text-xs text-slate-400 font-mono">{{ (row as any).order_index }}</span>
         </template>
 
         <template #cell-is_published="{ row }">
@@ -198,10 +198,10 @@ onMounted(loadStats)
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1.5">
-            <button @click="editRow(row as any)" class="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" title="Editar">
+            <button @click="editRow(row as any)" class="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
               <i class="bi bi-pencil"></i>
             </button>
-            <button @click="deleteRow((row as any).id)" class="p-1.5 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-colors" title="Eliminar">
+            <button @click="deleteRow((row as any).id)" class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-950 rounded-lg transition-colors" title="Eliminar">
               <i class="bi bi-trash"></i>
             </button>
           </div>

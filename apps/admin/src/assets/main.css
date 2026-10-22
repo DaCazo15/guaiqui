@@ -4,3 +4,14 @@
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
+
+:root {
+  --g-color-bg: #020617; /* slate-950 */
+  --g-color-surface: #0f172a; /* slate-900 */
+  --g-color-surface-hover: #1e293b; /* slate-800 */
+  --g-color-border: #1e293b; /* slate-800 */
+
+  --g-color-text: #f8fafc; /* slate-50 */
+  --g-color-text-muted: #94a3b8; /* slate-400 */
+  --g-color-text-subtle: #64748b; /* slate-500 */
+}

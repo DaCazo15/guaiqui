@@ -197,44 +197,44 @@ onMounted(loadSegments)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl sm:text-3xl font-bold font-title text-slate-900">Segmentación de Fanáticos</h1>
-          <p class="text-sm text-slate-600">Crear audiencias personalizadas mediante criterios seguros y exportar informes auditados.</p>
+          <h1 class="text-2xl sm:text-3xl font-bold font-title text-white">Segmentación de Fanáticos</h1>
+          <p class="text-sm text-slate-400">Crear audiencias personalizadas mediante criterios seguros y exportar informes auditados.</p>
         </div>
         <BaseButton variant="primary" @click="openNewSegment">
           <i class="bi bi-pie-chart-fill mr-1.5"></i> Crear Segmento
         </BaseButton>
       </div>
 
-      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="errorMessage" class="p-4 bg-red-950/80 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
+        <button @click="errorMessage = null" class="text-red-400 hover:text-red-200"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="successMessage" class="p-4 bg-emerald-950/80 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
+        <button @click="successMessage = null" class="text-emerald-400 hover:text-emerald-200"><i class="bi bi-x-lg"></i></button>
       </div>
 
       <BaseTable :columns="columns" :data="segments" :loading="loading" empty-text="No hay segmentos configurados">
         <template #cell-name="{ row }">
-          <span class="font-semibold text-slate-900">{{ (row as any).name }}</span>
+          <span class="font-semibold text-white">{{ (row as any).name }}</span>
         </template>
 
         <template #cell-filters="{ row }">
-          <span class="text-xs font-mono text-slate-600 truncate max-w-md block">
+          <span class="text-xs font-mono text-slate-400 truncate max-w-md block">
             {{ JSON.stringify((row as any).filters) }}
           </span>
         </template>
 
         <template #cell-created_at="{ row }">
-          <span class="text-xs text-slate-600 font-mono">{{ (row as any).created_at ? formatCaracas((row as any).created_at) : '' }}</span>
+          <span class="text-xs text-slate-400 font-mono">{{ (row as any).created_at ? formatCaracas((row as any).created_at) : '' }}</span>
         </template>
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1.5">
-            <button @click="viewMembers(row as any)" class="p-1.5 text-sky-600 hover:bg-sky-50 rounded-lg transition-colors" title="Ver Miembros">
+            <button @click="viewMembers(row as any)" class="p-1.5 text-sky-400 hover:bg-slate-800 rounded-lg transition-colors" title="Ver Miembros">
               <i class="bi bi-people"></i>
             </button>
-            <button @click="exportCSV(row as any)" class="p-1.5 text-emerald-600 hover:bg-emerald-50 rounded-lg transition-colors" title="Exportar CSV (sin email)">
+            <button @click="exportCSV(row as any)" class="p-1.5 text-emerald-400 hover:bg-slate-800 rounded-lg transition-colors" title="Exportar CSV (sin email)">
               <i class="bi bi-download"></i>
             </button>
           </div>
@@ -271,10 +271,10 @@ onMounted(loadSegments)
           <BaseInput label="Edad Máxima" type="number" v-model="segmentForm.max_age" />
         </div>
 
-        <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 flex items-center justify-between">
-          <div class="text-xs text-slate-600">
+        <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 flex items-center justify-between">
+          <div class="text-xs text-slate-300">
             <span>Conteo de Audiencia: </span>
-            <strong v-if="memberCount !== null" class="text-emerald-700 font-mono text-base font-bold ml-1">{{ memberCount }} fanáticos</strong>
+            <strong v-if="memberCount !== null" class="text-emerald-400 font-mono text-base font-bold ml-1">{{ memberCount }} fanáticos</strong>
             <span v-else class="italic ml-1">Presione calcular</span>
           </div>
           <BaseButton size="sm" variant="secondary" :loading="actionLoading" @click="previewSegmentCount">
@@ -294,11 +294,11 @@ onMounted(loadSegments)
     <!-- Modal View Members -->
     <BaseModal v-if="showMembersModal" :is-open="showMembersModal" title="Miembros del Segmento" @close="showMembersModal = false">
       <div class="space-y-3">
-        <div class="text-xs text-slate-600">Mostrando miembros que coinciden con el segmento <strong class="text-slate-900">{{ selectedSegment?.name }}</strong>:</div>
+        <div class="text-xs text-slate-300">Mostrando miembros que coinciden con el segmento <strong class="text-white">{{ selectedSegment?.name }}</strong>:</div>
         <div class="space-y-1.5 max-h-80 overflow-y-auto">
-          <div v-for="m in segmentMembersList" :key="m.id" class="p-2.5 rounded-lg bg-slate-50 border border-slate-200 text-xs flex justify-between">
-            <span class="font-semibold text-slate-800">{{ m.display_name }}</span>
-            <span class="text-slate-500">{{ m.municipality || 'N/I' }}</span>
+          <div v-for="m in segmentMembersList" :key="m.id" class="p-2.5 rounded-lg bg-slate-950/60 border border-slate-800 text-xs flex justify-between">
+            <span class="font-semibold text-white">{{ m.display_name }}</span>
+            <span class="text-slate-400">{{ m.municipality || 'N/I' }}</span>
           </div>
           <div v-if="segmentMembersList.length === 0" class="text-xs text-slate-500 text-center py-4">No hay miembros en este segmento</div>
         </div>

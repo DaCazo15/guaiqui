@@ -80,19 +80,19 @@ watch(() => route.path, () => {
 
     <aside
       :class="[
-        'fixed lg:static top-0 bottom-0 left-0 z-50 w-64 h-full shrink-0 bg-white border-r border-gray-200 flex flex-col transition-transform duration-200 ease-in-out shadow-xs',
+        'fixed lg:static top-0 bottom-0 left-0 z-50 w-64 h-full shrink-0 bg-slate-900 border-r border-slate-800 flex flex-col transition-transform duration-200 ease-in-out shadow-xl',
         isOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'
       ]"
     >
       <!-- Mobile Header with Close button -->
-      <div class="h-16 flex items-center justify-between px-5 lg:hidden border-b border-gray-200">
+      <div class="h-16 flex items-center justify-between px-5 lg:hidden border-b border-slate-800">
         <div class="flex items-center gap-2">
           <img src="/logo.png" alt="Guaiqueríes Logo" class="w-7 h-7 object-contain shrink-0" />
-          <span class="font-bold text-gray-900 font-title">Menú Administrador</span>
+          <span class="font-bold text-white font-title">Menú Administrador</span>
         </div>
         <button
           @click="emit('close')"
-          class="p-1.5 text-gray-400 hover:text-gray-700 rounded-md"
+          class="p-1.5 text-slate-400 hover:text-white rounded-md"
           aria-label="Cerrar menú"
         >
           <i class="bi bi-x-lg text-lg"></i>
@@ -106,7 +106,7 @@ watch(() => route.path, () => {
       >
         <!-- Section 1: Platform & Operations -->
         <div class="space-y-1">
-          <div class="px-3 py-1.5 text-[11px] font-bold text-gray-400 uppercase tracking-wider">
+          <div class="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
             Operaciones & Fanáticos
           </div>
           <RouterLink
@@ -117,19 +117,19 @@ watch(() => route.path, () => {
             :class="[
               'flex items-center gap-3 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all duration-150',
               isActive(item.path)
-                ? 'bg-emerald-50 text-emerald-800 font-semibold border-l-4 border-emerald-600 shadow-2xs'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                ? 'bg-emerald-950/80 text-emerald-300 font-semibold border-l-4 border-emerald-500 shadow-inner'
+                : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
             ]"
           >
-            <i :class="['bi', item.icon, 'text-base', isActive(item.path) ? 'text-emerald-700' : 'text-gray-400']"></i>
+            <i :class="['bi', item.icon, 'text-base', isActive(item.path) ? 'text-emerald-400' : 'text-slate-500']"></i>
             <span>{{ item.label }}</span>
           </RouterLink>
         </div>
 
         <!-- Section 2: CMS & Landing -->
-        <div class="space-y-1 pt-3 border-t border-gray-200">
-          <div class="px-3 py-1.5 text-[11px] font-bold text-emerald-800 uppercase tracking-wider flex items-center gap-1.5">
-            <i class="bi bi-window-sidebar text-emerald-600"></i> CMS Landing Pública
+        <div class="space-y-1 pt-3 border-t border-slate-800">
+          <div class="px-3 py-1.5 text-[11px] font-bold text-emerald-400 uppercase tracking-wider flex items-center gap-1.5">
+            <i class="bi bi-window-sidebar text-emerald-400"></i> CMS Landing Pública
           </div>
           <RouterLink
             v-for="item in cmsNavItems"
@@ -139,32 +139,32 @@ watch(() => route.path, () => {
             :class="[
               'flex items-center gap-3 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all duration-150',
               isActive(item.path)
-                ? 'bg-emerald-50 text-emerald-800 font-semibold border-l-4 border-emerald-600 shadow-2xs'
-                : 'text-gray-600 hover:bg-gray-100 hover:text-gray-900'
+                ? 'bg-emerald-950/80 text-emerald-300 font-semibold border-l-4 border-emerald-500 shadow-inner'
+                : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
             ]"
           >
-            <i :class="['bi', item.icon, 'text-base', isActive(item.path) ? 'text-emerald-700' : 'text-gray-400']"></i>
+            <i :class="['bi', item.icon, 'text-base', isActive(item.path) ? 'text-emerald-400' : 'text-slate-500']"></i>
             <span>{{ item.label }}</span>
           </RouterLink>
         </div>
 
         <!-- Section 3: Switch to Staff / Operations -->
-        <div class="pt-3 border-t border-gray-200">
+        <div class="pt-3 border-t border-slate-800">
           <RouterLink
             to="/staff/cola"
             @click="emit('close')"
-            class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-semibold text-xs text-gray-700 hover:bg-emerald-50 hover:text-emerald-800 border border-gray-200 hover:border-emerald-300 transition-all"
+            class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-semibold text-xs text-slate-300 bg-slate-800/80 hover:bg-emerald-950/80 hover:text-emerald-300 border border-slate-700 hover:border-emerald-700 transition-all"
           >
-            <i class="bi bi-ticket-perforated text-sm text-emerald-700"></i>
+            <i class="bi bi-ticket-perforated text-sm text-emerald-400"></i>
             <span>Ir a Panel de Taquilla</span>
           </RouterLink>
         </div>
       </nav>
 
-      <div class="p-3.5 border-t border-gray-200 text-xs text-gray-500 flex items-center justify-between bg-gray-50/50">
-        <span class="font-medium text-gray-600">Guaiqueríes Admin</span>
-        <span class="inline-flex items-center gap-1.5 text-emerald-700 font-mono text-[11px] font-semibold">
-          <span class="w-2 h-2 rounded-full bg-emerald-600"></span> Modo Admin
+      <div class="p-3.5 border-t border-slate-800 text-xs text-slate-400 flex items-center justify-between bg-slate-950/40">
+        <span class="font-medium text-slate-400">Guaiqueríes Admin</span>
+        <span class="inline-flex items-center gap-1.5 text-emerald-400 font-mono text-[11px] font-semibold">
+          <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Modo Admin
         </span>
       </div>
     </aside>

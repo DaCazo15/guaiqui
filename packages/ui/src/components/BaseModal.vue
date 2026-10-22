@@ -116,14 +116,14 @@ const sizeClasses = computed(() => {
           <div
             v-if="isModalOpen"
             :class="[
-              'w-full bg-white rounded-guaiqui-xl shadow-guaiqui-lg overflow-hidden border border-guaiqui-border flex flex-col max-h-[90vh]',
+              'w-full bg-guaiqui-surface rounded-guaiqui-xl shadow-guaiqui-lg overflow-hidden border border-guaiqui-border flex flex-col max-h-[90vh] text-guaiqui-text',
               sizeClasses,
             ]"
           >
             <!-- Header -->
             <div
               v-if="title || $slots.header || closable"
-              class="flex items-center justify-between px-5 py-4 border-b border-guaiqui-border bg-guaiqui-surface"
+              class="flex items-center justify-between px-5 py-4 border-b border-guaiqui-border bg-guaiqui-surface-hover/30"
             >
               <div class="flex-1">
                 <slot name="header">
@@ -136,7 +136,7 @@ const sizeClasses = computed(() => {
               <button
                 v-if="closable"
                 type="button"
-                class="ml-4 p-1.5 rounded-guaiqui-md text-guaiqui-text-muted hover:text-guaiqui-text hover:bg-gray-200 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-guaiqui-primary"
+                class="ml-4 p-1.5 rounded-guaiqui-md text-guaiqui-text-muted hover:text-guaiqui-text hover:bg-guaiqui-surface-hover transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-guaiqui-primary"
                 aria-label="Cerrar modal"
                 @click="close"
               >
@@ -154,7 +154,7 @@ const sizeClasses = computed(() => {
             <!-- Footer -->
             <div
               v-if="$slots.footer"
-              class="px-5 py-4 border-t border-guaiqui-border bg-guaiqui-surface flex items-center justify-end gap-3"
+              class="px-5 py-4 border-t border-guaiqui-border bg-guaiqui-surface-hover/30 flex items-center justify-end gap-3"
             >
               <slot name="footer" />
             </div>

@@ -158,10 +158,10 @@ onMounted(() => {
       <!-- Encabezado de página -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold text-gray-900 uppercase tracking-wide">
+          <h1 class="text-2xl font-bold text-white uppercase tracking-wide">
             Videos de Patrocinadores (Google Drive)
           </h1>
-          <p class="text-sm text-gray-500">
+          <p class="text-sm text-slate-400">
             Administra los videos comerciales de marcas aliadas alojados en Google Drive, recompensas en perlitas y botones de redirección.
           </p>
         </div>
@@ -176,33 +176,33 @@ onMounted(() => {
         v-if="message"
         :class="[
           'p-4 rounded-xl text-sm font-semibold flex items-center justify-between',
-          message.type === 'success' ? 'bg-emerald-50 text-emerald-800 border border-emerald-200' : 'bg-red-50 text-red-800 border border-red-200',
+          message.type === 'success' ? 'bg-emerald-950/80 text-emerald-300 border border-emerald-800' : 'bg-red-950/80 text-red-300 border border-red-800',
         ]"
       >
         <div class="flex items-center gap-2">
-          <i :class="message.type === 'success' ? 'bi bi-check-circle-fill text-emerald-600' : 'bi bi-exclamation-triangle-fill text-red-600'"></i>
+          <i :class="message.type === 'success' ? 'bi bi-check-circle-fill text-emerald-400' : 'bi bi-exclamation-triangle-fill text-red-400'"></i>
           <span>{{ message.text }}</span>
         </div>
-        <button @click="message = null" class="text-xs underline ml-4 cursor-pointer">Cerrar</button>
+        <button @click="message = null" class="text-xs underline ml-4 cursor-pointer text-slate-400 hover:text-white">Cerrar</button>
       </div>
 
       <!-- Guía Rápida para Google Drive -->
-      <div class="p-5 bg-gradient-to-r from-emerald-50 to-blue-50 border border-emerald-200/80 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+      <div class="p-5 bg-slate-900 border border-slate-800 rounded-2xl flex flex-col md:flex-row items-start md:items-center justify-between gap-4 shadow-xl">
         <div class="flex items-start gap-3">
-          <div class="w-10 h-10 rounded-xl bg-white shadow-xs border border-emerald-200 flex items-center justify-center text-emerald-700 text-lg shrink-0">
+          <div class="w-10 h-10 rounded-xl bg-slate-800 shadow-xs border border-slate-700 flex items-center justify-center text-emerald-400 text-lg shrink-0">
             <i class="bi bi-google"></i>
           </div>
           <div class="space-y-1">
-            <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-900">
+            <h3 class="text-xs font-bold uppercase tracking-wider text-emerald-400">
               ¿Cómo agregar videos desde tu carpeta de Google Drive?
             </h3>
-            <p class="text-xs text-gray-600 leading-relaxed max-w-2xl">
-              1. Sube el video a Google Drive &bull; 2. Clic derecho en el archivo &gt; <strong>Compartir</strong> &gt; Configura el acceso como <strong>"Cualquier persona con el enlace"</strong> &bull; 3. Copia el enlace y pégalo aquí. El reproductor y la recompensa se integrarán automáticamente.
+            <p class="text-xs text-slate-400 leading-relaxed max-w-2xl">
+              1. Sube el video a Google Drive &bull; 2. Clic derecho en el archivo &gt; <strong class="text-white">Compartir</strong> &gt; Configura el acceso como <strong class="text-emerald-400">"Cualquier persona con el enlace"</strong> &bull; 3. Copia el enlace y pégalo aquí. El reproductor y la recompensa se integrarán automáticamente.
             </p>
           </div>
         </div>
         <div class="shrink-0 flex items-center gap-2">
-          <span class="text-[11px] font-bold text-emerald-800 bg-emerald-100/80 px-2.5 py-1 rounded-full border border-emerald-200">
+          <span class="text-[11px] font-bold text-emerald-300 bg-emerald-950/80 px-2.5 py-1 rounded-full border border-emerald-800 font-mono">
             {{ videos.filter(v => v.is_active).length }} Activos / {{ videos.length }} Totales
           </span>
         </div>
@@ -235,12 +235,12 @@ onMounted(() => {
         @update:model-value="(val: boolean) => !val && (videoToDelete = null)"
       >
         <div class="space-y-3 text-center py-2">
-          <div class="w-12 h-12 rounded-full bg-red-100 text-red-600 flex items-center justify-center text-2xl mx-auto">
+          <div class="w-12 h-12 rounded-full bg-red-950/80 border border-red-800 text-red-400 flex items-center justify-center text-2xl mx-auto">
             <i class="bi bi-trash-fill"></i>
           </div>
-          <h3 class="font-bold text-gray-900 text-base">¿Deseas eliminar este video?</h3>
-          <p class="text-xs text-gray-500">
-            Esta acción eliminará el video <strong>"{{ videoToDelete?.title }}"</strong> permanentemente del catálogo de patrocinadores.
+          <h3 class="font-bold text-white text-base">¿Deseas eliminar este video?</h3>
+          <p class="text-xs text-slate-400">
+            Esta acción eliminará el video <strong class="text-white">"{{ videoToDelete?.title }}"</strong> permanentemente del catálogo de patrocinadores.
           </p>
         </div>
 

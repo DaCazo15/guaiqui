@@ -200,8 +200,8 @@ onMounted(loadPlayers)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold font-title text-slate-900">Plantilla de Jugadores</h1>
-          <p class="text-sm text-slate-600 mt-1">
+          <h1 class="text-2xl font-bold font-title text-white">Plantilla de Jugadores</h1>
+          <p class="text-sm text-slate-400 mt-1">
             Gestión exclusiva y manual de los jugadores oficiales de Guaiqueríes de Margarita.
           </p>
         </div>
@@ -212,15 +212,15 @@ onMounted(loadPlayers)
         </div>
       </div>
 
-      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-200 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-red-500 hover:text-red-700">
+        <button @click="errorMessage = null" class="text-red-400 hover:text-red-200">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="successMessage" class="p-4 bg-emerald-950/60 border border-emerald-800 text-emerald-200 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-emerald-600 hover:text-emerald-800">
+        <button @click="successMessage = null" class="text-emerald-400 hover:text-emerald-200">
           <i class="bi bi-x-lg"></i>
         </button>
       </div>
@@ -232,18 +232,18 @@ onMounted(loadPlayers)
         empty-text="No hay jugadores registrados. Haz clic en 'Agregar Jugador' para registrar al primero."
       >
         <template #cell-jersey_number="{ row }">
-          <span class="font-bold font-mono text-guaiqui-primary">#{{ (row as PlayerRow).jersey_number }}</span>
+          <span class="font-bold font-mono text-emerald-400">#{{ (row as PlayerRow).jersey_number }}</span>
         </template>
 
         <template #cell-name="{ row }">
           <div class="flex items-center gap-2">
-            <span class="font-bold text-slate-900">{{ (row as PlayerRow).name }}</span>
+            <span class="font-bold text-white">{{ (row as PlayerRow).name }}</span>
             <a
               v-if="(row as PlayerRow).instagram_url"
               :href="(row as PlayerRow).instagram_url!"
               target="_blank"
               rel="noopener noreferrer"
-              class="text-pink-600 hover:text-pink-700 text-sm"
+              class="text-pink-400 hover:text-pink-300 text-sm"
               title="Ver Instagram"
             >
               <i class="bi bi-instagram"></i>
@@ -252,10 +252,10 @@ onMounted(loadPlayers)
         </template>
 
         <template #cell-is_star="{ row }">
-          <span v-if="(row as PlayerRow).is_star" class="text-amber-500 font-semibold text-xs flex items-center justify-center gap-1">
+          <span v-if="(row as PlayerRow).is_star" class="text-amber-400 font-semibold text-xs flex items-center justify-center gap-1">
             <i class="bi bi-star-fill text-xs"></i> Estrella
           </span>
-          <span v-else class="text-slate-400 text-xs">-</span>
+          <span v-else class="text-slate-500 text-xs">-</span>
         </template>
 
         <template #cell-is_active="{ row }">
@@ -268,7 +268,7 @@ onMounted(loadPlayers)
           <div class="flex items-center justify-end gap-1.5">
             <button
               @click="editPlayer(row as PlayerRow)"
-              class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
+              class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
               title="Editar"
             >
               <i class="bi bi-pencil"></i>
@@ -276,14 +276,14 @@ onMounted(loadPlayers)
             <button
               @click="togglePlayerStatus(row as PlayerRow)"
               class="p-1.5 rounded-lg transition-colors"
-              :class="(row as PlayerRow).is_active ? 'text-amber-600 hover:bg-amber-50' : 'text-emerald-600 hover:bg-emerald-50'"
+              :class="(row as PlayerRow).is_active ? 'text-amber-400 hover:bg-amber-950/60' : 'text-emerald-400 hover:bg-emerald-950/60'"
               :title="(row as PlayerRow).is_active ? 'Desactivar de la plantilla' : 'Activar en la plantilla'"
             >
               <i :class="(row as PlayerRow).is_active ? 'bi bi-person-dash' : 'bi bi-person-check'"></i>
             </button>
             <button
               @click="deletePlayer(row as PlayerRow)"
-              class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+              class="p-1.5 text-red-400 hover:bg-red-950/60 rounded-lg transition-colors"
               title="Eliminar permanentemente"
             >
               <i class="bi bi-trash"></i>
@@ -307,12 +307,12 @@ onMounted(loadPlayers)
         <BaseInput label="Biografía / Notas" v-model="playerForm.bio" placeholder="Trayectoria o méritos del jugador" />
         <BaseInput label="Perfil de Instagram (URL o @usuario)" v-model="playerForm.instagram_url" placeholder="https://instagram.com/nombre o @nombre" />
 
-        <div class="flex items-center gap-6 border-t border-slate-200 pt-3">
-          <label class="flex items-center gap-2 text-sm text-slate-700 cursor-pointer">
+        <div class="flex items-center gap-6 border-t border-slate-800 pt-3">
+          <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">
             <input type="checkbox" v-model="playerForm.is_active" class="accent-emerald-600 rounded" />
             <span>Activo en Plantilla</span>
           </label>
-          <label class="flex items-center gap-2 text-sm text-amber-700 cursor-pointer">
+          <label class="flex items-center gap-2 text-sm text-amber-400 cursor-pointer">
             <input type="checkbox" v-model="playerForm.is_star" class="accent-amber-500 rounded" />
             <span>Jugador Estrella</span>
           </label>

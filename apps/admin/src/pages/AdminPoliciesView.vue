@@ -124,54 +124,54 @@ onMounted(loadPolicies)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl sm:text-3xl font-bold font-title text-slate-900">Políticas Legales y Control de Versiones</h1>
-          <p class="text-sm text-slate-600">Publicar nuevas versiones de Términos, Privacidad, Perlitas y Canjes. Publicar una nueva versión desactivará la anterior y requerirá re-aceptación de los fanáticos.</p>
+          <h1 class="text-2xl sm:text-3xl font-bold font-title text-white">Políticas Legales y Control de Versiones</h1>
+          <p class="text-sm text-slate-400">Publicar nuevas versiones de Términos, Privacidad, Perlitas y Canjes. Publicar una nueva versión desactivará la anterior y requerirá re-aceptación de los fanáticos.</p>
         </div>
       </div>
 
-      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="errorMessage" class="p-4 bg-red-950/80 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
+        <button @click="errorMessage = null" class="text-red-400 hover:text-red-200"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="successMessage" class="p-4 bg-emerald-950/80 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-slate-400 hover:text-slate-600"><i class="bi bi-x-lg"></i></button>
+        <button @click="successMessage = null" class="text-emerald-400 hover:text-emerald-200"><i class="bi bi-x-lg"></i></button>
       </div>
 
       <!-- Legal Quick Actions Grid -->
       <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-        <div v-for="slugKey in (['terminos', 'privacidad', 'perlitas', 'canjes'] as const)" :key="slugKey" class="p-5 bg-white border border-slate-200 rounded-2xl shadow-xs flex flex-col justify-between space-y-3">
+        <div v-for="slugKey in (['terminos', 'privacidad', 'perlitas', 'canjes'] as const)" :key="slugKey" class="p-5 bg-slate-900 border border-slate-800 rounded-2xl shadow-xl flex flex-col justify-between space-y-3">
           <div>
             <div class="flex items-center justify-between">
-              <span class="font-bold text-slate-900 text-sm">{{ policyLabels[slugKey] }}</span>
+              <span class="font-bold text-white text-sm">{{ policyLabels[slugKey] }}</span>
               <BaseBadge :variant="policies.find(p => p.slug === slugKey && p.is_active) ? 'success' : 'soft'">
                 {{ policies.find(p => p.slug === slugKey && p.is_active)?.version || 'Sin Versión' }}
               </BaseBadge>
             </div>
-            <p class="text-xs text-slate-500 mt-2">
+            <p class="text-xs text-slate-400 mt-2">
               Publicado el: {{ policies.find(p => p.slug === slugKey && p.is_active)?.published_at ? new Date(policies.find(p => p.slug === slugKey && p.is_active)!.published_at).toLocaleDateString() : 'N/A' }}
             </p>
           </div>
           <BaseButton variant="secondary" class="w-full text-xs" @click="openNewVersion(slugKey)">
-            <i class="bi bi-file-earmark-diff mr-1.5 text-emerald-600"></i> Publicar Nueva Versión
+            <i class="bi bi-file-earmark-diff mr-1.5 text-emerald-400"></i> Publicar Nueva Versión
           </BaseButton>
         </div>
       </div>
 
       <!-- History Table -->
       <div class="pt-4">
-        <h2 class="text-lg font-bold text-slate-900 mb-4">Historial de Versiones Publicadas</h2>
+        <h2 class="text-lg font-bold text-white mb-4">Historial de Versiones Publicadas</h2>
         <BaseTable :columns="columns" :data="policies" :loading="loading" empty-text="No hay versiones registradas">
           <template #cell-slug="{ row }">
-            <span class="font-semibold text-slate-900">{{ policyLabels[(row as any).slug] || (row as any).slug }}</span>
+            <span class="font-semibold text-white">{{ policyLabels[(row as any).slug] || (row as any).slug }}</span>
           </template>
 
           <template #cell-version="{ row }">
-            <span class="font-mono text-emerald-600 font-bold text-sm">{{ (row as any).version }}</span>
+            <span class="font-mono text-emerald-400 font-bold text-sm">{{ (row as any).version }}</span>
           </template>
 
           <template #cell-published_at="{ row }">
-            <span class="text-xs text-slate-600">{{ new Date((row as any).published_at).toLocaleString() }}</span>
+            <span class="text-xs text-slate-400">{{ new Date((row as any).published_at).toLocaleString() }}</span>
           </template>
 
           <template #cell-is_active="{ row }">
@@ -182,7 +182,7 @@ onMounted(loadPolicies)
 
           <template #cell-actions="{ row }">
             <div class="flex items-center justify-end gap-1.5">
-              <button @click="viewContent(row as any)" class="p-1.5 text-slate-600 hover:text-slate-900 hover:bg-slate-100 rounded-lg transition-colors" title="Ver / Editar Markdown">
+              <button @click="viewContent(row as any)" class="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Ver / Editar Markdown">
                 <i class="bi bi-eye"></i>
               </button>
             </div>
@@ -197,16 +197,16 @@ onMounted(loadPolicies)
         <BaseInput label="Identificador de Versión (ej: v1.1)" v-model="form.version" placeholder="v1.1" />
 
         <div>
-          <label class="block text-xs font-semibold text-slate-700 mb-1">Contenido de la Política (Markdown)</label>
+          <label class="block text-xs font-semibold text-slate-300 mb-1">Contenido de la Política (Markdown)</label>
           <textarea
             v-model="form.content_markdown"
             rows="12"
-            class="w-full font-mono text-xs bg-white border border-slate-300 text-slate-900 rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500"
+            class="w-full font-mono text-xs bg-slate-950 border border-slate-800 text-white rounded-xl px-3 py-2 focus:outline-none focus:border-emerald-500 placeholder-slate-500"
             placeholder="# Titulo de la política..."
           ></textarea>
         </div>
 
-        <p class="text-xs text-amber-800 bg-amber-50 border border-amber-200 p-3 rounded-xl">
+        <p class="text-xs text-amber-300 bg-amber-950/80 border border-amber-800 p-3 rounded-xl">
           <i class="bi bi-exclamation-triangle mr-1"></i>
           Al hacer clic en "Publicar Versión", esta versión pasará a ser la única vigente. Los usuarios registrados que hayan aceptado versiones anteriores deberán volver a aceptar las políticas.
         </p>

@@ -206,10 +206,10 @@ onMounted(loadPosts)
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold font-title text-slate-900 flex items-center gap-2">
-            <i class="bi bi-instagram text-pink-600"></i> Mosaico de Instagram y Noticias
+          <h1 class="text-2xl font-bold font-title text-white flex items-center gap-2">
+            <i class="bi bi-instagram text-pink-400"></i> Mosaico de Instagram y Noticias
           </h1>
-          <p class="text-sm text-slate-600 mt-0.5">
+          <p class="text-sm text-slate-400 mt-0.5">
             Agrega los enlaces oficiales de las publicaciones de Instagram de Guaiqueríes. Las primeras 6 publicaciones nutren la sección de Noticias.
           </p>
         </div>
@@ -219,13 +219,13 @@ onMounted(loadPosts)
       </div>
 
       <!-- Messages -->
-      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-200 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-red-500 hover:text-red-700"><i class="bi bi-x-lg"></i></button>
+        <button @click="errorMessage = null" class="text-red-400 hover:text-red-200"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="successMessage" class="p-4 bg-emerald-950/60 border border-emerald-800 text-emerald-200 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-emerald-600 hover:text-emerald-800"><i class="bi bi-x-lg"></i></button>
+        <button @click="successMessage = null" class="text-emerald-400 hover:text-emerald-200"><i class="bi bi-x-lg"></i></button>
       </div>
 
       <!-- Mosaic Grid Preview -->
@@ -233,34 +233,34 @@ onMounted(loadPosts)
         <i class="bi bi-arrow-repeat animate-spin text-2xl"></i>
       </div>
 
-      <div v-else-if="posts.length === 0" class="text-center py-16 bg-white rounded-2xl border border-slate-200 shadow-sm">
-        <div class="w-16 h-16 rounded-full bg-pink-50 text-pink-600 flex items-center justify-center text-3xl mx-auto mb-3">
+      <div v-else-if="posts.length === 0" class="text-center py-16 bg-slate-900 rounded-2xl border border-slate-800 shadow-xl">
+        <div class="w-16 h-16 rounded-full bg-pink-950/60 border border-pink-800/60 text-pink-400 flex items-center justify-center text-3xl mx-auto mb-3">
           <i class="bi bi-instagram"></i>
         </div>
-        <h3 class="text-lg font-bold text-slate-900">Sin publicaciones registradas</h3>
-        <p class="text-xs text-slate-500 mt-1 max-w-md mx-auto">
+        <h3 class="text-lg font-bold text-white">Sin publicaciones registradas</h3>
+        <p class="text-xs text-slate-400 mt-1 max-w-md mx-auto">
           Pega el enlace de las publicaciones de Instagram oficiales (@guaiqueriesbbc) para que aparezcan en la app y la landing.
         </p>
       </div>
 
       <div v-else class="space-y-4">
-        <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center justify-between">
+        <div class="p-3 bg-emerald-950/50 border border-emerald-800 rounded-xl text-xs text-emerald-300 flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <i class="bi bi-check-circle-fill text-emerald-600"></i>
+            <i class="bi bi-check-circle-fill text-emerald-400"></i>
             <span>
               <strong>Noticias Oficiales:</strong> Los primeros 6 posts se sincronizan en vivo en la Landing y en la app de fanáticos (/app/noticias).
             </span>
           </div>
-          <span class="font-bold bg-white text-emerald-800 border border-emerald-200 px-2 py-0.5 rounded text-[11px]">{{ posts.length }} / 8 posts</span>
+          <span class="font-bold bg-emerald-900/80 text-emerald-300 border border-emerald-700 px-2 py-0.5 rounded text-[11px]">{{ posts.length }} / 8 posts</span>
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           <BaseCard
             v-for="(post, index) in posts"
             :key="post.id"
-            class="bg-white border-slate-200 shadow-sm overflow-hidden group relative flex flex-col justify-between rounded-xl"
+            class="bg-slate-900 border-slate-800 shadow-xl overflow-hidden group relative flex flex-col justify-between rounded-xl"
           >
-            <div class="relative h-48 bg-slate-100 overflow-hidden">
+            <div class="relative h-48 bg-slate-950 overflow-hidden">
               <img
                 :src="post.image_url"
                 class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
@@ -301,20 +301,20 @@ onMounted(loadPosts)
               </div>
             </div>
 
-            <div class="p-3.5 space-y-2 bg-white flex-1 flex flex-col justify-between">
+            <div class="p-3.5 space-y-2 bg-slate-900 flex-1 flex flex-col justify-between">
               <div>
-                <p class="text-xs font-semibold text-slate-800 line-clamp-2">{{ post.caption || 'Publicación oficial en Instagram' }}</p>
-                <span v-if="post.shortcode" class="text-[10px] text-slate-400 font-mono mt-1 block">
+                <p class="text-xs font-semibold text-slate-200 line-clamp-2">{{ post.caption || 'Publicación oficial en Instagram' }}</p>
+                <span v-if="post.shortcode" class="text-[10px] text-slate-500 font-mono mt-1 block">
                   ID: {{ post.shortcode }}
                 </span>
               </div>
 
-              <div class="flex items-center justify-between pt-2.5 border-t border-slate-100 mt-2">
+              <div class="flex items-center justify-between pt-2.5 border-t border-slate-800 mt-2">
                 <a
                   :href="post.post_url"
                   target="_blank"
                   rel="noopener noreferrer"
-                  class="text-[11px] text-guaiqui-primary hover:text-guaiqui-primary-dark font-bold flex items-center gap-1"
+                  class="text-[11px] text-pink-400 hover:text-pink-300 font-bold flex items-center gap-1"
                 >
                   <i class="bi bi-instagram"></i>
                   <span>Ver Post</span>
@@ -322,7 +322,7 @@ onMounted(loadPosts)
                 </a>
                 <button
                   @click="deletePost(post.id)"
-                  class="text-red-600 hover:text-red-700 p-1 text-xs"
+                  class="text-red-400 hover:text-red-300 p-1 text-xs"
                   title="Eliminar publicación"
                 >
                   <i class="bi bi-trash"></i>
@@ -348,26 +348,26 @@ onMounted(loadPosts)
             v-model="postForm.post_url"
             placeholder="https://www.instagram.com/p/DA_5rXbM-c1/"
           />
-          <span v-if="parseShortcode(postForm.post_url)" class="text-[11px] text-emerald-600 font-mono mt-1 block">
+          <span v-if="parseShortcode(postForm.post_url)" class="text-[11px] text-emerald-400 font-mono mt-1 block">
             <i class="bi bi-check-circle-fill"></i> ID identificado: {{ parseShortcode(postForm.post_url) }}
           </span>
-          <p class="text-[11px] text-slate-500 mt-1">
+          <p class="text-[11px] text-slate-400 mt-1">
             Copia y pega el enlace del post del perfil oficial @guaiqueriesbbc.
           </p>
         </div>
 
         <!-- Toggle Opciones Personalizadas (Opcional) -->
-        <div class="pt-2 border-t border-slate-200">
+        <div class="pt-2 border-t border-slate-800">
           <button
             type="button"
-            class="text-xs text-slate-600 hover:text-slate-900 font-semibold flex items-center gap-1"
+            class="text-xs text-slate-400 hover:text-white font-semibold flex items-center gap-1"
             @click="showAdvancedOptions = !showAdvancedOptions"
           >
             <i :class="showAdvancedOptions ? 'bi bi-chevron-down' : 'bi bi-chevron-right'"></i>
             <span>Personalizar Título o Foto (Opcional)</span>
           </button>
 
-          <div v-if="showAdvancedOptions" class="mt-3 space-y-3 bg-slate-50 p-3 rounded-xl border border-slate-200">
+          <div v-if="showAdvancedOptions" class="mt-3 space-y-3 bg-slate-950/60 p-3 rounded-xl border border-slate-800">
             <BaseInput
               label="Titular para la noticia (Opcional)"
               v-model="postForm.caption"
@@ -375,7 +375,7 @@ onMounted(loadPosts)
             />
 
             <div>
-              <label class="block text-xs font-semibold text-slate-700 mb-1">
+              <label class="block text-xs font-semibold text-slate-300 mb-1">
                 Foto representativa (Opcional)
               </label>
               <input
@@ -387,7 +387,7 @@ onMounted(loadPosts)
               />
               <div
                 @click="triggerFileInput"
-                class="border border-dashed border-slate-300 hover:border-emerald-500 rounded-lg p-3 text-center cursor-pointer bg-white text-xs text-slate-600"
+                class="border border-dashed border-slate-700 hover:border-emerald-500 rounded-lg p-3 text-center cursor-pointer bg-slate-900 text-xs text-slate-300"
               >
                 <span v-if="selectedImageFile">{{ selectedImageFile.name }}</span>
                 <span v-else><i class="bi bi-upload mr-1"></i> Subir imagen personalizada (PNG / JPG / WebP)</span>

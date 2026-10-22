@@ -137,30 +137,30 @@ onMounted(loadAnnouncements)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold font-title text-slate-900">Cinta Superior de Anuncios</h1>
-          <p class="text-sm text-slate-600 mt-1">Gestionar mensajes emergentes y promociones con vigencia en la cabecera de la landing.</p>
+          <h1 class="text-2xl font-bold font-title text-white">Cinta Superior de Anuncios</h1>
+          <p class="text-sm text-slate-400 mt-1">Gestionar mensajes emergentes y promociones con vigencia en la cabecera de la landing.</p>
         </div>
         <BaseButton variant="primary" @click="openNew">
           <i class="bi bi-plus-lg mr-1.5"></i> Nuevo Anuncio
         </BaseButton>
       </div>
 
-      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 text-red-700 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="errorMessage" class="p-4 bg-red-950/80 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-red-500 hover:text-red-700"><i class="bi bi-x-lg"></i></button>
+        <button @click="errorMessage = null" class="text-red-400 hover:text-red-200"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="successMessage" class="p-4 bg-emerald-950/80 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-emerald-600 hover:text-emerald-800"><i class="bi bi-x-lg"></i></button>
+        <button @click="successMessage = null" class="text-emerald-400 hover:text-emerald-200"><i class="bi bi-x-lg"></i></button>
       </div>
 
       <BaseTable :columns="columns" :data="announcements" :loading="loading" empty-text="No hay anuncios en la cinta">
         <template #cell-message="{ row }">
-          <span class="font-semibold text-slate-900">{{ (row as any).message }}</span>
+          <span class="font-semibold text-white">{{ (row as any).message }}</span>
         </template>
 
         <template #cell-link_url="{ row }">
-          <span class="text-xs text-slate-500 font-mono">{{ (row as any).link_url || '-' }}</span>
+          <span class="text-xs text-slate-400 font-mono">{{ (row as any).link_url || '-' }}</span>
         </template>
 
         <template #cell-is_published="{ row }">
@@ -171,10 +171,10 @@ onMounted(loadAnnouncements)
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1.5">
-            <button @click="editRow(row as any)" class="p-1.5 text-slate-600 hover:bg-slate-100 rounded-lg" title="Editar">
+            <button @click="editRow(row as any)" class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
               <i class="bi bi-pencil"></i>
             </button>
-            <button @click="deleteRow((row as any).id)" class="p-1.5 text-red-600 hover:bg-red-50 rounded-lg" title="Eliminar">
+            <button @click="deleteRow((row as any).id)" class="p-1.5 text-red-400 hover:bg-red-950 rounded-lg transition-colors" title="Eliminar">
               <i class="bi bi-trash"></i>
             </button>
           </div>

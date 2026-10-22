@@ -110,22 +110,22 @@ onMounted(loadEconomySettings)
   <AdminLayout>
     <div class="max-w-5xl mx-auto space-y-6">
       <div>
-        <h1 class="text-2xl font-bold font-title text-gray-900 tracking-tight">Reglas Económicas de la Plataforma</h1>
-        <p class="text-sm text-gray-600 mt-1">Configurar límites máximos de emisión de perlitas y bonos de racha. Los cambios aplican hacia adelante.</p>
+        <h1 class="text-2xl font-bold font-title text-white tracking-tight">Reglas Económicas de la Plataforma</h1>
+        <p class="text-sm text-slate-400 mt-1">Configurar límites máximos de emisión de perlitas y bonos de racha. Los cambios aplican hacia adelante.</p>
       </div>
 
-      <div v-if="errorMessage" class="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="errorMessage" class="p-4 bg-red-950/80 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-gray-400 hover:text-gray-700"><i class="bi bi-x-lg"></i></button>
+        <button @click="errorMessage = null" class="text-red-400 hover:text-red-200"><i class="bi bi-x-lg"></i></button>
       </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-xl text-sm flex items-center justify-between">
+      <div v-if="successMessage" class="p-4 bg-emerald-950/80 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center justify-between">
         <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-gray-400 hover:text-gray-700"><i class="bi bi-x-lg"></i></button>
+        <button @click="successMessage = null" class="text-emerald-400 hover:text-emerald-200"><i class="bi bi-x-lg"></i></button>
       </div>
 
-      <BaseCard class="bg-white border border-gray-200 p-6 rounded-2xl shadow-xs space-y-6">
-        <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2">
-          <i class="bi bi-shield-lock text-emerald-700"></i> Caps Máximos de Ganancia de Perlitas
+      <BaseCard class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-6">
+        <h2 class="text-lg font-bold text-white flex items-center gap-2">
+          <i class="bi bi-shield-lock text-emerald-400"></i> Caps Máximos de Ganancia de Perlitas
         </h2>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -133,8 +133,8 @@ onMounted(loadEconomySettings)
           <BaseInput label="Cap Semanal de Perlitas por Fanático" type="number" v-model="weeklyCap" />
         </div>
 
-        <h2 class="text-lg font-bold text-gray-900 flex items-center gap-2 border-t border-gray-100 pt-6">
-          <i class="bi bi-fire text-amber-600"></i> Configuración de Bonos por Racha de Participación
+        <h2 class="text-lg font-bold text-white flex items-center gap-2 border-t border-slate-800 pt-6">
+          <i class="bi bi-fire text-amber-400"></i> Configuración de Bonos por Racha de Participación
         </h2>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -142,7 +142,7 @@ onMounted(loadEconomySettings)
           <BaseInput label="Bono por 7 Días Consecutivos (Perlitas)" type="number" v-model="streak7DaysBonus" />
         </div>
 
-        <div class="flex items-center justify-end border-t border-gray-100 pt-6">
+        <div class="flex items-center justify-end border-t border-slate-800 pt-6">
           <BaseButton variant="primary" :loading="actionLoading" @click="saveEconomySettings">
             <i class="bi bi-check-lg mr-1.5"></i> Actualizar Reglas Económicas
           </BaseButton>
@@ -150,21 +150,21 @@ onMounted(loadEconomySettings)
       </BaseCard>
 
       <!-- History of updates -->
-      <BaseCard class="bg-white border border-gray-200 p-6 rounded-2xl shadow-xs space-y-4">
-        <h3 class="text-md font-bold text-gray-900 flex items-center gap-2">
-          <i class="bi bi-clock-history text-gray-500"></i> Historial de Modificaciones
+      <BaseCard class="bg-slate-900 border border-slate-800 p-6 rounded-2xl shadow-xl space-y-4">
+        <h3 class="text-md font-bold text-white flex items-center gap-2">
+          <i class="bi bi-clock-history text-slate-400"></i> Historial de Modificaciones
         </h3>
 
         <div class="space-y-3">
-          <div v-for="log in historyLogs" :key="log.id" class="p-3.5 rounded-xl bg-gray-50 border border-gray-200 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+          <div v-for="log in historyLogs" :key="log.id" class="p-3.5 rounded-xl bg-slate-950/60 border border-slate-800 text-xs flex flex-col sm:flex-row sm:items-center justify-between gap-2">
             <div>
-              <span class="font-semibold text-gray-900">{{ log.actor?.display_name || 'Administrador' }}</span>
-              <span class="text-gray-600 font-mono ml-2">Cap Diario: {{ log.after?.daily_pearl_cap }} | Cap Semanal: {{ log.after?.weekly_pearl_cap }}</span>
+              <span class="font-semibold text-white">{{ log.actor?.display_name || 'Administrador' }}</span>
+              <span class="text-slate-300 font-mono ml-2">Cap Diario: {{ log.after?.daily_pearl_cap }} | Cap Semanal: {{ log.after?.weekly_pearl_cap }}</span>
             </div>
-            <span class="text-gray-500 font-mono">{{ formatCaracas(log.created_at) }}</span>
+            <span class="text-slate-400 font-mono">{{ formatCaracas(log.created_at) }}</span>
           </div>
 
-          <div v-if="historyLogs.length === 0" class="text-xs text-gray-500 text-center py-4">
+          <div v-if="historyLogs.length === 0" class="text-xs text-slate-500 text-center py-4">
             No se han registrado modificaciones en la economía aún.
           </div>
         </div>

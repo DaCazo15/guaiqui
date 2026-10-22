@@ -92,25 +92,25 @@ onMounted(() => {
       <!-- Header -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl sm:text-3xl font-bold text-slate-900 tracking-wide font-title">Inventario de Taquilla y Canjes</h1>
-          <p class="text-xs text-slate-600">Consulta de catálogo y ajuste de existencias físicas para taquilla</p>
+          <h1 class="text-2xl sm:text-3xl font-bold text-white tracking-wide font-title">Inventario de Taquilla y Canjes</h1>
+          <p class="text-xs text-slate-400">Consulta de catálogo y ajuste de existencias físicas para taquilla</p>
         </div>
 
         <div class="flex items-center gap-3">
           <button
             :disabled="isLoading"
-            class="px-3 py-2 text-xs font-semibold text-slate-700 hover:text-slate-900 bg-white hover:bg-slate-50 border border-slate-200 rounded-xl flex items-center gap-2 transition-colors shadow-xs"
+            class="px-3 py-2 text-xs font-semibold text-slate-300 hover:text-white bg-slate-900 hover:bg-slate-800 border border-slate-800 rounded-xl flex items-center gap-2 transition-colors shadow-xs"
             title="Actualizar catálogo"
             @click="fetchProducts"
           >
-            <i :class="['bi bi-arrow-clockwise text-sm', isLoading ? 'animate-spin' : '']"></i>
+            <i :class="['bi bi-arrow-clockwise text-sm', isLoading ? 'animate-spin text-emerald-400' : '']"></i>
             <span>Actualizar</span>
           </button>
         </div>
       </div>
 
       <!-- Search & Filters Toolbar -->
-      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-white p-4 rounded-xl border border-slate-200 shadow-xs">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 bg-slate-900/60 p-4 rounded-xl border border-slate-800 shadow-xs">
         <BaseInput v-model="searchQuery" placeholder="Buscar por nombre..." />
         <BaseSelect
           v-model="selectedCategory"
@@ -122,26 +122,26 @@ onMounted(() => {
             { value: 'raffle', label: 'Sorteo' }
           ]"
         />
-        <div class="flex items-center justify-end text-xs text-slate-500 font-mono">
+        <div class="flex items-center justify-end text-xs text-slate-400 font-mono">
           Total: {{ filteredProducts.length }} productos
         </div>
       </div>
 
       <!-- Inventory Table -->
-      <div class="bg-white border border-slate-200 rounded-2xl overflow-hidden shadow-xs">
-        <div v-if="isLoading" class="p-12 text-center text-slate-500">
-          <i class="bi bi-arrow-repeat animate-spin text-3xl text-emerald-600 block mb-2"></i>
+      <div class="bg-slate-900 border border-slate-800 rounded-2xl overflow-hidden shadow-xl">
+        <div v-if="isLoading" class="p-12 text-center text-slate-400">
+          <i class="bi bi-arrow-repeat animate-spin text-3xl text-emerald-400 block mb-2"></i>
           <span class="text-xs">Cargando catálogo de productos...</span>
         </div>
 
         <div v-else-if="filteredProducts.length === 0" class="p-12 text-center text-slate-500">
-          <i class="bi bi-box text-4xl block mb-2 text-slate-400"></i>
+          <i class="bi bi-box text-4xl block mb-2 text-slate-600"></i>
           <span class="text-sm">No se encontraron productos en inventario.</span>
         </div>
 
         <div v-else class="overflow-x-auto">
-          <table class="w-full text-left text-xs text-slate-700">
-            <thead class="bg-slate-50 text-slate-600 uppercase tracking-wider font-semibold border-b border-slate-200">
+          <table class="w-full text-left text-xs text-slate-300">
+            <thead class="bg-slate-950/80 text-slate-400 uppercase tracking-wider font-semibold border-b border-slate-800">
               <tr>
                 <th class="py-3.5 px-4">Producto</th>
                 <th class="py-3.5 px-4 text-center">Categoría</th>
@@ -151,37 +151,37 @@ onMounted(() => {
                 <th class="py-3.5 px-4 text-right">Acciones</th>
               </tr>
             </thead>
-            <tbody class="divide-y divide-slate-100">
-              <tr v-for="item in filteredProducts" :key="item.id" class="hover:bg-slate-50 transition-colors">
-                <td class="py-3 px-4 font-medium text-slate-900">
+            <tbody class="divide-y divide-slate-800/60">
+              <tr v-for="item in filteredProducts" :key="item.id" class="hover:bg-slate-800/40 transition-colors">
+                <td class="py-3 px-4 font-medium text-white">
                   <div class="flex items-center gap-3">
                     <img
                       v-if="item.images && item.images.length > 0"
                       :src="item.images[0]"
-                      class="w-9 h-9 rounded-lg object-cover bg-slate-100 border border-slate-200 shrink-0"
+                      class="w-9 h-9 rounded-lg object-cover bg-slate-800 border border-slate-700 shrink-0"
                     />
-                    <div v-else class="w-9 h-9 rounded-lg bg-slate-100 border border-slate-200 flex items-center justify-center shrink-0 text-slate-400">
+                    <div v-else class="w-9 h-9 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center shrink-0 text-slate-500">
                       <i class="bi bi-box-seam"></i>
                     </div>
                     <div>
-                      <span class="block font-bold text-slate-900 text-sm">{{ item.name }}</span>
-                      <span v-if="item.description" class="text-[11px] text-slate-500 font-normal truncate max-w-xs block">{{ item.description }}</span>
+                      <span class="block font-bold text-white text-sm">{{ item.name }}</span>
+                      <span v-if="item.description" class="text-[11px] text-slate-400 font-normal truncate max-w-xs block">{{ item.description }}</span>
                     </div>
                   </div>
                 </td>
 
                 <td class="py-3 px-4 text-center">
-                  <span class="px-2 py-0.5 bg-slate-100 rounded-md text-[11px] font-mono uppercase text-slate-700">
+                  <span class="px-2 py-0.5 bg-slate-800 rounded-md text-[11px] font-mono uppercase text-slate-300 border border-slate-700">
                     {{ item.category }}
                   </span>
                 </td>
 
-                <td class="py-3 px-4 text-center font-semibold text-emerald-700 font-mono text-sm">
-                  {{ item.cost_pearls }} <i class="bi bi-gem text-emerald-600 ms-0.5"></i>
+                <td class="py-3 px-4 text-center font-semibold text-emerald-400 font-mono text-sm">
+                  {{ item.cost_pearls }} <i class="bi bi-gem text-emerald-400 ms-0.5"></i>
                 </td>
 
                 <td class="py-3 px-4 text-center font-mono font-bold text-sm">
-                  <span :class="item.stock <= 5 ? 'text-amber-700' : 'text-slate-900'">
+                  <span :class="item.stock <= 5 ? 'text-amber-400' : 'text-white'">
                     {{ item.stock }}
                   </span>
                 </td>
@@ -195,7 +195,7 @@ onMounted(() => {
                 <td class="py-3 px-4 text-right">
                   <div class="flex items-center justify-end">
                     <button
-                      class="px-2.5 py-1 bg-white hover:bg-slate-100 text-emerald-700 border border-slate-200 text-xs font-semibold rounded-lg transition-all inline-flex items-center gap-1.5 shadow-xs"
+                      class="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-emerald-400 border border-slate-700 text-xs font-semibold rounded-lg transition-all inline-flex items-center gap-1.5 shadow-xs"
                       title="Ajustar Cantidad de Stock"
                       @click="openAdjustModal(item)"
                     >

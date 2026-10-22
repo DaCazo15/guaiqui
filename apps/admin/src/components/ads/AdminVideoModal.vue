@@ -122,35 +122,35 @@ const handleSave = () => {
     @update:model-value="(val: boolean) => !val && emit('close')"
   >
     <div class="space-y-6">
-      <div v-if="localError" class="p-3 bg-red-50 border border-red-200 text-red-700 rounded-lg text-xs flex items-center gap-2">
-        <i class="bi bi-exclamation-circle-fill text-red-600"></i>
+      <div v-if="localError" class="p-3 bg-red-950/80 border border-red-800 text-red-300 rounded-lg text-xs flex items-center gap-2">
+        <i class="bi bi-exclamation-circle-fill text-red-400"></i>
         <span>{{ localError }}</span>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <!-- Título -->
         <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">
-            Título del Video <span class="text-red-500">*</span>
+          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">
+            Título del Video <span class="text-red-400">*</span>
           </label>
           <input
             v-model="form.title"
             type="text"
             required
-            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+            class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-800 text-white rounded-lg focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-hidden placeholder-slate-500"
             placeholder="Ej: Spot Oficial Temporada 2026"
           />
         </div>
 
         <!-- Nombre del Patrocinador -->
         <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">
+          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">
             Nombre del Patrocinador / Marca
           </label>
           <input
             v-model="form.sponsor_name"
             type="text"
-            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+            class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-800 text-white rounded-lg focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-hidden placeholder-slate-500"
             placeholder="Ej: Naviarca / Banesco / Empresas Polar"
           />
         </div>
@@ -158,32 +158,32 @@ const handleSave = () => {
 
       <!-- Enlace de Google Drive -->
       <div>
-        <label class="block text-xs font-bold text-gray-700 uppercase mb-1">
-          Enlace o ID de Google Drive <span class="text-red-500">*</span>
+        <label class="block text-xs font-bold text-slate-300 uppercase mb-1">
+          Enlace o ID de Google Drive <span class="text-red-400">*</span>
         </label>
         <input
           v-model="form.video_url"
           type="text"
           required
-          class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg font-mono focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+          class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-800 text-white rounded-lg font-mono focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-hidden placeholder-slate-500"
           placeholder="https://drive.google.com/file/d/1A2B3C.../view?usp=sharing"
         />
-        <p class="text-[11px] text-gray-500 mt-1 flex items-center gap-1">
-          <i class="bi bi-info-circle text-gray-400"></i>
-          Asegúrate de que en Google Drive el archivo tenga permisos: <strong>"Cualquier persona con el enlace"</strong>.
+        <p class="text-[11px] text-slate-400 mt-1 flex items-center gap-1">
+          <i class="bi bi-info-circle text-slate-500"></i>
+          Asegúrate de que en Google Drive el archivo tenga permisos: <strong class="text-emerald-400">"Cualquier persona con el enlace"</strong>.
         </p>
       </div>
 
       <!-- Vista previa reactiva del reproductor Google Drive -->
-      <div v-if="embedPreviewUrl" class="p-4 bg-gray-50 border border-gray-200 rounded-xl space-y-2">
-        <div class="flex items-center justify-between text-xs font-semibold text-gray-700">
-          <span class="flex items-center gap-1.5 text-emerald-700 font-bold">
-            <i class="bi bi-check-circle-fill text-emerald-600"></i>
-            ID detectado: <span class="font-mono text-gray-800">{{ detectedFileId }}</span>
+      <div v-if="embedPreviewUrl" class="p-4 bg-slate-950/60 border border-slate-800 rounded-xl space-y-2">
+        <div class="flex items-center justify-between text-xs font-semibold text-slate-300">
+          <span class="flex items-center gap-1.5 text-emerald-400 font-bold">
+            <i class="bi bi-check-circle-fill text-emerald-400"></i>
+            ID detectado: <span class="font-mono text-white">{{ detectedFileId }}</span>
           </span>
-          <span class="text-gray-400 text-[10px]">Vista Previa del Reproductor</span>
+          <span class="text-slate-500 text-[10px]">Vista Previa del Reproductor</span>
         </div>
-        <div class="relative w-full aspect-video rounded-lg overflow-hidden border border-gray-300 bg-black">
+        <div class="relative w-full aspect-video rounded-lg overflow-hidden border border-slate-800 bg-black">
           <iframe
             :src="embedPreviewUrl"
             class="w-full h-full border-0"
@@ -196,41 +196,41 @@ const handleSave = () => {
       <!-- Redirección del Patrocinador & Botón CTA -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
         <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">
+          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">
             Enlace de Redirección (Sitio Web del Patrocinador)
           </label>
           <input
             v-model="form.redirect_url"
             type="url"
-            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+            class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-800 text-white rounded-lg focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-hidden placeholder-slate-500"
             placeholder="https://patrocinador.com/promo"
           />
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">
+          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">
             Texto del Botón de Redirección (CTA)
           </label>
           <input
             v-model="form.cta_text"
             type="text"
-            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500 focus:outline-hidden"
+            class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-800 text-white rounded-lg focus:ring-1 focus:ring-emerald-500 focus:border-emerald-500 focus:outline-hidden placeholder-slate-500"
             placeholder="Visitar Patrocinador"
           />
         </div>
       </div>
 
       <!-- Previsualización del botón CTA -->
-      <div v-if="form.redirect_url" class="p-3 bg-emerald-50/60 border border-emerald-200 rounded-lg flex items-center justify-between text-xs">
+      <div v-if="form.redirect_url" class="p-3 bg-emerald-950/40 border border-emerald-800 rounded-lg flex items-center justify-between text-xs">
         <div class="space-y-0.5">
-          <span class="font-bold text-emerald-900 block">Previsualización del Botón para los Fanáticos:</span>
-          <span class="text-gray-500 text-[11px] truncate block max-w-sm">{{ form.redirect_url }}</span>
+          <span class="font-bold text-emerald-300 block">Previsualización del Botón para los Fanáticos:</span>
+          <span class="text-slate-400 text-[11px] truncate block max-w-sm font-mono">{{ form.redirect_url }}</span>
         </div>
         <a
           :href="form.redirect_url"
           target="_blank"
           rel="noopener noreferrer"
-          class="px-4 py-2 bg-emerald-600 hover:bg-emerald-700 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 transition-colors"
+          class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg text-xs flex items-center gap-1.5 transition-colors"
         >
           <span>{{ form.cta_text || 'Visitar Patrocinador' }}</span>
           <i class="bi bi-box-arrow-up-right text-[10px]"></i>
@@ -238,53 +238,53 @@ const handleSave = () => {
       </div>
 
       <!-- Reglas de visualización: Tiempo, Recompensa, Orden y Estado -->
-      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-2 border-t border-gray-200">
+      <div class="grid grid-cols-1 sm:grid-cols-4 gap-4 pt-2 border-t border-slate-800">
         <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">
+          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">
             Duración Mínima (Seg)
           </label>
           <input
             v-model.number="form.min_seconds"
             type="number"
             min="1"
-            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+            class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-800 text-white rounded-lg focus:ring-1 focus:ring-emerald-500"
           />
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">
+          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">
             Recompensa (Perlitas)
           </label>
           <input
             v-model.number="form.reward_points"
             type="number"
             min="0"
-            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg font-bold text-emerald-700 focus:ring-2 focus:ring-emerald-500"
+            class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-800 rounded-lg font-bold text-emerald-400 focus:ring-1 focus:ring-emerald-500"
           />
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">
+          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">
             Orden de Visualización
           </label>
           <input
             v-model.number="form.order_index"
             type="number"
-            class="w-full px-3 py-2 text-sm border border-gray-300 rounded-lg focus:ring-2 focus:ring-emerald-500"
+            class="w-full px-3 py-2 text-sm bg-slate-950 border border-slate-800 text-white rounded-lg focus:ring-1 focus:ring-emerald-500"
           />
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-gray-700 uppercase mb-1">
+          <label class="block text-xs font-bold text-slate-300 uppercase mb-1">
             Estado del Video
           </label>
           <label class="flex items-center gap-2 mt-2.5 cursor-pointer">
             <input
               v-model="form.is_active"
               type="checkbox"
-              class="w-4 h-4 text-emerald-600 rounded border-gray-300 focus:ring-emerald-500"
+              class="w-4 h-4 text-emerald-500 rounded border-slate-700 bg-slate-950 focus:ring-emerald-500 accent-emerald-500"
             />
-            <span class="text-xs font-semibold" :class="form.is_active ? 'text-emerald-700' : 'text-gray-500'">
+            <span class="text-xs font-semibold" :class="form.is_active ? 'text-emerald-400' : 'text-slate-500'">
               {{ form.is_active ? 'Activo (Visible)' : 'Inactivo (Pausado)' }}
             </span>
           </label>
