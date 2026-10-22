@@ -56,7 +56,7 @@ const paddingClasses = computed(() => {
 
     <div
       v-if="$slots.header"
-      class="border-b border-guaiqui-border px-4 py-3 sm:px-6 sm:py-4 font-display font-semibold text-lg text-guaiqui-text"
+      class="border-b border-guaiqui-border px-2.5 py-2 sm:px-6 sm:py-4 font-display font-semibold text-lg text-guaiqui-text"
     >
       <slot name="header" />
     </div>
@@ -67,7 +67,7 @@ const paddingClasses = computed(() => {
 
     <div
       v-if="$slots.footer"
-      class="border-t border-guaiqui-border px-4 py-3 sm:px-6 sm:py-4 bg-guaiqui-surface"
+      class="border-t border-guaiqui-border px-2.5 py-2 sm:px-6 sm:py-4 bg-guaiqui-surface"
     >
       <slot name="footer" />
     </div>
