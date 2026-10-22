@@ -82,13 +82,6 @@ const formatDate = (dateStr: string) => {
           Calendario oficial de partidos y resultados de la temporada de Guaiqueríes de Margarita.
         </p>
       </div>
-
-      <NuxtLink to="/app">
-        <span class="text-xs text-guaiqui-primary hover:text-guaiqui-primary-dark underline font-medium inline-flex items-center gap-1">
-          <i class="bi bi-arrow-left"></i>
-          Volver al Inicio
-        </span>
-      </NuxtLink>
     </div>
 
     <!-- Arena Quick Info Banner -->

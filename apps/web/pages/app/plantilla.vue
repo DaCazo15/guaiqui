@@ -82,13 +82,6 @@ const filteredPlayers = computed(() => {
           Guerreros de Guaiqueríes de Margarita — SuperLiga Profesional de Baloncesto
         </p>
       </div>
-
-      <NuxtLink to="/app/perfil">
-        <span class="text-xs text-guaiqui-primary hover:text-guaiqui-primary-dark underline font-medium inline-flex items-center gap-1">
-          <i class="bi bi-arrow-left"></i>
-          Volver al Perfil
-        </span>
-      </NuxtLink>
     </div>
 
     <!-- Position Filters (only when players exist) -->
