@@ -99,7 +99,7 @@ onBeforeUnmount(() => {
 <template>
   <BaseCard class="p-4 sm:p-2.5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm space-y-4">
     <!-- Encabezado de Sección -->
-    <div class="flex items-center justify-between pb-3 border-b border-guaiqui-border">
+    <div class="flex items-center justify-between pb-3 mb-2 border-b border-guaiqui-border">
       <div class="flex items-center gap-2.5">
         <div class="w-9 h-9 rounded-guaiqui-md bg-guaiqui-primary-soft border border-guaiqui-primary/20 flex items-center justify-center text-guaiqui-primary text-base shrink-0">
           <i class="bi bi-calendar-event-fill"></i>

@@ -35,7 +35,7 @@ const myBalance = computed(() => {
 <template>
   <BaseCard class="p-2 flex flex-col gap-2 sm:p-2.5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm space-y-4">
     <!-- Header -->
-    <div class="mb-1 flex items-center justify-between pb-3 border-b border-guaiqui-border">
+    <div class="mb-2 flex items-center justify-between pb-3 border-b border-guaiqui-border">
       <div class="flex items-center gap-2.5">
         <div class="w-9 h-9 rounded-guaiqui-md bg-amber-50 text-amber-500 border border-amber-200 flex items-center justify-center text-base shrink-0">
           <i class="bi bi-trophy-fill"></i>
