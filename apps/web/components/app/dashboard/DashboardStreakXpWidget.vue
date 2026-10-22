@@ -122,10 +122,10 @@ const streakMilestones = [1, 2, 3, 4, 5, 6, 7]
       <!-- Banner Informativo de Bonificación -->
       <div class="flex items-center justify-between px-3 py-2 rounded-guaiqui-md bg-amber-50 border border-amber-200 text-[11px] font-semibold text-amber-900">
         <span class="flex items-center gap-1.5">
-          <i class="bi bi-gift-fill text-amber-600"></i>
-          <span>Bonus al completar 7 días:</span>
+          <i class="bi bi-gift-fill mr-1 text-amber-600"></i>
+          <span>¿7 días activo? = </span>
+          <span class="font-bold text-amber-800 font-mono">+50 Puntos</span>
         </span>
-        <span class="font-bold text-amber-800 font-mono">+50 Puntos extra</span>
       </div>
     </div>
 
