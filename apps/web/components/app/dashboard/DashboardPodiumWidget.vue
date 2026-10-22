@@ -50,7 +50,7 @@ const myBalance = computed(() => {
     </div>
 
     <!-- Ranking en Formato Lista -->
-    <div v-if="topFans.length > 0" class="space-y-2 flex gap-1">
+    <div v-if="topFans.length > 0" class="space-y-2 flex flex-col gap-1">
       <div
         v-for="(item, idx) in topFans"
         :key="item.user_id || idx"
