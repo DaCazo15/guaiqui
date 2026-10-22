@@ -45,7 +45,7 @@ const claimedVideoIds = computed(() => {
   return set
 })
 
-const pearlsEarnedToday = computed(() => {
+const pointsEarnedToday = computed(() => {
   return todayClaims.value.reduce((acc, curr) => acc + (curr.amount || 0), 0)
 })
 
@@ -122,7 +122,7 @@ const handleClaimPoints = async (videoId: string) => {
     if (error) throw error
 
     if (data?.success) {
-      successMessage.value = `¡Felicidades! Se han agregado +${data.points_awarded} perlitas a tu billetera.`
+      successMessage.value = `¡Felicidades! Se han agregado +${data.points_awarded} puntos a tu billetera.`
       analytics.trackEvent('sponsor_video_points_claimed', {
         video_id: videoId,
         points: data.points_awarded,
@@ -134,7 +134,7 @@ const handleClaimPoints = async (videoId: string) => {
     }
   } catch (err: any) {
     console.error('Error claiming video points:', err)
-    errorMessage.value = err.message || 'Error al procesar el reclamo de perlitas.'
+    errorMessage.value = err.message || 'Error al procesar el reclamo de puntos.'
   } finally {
     claiming.value = false
   }
@@ -146,7 +146,7 @@ onMounted(() => {
 
 useSeoMeta({
   title: 'Videos de Patrocinadores — Guaiqueríes de Margarita',
-  description: 'Mira los videos comerciales de las marcas aliadas a la Tribu Verde y gana perlitas para la tienda de canjes.',
+  description: 'Mira los videos comerciales de las marcas aliadas a la Tribu Verde y gana puntos para la tienda de canjes.',
 })
 </script>
 
@@ -160,10 +160,10 @@ useSeoMeta({
         </BaseBadge>
       </div>
       <h1 class="font-display text-2xl md:text-4xl font-bold text-guaiqui-text uppercase tracking-wider">
-        Gana <span class="text-guaiqui-primary">Perlitas</span> con Marcas Aliadas
+        Gana <span class="text-guaiqui-primary">Puntos</span> con Marcas Aliadas
       </h1>
       <p class="text-xs md:text-sm text-guaiqui-text-muted leading-relaxed max-w-2xl">
-        Mira los videos publicitarios de nuestros aliados comerciales, apoya a la Tribu Verde y acumula perlitas para canjear en la tienda oficial.
+        Mira los videos publicitarios de nuestros aliados comerciales, apoya a la Tribu Verde y acumula puntos para canjear en la tienda oficial.
       </p>
     </div>
 
@@ -231,12 +231,12 @@ useSeoMeta({
       <div class="p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm flex items-center justify-between">
         <div>
           <span class="text-[11px] font-bold uppercase tracking-wider text-guaiqui-text-muted block">
-            Perlitas Ganadas Hoy
+            Puntos Ganados Hoy
           </span>
           <div class="flex items-center gap-2 mt-1">
             <PearlIcon size="md" />
             <span class="font-display font-black text-2xl text-guaiqui-text">
-              +{{ pearlsEarnedToday }}
+              +{{ pointsEarnedToday }}
             </span>
             <span class="text-xs text-guaiqui-text-muted font-medium">puntos</span>
           </div>

@@ -40,7 +40,7 @@ const officialCovers = [
   {
     id: 'cancha-nocturna',
     name: 'Noche de Baloncesto',
-    url: 'https://images.unsplash.com/photo-1519766304817-4f37bda74a29?auto=format&fit=crop&w=1200&q=80',
+    url: 'https://images.unsplash.com/photo-1519861531473-9200262188bf?auto=format&fit=crop&w=1200&q=80',
     description: 'Ambiente vibrante de juego'
   },
   {
@@ -150,9 +150,15 @@ function selectCover(url: string) {
             v-for="cov in officialCovers"
             :key="cov.id"
             @click="selectCover(cov.url)"
-            class="group relative h-20 rounded-guaiqui-md overflow-hidden border border-guaiqui-border hover:border-guaiqui-primary focus:outline-none transition-all"
+            class="group relative h-20 rounded-guaiqui-md overflow-hidden border border-guaiqui-border hover:border-guaiqui-primary focus:outline-none transition-all bg-emerald-950"
           >
-            <img :src="cov.url" :alt="cov.name" referrerpolicy="no-referrer" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300" />
+            <img
+              :src="cov.url"
+              :alt="cov.name"
+              referrerpolicy="no-referrer"
+              class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+              @error="($event.target as HTMLElement).style.display = 'none'"
+            />
             <div class="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors flex items-end p-1.5">
               <span class="text-[10px] font-bold text-white uppercase tracking-tight truncate leading-none">
                 {{ cov.name }}

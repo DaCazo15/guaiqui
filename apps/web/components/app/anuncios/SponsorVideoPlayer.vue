@@ -111,7 +111,7 @@ const handleClaim = () => {
             <i class="bi bi-check-circle-fill mr-1"></i> Reclamado hoy
           </BaseBadge>
           <BaseBadge v-else variant="info" size="sm">
-            <i class="bi bi-coin mr-1 text-amber-500"></i> +{{ video.reward_points }} Perlitas
+            <i class="bi bi-coin mr-1 text-amber-500"></i> +{{ video.reward_points }} Puntos
           </BaseBadge>
         </div>
         <h2 class="font-display font-extrabold text-xl sm:text-2xl text-guaiqui-text uppercase tracking-wide">
@@ -158,7 +158,7 @@ const handleClaim = () => {
         </div>
         <div class="flex items-center gap-1.5 font-bold text-emerald-700 font-mono">
           <PearlIcon size="sm" />
-          <span>+{{ video.reward_points }} Perlitas acreditadas</span>
+          <span>+{{ video.reward_points }} Puntos acreditados</span>
         </div>
       </div>
 
@@ -175,7 +175,7 @@ const handleClaim = () => {
           </span>
           <span v-else class="font-bold text-emerald-700 flex items-center gap-1">
             <PearlIcon size="sm" />
-            +{{ video.reward_points }} Perlitas listas
+            +{{ video.reward_points }} Puntos listos
           </span>
         </div>
 
@@ -194,7 +194,7 @@ const handleClaim = () => {
               Permanece en la página al menos <strong>{{ requiredSeconds }} segundos</strong> para habilitar el reclamo de puntos.
             </span>
             <span v-else class="text-emerald-800 font-semibold">
-              ¡Excelente! Haz clic en el botón para transferir las perlitas a tu billetera.
+              ¡Excelente! Haz clic en el botón para transferir los puntos a tu billetera.
             </span>
           </div>
 
@@ -217,7 +217,7 @@ const handleClaim = () => {
               @click="handleClaim"
             >
               <i class="bi bi-coin mr-1.5 text-amber-300"></i>
-              {{ claiming ? 'Reclamando...' : `Reclamar +${video.reward_points} Perlitas` }}
+              {{ claiming ? 'Reclamando...' : `Reclamar +${video.reward_points} Puntos` }}
             </BaseButton>
           </div>
         </div>

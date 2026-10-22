@@ -53,7 +53,7 @@ onMounted(async () => {
           Videos de Patrocinadores Oficiales
         </h3>
         <p class="text-xs text-slate-300 max-w-xl">
-          Apoya a la Tribu Verde viendo los videos de nuestras marcas aliadas y acumula perlitas para la tienda de canjes.
+          Apoya a la Tribu Verde viendo los videos de nuestras marcas aliadas y acumula puntos para la tienda de canjes.
         </p>
       </div>
     </div>

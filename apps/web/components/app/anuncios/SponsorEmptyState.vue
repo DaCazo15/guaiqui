@@ -13,7 +13,7 @@ import { BaseCard, BaseButton } from '@guaiqui/ui'
         Próximamente: Nuevos Videos de Patrocinadores
       </h3>
       <p class="text-xs md:text-sm text-guaiqui-text-muted leading-relaxed max-w-lg mx-auto">
-        Estamos preparando nuevas campañas comerciales y videos exclusivos de nuestras marcas aliadas para que puedas acumular más perlitas y canjear premios oficiales de la Tribu Verde.
+        Estamos preparando nuevas campañas comerciales y videos exclusivos de nuestras marcas aliadas para que puedas acumular más puntos y canjear premios oficiales de la Tribu Verde.
       </p>
     </div>
 
