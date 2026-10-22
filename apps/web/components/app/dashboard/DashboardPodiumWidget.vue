@@ -33,29 +33,24 @@ const myBalance = computed(() => {
 </script>
 
 <template>
-  <BaseCard class="p-4 sm:p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm space-y-4">
+  <BaseCard class="p-2.5 sm:p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm space-y-4">
     <!-- Header -->
-    <div class="flex items-center justify-between pb-3 border-b border-guaiqui-border">
+    <div class="mb-1 flex items-center justify-between pb-3 border-b border-guaiqui-border">
       <div class="flex items-center gap-2.5">
         <div class="w-9 h-9 rounded-guaiqui-md bg-amber-50 text-amber-500 border border-amber-200 flex items-center justify-center text-base shrink-0">
           <i class="bi bi-trophy-fill"></i>
         </div>
         <div>
           <h3 class="font-display font-extrabold text-base text-guaiqui-text uppercase tracking-wide leading-tight">
-            Tabla de Posiciones
+            Ranking
           </h3>
-          <p class="text-[11px] text-guaiqui-text-muted">Top fanáticos de la Tribu</p>
+          <p class="text-[11px] text-guaiqui-text-muted">Fans del momento</p>
         </div>
       </div>
-
-      <NuxtLink to="/app/ranking" class="text-xs text-guaiqui-primary hover:text-guaiqui-primary-dark font-bold inline-flex items-center gap-1 transition-colors">
-        <span>Ver todos</span>
-        <i class="bi bi-arrow-right"></i>
-      </NuxtLink>
     </div>
 
     <!-- Ranking en Formato Lista -->
-    <div v-if="topFans.length > 0" class="space-y-2">
+    <div v-if="topFans.length > 0" class="space-y-2 flex gap-1">
       <div
         v-for="(item, idx) in topFans"
         :key="item.user_id || idx"
