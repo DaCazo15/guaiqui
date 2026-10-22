@@ -54,7 +54,7 @@ const myBalance = computed(() => {
       <div
         v-for="(item, idx) in topFans"
         :key="item.user_id || idx"
-        class="flex items-center justify-between p-2.5 rounded-guaiqui-lg border transition-all duration-150"
+        class="flex items-center justify-between p-2 rounded-guaiqui-lg border transition-all duration-150"
         :class="[
           item.is_current_user
             ? 'bg-guaiqui-primary-soft/50 border-guaiqui-primary/40'
