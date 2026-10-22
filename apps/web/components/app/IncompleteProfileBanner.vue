@@ -51,7 +51,6 @@ function dismiss() {
       <NuxtLink to="/app/perfil">
         <BaseButton variant="primary" size="sm" class="flex items-center gap-1.5 whitespace-nowrap shadow-guaiqui-sm">
           <span>Configurar Perfil</span>
-          <i class="bi bi-arrow-right"></i>
         </BaseButton>
       </NuxtLink>
 
