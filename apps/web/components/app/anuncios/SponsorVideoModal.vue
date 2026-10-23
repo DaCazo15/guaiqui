@@ -1,18 +1,15 @@
 <script setup lang="ts">
 import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
-import { PearlIcon } from '@guaiqui/ui'
 import { getGoogleDriveEmbedUrl, extractGoogleDriveFileId, type SponsorVideo } from '@guaiqui/shared'
 
 const props = defineProps<{
   modelValue: boolean
   video: SponsorVideo | null
-  rewardPoints: number
-  claiming: boolean
 }>()
 
 const emit = defineEmits<{
   (e: 'update:modelValue', value: boolean): void
-  (e: 'claim', videoId: string): void
+  (e: 'completed', videoId: string): void
 }>()
 
 const videoRef = ref<HTMLVideoElement | null>(null)
@@ -22,6 +19,8 @@ const isPlaying = ref(false)
 const hasStarted = ref(false)
 const elapsedSeconds = ref(0)
 const isDotActive = ref(false)
+const hasEmittedCompletion = ref(false)
+
 let timerInterval: any = null
 let isIframeHovered = false
 let focusCheckInterval: any = null
@@ -61,6 +60,12 @@ const isUnlocked = computed(() => {
   return elapsedSeconds.value >= requiredSeconds.value
 })
 
+const triggerCompletion = () => {
+  if (hasEmittedCompletion.value || !props.video) return
+  hasEmittedCompletion.value = true
+  emit('completed', props.video.id)
+}
+
 const startTimer = () => {
   if (isUnlocked.value) return
   isPlaying.value = true
@@ -70,8 +75,10 @@ const startTimer = () => {
   timerInterval = setInterval(() => {
     if (elapsedSeconds.value < requiredSeconds.value) {
       elapsedSeconds.value++
-    } else {
+    }
+    if (elapsedSeconds.value >= requiredSeconds.value) {
       pauseTimer()
+      triggerCompletion()
     }
   }, 1000)
 }
@@ -81,24 +88,6 @@ const pauseTimer = () => {
   if (timerInterval) {
     clearInterval(timerInterval)
     timerInterval = null
-  }
-}
-
-const togglePlay = () => {
-  if (isPlaying.value) {
-    pauseTimer()
-    if (videoRef.value) {
-      try {
-        videoRef.value.pause()
-      } catch {}
-    }
-  } else {
-    startTimer()
-    if (videoRef.value) {
-      try {
-        videoRef.value.play()
-      } catch {}
-    }
   }
 }
 
@@ -113,9 +102,10 @@ const resetWatchProgress = () => {
   hasStarted.value = false
   elapsedSeconds.value = 0
   isDotActive.value = false
+  hasEmittedCompletion.value = false
 }
 
-// Detección de click directo en el iframe de Google Drive
+// Detección de interacción con el reproductor iframe de Google Drive
 const onIframeMouseEnter = () => {
   isIframeHovered = true
 }
@@ -125,17 +115,34 @@ const onIframeMouseLeave = () => {
 }
 
 const onWindowBlur = () => {
-  // Cuando el usuario hace click en el iframe, window se desenfoca
   if (props.modelValue && !isPlaying.value && !isUnlocked.value) {
-    if (isIframeHovered || (iframeRef.value && document.activeElement === iframeRef.value)) {
-      startTimer()
+    setTimeout(() => {
+      if (isIframeHovered || (iframeRef.value && document.activeElement === iframeRef.value)) {
+        startTimer()
+      }
+    }, 50)
+  }
+}
+
+const onWindowFocus = () => {
+  if (isGoogleDrive.value && isPlaying.value && !isUnlocked.value) {
+    if (iframeRef.value && document.activeElement !== iframeRef.value) {
+      pauseTimer()
     }
+  }
+}
+
+const handleVisibilityChange = () => {
+  if (document.hidden && isPlaying.value) {
+    pauseTimer()
   }
 }
 
 const startIframeTracker = () => {
   if (typeof window !== 'undefined') {
     window.addEventListener('blur', onWindowBlur)
+    window.addEventListener('focus', onWindowFocus)
+    document.addEventListener('visibilitychange', handleVisibilityChange)
     if (focusCheckInterval) clearInterval(focusCheckInterval)
     focusCheckInterval = setInterval(() => {
       if (props.modelValue && !isPlaying.value && !isUnlocked.value) {
@@ -150,6 +157,8 @@ const startIframeTracker = () => {
 const stopIframeTracker = () => {
   if (typeof window !== 'undefined') {
     window.removeEventListener('blur', onWindowBlur)
+    window.removeEventListener('focus', onWindowFocus)
+    document.removeEventListener('visibilitychange', handleVisibilityChange)
   }
   if (focusCheckInterval) {
     clearInterval(focusCheckInterval)
@@ -189,11 +198,6 @@ const handleClose = () => {
   resetWatchProgress()
   emit('update:modelValue', false)
 }
-
-const handleClaim = () => {
-  if (!props.video || !isUnlocked.value || props.claiming) return
-  emit('claim', props.video.id)
-}
 </script>
 
 <template>
@@ -217,23 +221,16 @@ const handleClaim = () => {
           class="relative w-full max-w-3xl bg-white rounded-guaiqui-2xl border-2 border-guaiqui-primary shadow-2xl overflow-hidden flex flex-col my-auto animate-in fade-in zoom-in-95 duration-200"
           @click.stop
         >
-          <!-- Header Branded: Verde Guaiqueríes sólido con gradiente y acento bandana roja -->
+          <!-- Header Branded: Verde Guaiqueríes sólido con logo oficial y nombre del video (SIN PUNTOS) -->
           <div class="bg-[#0B7A3B] bg-gradient-to-r from-[#064E27] via-[#0B7A3B] to-emerald-800 text-white p-4 sm:p-5 relative flex items-center justify-between border-b-4 border-[#C8102E] shadow-md">
             <div class="flex items-center gap-3 min-w-0">
               <div class="w-11 h-11 rounded-full bg-white p-1 shrink-0 shadow-md border-2 border-[#C8102E] flex items-center justify-center">
                 <img src="/logo.png" alt="Guaiqueríes" class="w-full h-full object-contain" />
               </div>
               <div class="min-w-0 space-y-0.5">
-                <div class="flex items-center gap-2">
-                  <span
-                    v-if="video.sponsor_name"
-                    class="text-[10px] font-mono font-extrabold uppercase tracking-wider bg-black/30 text-emerald-200 px-2 py-0.5 rounded border border-emerald-400/30"
-                  >
+                <div v-if="video.sponsor_name" class="flex items-center gap-2">
+                  <span class="text-[10px] font-mono font-extrabold uppercase tracking-wider bg-black/30 text-emerald-200 px-2 py-0.5 rounded border border-emerald-400/30">
                     {{ video.sponsor_name }}
-                  </span>
-                  <span class="text-[11px] font-black uppercase tracking-wider bg-amber-400 text-slate-950 px-2.5 py-0.5 rounded-full shadow-xs flex items-center gap-1 font-mono">
-                    <PearlIcon size="xs" />
-                    +{{ rewardPoints }} PUNTOS
                   </span>
                 </div>
                 <h3 class="font-display font-black text-lg sm:text-xl text-white uppercase tracking-wide truncate drop-shadow-xs">
@@ -253,9 +250,9 @@ const handleClaim = () => {
             </button>
           </div>
 
-          <!-- Cuerpo: Reproductor de Video SIN overlays bloqueantes para que el usuario pueda darle Play directo -->
+          <!-- Cuerpo: Reproductor de Video (Interactuable directamente sin capas bloqueantes) -->
           <div class="relative bg-black aspect-video w-full overflow-hidden flex items-center justify-center">
-            <!-- 1. Iframe de Google Drive (Interactuable directamente sin capas bloqueantes) -->
+            <!-- 1. Iframe de Google Drive -->
             <iframe
               v-if="isGoogleDrive && embedUrl"
               ref="iframeRef"
@@ -268,7 +265,7 @@ const handleClaim = () => {
               @mouseleave="onIframeMouseLeave"
             ></iframe>
 
-            <!-- 2. Video Nativo HTML5 para videos MP4 directos -->
+            <!-- 2. Video Nativo HTML5 -->
             <video
               v-else-if="!isGoogleDrive"
               ref="videoRef"
@@ -291,33 +288,36 @@ const handleClaim = () => {
             <!-- Título del Timer y Controles -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs sm:text-sm">
               <div class="flex items-center gap-2.5 flex-wrap">
-                <!-- Botón de Play/Pausa manual -->
-                <button
-                  type="button"
-                  class="px-3.5 py-1.5 rounded-lg text-xs font-bold font-mono transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs border"
-                  :class="[
-                    !hasStarted || !isPlaying
-                      ? 'bg-[#0B7A3B] hover:bg-emerald-700 text-white border-emerald-800'
-                      : 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
-                  ]"
-                  @click="togglePlay"
+                <!-- Indicador de estado de reproducción -->
+                <div
+                  v-if="!hasStarted"
+                  class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold animate-pulse"
                 >
-                  <i :class="!isPlaying ? 'bi bi-play-fill text-sm' : 'bi bi-pause-fill text-sm'"></i>
-                  <span>{{ !hasStarted ? 'Iniciar Tiempo' : isPlaying ? 'Pausar' : 'Reanudar' }}</span>
-                </button>
+                  <i class="bi bi-play-circle-fill text-base text-[#0B7A3B]"></i>
+                  <span>Haz clic en el reproductor para ver el video</span>
+                </div>
+                <div
+                  v-else-if="isPlaying"
+                  class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-100 border border-emerald-300 text-emerald-900 text-xs font-semibold"
+                >
+                  <span class="relative flex h-2 w-2">
+                    <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+                    <span class="relative inline-flex rounded-full h-2 w-2 bg-[#0B7A3B]"></span>
+                  </span>
+                  <span>Reproduciendo video...</span>
+                </div>
+                <div
+                  v-else-if="!isUnlocked"
+                  class="inline-flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-50 border border-amber-200 text-amber-800 text-xs font-semibold"
+                >
+                  <i class="bi bi-pause-fill text-base text-amber-600"></i>
+                  <span>Video pausado</span>
+                </div>
 
-                <span class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-1.5">
+                <span class="font-bold text-slate-800 text-xs sm:text-sm flex items-center gap-1.5 ml-1">
                   <i class="bi bi-clock-history text-[#0B7A3B]"></i>
                   <span>Progreso de validez:</span>
                   <span class="font-mono text-[#0B7A3B] font-black text-sm">{{ elapsedSeconds }}s / {{ requiredSeconds }}s</span>
-                </span>
-
-                <span
-                  v-if="!hasStarted"
-                  class="text-[11px] font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full flex items-center gap-1 animate-pulse"
-                >
-                  <i class="bi bi-cursor-fill text-xs"></i>
-                  Presiona Play en el video para comenzar
                 </span>
               </div>
 
@@ -325,10 +325,10 @@ const handleClaim = () => {
               <div>
                 <span
                   v-if="isUnlocked"
-                  class="text-emerald-800 font-bold text-xs flex items-center gap-1 bg-emerald-100 px-2.5 py-1 rounded-full border border-emerald-300 shadow-xs"
+                  class="text-emerald-800 font-bold text-xs flex items-center gap-1.5 bg-emerald-100 px-3 py-1 rounded-full border border-emerald-300 shadow-xs"
                 >
-                  <i class="bi bi-check-circle-fill text-emerald-600"></i>
-                  ¡Completado!
+                  <i class="bi bi-check-circle-fill text-emerald-600 text-sm"></i>
+                  ¡Video Completado!
                 </span>
                 <span
                   v-else
@@ -343,7 +343,7 @@ const handleClaim = () => {
             <div class="relative py-2">
               <!-- Pista de la barra -->
               <div class="w-full h-3.5 bg-slate-200 rounded-full overflow-hidden border border-slate-300 shadow-inner">
-                <!-- Barra de progreso verde Guaiqueríes (Visible, garantizada con background sólido y gradiente) -->
+                <!-- Barra de progreso verde Guaiqueríes -->
                 <div
                   class="h-full bg-[#0B7A3B] bg-gradient-to-r from-[#0B7A3B] via-emerald-500 to-emerald-400 transition-all duration-300 rounded-full shadow-sm"
                   :style="{ width: `${progressPercentage}%` }"
@@ -381,20 +381,20 @@ const handleClaim = () => {
               </div>
             </div>
 
-            <!-- Advertencia / Instrucción con alto contraste -->
+            <!-- Advertencia / Instrucción con alto contraste (SIN MENCIÓN DE PUNTOS NI RECLAMOS) -->
             <p class="text-[11px] text-slate-600 leading-tight">
               <span v-if="!isUnlocked">
                 <i class="bi bi-info-circle mr-1 text-[#0B7A3B] font-bold"></i>
                 Haz clic en el botón de reproducción del video. Si el video se pausa, el conteo se detiene y perderás el progreso si la modal se cierra.
               </span>
-              <span v-else class="text-emerald-800 font-semibold flex items-center gap-1">
-                <i class="bi bi-stars text-amber-500"></i>
-                ¡Video validado exitosamente! Ya puedes reclamar tus <strong>+{{ rewardPoints }} puntos</strong>.
+              <span v-else class="text-emerald-800 font-semibold flex items-center gap-1.5">
+                <i class="bi bi-check2-all text-emerald-600 text-sm"></i>
+                ¡Video validado exitosamente! Tu progreso del día ha sido registrado.
               </span>
             </p>
 
-            <!-- BOTONES DE ACCIÓN: REDIRECCIONAR, RECLAMAR Y CERRAR -->
-            <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-between gap-3 pt-2 border-t border-slate-200">
+            <!-- BOTONES DE ACCIÓN: ÚNICAMENTE BOTÓN DE CERRAR Y BOTÓN DE REDIRECCIONAR -->
+            <div class="flex items-center justify-between gap-3 pt-2 border-t border-slate-200">
               <!-- Botón de Cerrar Modal -->
               <button
                 type="button"
@@ -405,34 +405,16 @@ const handleClaim = () => {
                 <span>Cerrar</span>
               </button>
 
-              <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5">
-                <!-- Botón de Redireccionar hacia el Patrocinador -->
-                <a
-                  :href="redirectUrl"
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  class="px-5 py-2.5 rounded-guaiqui-xl bg-slate-900 hover:bg-slate-800 text-white font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-sm border border-slate-700 cursor-pointer"
-                >
-                  <span>{{ video.cta_text || 'Visitar Patrocinador' }}</span>
-                  <i class="bi bi-box-arrow-up-right text-xs text-emerald-400"></i>
-                </a>
-
-                <!-- Botón de Reclamar Puntos -->
-                <button
-                  type="button"
-                  :disabled="!isUnlocked || claiming"
-                  class="px-6 py-2.5 rounded-guaiqui-xl font-display font-black text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-md cursor-pointer"
-                  :class="[
-                    isUnlocked && !claiming
-                      ? 'bg-[#0B7A3B] bg-gradient-to-r from-[#0B7A3B] to-emerald-600 hover:from-emerald-600 hover:to-emerald-500 text-white hover:scale-[1.02] active:scale-[0.98]'
-                      : 'bg-slate-200 text-slate-400 cursor-not-allowed border border-slate-300'
-                  ]"
-                  @click="handleClaim"
-                >
-                  <PearlIcon size="sm" />
-                  <span>{{ claiming ? 'Acreditando...' : `Reclamar +${rewardPoints} Puntos` }}</span>
-                </button>
-              </div>
+              <!-- Botón de Redireccionar hacia el Patrocinador -->
+              <a
+                :href="redirectUrl"
+                target="_blank"
+                rel="noopener noreferrer"
+                class="px-6 py-2.5 rounded-guaiqui-xl bg-slate-900 hover:bg-slate-800 text-white font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-sm border border-slate-700 cursor-pointer"
+              >
+                <span>{{ video.cta_text || 'Visitar Patrocinador' }}</span>
+                <i class="bi bi-box-arrow-up-right text-xs text-emerald-400"></i>
+              </a>
             </div>
           </div>
         </div>

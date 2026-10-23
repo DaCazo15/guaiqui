@@ -124,12 +124,11 @@ const handleSelectVideo = (video: SponsorVideo) => {
   analytics.trackEvent('sponsor_video_selected', { video_id: video.id, title: video.title })
 }
 
-// Reclamar puntos en servidor
-const handleClaimPoints = async (videoId: string) => {
+// Auto-validar y registrar puntos en servidor al completar el tiempo del video
+const handleVideoCompleted = async (videoId: string) => {
   if (claiming.value) return
   claiming.value = true
   errorMessage.value = null
-  successMessage.value = null
   infoMessage.value = null
 
   try {
@@ -137,22 +136,20 @@ const handleClaimPoints = async (videoId: string) => {
     if (error) throw error
 
     if (data?.success) {
-      successMessage.value = `¡Excelente! Se han acreditado +${data.points_awarded} puntos a tu billetera.`
+      successMessage.value = `¡Video completado! Has sumado +${data.points_awarded} puntos por tu video #${data.completed_today} de hoy.`
       analytics.trackEvent('sponsor_video_points_claimed', {
         video_id: videoId,
         points: data.points_awarded,
         completed_today: data.completed_today,
       })
       await loadClaims()
-      isModalOpen.value = false
     } else if (data?.already_claimed) {
-      infoMessage.value = data.message || 'Ya has reclamado los puntos de este video hoy.'
+      infoMessage.value = data.message || 'Ya has validado este video hoy.'
       await loadClaims()
-      isModalOpen.value = false
     }
   } catch (err: any) {
-    console.error('Error claiming video points:', err)
-    errorMessage.value = err.message || 'Error al procesar el reclamo de puntos.'
+    console.error('Error auto-crediting video points:', err)
+    errorMessage.value = err.message || 'Error al validar el video.'
   } finally {
     claiming.value = false
   }
@@ -247,9 +244,7 @@ useSeoMeta({
     <SponsorVideoModal
       v-model="isModalOpen"
       :video="selectedVideo"
-      :reward-points="currentTierReward"
-      :claiming="claiming"
-      @claim="handleClaimPoints"
+      @completed="handleVideoCompleted"
     />
   </div>
 </template>
