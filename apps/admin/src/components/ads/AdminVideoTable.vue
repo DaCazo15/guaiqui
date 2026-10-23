@@ -29,12 +29,9 @@ const emit = defineEmits<{
       <div class="space-y-1">
         <h3 class="text-base font-bold text-white uppercase">No hay videos de patrocinadores registrados</h3>
         <p class="text-xs text-slate-400 max-w-md mx-auto">
-          Los videos que agregues desde tu carpeta de Google Drive aparecerán aquí y estarán disponibles para que los fanáticos los vean y ganen perlitas.
+          Los videos que agregues aparecerán aquí y estarán disponibles para que los fanáticos los vean y ganen perlitas.
         </p>
       </div>
-      <BaseButton variant="primary" size="sm" @click="emit('create')">
-        <i class="bi bi-plus-lg mr-1.5"></i> Agregar Primer Video
-      </BaseButton>
     </div>
 
     <div v-else class="overflow-x-auto">
