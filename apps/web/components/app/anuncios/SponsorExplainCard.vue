@@ -20,7 +20,7 @@ defineProps<{
           ¿Cómo funcionan los videos patrocinados?
         </h2>
         <p class="text-xs sm:text-sm text-guaiqui-text-muted mt-0.5 leading-relaxed">
-          Mira los videos de las marcas que apoyan a la Tribu Verde, acumula puntos para canjear en la tienda oficial y sube en el ranking de fanáticos.
+          Mira videos, acumula puntos y sube en el ranking.
         </p>
       </div>
     </div>
@@ -31,7 +31,6 @@ defineProps<{
         <span class="uppercase tracking-wider text-[11px] text-guaiqui-text-muted">
           Puntos por Bloques de 10 Videos
         </span>
-        <span class="text-guaiqui-primary font-mono">Máx. 50 videos · 60 puntos / día</span>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
@@ -71,9 +70,6 @@ defineProps<{
               puntos al completar los 10
             </span>
           </div>
-          <p class="text-[11px] text-guaiqui-text-muted mt-1.5">
-            Al completar tus primeros 10 videos ganas 5 puntos directos.
-          </p>
         </div>
 
         <!-- Tramo 2: Bloque 2 (Videos 11 al 20) -->
@@ -120,9 +116,6 @@ defineProps<{
               puntos al completar los 20
             </span>
           </div>
-          <p class="text-[11px] text-guaiqui-text-muted mt-1.5">
-            ¡Doble premio! Al llegar a 20 videos completados ganas 10 puntos.
-          </p>
         </div>
 
         <!-- Tramo 3: Bloques 3, 4 y 5 (Videos 21 al 50) -->
@@ -169,9 +162,6 @@ defineProps<{
               puntos cada 10 videos
             </span>
           </div>
-          <p class="text-[11px] text-guaiqui-text-muted mt-1.5">
-            Sumas 15 puntos al llegar a 30, a 40 y a 50 videos (total 60 puntos).
-          </p>
         </div>
       </div>
     </div>

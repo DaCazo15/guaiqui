@@ -106,25 +106,6 @@ const canWatch = computed(() => {
       </div>
     </div>
 
-    <!-- Barra de progreso del bloque actual (0 a 10) -->
-    <div v-if="!isLimitReached" class="p-4 rounded-guaiqui-xl bg-emerald-50/60 border border-emerald-200/80 space-y-2">
-      <div class="flex items-center justify-between text-xs">
-        <span class="font-bold text-emerald-950 flex items-center gap-1.5">
-          <i class="bi bi-check2-circle text-guaiqui-primary text-base"></i>
-          Progreso del Bloque Actual: {{ completedToday % 10 }} de 10 videos completados
-        </span>
-        <span class="font-mono font-black text-guaiqui-primary">
-          +{{ currentTierReward }} pts al llegar a 10
-        </span>
-      </div>
-      <div class="w-full h-2.5 bg-emerald-100 rounded-full overflow-hidden border border-emerald-200">
-        <div
-          class="h-full bg-guaiqui-primary transition-all duration-300 rounded-full"
-          :style="{ width: `${blockPercentage}%` }"
-        ></div>
-      </div>
-    </div>
-
     <!-- Barra de progreso hacia el límite de 50 videos -->
     <div class="space-y-1.5">
       <div class="flex items-center justify-between text-xs">
