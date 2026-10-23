@@ -1,7 +1,11 @@
 <script setup lang="ts">
+import { ref } from 'vue'
 import { useRoute } from 'vue-router'
+import { useAuthStore } from '~/stores/auth'
 
 const route = useRoute()
+const authStore = useAuthStore()
+const avatarError = ref(false)
 
 const navItems = [
   { name: 'Inicio', path: '/app', icon: 'bi-house-door-fill' },
@@ -26,7 +30,34 @@ const navItems = [
             : 'text-emerald-100/75 hover:text-white hover:bg-white/10 font-semibold',
         ]"
       >
-        <i :class="['bi', item.icon, 'text-lg mb-0.5']"></i>
+        <!-- Ícono personalizado para Perfil con foto circular del usuario -->
+        <template v-if="item.path === '/app/perfil'">
+          <div
+            class="w-[22px] h-[22px] rounded-full overflow-hidden mb-0.5 border flex items-center justify-center shrink-0 transition-all duration-150"
+            :class="[
+              route.path === item.path
+                ? 'border-white ring-2 ring-white shadow-xs'
+                : 'border-white/60 opacity-90'
+            ]"
+          >
+            <img
+              v-if="authStore.profile?.avatar_url && !avatarError"
+              :src="authStore.profile.avatar_url"
+              :alt="authStore.profile?.display_name || 'Perfil'"
+              class="w-full h-full object-cover"
+              referrerpolicy="no-referrer"
+              @error="avatarError = true"
+            />
+            <span
+              v-else-if="authStore.profile?.display_name"
+              class="text-[10px] font-bold text-white bg-white/20 w-full h-full flex items-center justify-center leading-none"
+            >
+              {{ authStore.profile.display_name.charAt(0).toUpperCase() }}
+            </span>
+            <i v-else :class="['bi', item.icon, 'text-xs text-white']"></i>
+          </div>
+        </template>
+        <i v-else :class="['bi', item.icon, 'text-lg mb-0.5']"></i>
         <span class="text-[10px] tracking-tight">{{ item.name }}</span>
       </NuxtLink>
     </div>

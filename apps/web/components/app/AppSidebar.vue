@@ -11,17 +11,17 @@ const avatarError = ref(false)
 
 const navItems = [
   { name: 'Inicio', path: '/app', icon: 'bi-house-door-fill' },
-  { name: 'Trivias', path: '/app/trivias', icon: 'bi-patch-question-fill' },
-  { name: 'Ver Anuncios', path: '/app/anuncios', icon: 'bi-play-btn-fill' },
+  { name: 'Mi Perfil', path: '/app/perfil', icon: 'bi-person-fill' },
   { name: 'Billetera', path: '/app/billetera', icon: 'bi-wallet2' },
+  { name: 'Trivias', path: '/app/trivias', icon: 'bi-patch-question-fill' },
+  { name: 'Ranking', path: '/app/ranking', icon: 'bi-trophy-fill' },
   { name: 'Tienda', path: '/app/tienda', icon: 'bi-bag-heart-fill' },
   { name: 'Mis Canjes', path: '/app/canjes', icon: 'bi-gift-fill' },
-  { name: 'Ranking', path: '/app/ranking', icon: 'bi-trophy-fill' },
+  { name: 'Ver Anuncios', path: '/app/anuncios', icon: 'bi-play-btn-fill' },
   { name: 'Partidos', path: '/app/partidos', icon: 'bi-calendar-event-fill' },
   { name: 'Plantilla', path: '/app/plantilla', icon: 'bi-people-fill' },
   { name: 'Salón de la Fama', path: '/app/salon-de-la-fama', icon: 'bi-award-fill' },
   { name: 'Noticias', path: '/app/noticias', icon: 'bi-newspaper' },
-  { name: 'Mi Perfil', path: '/app/perfil', icon: 'bi-person-fill' },
   { name: 'Ajustes', path: '/app/ajustes', icon: 'bi-gear-fill' },
 ]
 
@@ -87,7 +87,34 @@ const handleLogout = async () => {
             : 'text-guaiqui-text-muted hover:text-guaiqui-text hover:bg-guaiqui-surface',
         ]"
       >
-        <i :class="['bi', item.icon, 'text-base']"></i>
+        <template v-if="item.path === '/app/perfil'">
+          <div
+            class="w-5 h-5 rounded-full overflow-hidden border shrink-0 flex items-center justify-center transition-all duration-150"
+            :class="[
+              route.path === item.path
+                ? 'border-white ring-1 ring-white/60'
+                : 'border-guaiqui-border bg-guaiqui-surface'
+            ]"
+          >
+            <img
+              v-if="authStore.profile?.avatar_url && !avatarError"
+              :src="authStore.profile.avatar_url"
+              :alt="authStore.profile?.display_name || 'Perfil'"
+              class="w-full h-full object-cover"
+              referrerpolicy="no-referrer"
+              @error="avatarError = true"
+            />
+            <span
+              v-else-if="authStore.profile?.display_name"
+              class="text-[10px] font-bold"
+              :class="route.path === item.path ? 'text-white' : 'text-guaiqui-primary'"
+            >
+              {{ authStore.profile.display_name.charAt(0).toUpperCase() }}
+            </span>
+            <i v-else :class="['bi', item.icon, 'text-xs']"></i>
+          </div>
+        </template>
+        <i v-else :class="['bi', item.icon, 'text-base']"></i>
         <span>{{ item.name }}</span>
       </NuxtLink>
     </nav>
