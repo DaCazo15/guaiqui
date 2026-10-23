@@ -70,6 +70,7 @@ Hero, carrusel, cinta de anuncios, cómo funciona, plantilla, historia, equipo d
 2. **Fases pequeñas.** Trabaja por fases pequeñas, con commits claros.
 3. **No inventar.** No inventes funcionalidades fuera de lo pedido. Si algo es ambiguo, pregunta.
 4. **Resumen al terminar.** Al terminar cada fase, resume qué hiciste, cómo probarlo y qué queda pendiente.
+5. **Commit y Push.** Al completar y verificar cada fase o cambio aprobado, realizar siempre `git commit` y `git push` al repositorio remoto.
 
 ### Convenciones de código Vue
 
@@ -87,4 +88,5 @@ Hero, carrusel, cinta de anuncios, cómo funciona, plantilla, historia, equipo d
 4. Ningún dato personal en logs, errores ni analítica.
 5. Antes de codificar: leer migraciones, tipos y funciones reales, presentar un plan breve y esperar mi aprobación.
 6. Cierre de fase en máximo 20 líneas: qué se hizo, qué queda pendiente y la salida literal de supabase test db, pnpm test y pnpm exec playwright test (con conteo de pasadas y falladas). Si algo no se pudo ejecutar, decirlo. Nunca marcar algo como probado sin su salida.
+7. Al completar y verificar cada fase o tarea, hacer siempre commit con mensaje claro y push al repositorio remoto.
 

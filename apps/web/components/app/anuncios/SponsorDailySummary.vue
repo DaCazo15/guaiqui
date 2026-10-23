@@ -106,14 +106,14 @@ const canWatch = computed(() => {
       </div>
       <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
         <div
-          class="h-full bg-linear-to-r from-guaiqui-primary via-emerald-500 to-emerald-400 transition-all duration-500 rounded-full"
+          class="h-full bg-guaiqui-primary bg-gradient-to-r from-guaiqui-primary via-emerald-500 to-emerald-400 transition-all duration-500 rounded-full"
           :style="{ width: `${dailyPercentage}%` }"
         ></div>
       </div>
     </div>
 
     <!-- Banner y Botón Principal "Ver Video" -->
-    <div class="p-5 sm:p-6 rounded-guaiqui-xl bg-linear-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-guaiqui-md border border-emerald-500/30">
+    <div class="p-5 sm:p-6 rounded-guaiqui-xl bg-slate-950 bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-guaiqui-md border border-emerald-500/30">
       <div class="space-y-1.5">
         <div class="flex items-center gap-2">
           <span class="text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded font-mono border border-emerald-400/30">
@@ -135,7 +135,7 @@ const canWatch = computed(() => {
         <button
           type="button"
           :disabled="!canWatch"
-          class="w-full md:w-auto px-8 py-4 rounded-guaiqui-xl bg-linear-to-r from-guaiqui-primary to-emerald-500 hover:from-emerald-500 hover:to-emerald-600 disabled:from-slate-700 disabled:to-slate-800 disabled:text-slate-500 disabled:cursor-not-allowed text-white font-display font-black text-base uppercase tracking-wider shadow-lg flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
+          class="w-full md:w-auto px-8 py-4 rounded-guaiqui-xl bg-guaiqui-primary bg-gradient-to-r from-guaiqui-primary to-emerald-600 hover:from-emerald-600 hover:to-emerald-500 disabled:from-slate-700 disabled:to-slate-800 disabled:bg-slate-700 disabled:text-slate-400 disabled:cursor-not-allowed text-white font-display font-black text-base uppercase tracking-wider shadow-lg flex items-center justify-center gap-3 transition-all transform hover:scale-[1.02] active:scale-[0.98] cursor-pointer"
           @click="emit('watch')"
         >
           <i class="bi bi-play-circle-fill text-2xl text-emerald-200"></i>

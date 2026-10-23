@@ -182,7 +182,7 @@ const handleClaim = () => {
         <!-- Barra de progreso -->
         <div class="w-full h-2.5 bg-gray-200 rounded-full overflow-hidden">
           <div
-            class="h-full bg-linear-to-r from-guaiqui-primary to-emerald-400 transition-all duration-300 rounded-full"
+            class="h-full bg-guaiqui-primary bg-gradient-to-r from-guaiqui-primary to-emerald-400 transition-all duration-300 rounded-full"
             :style="{ width: `${progressPercentage}%` }"
           ></div>
         </div>
@@ -227,7 +227,7 @@ const handleClaim = () => {
     <!-- Sección de Redirección del Patrocinador (Mejora solicitada) -->
     <div
       v-if="video.redirect_url"
-      class="p-5 bg-linear-to-r from-slate-900 via-slate-800 to-emerald-950 text-white rounded-guaiqui-xl border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md"
+      class="p-5 bg-slate-950 bg-gradient-to-r from-slate-900 via-slate-800 to-emerald-950 text-white rounded-guaiqui-xl border border-emerald-500/30 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 shadow-md"
     >
       <div class="space-y-1">
         <div class="flex items-center gap-2">
@@ -250,7 +250,7 @@ const handleClaim = () => {
         :href="video.redirect_url"
         target="_blank"
         rel="noopener noreferrer"
-        class="shrink-0 w-full sm:w-auto px-6 py-3 rounded-guaiqui-lg bg-linear-to-r from-guaiqui-primary to-emerald-500 hover:from-emerald-500 hover:to-emerald-600 text-white font-display font-black text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] active:scale-[0.98]"
+        class="shrink-0 w-full sm:w-auto px-6 py-3 rounded-guaiqui-lg bg-guaiqui-primary bg-gradient-to-r from-guaiqui-primary to-emerald-500 hover:from-emerald-500 hover:to-emerald-600 text-white font-display font-black text-xs uppercase tracking-wider shadow-lg flex items-center justify-center gap-2 transition-transform hover:scale-[1.02] active:scale-[0.98]"
       >
         <span>{{ video.cta_text || 'Visitar Patrocinador Oficial' }}</span>
         <i class="bi bi-box-arrow-up-right text-xs"></i>
