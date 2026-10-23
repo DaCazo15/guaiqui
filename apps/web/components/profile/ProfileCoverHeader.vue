@@ -229,7 +229,7 @@ function handleCoverCroppedConfirmed(croppedFile: File) {
         <div class="flex items-center gap-3 sm:pb-2">
           <!-- Perlitas -->
           <div class="px-3.5 py-1.5 rounded-guaiqui-lg bg-emerald-50 border border-emerald-200 text-center">
-            <div class="flex items-center justify-center gap-1 font-semibold">
+            <div class="flex items-center justify-center gap-1 font-black">
               <PearlAmount :amount="balance" size="sm" />
             </div>
           </div>
