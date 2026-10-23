@@ -1,5 +1,12 @@
 <script setup lang="ts">
+import { ref, onMounted, onUnmounted } from 'vue'
 import { BaseBadge, PearlIcon } from '@guaiqui/ui'
+import { useGSAP } from '~/composables/useGSAP'
+
+const sectionRef = ref<HTMLElement | null>(null)
+const phoneRef = ref<HTMLElement | null>(null)
+const { gsap } = useGSAP()
+let mm: gsap.MatchMedia | null = null
 
 const benefits = [
   {
@@ -19,14 +26,62 @@ const benefits = [
     desc: 'Muestra tu código QR en el gimnasio y el staff te entregará tu premio en segundos.',
   },
 ]
+
+onMounted(() => {
+  if (sectionRef.value && phoneRef.value && process.client) {
+    mm = gsap.matchMedia()
+    mm.add(
+      {
+        reduceMotion: '(prefers-reduced-motion: reduce)',
+        all: '(min-width: 0px)',
+      },
+      (context) => {
+        const { reduceMotion } = context.conditions as { reduceMotion: boolean }
+        if (reduceMotion) return
+
+        gsap.from(phoneRef.value, {
+          y: 50,
+          rotationZ: -3,
+          scale: 0.94,
+          autoAlpha: 0,
+          duration: 0.9,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: sectionRef.value,
+            start: 'top 75%',
+            toggleActions: 'play none none reverse',
+          },
+        })
+
+        gsap.from('.benefit-item', {
+          y: 25,
+          autoAlpha: 0,
+          stagger: 0.1,
+          duration: 0.6,
+          ease: 'power2.out',
+          scrollTrigger: {
+            trigger: sectionRef.value,
+            start: 'top 70%',
+            toggleActions: 'play none none reverse',
+          },
+        })
+      },
+      sectionRef.value
+    )
+  }
+})
+
+onUnmounted(() => {
+  mm?.revert()
+})
 </script>
 
 <template>
-  <section class="py-16 sm:py-24 bg-guaiqui-surface border-y border-guaiqui-border px-4 sm:px-8">
+  <section ref="sectionRef" class="py-16 sm:py-24 bg-guaiqui-surface border-y border-guaiqui-border px-4 sm:px-8 overflow-hidden">
     <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
       <!-- Left Column: PWA App Mockup -->
       <div class="lg:col-span-5 flex justify-center">
-        <div class="w-full max-w-xs bg-slate-950 p-4 rounded-[40px] shadow-2xl border-4 border-slate-800 text-white relative">
+        <div ref="phoneRef" class="w-full max-w-xs bg-slate-950 p-4 rounded-[40px] shadow-2xl border-4 border-slate-800 text-white relative">
           <!-- Camera notch -->
           <div class="w-28 h-4 bg-slate-800 rounded-full mx-auto mb-4" />
 
@@ -69,7 +124,7 @@ const benefits = [
         </div>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <div v-for="(b, i) in benefits" :key="i" class="space-y-2">
+          <div v-for="(b, i) in benefits" :key="i" class="benefit-item space-y-2">
             <div class="w-8 h-8 rounded-guaiqui-md bg-guaiqui-primary-soft text-guaiqui-primary font-bold flex items-center justify-center text-sm">
               <i class="bi bi-check-lg"></i>
             </div>
