@@ -128,14 +128,6 @@ const canWatch = computed(() => {
     <!-- Banner y Botón Principal "Ver Video" -->
     <div class="p-5 sm:p-6 rounded-guaiqui-xl bg-slate-950 bg-gradient-to-r from-emerald-950 via-slate-900 to-emerald-900 text-white flex flex-col md:flex-row items-start md:items-center justify-between gap-5 shadow-guaiqui-md border border-emerald-500/30">
       <div class="space-y-1.5">
-        <div class="flex items-center gap-2">
-          <span class="text-[10px] font-black uppercase tracking-widest text-emerald-400 bg-emerald-500/20 px-2 py-0.5 rounded font-mono border border-emerald-400/30">
-            Videos Patrocinados
-          </span>
-          <span class="text-xs text-slate-300 font-mono">
-            {{ activeVideosCount }} video{{ activeVideosCount > 1 ? 's' : '' }} en rotación
-          </span>
-        </div>
         <h3 class="font-display font-black text-xl sm:text-2xl uppercase tracking-wide text-white">
           ¡Apoya a Guaiqueríes y acumula puntos!
         </h3>
