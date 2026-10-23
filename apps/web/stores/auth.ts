@@ -125,11 +125,10 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = true
       errorMessage.value = null
 
-      const { data: initialProf, error: profErr } = await supabase
-        .from('profiles')
-        .select('*')
-        .eq('id', targetId)
-        .maybeSingle()
+      const [{ data: initialProf, error: profErr }, { data: wal, error: walErr }] = await Promise.all([
+        supabase.from('profiles').select('*').eq('id', targetId).maybeSingle(),
+        supabase.from('wallets').select('*').eq('fan_id', targetId).maybeSingle(),
+      ])
 
       if (profErr) throw profErr
       let prof = initialProf
@@ -176,12 +175,6 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       profile.value = prof
-
-      const { data: wal, error: walErr } = await supabase
-        .from('wallets')
-        .select('*')
-        .eq('fan_id', targetId)
-        .maybeSingle()
 
       if (walErr) throw walErr
       wallet.value = wal

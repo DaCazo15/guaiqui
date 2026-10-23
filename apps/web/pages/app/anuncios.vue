@@ -97,8 +97,6 @@ const loadVideos = async () => {
     if (error) throw error
     videos.value = (data as SponsorVideo[]) || []
 
-    await loadDailyProgress()
-
     if (videos.value.length > 0) {
       selectedVideo.value = videos.value[0]
     } else {

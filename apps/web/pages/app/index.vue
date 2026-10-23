@@ -2,7 +2,6 @@
 import { onMounted } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useTriviaStore } from '~/stores/trivias'
-import { useAdsProgress } from '~/composables/useAdsProgress'
 
 // Subcomponentes modulares del Dashboard
 import DashboardCompactHeader from '~/components/app/dashboard/DashboardCompactHeader.vue'
@@ -19,13 +18,11 @@ definePageMeta({
 
 const authStore = useAuthStore()
 const triviaStore = useTriviaStore()
-const adsProgress = useAdsProgress()
 
 onMounted(async () => {
   await Promise.all([
     authStore.fetchProfile(),
     triviaStore.fetchHomeSummary(),
-    adsProgress.fetchProgress(),
   ])
 })
 </script>

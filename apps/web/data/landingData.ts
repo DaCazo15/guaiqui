@@ -121,10 +121,10 @@ export const featuredRewards: RewardItem[] = []
 
 
 export const teamStats = [
-  { label: 'Años de Historia', value: '80+', note: 'Fundado en 1977 en Nueva Esparta' },
+  { label: 'Años de Historia', value: '49', note: 'Fundado en 1977 en Nueva Esparta' },
   { label: 'Campeonatos de Liga', value: '9', note: 'Orgullo del baloncesto venezolano' },
-  { label: 'Fanáticos Registrados', value: '100K+', note: 'La tribu más fiel del país' },
-  { label: 'Costo Real', value: '0$', note: 'Gratis. Todo es por fidelidad' },
+  { label: 'Títulos Consecutivos', value: '5', note: 'Pentacampeón histórico (1978-1982)' },
+  { label: 'Costo para el Fan', value: '$0', note: '100% fidelización por pasión' },
 ]
 
 

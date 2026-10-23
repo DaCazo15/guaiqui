@@ -21,8 +21,8 @@ export function useAdsProgress() {
   const loading = ref(false)
   const error = ref<string | null>(null)
 
-  const isAdsEnabled = computed(() => activeVideosCount.value > 0 || (progress.value?.ads_enabled ?? false))
-  const canWatch = computed(() => activeVideosCount.value > 0 || (progress.value?.can_watch ?? false))
+  const isAdsEnabled = computed(() => activeVideosCount.value > 0)
+  const canWatch = computed(() => activeVideosCount.value > 0 && (progress.value?.can_watch ?? true))
   const remainingToday = computed(() => {
     if (!progress.value) return 0
     return Math.max(0, progress.value.daily_limit - progress.value.completed_today)
@@ -32,18 +32,36 @@ export function useAdsProgress() {
     loading.value = true
     error.value = null
     try {
-      const { count } = await supabase
-        .from('sponsor_videos')
-        .select('*', { count: 'exact', head: true })
-        .eq('is_active', true)
+      const [countResult, rpcResult] = await Promise.all([
+        supabase
+          .from('sponsor_videos')
+          .select('*', { count: 'exact', head: true })
+          .eq('is_active', true),
+        supabase.rpc('get_daily_video_progress'),
+      ])
 
-      if (count !== null) {
-        activeVideosCount.value = count
+      if (countResult.count !== null && countResult.count !== undefined) {
+        activeVideosCount.value = countResult.count
       }
 
-      const { data, error: err } = await supabase.rpc('get_ads_progress')
-      if (!err && data) {
-        progress.value = data as AdsProgressData
+      if (!rpcResult.error && rpcResult.data) {
+        const raw = rpcResult.data as Record<string, any>
+        const completed = Number(raw.completed_today) || 0
+        const maxDaily = Number(raw.max_daily) || 50
+        const pointsToday = Number(raw.points_earned_today) || 0
+
+        progress.value = {
+          ads_enabled: (countResult.count ?? 0) > 0,
+          completed_today: completed,
+          daily_limit: maxDaily,
+          block_size: 10,
+          block_progress: Number(raw.block_progress) || (completed % 10),
+          next_block_number: Math.floor(completed / 10) + 1,
+          pearls_earned_today: pointsToday,
+          can_watch: completed < maxDaily,
+          cant_reason: completed >= maxDaily ? 'Límite diario alcanzado' : null,
+          ad_min_seconds: 15,
+        }
       }
     } catch (err: any) {
       error.value = err?.message || 'Error al obtener el estado de anuncios'
