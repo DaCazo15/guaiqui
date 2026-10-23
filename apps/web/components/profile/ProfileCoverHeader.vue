@@ -232,7 +232,6 @@ function handleCoverCroppedConfirmed(croppedFile: File) {
             <div class="flex items-center justify-center gap-1">
               <PearlAmount :amount="balance" size="sm" />
             </div>
-            <span class="text-[9px] uppercase tracking-wider text-emerald-800 font-bold block">Saldo</span>
           </div>
 
           <!-- Racha -->
@@ -241,7 +240,6 @@ function handleCoverCroppedConfirmed(croppedFile: File) {
               <i class="bi bi-fire text-amber-500"></i>
               <span>{{ streakDays }}</span>
             </div>
-            <span class="text-[9px] uppercase tracking-wider text-rose-800 font-bold block">Racha</span>
           </div>
         </div>
       </div>
