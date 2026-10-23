@@ -74,9 +74,6 @@ const filteredPlayers = computed(() => {
           <h1 class="font-display text-2xl md:text-3xl font-bold text-guaiqui-text uppercase tracking-wider">
             Plantilla <span class="text-guaiqui-primary">Oficial</span>
           </h1>
-          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-guaiqui-primary-soft text-guaiqui-primary border border-guaiqui-primary/20">
-            <i class="bi bi-shield-check"></i> SPB Venezuela
-          </span>
         </div>
         <p class="text-sm text-guaiqui-text-muted mt-0.5">
           Guerreros de Guaiqueríes de Margarita — SuperLiga Profesional de Baloncesto

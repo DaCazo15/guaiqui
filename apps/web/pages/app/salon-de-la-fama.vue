@@ -46,11 +46,6 @@ function closeLegendModal() {
     <!-- Header Fan Zone -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-guaiqui-border pb-4">
       <div class="space-y-1">
-        <div class="flex items-center gap-2">
-          <span class="text-xs font-mono font-bold uppercase tracking-wider text-guaiqui-primary bg-guaiqui-primary-soft px-2.5 py-0.5 rounded-full border border-guaiqui-primary/20">
-            Fan Zone • Historia
-          </span>
-        </div>
         <h1 class="font-display text-2xl md:text-3xl font-bold text-guaiqui-text uppercase tracking-wider">
           Salón de la <span class="text-guaiqui-primary">Fama</span>
         </h1>

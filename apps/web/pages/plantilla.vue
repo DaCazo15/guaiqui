@@ -76,10 +76,6 @@ const filteredRoster = computed(() => {
       <div class="max-w-6xl mx-auto space-y-10">
         <!-- Header -->
         <div class="space-y-4 text-center max-w-3xl mx-auto">
-          <div class="inline-flex items-center gap-2 bg-guaiqui-primary-soft text-guaiqui-primary px-3.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider border border-guaiqui-primary/20">
-            <i class="bi bi-shield-check"></i>
-            <span>Nómina Oficial · SPB Venezuela</span>
-          </div>
 
           <h1 class="font-display font-extrabold text-4xl sm:text-5xl text-guaiqui-text uppercase tracking-tight">
             Plantilla Oficial <span class="text-guaiqui-primary">2026</span>

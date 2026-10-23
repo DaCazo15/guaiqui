@@ -74,9 +74,6 @@ const formatDate = (dateStr: string) => {
           <h1 class="font-display text-2xl md:text-3xl font-bold text-guaiqui-text uppercase tracking-wider">
             Partidos & <span class="text-guaiqui-primary">Resultados</span>
           </h1>
-          <span class="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-bold bg-guaiqui-primary-soft text-guaiqui-primary border border-guaiqui-primary/20">
-            <i class="bi bi-shield-check"></i> SPB Venezuela
-          </span>
         </div>
         <p class="text-sm text-guaiqui-text-muted mt-0.5">
           Calendario oficial de partidos y resultados de la temporada de Guaiqueríes de Margarita.
@@ -101,12 +98,6 @@ const formatDate = (dateStr: string) => {
             {{ SOFASCORE_TEAM_INFO.arena.city }}, {{ SOFASCORE_TEAM_INFO.arena.state }} · Capacidad: {{ SOFASCORE_TEAM_INFO.arena.capacity.toLocaleString() }} fanáticos
           </p>
         </div>
-      </div>
-
-      <div class="flex items-center gap-2 shrink-0">
-        <span class="px-3 py-1.5 bg-emerald-900/60 border border-emerald-500/30 rounded-lg text-xs font-bold text-emerald-300">
-          <i class="bi bi-trophy-fill mr-1 text-amber-400"></i> SPB 2026
-        </span>
       </div>
     </div>
 
