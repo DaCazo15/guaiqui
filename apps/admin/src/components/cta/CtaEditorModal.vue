@@ -1,9 +1,10 @@
 <script setup lang="ts">
-import { BaseModal, BaseButton, BaseInput } from '@guaiqui/ui'
+import { BaseModal, BaseButton, BaseInput, BaseSelect } from '@guaiqui/ui'
 import CtaContainerFields from './CtaContainerFields.vue'
 import CtaPhraseFields from './CtaPhraseFields.vue'
+import CtaBackgroundControl from './CtaBackgroundControl.vue'
 import CtaLivePreview from './CtaLivePreview.vue'
-import type { CtaFormData } from './ctaTypes'
+import { PLACEMENT_OPTIONS, type CtaFormData } from './ctaTypes'
 
 defineProps<{
   show: boolean
@@ -32,13 +33,21 @@ const emit = defineEmits<{
         <span>{{ errorMessage }}</span>
       </div>
 
-      <!-- General Info: Internal Name -->
-      <BaseInput
-        v-model="form.name"
-        label="Nombre Descriptivo (Uso Interno)"
-        placeholder="Ej: CTA Registro Principal, Frase Tribu 2026, etc."
-        required
-      />
+      <!-- General Info: Name and Placement -->
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <BaseInput
+          v-model="form.name"
+          label="Nombre Descriptivo (Uso Interno)"
+          placeholder="Ej: CTA Hero Registro, Frase Orgullo Tribu, etc."
+          required
+        />
+
+        <BaseSelect
+          v-model="form.placement"
+          label="Ubicación en la Landing Page"
+          :options="PLACEMENT_OPTIONS"
+        />
+      </div>
 
       <!-- Mode Selector -->
       <div>
@@ -76,7 +85,10 @@ const emit = defineEmits<{
         </div>
       </div>
 
-      <!-- Mode Fields -->
+      <!-- Background Style Control (Solid color / Custom Hex / Gradient) -->
+      <CtaBackgroundControl :model-value="form" />
+
+      <!-- Mode Specific Fields -->
       <div class="p-4 bg-slate-900/60 border border-slate-800 rounded-xl">
         <CtaContainerFields
           v-if="form.type === 'container'"

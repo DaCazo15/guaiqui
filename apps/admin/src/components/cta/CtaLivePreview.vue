@@ -8,6 +8,30 @@ const props = defineProps<{
   compact?: boolean
 }>()
 
+const isLightBg = computed(() => {
+  if (!props.cta.bg_color) return false
+  const hex = props.cta.bg_color.replace('#', '').toLowerCase()
+  if (hex === 'ffffff' || hex === 'fff' || hex === 'f8fafc' || hex === 'f1f5f9') return true
+  // Check relative luminance
+  if (hex.length === 6) {
+    const r = parseInt(hex.substring(0, 2), 16)
+    const g = parseInt(hex.substring(2, 4), 16)
+    const b = parseInt(hex.substring(4, 6), 16)
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255
+    return luminance > 0.65
+  }
+  return false
+})
+
+const previewContainerStyle = computed(() => {
+  const styles: Record<string, string> = {}
+  if (props.cta.bg_color) {
+    styles.backgroundColor = props.cta.bg_color
+    styles.backgroundImage = 'none'
+  }
+  return styles
+})
+
 const fontFamilyStyle = computed(() => {
   if (props.cta.type !== 'phrase') return {}
   const family = props.cta.font_family || 'Barlow Condensed'
@@ -21,9 +45,16 @@ const fontFamilyStyle = computed(() => {
   <div class="w-full rounded-2xl overflow-hidden border border-slate-700/80 shadow-2xl relative">
     <!-- Live Preview Header Tag -->
     <div class="bg-slate-900/90 backdrop-blur-xs px-4 py-2 border-b border-slate-700/60 flex items-center justify-between text-xs text-slate-400">
-      <span class="inline-flex items-center gap-1.5 font-medium text-emerald-400">
-        <i class="bi bi-eye-fill"></i> Previsualización en Vivo
-      </span>
+      <div class="flex items-center gap-2">
+        <span class="inline-flex items-center gap-1.5 font-medium text-emerald-400">
+          <i class="bi bi-eye-fill"></i> Previsualización en Vivo
+        </span>
+        <span class="text-slate-600">|</span>
+        <span class="text-[11px] text-amber-300 font-semibold inline-flex items-center gap-1">
+          <i :class="cta.placement === 'after_hero' ? 'bi-arrow-up-circle-fill' : 'bi-arrow-down-circle-fill'"></i>
+          {{ cta.placement === 'after_hero' ? 'Después del Hero' : 'Antes del Footer' }}
+        </span>
+      </div>
       <span class="uppercase tracking-wider font-semibold text-[10px] px-2 py-0.5 rounded bg-slate-800 text-slate-300">
         {{ cta.type === 'container' ? 'Contenedor Completo' : 'Solo Frase' }}
       </span>
@@ -32,25 +63,36 @@ const fontFamilyStyle = computed(() => {
     <!-- Mode 1: Container Preview -->
     <div
       v-if="cta.type === 'container'"
-      class="py-12 sm:py-16 px-4 sm:px-8 text-center text-white relative overflow-hidden bg-gradient-to-r"
-      :class="cta.bg_gradient || 'from-guaiqui-primary-dark via-emerald-900 to-slate-950'"
+      class="py-12 sm:py-16 px-4 sm:px-8 text-center relative overflow-hidden transition-colors duration-300"
+      :class="[
+        !cta.bg_color ? (cta.bg_gradient || 'from-guaiqui-primary-dark via-emerald-900 to-slate-950') + ' bg-gradient-to-r' : '',
+        isLightBg ? 'text-slate-900' : 'text-white'
+      ]"
+      :style="previewContainerStyle"
     >
       <div class="max-w-3xl mx-auto space-y-5 relative z-10">
         <!-- Badge -->
         <div
           v-if="cta.badge_text"
-          class="inline-flex items-center gap-2 bg-amber-400/20 text-amber-300 text-xs font-bold uppercase px-3 py-1 rounded-full border border-amber-400/30 shadow-xs"
+          class="inline-flex items-center gap-2 text-xs font-bold uppercase px-3 py-1 rounded-full border shadow-xs"
+          :class="isLightBg ? 'bg-emerald-100 text-emerald-900 border-emerald-300' : 'bg-amber-400/20 text-amber-300 border-amber-400/30'"
         >
           <PearlIcon size="xs" /> {{ cta.badge_text }}
         </div>
 
         <!-- Heading -->
-        <h2 class="font-display font-extrabold text-2xl sm:text-4xl lg:text-5xl uppercase tracking-tight leading-none drop-shadow-sm">
+        <h2
+          class="font-display font-extrabold text-2xl sm:text-4xl lg:text-5xl uppercase tracking-tight leading-none drop-shadow-sm"
+          :class="isLightBg ? 'text-slate-900' : 'text-white'"
+        >
           {{ cta.heading || 'Título del Llamado a la Acción' }}
         </h2>
 
         <!-- Subtitle -->
-        <p class="text-emerald-100 text-sm sm:text-base max-w-xl mx-auto leading-relaxed">
+        <p
+          class="text-sm sm:text-base max-w-xl mx-auto leading-relaxed"
+          :class="isLightBg ? 'text-slate-600' : 'text-emerald-100'"
+        >
           {{ cta.subtitle || 'Subtítulo o descripción atractiva para los fanáticos.' }}
         </p>
 
@@ -66,7 +108,12 @@ const fontFamilyStyle = computed(() => {
     <!-- Mode 2: Phrase Preview -->
     <div
       v-else
-      class="py-12 sm:py-16 px-4 sm:px-8 text-center relative overflow-hidden bg-gradient-to-r from-guaiqui-primary-dark via-emerald-900 to-slate-950 text-white"
+      class="py-12 sm:py-16 px-4 sm:px-8 text-center relative overflow-hidden transition-colors duration-300"
+      :class="[
+        !cta.bg_color ? 'bg-gradient-to-r from-guaiqui-primary-dark via-emerald-900 to-slate-950' : '',
+        isLightBg ? 'text-slate-900' : 'text-white'
+      ]"
+      :style="previewContainerStyle"
     >
       <div class="max-w-4xl mx-auto flex flex-col items-center justify-center space-y-4 relative z-10">
         <!-- Media: Logo -->
@@ -81,7 +128,8 @@ const fontFamilyStyle = computed(() => {
         <!-- Media: Icon -->
         <div
           v-else-if="cta.media_type === 'icon' && cta.media_value"
-          class="mb-2 inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl bg-white/10 backdrop-blur-xs border border-white/20 text-amber-300 text-3xl sm:text-4xl shadow-inner"
+          class="mb-2 inline-flex items-center justify-center w-14 h-14 sm:w-16 sm:h-16 rounded-2xl border text-3xl sm:text-4xl shadow-inner"
+          :class="isLightBg ? 'bg-slate-100 border-slate-300 text-emerald-800' : 'bg-white/10 backdrop-blur-xs border-white/20 text-amber-300'"
         >
           <i :class="['bi', cta.media_value]"></i>
         </div>
@@ -89,7 +137,8 @@ const fontFamilyStyle = computed(() => {
         <!-- Media: Image -->
         <div
           v-else-if="cta.media_type === 'image' && cta.media_value"
-          class="mb-2 max-w-xs rounded-xl overflow-hidden border border-white/20 shadow-xl"
+          class="mb-2 max-w-xs rounded-xl overflow-hidden border shadow-xl"
+          :class="isLightBg ? 'border-slate-300' : 'border-white/20'"
         >
           <img
             :src="cta.media_value"
@@ -105,7 +154,7 @@ const fontFamilyStyle = computed(() => {
             cta.font_size || 'text-4xl sm:text-6xl',
             cta.letter_spacing || 'tracking-tight',
             cta.font_weight || 'font-extrabold',
-            cta.text_color || 'text-white'
+            isLightBg ? 'text-slate-900' : (cta.text_color || 'text-white')
           ]"
           :style="fontFamilyStyle"
         >

@@ -37,6 +37,9 @@ useSeoMeta({
     <!-- 3. HeroSection -->
     <HeroSection />
 
+    <!-- 3.1 Optional CTA after Hero -->
+    <FinalCtaSection placement="after_hero" />
+
     <!-- 4. FeaturedCarousel -->
     <FeaturedCarousel />
 
@@ -71,7 +74,7 @@ useSeoMeta({
     <InstagramSection />
 
     <!-- 15. FinalCta & SiteFooter -->
-    <FinalCtaSection />
+    <FinalCtaSection placement="before_footer" />
     <SiteFooter />
   </div>
 </template>

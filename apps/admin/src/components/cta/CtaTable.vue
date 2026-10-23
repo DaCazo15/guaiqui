@@ -44,6 +44,19 @@ const emit = defineEmits<{
               {{ cta.name }}
             </span>
 
+            <!-- Placement Badge -->
+            <span
+              :class="[
+                'text-[11px] font-semibold px-2.5 py-0.5 rounded-full border inline-flex items-center gap-1',
+                cta.placement === 'after_hero'
+                  ? 'bg-amber-950/60 border-amber-800/80 text-amber-300'
+                  : 'bg-slate-800 border-slate-700 text-slate-300'
+              ]"
+            >
+              <i :class="cta.placement === 'after_hero' ? 'bi-arrow-up-circle-fill' : 'bi-arrow-down-circle-fill'"></i>
+              {{ cta.placement === 'after_hero' ? 'Después del Hero' : 'Antes del Footer' }}
+            </span>
+
             <!-- Type badge -->
             <span
               :class="[
@@ -88,6 +101,15 @@ const emit = defineEmits<{
                 <span>Multimedia: <strong class="text-slate-300">{{ cta.media_type }}</strong></span>
               </p>
             </template>
+
+            <!-- Background style indicator -->
+            <div class="flex items-center gap-1.5 mt-1 text-[11px] text-slate-500">
+              <span
+                class="w-3 h-3 rounded-full border border-slate-600 inline-block"
+                :style="{ backgroundColor: cta.bg_color || '#064E27' }"
+              ></span>
+              <span>Fondo: {{ cta.bg_color || 'Gradiente Oficial' }}</span>
+            </div>
           </div>
         </div>
 
@@ -114,7 +136,7 @@ const emit = defineEmits<{
             Editar
           </BaseButton>
 
-          <!-- Delete Button (disabled if active and sole CTA) -->
+          <!-- Delete Button -->
           <button
             type="button"
             title="Eliminar CTA"

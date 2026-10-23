@@ -1,9 +1,10 @@
-import type { LandingCta, CtaType, CtaMediaType } from '@guaiqui/shared'
+import type { LandingCta, CtaType, CtaMediaType, CtaPlacement } from '@guaiqui/shared'
 
 export interface CtaFormData {
   id: string
   name: string
   type: CtaType
+  placement: CtaPlacement
   is_active: boolean
   is_published: boolean
   // Container mode
@@ -13,6 +14,7 @@ export interface CtaFormData {
   button_text: string
   button_url: string
   bg_gradient: string
+  bg_color: string
   // Phrase mode
   phrase_text: string
   font_family: string
@@ -28,6 +30,7 @@ export const DEFAULT_CTA_FORM: CtaFormData = {
   id: '',
   name: '',
   type: 'container',
+  placement: 'before_footer',
   is_active: false,
   is_published: true,
   badge_text: '¡Únete a la Tribu Hoy!',
@@ -36,6 +39,7 @@ export const DEFAULT_CTA_FORM: CtaFormData = {
   button_text: 'Crear mi Cuenta Gratis',
   button_url: '/registro',
   bg_gradient: 'from-guaiqui-primary-dark via-emerald-900 to-slate-950',
+  bg_color: '',
   phrase_text: '¡EL ORGULLO DE NUEVA ESPARTA!',
   font_family: 'Barlow Condensed',
   font_size: 'text-4xl sm:text-6xl',
@@ -45,6 +49,21 @@ export const DEFAULT_CTA_FORM: CtaFormData = {
   media_type: 'none',
   media_value: ''
 }
+
+export const PLACEMENT_OPTIONS = [
+  { value: 'before_footer', label: 'Al final (antes del Footer)' },
+  { value: 'after_hero', label: 'Después del Hero' }
+]
+
+export const COLOR_PALETTE_PRESETS = [
+  { value: '', label: 'Gradiente Predeterminado', hex: 'linear-gradient(to right, #064E27, #0B7A3B, #020617)' },
+  { value: '#064E27', label: 'Verde Esmeralda Oscuro', hex: '#064E27' },
+  { value: '#0B7A3B', label: 'Verde Tribu Oficial', hex: '#0B7A3B' },
+  { value: '#0F172A', label: 'Noche Pizarra', hex: '#0F172A' },
+  { value: '#1E293B', label: 'Gris Carbón', hex: '#1E293B' },
+  { value: '#9B0B22', label: 'Rojo Bandana', hex: '#9B0B22' },
+  { value: '#FFFFFF', label: 'Blanco Puro (Texto Oscuro)', hex: '#FFFFFF' }
+]
 
 export const FONT_FAMILY_OPTIONS = [
   { value: 'Barlow Condensed', label: 'Barlow Condensed (Deportiva / Titulares)' },

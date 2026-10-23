@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { BaseInput, BaseSelect } from '@guaiqui/ui'
-import { BG_GRADIENT_OPTIONS, type CtaFormData } from './ctaTypes'
+import { BaseInput } from '@guaiqui/ui'
+import type { CtaFormData } from './ctaTypes'
 
 defineProps<{
   modelValue: CtaFormData
@@ -9,18 +9,11 @@ defineProps<{
 
 <template>
   <div class="space-y-4">
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <BaseInput
-        v-model="modelValue.badge_text"
-        label="Texto del Badge / Píldora"
-        placeholder="Ej: ¡Únete a la Tribu Hoy!"
-      />
-      <BaseSelect
-        v-model="modelValue.bg_gradient"
-        label="Estilo de Fondo / Gradiente"
-        :options="BG_GRADIENT_OPTIONS"
-      />
-    </div>
+    <BaseInput
+      v-model="modelValue.badge_text"
+      label="Texto del Badge / Píldora Superior"
+      placeholder="Ej: ¡Únete a la Tribu Hoy!"
+    />
 
     <BaseInput
       v-model="modelValue.heading"

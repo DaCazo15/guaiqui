@@ -436,11 +436,13 @@ export interface SponsorVideo {
 
 export type CtaType = 'container' | 'phrase'
 export type CtaMediaType = 'none' | 'logo' | 'icon' | 'image'
+export type CtaPlacement = 'before_footer' | 'after_hero'
 
 export interface LandingCta {
   id: string
   name: string
   type: CtaType
+  placement: CtaPlacement
   is_active: boolean
   is_published: boolean
   badge_text?: string | null
@@ -449,6 +451,7 @@ export interface LandingCta {
   button_text?: string | null
   button_url?: string | null
   bg_gradient?: string | null
+  bg_color?: string | null
   phrase_text?: string | null
   font_family?: string | null
   font_size?: string | null
