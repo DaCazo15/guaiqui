@@ -143,7 +143,6 @@ function handleCoverCroppedConfirmed(croppedFile: File) {
           :title="activeCoverUrl ? 'Cambiar foto de portada' : 'Subir foto de portada'"
         >
           <i class="bi bi-camera-fill text-sm"></i>
-          <span>{{ activeCoverUrl ? 'Cambiar Portada' : 'Subir Portada' }}</span>
         </button>
 
         <input

@@ -39,6 +39,8 @@ const getCaracasTodayStr = () => {
 const completedToday = ref(0)
 const pointsEarnedToday = ref(0)
 const currentTierReward = ref(5)
+const blockProgress = ref(0)
+const videosUntilNextBlock = ref(10)
 
 const loadDailyProgress = async () => {
   try {
@@ -50,12 +52,10 @@ const loadDailyProgress = async () => {
           .from('ledger_entries')
           .select('source_id, amount')
           .eq('fan_id', user.value.id)
-          .eq('source_type', 'sponsor_video')
+          .in('source_type', ['sponsor_video_block', 'sponsor_video'])
           .gte('created_at', `${todayStr}T00:00:00-04:00`)
         if (fallbackData) {
-          completedToday.value = fallbackData.length
           pointsEarnedToday.value = fallbackData.reduce((acc, curr: any) => acc + (curr.amount || 0), 0)
-          currentTierReward.value = completedToday.value < 10 ? 5 : completedToday.value < 20 ? 10 : 15
         }
       }
       return
@@ -65,6 +65,8 @@ const loadDailyProgress = async () => {
       completedToday.value = Number(data.completed_today) || 0
       pointsEarnedToday.value = Number(data.points_earned_today) || 0
       currentTierReward.value = Number(data.current_tier_reward) || 5
+      blockProgress.value = Number(data.block_progress) || (completedToday.value % 10)
+      videosUntilNextBlock.value = Number(data.videos_until_next_block) || (completedToday.value >= 50 ? 0 : 10 - (completedToday.value % 10))
     }
   } catch (err: any) {
     console.warn('Error loading daily video progress:', err)
@@ -148,12 +150,23 @@ const handleVideoCompleted = async (videoId: string) => {
     if (error) throw error
 
     if (data?.success) {
-      successMessage.value = `¡Video completado! Has sumado +${data.points_awarded} puntos por tu video #${data.completed_today} de hoy.`
-      analytics.trackEvent('sponsor_video_points_claimed', {
-        video_id: videoId,
-        points: data.points_awarded,
-        completed_today: data.completed_today,
-      })
+      if (data?.block_completed) {
+        successMessage.value = `¡Bloque #${data.block_number} completado! Has terminado 10 videos y sumado +${data.points_awarded} puntos a tu billetera.`
+        analytics.trackEvent('sponsor_video_block_completed', {
+          video_id: videoId,
+          block_number: data.block_number,
+          points: data.points_awarded,
+          completed_today: data.completed_today,
+        })
+      } else {
+        const remaining = data.videos_until_next_block ?? (10 - (data.completed_today % 10))
+        infoMessage.value = `¡Video completado! Progreso del bloque: ${data.completed_today % 10}/10 videos. Te faltan ${remaining} video${remaining > 1 ? 's' : ''} para ganar tus puntos.`
+        analytics.trackEvent('sponsor_video_progress_incremented', {
+          video_id: videoId,
+          completed_today: data.completed_today,
+          remaining_until_block: remaining,
+        })
+      }
       await loadDailyProgress()
     } else if (data?.already_claimed) {
       infoMessage.value = data.message || 'Ya has validado este video hoy.'
@@ -248,6 +261,8 @@ useSeoMeta({
       :active-videos-count="videos.length"
       :max-daily="MAX_DAILY_VIDEOS"
       :current-tier-reward="currentTierReward"
+      :block-progress="blockProgress"
+      :videos-until-next-block="videosUntilNextBlock"
       :loading="loading"
       @watch="handleOpenRandomVideo"
     />

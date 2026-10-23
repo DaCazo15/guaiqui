@@ -138,26 +138,6 @@ function handleClose() {
         </button>
       </div>
 
-      <!-- Explicación y Badge de Optimización -->
-      <div class="space-y-2">
-        <p class="text-xs text-guaiqui-text-muted leading-relaxed">
-          Ajusta la posición para encuadrar tu portada horizontal (proporción 8:3).
-          <strong class="text-amber-800 bg-amber-50 px-1 py-0.5 rounded">Nota:</strong> Al guardar, la imagen se recortará y optimizará permanentemente descartando el sobrante.
-        </p>
-
-        <!-- Indicador de formato y peso estimado entre 5 KB y 10 KB -->
-        <div class="flex flex-wrap items-center gap-2 pt-0.5">
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-800 text-[11px] font-bold border border-emerald-200 shadow-2xs">
-            <i class="bi bi-file-earmark-image-fill text-emerald-600"></i>
-            <span>Peso estimado: entre 5 KB y 10 KB</span>
-          </span>
-          <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-700 text-[11px] font-medium border border-slate-200">
-            <i class="bi bi-aspect-ratio text-slate-500"></i>
-            <span>600 × 225 px (WebP 8:3)</span>
-          </span>
-        </div>
-      </div>
-
       <!-- Visor de recorte interactivo (8:3) -->
       <div class="relative w-full aspect-[8/3] rounded-guaiqui-xl overflow-hidden bg-slate-900 border-2 border-dashed border-guaiqui-primary shadow-inner">
         <img
@@ -184,7 +164,6 @@ function handleClose() {
             <i :class="isTall ? 'bi-arrows-vertical' : 'bi-arrows'"></i>
             <span>{{ isTall ? 'Posición vertical de la foto' : 'Posición horizontal' }}</span>
           </span>
-          <span class="text-guaiqui-primary font-bold">{{ positionPercent }}%</span>
         </div>
 
         <input
@@ -193,14 +172,9 @@ function handleClose() {
           max="100"
           v-model.number="positionPercent"
           :disabled="isProcessing"
-          class="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-guaiqui-primary"
+          class="w-full h-2 bg-gray-200 rounded-lg mb-2 appearance-none cursor-pointer accent-guaiqui-primary"
         />
 
-        <div class="flex justify-between text-[10px] text-guaiqui-text-muted font-medium">
-          <span>{{ isTall ? 'Parte superior' : 'Izquierda' }}</span>
-          <span>Centro</span>
-          <span>{{ isTall ? 'Parte inferior' : 'Derecha' }}</span>
-        </div>
       </div>
 
       <!-- Alerta de Error -->

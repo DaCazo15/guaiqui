@@ -2,14 +2,23 @@
 import { computed } from 'vue'
 import { PearlIcon, BaseButton } from '@guaiqui/ui'
 
-const props = defineProps<{
-  completedToday: number
-  pointsEarnedToday: number
-  activeVideosCount: number
-  maxDaily: number
-  currentTierReward: number
-  loading: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    completedToday: number
+    pointsEarnedToday: number
+    activeVideosCount: number
+    maxDaily?: number
+    currentTierReward: number
+    blockProgress?: number
+    videosUntilNextBlock?: number
+    loading: boolean
+  }>(),
+  {
+    maxDaily: 50,
+    blockProgress: 0,
+    videosUntilNextBlock: 10,
+  }
+)
 
 const emit = defineEmits<{
   (e: 'watch'): void
@@ -17,6 +26,11 @@ const emit = defineEmits<{
 
 const dailyPercentage = computed(() => {
   return Math.min(100, Math.round((props.completedToday / props.maxDaily) * 100))
+})
+
+const blockPercentage = computed(() => {
+  const currentBlockProgress = props.completedToday % 10
+  return Math.min(100, Math.round((currentBlockProgress / 10) * 100))
 })
 
 const isLimitReached = computed(() => {
@@ -63,7 +77,7 @@ const canWatch = computed(() => {
             <span class="font-display font-black text-2xl text-guaiqui-text">
               +{{ pointsEarnedToday }}
             </span>
-            <span class="text-xs text-guaiqui-text-muted font-medium">puntos</span>
+            <span class="text-xs text-guaiqui-text-muted font-medium">/ 60 máx diario</span>
           </div>
         </div>
         <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl border border-amber-100">
@@ -71,19 +85,18 @@ const canWatch = computed(() => {
         </div>
       </div>
 
-      <!-- Métrica 3: Recompensa Próximo Video -->
+      <!-- Métrica 3: Recompensa Próximo Bloque -->
       <div class="p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-xl flex items-center justify-between sm:col-span-2 lg:col-span-1">
         <div class="space-y-1">
           <span class="text-[11px] font-bold uppercase tracking-wider text-guaiqui-text-muted block">
-            Próxima Recompensa
+            Próximo Bloque (+{{ isLimitReached ? 0 : currentTierReward }} pts)
           </span>
           <div class="flex items-center gap-1.5">
-            <PearlIcon size="sm" />
             <span class="font-display font-black text-2xl text-guaiqui-primary">
-              +{{ isLimitReached ? 0 : currentTierReward }}
+              {{ isLimitReached ? 0 : (videosUntilNextBlock || (10 - (completedToday % 10))) }}
             </span>
             <span class="text-xs font-semibold text-guaiqui-text-muted">
-              {{ isLimitReached ? 'Límite alcanzado' : 'puntos al ver' }}
+              {{ isLimitReached ? 'Completado' : 'videos restantes' }}
             </span>
           </div>
         </div>
@@ -93,18 +106,37 @@ const canWatch = computed(() => {
       </div>
     </div>
 
+    <!-- Barra de progreso del bloque actual (0 a 10) -->
+    <div v-if="!isLimitReached" class="p-4 rounded-guaiqui-xl bg-emerald-50/60 border border-emerald-200/80 space-y-2">
+      <div class="flex items-center justify-between text-xs">
+        <span class="font-bold text-emerald-950 flex items-center gap-1.5">
+          <i class="bi bi-check2-circle text-guaiqui-primary text-base"></i>
+          Progreso del Bloque Actual: {{ completedToday % 10 }} de 10 videos completados
+        </span>
+        <span class="font-mono font-black text-guaiqui-primary">
+          +{{ currentTierReward }} pts al llegar a 10
+        </span>
+      </div>
+      <div class="w-full h-2.5 bg-emerald-100 rounded-full overflow-hidden border border-emerald-200">
+        <div
+          class="h-full bg-guaiqui-primary transition-all duration-300 rounded-full"
+          :style="{ width: `${blockPercentage}%` }"
+        ></div>
+      </div>
+    </div>
+
     <!-- Barra de progreso hacia el límite de 50 videos -->
     <div class="space-y-1.5">
       <div class="flex items-center justify-between text-xs">
         <span class="text-guaiqui-text-muted font-semibold flex items-center gap-1">
           <i class="bi bi-calendar-check text-guaiqui-primary"></i>
-          Progreso del límite diario ({{ completedToday }} de {{ maxDaily }} videos)
+          Meta diaria global ({{ completedToday }} de {{ maxDaily }} videos · {{ pointsEarnedToday }} de 60 pts)
         </span>
         <span class="font-mono font-bold text-guaiqui-primary">
           {{ dailyPercentage }}%
         </span>
       </div>
-      <div class="w-full h-2.5 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
+      <div class="w-full h-2 bg-slate-100 rounded-full overflow-hidden border border-slate-200">
         <div
           class="h-full bg-guaiqui-primary bg-gradient-to-r from-guaiqui-primary via-emerald-500 to-emerald-400 transition-all duration-500 rounded-full"
           :style="{ width: `${dailyPercentage}%` }"

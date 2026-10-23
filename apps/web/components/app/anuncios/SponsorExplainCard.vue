@@ -25,36 +25,34 @@ defineProps<{
       </div>
     </div>
 
-    <!-- Tramos de Puntos (1-10, 11-20, 21-50) -->
+    <!-- Tramos de Puntos (Bloques de 10 videos: máx 60 puntos al día) -->
     <div class="space-y-2.5">
       <div class="flex items-center justify-between text-xs font-bold text-guaiqui-text">
         <span class="uppercase tracking-wider text-[11px] text-guaiqui-text-muted">
-          Escala de Puntos por Videos Vistos Hoy
+          Puntos por Bloques de 10 Videos
         </span>
-        <span class="text-guaiqui-primary font-mono">Máximo 50 videos / día</span>
+        <span class="text-guaiqui-primary font-mono">Máx. 50 videos · 60 puntos / día</span>
       </div>
 
       <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <!-- Tramo 1: Videos 1 al 10 -->
+        <!-- Tramo 1: Bloque 1 (Videos 1 al 10) -->
         <div
           class="p-3.5 rounded-guaiqui-xl border transition-all"
           :class="[
             completedToday < 10
               ? 'bg-emerald-50/70 border-guaiqui-primary ring-2 ring-guaiqui-primary/20 shadow-xs'
-              : completedToday >= 10
-                ? 'bg-slate-50 border-slate-200 opacity-80'
-                : 'bg-white border-guaiqui-border'
+              : 'bg-slate-50 border-slate-200 opacity-80'
           ]"
         >
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-black uppercase tracking-wider text-guaiqui-text">
-              Videos 1 al 10
+              Bloque 1 (Videos 1 a 10)
             </span>
             <span
               v-if="completedToday < 10"
               class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-guaiqui-primary text-white"
             >
-              Nivel Actual
+              En Curso
             </span>
             <span
               v-else
@@ -70,15 +68,15 @@ defineProps<{
               +5
             </span>
             <span class="text-xs font-semibold text-guaiqui-text-muted">
-              puntos por video
+              puntos al completar los 10
             </span>
           </div>
           <p class="text-[11px] text-guaiqui-text-muted mt-1.5">
-            Tus primeros 10 videos del día te suman 5 puntos cada uno.
+            Al completar tus primeros 10 videos ganas 5 puntos directos.
           </p>
         </div>
 
-        <!-- Tramo 2: Videos 11 al 20 -->
+        <!-- Tramo 2: Bloque 2 (Videos 11 al 20) -->
         <div
           class="p-3.5 rounded-guaiqui-xl border transition-all"
           :class="[
@@ -91,13 +89,13 @@ defineProps<{
         >
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-black uppercase tracking-wider text-guaiqui-text">
-              Videos 11 al 20
+              Bloque 2 (Videos 11 a 20)
             </span>
             <span
               v-if="completedToday >= 10 && completedToday < 20"
               class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-guaiqui-primary text-white"
             >
-              Nivel Actual
+              En Curso
             </span>
             <span
               v-else-if="completedToday >= 20"
@@ -119,15 +117,15 @@ defineProps<{
               +10
             </span>
             <span class="text-xs font-semibold text-guaiqui-text-muted">
-              puntos por video
+              puntos al completar los 20
             </span>
           </div>
           <p class="text-[11px] text-guaiqui-text-muted mt-1.5">
-            ¡Doble recompensa! Los siguientes 10 videos suman 10 puntos c/u.
+            ¡Doble premio! Al llegar a 20 videos completados ganas 10 puntos.
           </p>
         </div>
 
-        <!-- Tramo 3: Videos 21 al 50 -->
+        <!-- Tramo 3: Bloques 3, 4 y 5 (Videos 21 al 50) -->
         <div
           class="p-3.5 rounded-guaiqui-xl border transition-all"
           :class="[
@@ -140,13 +138,13 @@ defineProps<{
         >
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-black uppercase tracking-wider text-guaiqui-text">
-              Videos 21 al 50
+              Bloques 3, 4 y 5 (Videos 21 a 50)
             </span>
             <span
               v-if="completedToday >= 20 && completedToday < 50"
               class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-guaiqui-primary text-white"
             >
-              Nivel Actual
+              En Curso
             </span>
             <span
               v-else-if="completedToday >= 50"
@@ -168,11 +166,11 @@ defineProps<{
               +15
             </span>
             <span class="text-xs font-semibold text-guaiqui-text-muted">
-              puntos por video
+              puntos cada 10 videos
             </span>
           </div>
           <p class="text-[11px] text-guaiqui-text-muted mt-1.5">
-            ¡Máximo multiplicador! 15 puntos por cada video hasta el límite diario.
+            Sumas 15 puntos al llegar a 30, a 40 y a 50 videos (total 60 puntos).
           </p>
         </div>
       </div>

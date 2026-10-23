@@ -150,7 +150,7 @@ async function handleSaveProfile(updates: any) {
     </div>
 
     <!-- 2. TARJETA PRINCIPAL DE DATOS Y PREFERENCIAS DEL FANÁTICO -->
-    <BaseCard class="bg-white border-guaiqui-border p-5 sm:p-6 rounded-guaiqui-2xl space-y-6 shadow-guaiqui-sm">
+    <BaseCard class="bg-white border-guaiqui-border p-5 sm:p-6 rounded-guaiqui-2xl space-y-6 mb-2 shadow-guaiqui-sm">
       <!-- Encabezado de la Tarjeta con Enlace a la Plantilla Oficial -->
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-guaiqui-border">
         <div>
@@ -161,14 +161,6 @@ async function handleSaveProfile(updates: any) {
             Actualiza tus preferencias para personalizar tu experiencia en la plataforma.
           </p>
         </div>
-
-        <NuxtLink to="/app/plantilla">
-          <button class="inline-flex items-center gap-2 px-3 py-1.5 rounded-guaiqui-md bg-guaiqui-surface hover:bg-gray-200 text-guaiqui-text text-xs font-bold uppercase tracking-wider border border-guaiqui-border transition-colors">
-            <i class="bi bi-people-fill text-guaiqui-primary"></i>
-            <span>Ver Plantilla Oficial SPB</span>
-            <i class="bi bi-chevron-right text-[10px]"></i>
-          </button>
-        </NuxtLink>
       </div>
 
       <!-- Formulario de Campos de Perfil -->
