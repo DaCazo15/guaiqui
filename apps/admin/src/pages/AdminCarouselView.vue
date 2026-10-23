@@ -198,7 +198,7 @@ onMounted(loadSlides)
     <div class="max-w-7xl mx-auto space-y-6">
       <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 class="text-2xl font-bold font-title text-white">Carrusel Hero de la Landing</h1>
+          <h1 class="text-2xl font-bold font-title text-white">Carrusel de la Landing</h1>
           <p class="text-sm text-slate-400 mt-1">Administrar diapositivas destacadas del carrusel principal.</p>
         </div>
         <BaseButton variant="primary" @click="openNew">

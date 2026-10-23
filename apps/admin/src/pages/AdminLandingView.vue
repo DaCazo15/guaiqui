@@ -4,18 +4,9 @@ import { RouterLink } from 'vue-router'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseInput, BaseCard, BaseBadge, BaseTable, BaseModal } from '@guaiqui/ui'
 import { supabase } from '../lib/supabase'
-
-interface LandingSettings {
-  id: number
-  hero_title: string
-  hero_subtitle: string
-  cta_primary_text: string
-  cta_primary_url: string
-  cta_secondary_text: string
-  cta_secondary_url: string
-  dark_mode_enabled: boolean
-  theme_color: string
-}
+import HeroAppearanceControl from '../components/hero/HeroAppearanceControl.vue'
+import HeroCarouselManager from '../components/hero/HeroCarouselManager.vue'
+import type { LandingSettings } from '@guaiqui/shared'
 
 interface StandingRow {
   id: string
@@ -27,7 +18,7 @@ interface StandingRow {
   order_index: number
 }
 
-const activeTab = ref<'hero' | 'standings' | 'instagram'>('hero')
+const activeTab = ref<'hero' | 'carousel' | 'standings'>('hero')
 
 const settings = ref<LandingSettings>({
   id: 1,
@@ -38,7 +29,10 @@ const settings = ref<LandingSettings>({
   cta_secondary_text: 'Explorar Premios',
   cta_secondary_url: '#premios',
   dark_mode_enabled: true,
-  theme_color: '#059669'
+  theme_color: '#059669',
+  hero_image_url: '',
+  hero_carousel_enabled: false,
+  hero_card_color: ''
 })
 
 const standings = ref<StandingRow[]>([])
@@ -201,7 +195,7 @@ onMounted(loadData)
       </div>
 
       <!-- Navigation Tabs -->
-      <div class="flex items-center gap-2 border-b border-slate-800 pb-2">
+      <div class="flex items-center gap-2 border-b border-slate-800 pb-2 flex-wrap">
         <button
           @click="activeTab = 'hero'"
           :class="[
@@ -209,7 +203,22 @@ onMounted(loadData)
             activeTab === 'hero' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
           ]"
         >
-          <i class="bi bi-layout-text-window-reverse mr-1.5"></i> Hero Section & Tema
+          <i class="bi bi-layout-text-window-reverse mr-1.5"></i> Hero & Contenido
+        </button>
+        <button
+          @click="activeTab = 'carousel'"
+          :class="[
+            'px-4 py-2 rounded-xl text-sm font-semibold transition-all flex items-center gap-1.5',
+            activeTab === 'carousel' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
+          ]"
+        >
+          <i class="bi bi-images"></i>
+          <span>Carrusel del Hero</span>
+          <span
+            v-if="settings.hero_carousel_enabled"
+            class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse ml-0.5"
+            title="Carrusel Activo"
+          ></span>
         </button>
         <button
           @click="activeTab = 'standings'"
@@ -226,7 +235,7 @@ onMounted(loadData)
       <div v-if="activeTab === 'hero'" class="space-y-6">
         <BaseCard class="bg-slate-900 border-slate-800 shadow-xl p-6 space-y-6">
           <h3 class="text-lg font-bold text-white flex items-center gap-2">
-            <i class="bi bi-pen text-emerald-400"></i> Contenido Principal del Hero
+            <i class="bi bi-pen text-emerald-400"></i> Textos y Botones del Hero
           </h3>
 
           <div class="grid grid-cols-1 gap-4">
@@ -248,20 +257,13 @@ onMounted(loadData)
             <BaseInput label="Enlace Botón Secundario" v-model="settings.cta_secondary_url" />
           </div>
 
-          <div class="p-4 rounded-xl bg-slate-950/60 border border-slate-800 space-y-3 pt-4">
-            <h4 class="text-xs font-bold uppercase text-slate-300">Personalización de Apariencia</h4>
-            <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-              <label class="flex items-center gap-3 text-sm text-slate-300 cursor-pointer">
-                <input type="checkbox" v-model="settings.dark_mode_enabled" class="w-5 h-5 accent-emerald-500 rounded" />
-                <span>Modo Oscuro Predeterminado para Nuevos Visitantes</span>
-              </label>
-
-              <div class="flex items-center gap-3">
-                <label class="text-xs text-slate-400">Color Primario de Énfasis:</label>
-                <input type="color" v-model="settings.theme_color" class="w-8 h-8 rounded-lg cursor-pointer bg-slate-900 border border-slate-700" />
-              </div>
-            </div>
-          </div>
+          <!-- Hero Appearance Control (Background Image, Card Color, Theme) -->
+          <HeroAppearanceControl
+            v-model:hero-image-url="settings.hero_image_url"
+            v-model:hero-card-color="settings.hero_card_color"
+            v-model:dark-mode-enabled="settings.dark_mode_enabled"
+            v-model:theme-color="settings.theme_color"
+          />
 
           <div class="flex justify-end pt-4">
             <BaseButton variant="primary" :loading="actionLoading" @click="saveSettings">
@@ -271,7 +273,20 @@ onMounted(loadData)
         </BaseCard>
       </div>
 
-      <!-- TAB 2: Standings / Tabla de Clasificación -->
+      <!-- TAB 2: Hero Carousel Posts Manager (up to 5 posts) -->
+      <div v-if="activeTab === 'carousel'" class="space-y-6">
+        <HeroCarouselManager
+          v-model:carousel-enabled="settings.hero_carousel_enabled"
+        />
+
+        <div class="flex justify-end pt-2">
+          <BaseButton variant="primary" :loading="actionLoading" @click="saveSettings">
+            <i class="bi bi-check-lg mr-1.5"></i> Guardar Estado del Carrusel
+          </BaseButton>
+        </div>
+      </div>
+
+      <!-- TAB 3: Standings / Tabla de Clasificación -->
       <div v-if="activeTab === 'standings'" class="space-y-6">
         <div class="flex items-center justify-between">
           <p class="text-sm text-slate-400">Tabla de Posiciones de la Temporada SPB.</p>

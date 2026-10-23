@@ -1,8 +1,10 @@
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from 'vue'
-import { BaseButton, BaseBadge, PearlIcon } from '@guaiqui/ui'
+import { BaseButton, PearlIcon } from '@guaiqui/ui'
 import { useAnalytics } from '~/composables/useAnalytics'
 import { useGSAP } from '~/composables/useGSAP'
+import HeroCarousel from './HeroCarousel.vue'
+import type { HeroCarouselSlide } from '@guaiqui/shared'
 
 const { trackEvent } = useAnalytics()
 const supabase = useSupabaseClient()
@@ -20,6 +22,12 @@ const ctaPrimaryText = ref('Regístrate Gratis Ahora')
 const ctaPrimaryUrl = ref('/registro')
 const ctaSecondaryText = ref('Ver cómo funciona')
 const ctaSecondaryUrl = ref('/#como-funciona')
+
+// Hero Image, Carousel, and Card Customization
+const heroImageUrl = ref('')
+const heroCarouselEnabled = ref(false)
+const heroCardColor = ref('')
+const heroSlides = ref<HeroCarouselSlide[]>([])
 
 const formattedGameDate = computed(() => {
   if (!nextGame.value?.game_date) return null
@@ -61,6 +69,20 @@ onMounted(async () => {
       if (s.cta_primary_url) ctaPrimaryUrl.value = s.cta_primary_url === '/register' ? '/registro' : s.cta_primary_url
       if (s.cta_secondary_text) ctaSecondaryText.value = s.cta_secondary_text
       if (s.cta_secondary_url) ctaSecondaryUrl.value = s.cta_secondary_url
+      if (s.hero_image_url) heroImageUrl.value = s.hero_image_url
+      if (s.hero_carousel_enabled !== undefined) heroCarouselEnabled.value = s.hero_carousel_enabled
+      if (s.hero_card_color) heroCardColor.value = s.hero_card_color
+
+      // If carousel is enabled, fetch published hero slides
+      if (s.hero_carousel_enabled) {
+        const { data: slidesData } = await supabase
+          .from('hero_carousel_slides')
+          .select('*')
+          .eq('is_published', true)
+          .order('order_index', { ascending: true })
+
+        heroSlides.value = (slidesData as HeroCarouselSlide[]) || []
+      }
     }
   } catch (_err) {
     nextGame.value = null
@@ -85,20 +107,14 @@ onMounted(async () => {
           },
         })
 
-        tl.from('.hero-badge', {
-          y: -15,
-          autoAlpha: 0,
-          duration: reduceMotion ? 0 : 0.6,
-        })
-          .from(
-            '.hero-headline',
-            {
-              y: 25,
-              autoAlpha: 0,
-              duration: reduceMotion ? 0 : 0.8,
-            },
-            '-=0.4'
-          )
+        tl.from(
+          '.hero-headline',
+          {
+            y: 25,
+            autoAlpha: 0,
+            duration: reduceMotion ? 0 : 0.8,
+          }
+        )
           .from(
             '.hero-subtitle',
             {
@@ -172,20 +188,19 @@ const handleHeroHowItWorks = () => {
 
 <template>
   <section ref="heroContainer" class="relative bg-gradient-to-b from-guaiqui-primary-dark via-emerald-900 to-slate-950 text-white overflow-hidden py-16 sm:py-24 px-4 sm:px-8">
+    <!-- Optional Uploaded Hero Background Image (blended over the default brand gradient) -->
+    <div
+      v-if="heroImageUrl"
+      class="absolute inset-0 bg-cover bg-center mix-blend-overlay opacity-30 pointer-events-none"
+      :style="{ backgroundImage: `url('${heroImageUrl}')` }"
+    ></div>
+
     <!-- Subtle Background Pattern Overlay for Text Legibility -->
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-black/60 pointer-events-none" />
 
     <div class="max-w-6xl mx-auto relative z-10 grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
       <!-- Left Content -->
       <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
-        <!-- Social Proof Badge -->
-        <div class="hero-badge inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 text-xs font-semibold text-emerald-200">
-          <BaseBadge variant="soft" size="sm">Fan Zone 2026</BaseBadge>
-          <span class="flex items-center gap-1">
-            Plataforma Oficial de Fidelización
-          </span>
-        </div>
-
         <!-- Headline -->
         <h1 class="hero-headline font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tight leading-none">
           {{ heroTitle }}
@@ -219,12 +234,19 @@ const handleHeroHowItWorks = () => {
         </div>
       </div>
 
-      <!-- Right Content: Dynamic Next Match Card OR Institutional Fan Zone Card -->
+      <!-- Right Content: Hero Carousel OR Dynamic Match Card OR Institutional Fan Zone Card -->
       <div class="hero-card lg:col-span-5 w-full max-w-md mx-auto">
-        <!-- Case 1: Real scheduled match in database -->
+        <!-- Mode A: Hero Carousel (when enabled and slides exist) -->
+        <HeroCarousel
+          v-if="heroCarouselEnabled && heroSlides.length > 0"
+          :slides="heroSlides"
+        />
+
+        <!-- Mode B: Real scheduled match in database -->
         <div
-          v-if="nextGame"
+          v-else-if="nextGame"
           class="bg-white/10 backdrop-blur-xl border border-white/20 rounded-guaiqui-xl p-6 shadow-2xl relative overflow-hidden"
+          :style="heroCardColor ? { backgroundColor: heroCardColor } : {}"
         >
           <div class="absolute top-0 right-0 bg-guaiqui-accent text-white text-[10px] font-extrabold uppercase px-3 py-1 rounded-bl-lg">
             {{ nextGame.status === 'live' ? 'En Vivo' : 'Próximo Juego' }}
@@ -266,10 +288,11 @@ const handleHeroHowItWorks = () => {
           </NuxtLink>
         </div>
 
-        <!-- Case 2: Institutional Fan Zone Card (zero games in database) -->
+        <!-- Mode C: Institutional Fan Zone Card -->
         <div
           v-else
           class="bg-white/10 backdrop-blur-xl border border-white/20 rounded-guaiqui-xl p-6 shadow-2xl relative overflow-hidden space-y-5"
+          :style="heroCardColor ? { backgroundColor: heroCardColor } : {}"
         >
           <div class="absolute top-0 right-0 bg-guaiqui-primary text-white text-[10px] font-extrabold uppercase px-3 py-1 rounded-bl-lg">
             Fan Zone Oficial

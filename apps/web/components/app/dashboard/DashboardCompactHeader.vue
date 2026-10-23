@@ -50,9 +50,6 @@ const fanLevel = computed(() => {
         <!-- Identidad y Nivel -->
         <div class="space-y-1">
           <div class="flex flex-wrap items-center gap-2">
-            <span class="text-xs uppercase font-extrabold tracking-widest text-emerald-400 flex items-center gap-1.5">
-              Fan Zone Oficial
-            </span>
             <span
               class="px-2.5 py-0.5 rounded-full text-[11px] font-bold font-mono uppercase tracking-wide border"
               :class="fanLevel.color"

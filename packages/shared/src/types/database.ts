@@ -464,6 +464,36 @@ export interface LandingCta {
   updated_at: string
 }
 
+export interface HeroCarouselSlide {
+  id: string
+  title: string
+  tag?: string | null
+  subtitle?: string | null
+  image_url?: string | null
+  cta_text?: string | null
+  cta_url?: string | null
+  order_index: number
+  is_published: boolean
+  created_at: string
+  updated_at: string
+}
+
+export interface LandingSettings {
+  id: number
+  hero_title: string
+  hero_subtitle: string
+  cta_primary_text: string
+  cta_primary_url: string
+  cta_secondary_text: string
+  cta_secondary_url: string
+  dark_mode_enabled: boolean
+  theme_color: string
+  hero_image_url?: string | null
+  hero_carousel_enabled: boolean
+  hero_card_color?: string | null
+  updated_at?: string | null
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -496,6 +526,8 @@ export interface Database {
       birthday_settings: { Row: BirthdaySettings; Insert: Partial<BirthdaySettings>; Update: Partial<BirthdaySettings>; Relationships: [] }
       sponsor_videos: { Row: SponsorVideo; Insert: Partial<SponsorVideo>; Update: Partial<SponsorVideo>; Relationships: [] }
       landing_ctas: { Row: LandingCta; Insert: Partial<LandingCta>; Update: Partial<LandingCta>; Relationships: [] }
+      landing_settings: { Row: LandingSettings; Insert: Partial<LandingSettings>; Update: Partial<LandingSettings>; Relationships: [] }
+      hero_carousel_slides: { Row: HeroCarouselSlide; Insert: Partial<HeroCarouselSlide>; Update: Partial<HeroCarouselSlide>; Relationships: [] }
     }
     Views: Record<string, any>
     Functions: {

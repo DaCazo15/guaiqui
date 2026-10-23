@@ -30,8 +30,8 @@ const platformNavItems = [
 
 const cmsNavItems = [
   { name: 'admin-landing', path: '/admin/landing', label: 'Hero', icon: 'bi-layout-text-window-reverse' },
-  { name: 'admin-carrusel', path: '/admin/carrusel', label: 'Carrusel Hero', icon: 'bi-images' },
-  { name: 'admin-cta', path: '/admin/cta', label: 'Llamado a la Acción (CTA)', icon: 'bi-megaphone-fill' },
+  { name: 'admin-carrusel', path: '/admin/carrusel', label: 'Carrusel Landing', icon: 'bi-images' },
+  { name: 'admin-cta', path: '/admin/cta', label: 'CTA', icon: 'bi-megaphone-fill' },
   { name: 'admin-login-modal', path: '/admin/contenido/modal-de-bienvenida', label: 'Pop-up Bienvenida', icon: 'bi-window-stack' },
   { name: 'admin-anuncios', path: '/admin/anuncios', label: 'Cinta Anuncios', icon: 'bi-megaphone' },
   { name: 'admin-partidos', path: '/admin/partidos', label: 'Calendario', icon: 'bi-calendar-event' },
