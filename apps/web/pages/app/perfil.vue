@@ -150,9 +150,9 @@ async function handleSaveProfile(updates: any) {
     </div>
 
     <!-- 2. TARJETA PRINCIPAL DE DATOS Y PREFERENCIAS DEL FANÁTICO -->
-    <BaseCard class="bg-white border-guaiqui-border p-5 sm:p-6 rounded-guaiqui-2xl space-y-6 mb-2 shadow-guaiqui-sm">
+    <BaseCard class="bg-white border-guaiqui-border p-5 sm:p-6 rounded-guaiqui-2xl space-y-6 shadow-guaiqui-sm">
       <!-- Encabezado de la Tarjeta con Enlace a la Plantilla Oficial -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 border-b border-guaiqui-border">
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-2 border-b border-guaiqui-border">
         <div>
           <h2 class="font-display font-extrabold text-xl text-guaiqui-text uppercase tracking-wide">
             Información del Fanático
