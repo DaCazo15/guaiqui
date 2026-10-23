@@ -36,6 +36,7 @@ import AdminLandingView from '../pages/AdminLandingView.vue'
 import AdminBirthdayView from '../pages/AdminBirthdayView.vue'
 import AdminLoginModalView from '../pages/AdminLoginModalView.vue'
 import AdminAdsView from '../pages/AdminAdsView.vue'
+import AdminCtaView from '../pages/AdminCtaView.vue'
 import Enroll2FAView from '../pages/Enroll2FAView.vue'
 import Verify2FAView from '../pages/Verify2FAView.vue'
 
@@ -205,6 +206,12 @@ export const router = createRouter({
       path: '/admin/landing',
       name: 'admin-landing',
       component: AdminLandingView,
+      meta: { requiresAdmin: true }
+    },
+    {
+      path: '/admin/cta',
+      name: 'admin-cta',
+      component: AdminCtaView,
       meta: { requiresAdmin: true }
     },
     {

@@ -434,6 +434,33 @@ export interface SponsorVideo {
   updated_at: string
 }
 
+export type CtaType = 'container' | 'phrase'
+export type CtaMediaType = 'none' | 'logo' | 'icon' | 'image'
+
+export interface LandingCta {
+  id: string
+  name: string
+  type: CtaType
+  is_active: boolean
+  is_published: boolean
+  badge_text?: string | null
+  heading?: string | null
+  subtitle?: string | null
+  button_text?: string | null
+  button_url?: string | null
+  bg_gradient?: string | null
+  phrase_text?: string | null
+  font_family?: string | null
+  font_size?: string | null
+  letter_spacing?: string | null
+  font_weight?: string | null
+  text_color?: string | null
+  media_type?: CtaMediaType | null
+  media_value?: string | null
+  created_at: string
+  updated_at: string
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -465,6 +492,7 @@ export interface Database {
       policy_documents: { Row: PolicyDocument; Insert: Partial<PolicyDocument>; Update: Partial<PolicyDocument>; Relationships: [] }
       birthday_settings: { Row: BirthdaySettings; Insert: Partial<BirthdaySettings>; Update: Partial<BirthdaySettings>; Relationships: [] }
       sponsor_videos: { Row: SponsorVideo; Insert: Partial<SponsorVideo>; Update: Partial<SponsorVideo>; Relationships: [] }
+      landing_ctas: { Row: LandingCta; Insert: Partial<LandingCta>; Update: Partial<LandingCta>; Relationships: [] }
     }
     Views: Record<string, any>
     Functions: {
