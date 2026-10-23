@@ -31,28 +31,31 @@ onMounted(async () => {
 
     <!-- Main Content Area -->
     <div class="flex-1 flex flex-col min-w-0 pb-20 md:pb-6">
-      <!-- Mobile Top Header -->
-      <header class="md:hidden sticky top-0 z-30 bg-white/95 border-b border-guaiqui-border backdrop-blur-lg px-4 py-3 flex items-center justify-between shadow-guaiqui-sm">
+      <!-- Mobile Top Header: Verde Guaiqueríes con detalle en rojo bandana -->
+      <header class="md:hidden sticky top-0 z-30 bg-[#0B7A3B] bg-gradient-to-r from-[#064E27] via-[#0B7A3B] to-emerald-800 border-b-2 border-[#C8102E] shadow-md px-4 py-2.5 flex items-center justify-between text-white">
         <div class="flex items-center gap-2">
-          <img src="/logo.png" alt="Guaiqueríes Logo" class="w-8 h-8 object-contain shrink-0" />
-          <span class="font-display text-base font-bold uppercase tracking-wider text-guaiqui-text">
+          <div class="w-8 h-8 rounded-full bg-white p-0.5 shrink-0 shadow-xs border border-white/40 flex items-center justify-center">
+            <img src="/logo.png" alt="Guaiqueríes Logo" class="w-full h-full object-contain" />
+          </div>
+          <span class="font-display text-lg font-black uppercase tracking-wider text-white drop-shadow-xs">
             Guaiqueríes
           </span>
         </div>
 
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2.5">
           <!-- Pearl Balance Badge -->
-          <NuxtLink to="/app/billetera" class="flex items-center gap-1.5 text-xs font-bold text-guaiqui-perlita bg-guaiqui-perlita-soft border border-guaiqui-perlita/20 px-2.5 py-1 rounded-full">
+          <NuxtLink to="/app/billetera" class="flex items-center gap-1.5 text-xs font-black text-amber-900 bg-amber-300 hover:bg-amber-200 border border-amber-400 px-2.5 py-1 rounded-full shadow-xs transition-colors">
             <PearlIcon size="xs" animated />
             <span>{{ formatPerlitas(authStore.wallet?.balance_cache || 0) }}</span>
           </NuxtLink>
 
           <!-- Notification Bell -->
-          <NotificationBell />
+          <NotificationBell variant="on-green" />
 
+          <!-- User Avatar -->
           <NuxtLink
             to="/app/perfil"
-            class="w-8 h-8 rounded-full bg-guaiqui-primary-soft border border-guaiqui-primary/30 text-guaiqui-primary flex items-center justify-center font-bold text-xs overflow-hidden shrink-0"
+            class="w-8 h-8 rounded-full bg-white/20 border-2 border-white/60 text-white flex items-center justify-center font-bold text-xs overflow-hidden shrink-0 shadow-xs"
             title="Mi perfil"
           >
             <img
@@ -63,7 +66,7 @@ onMounted(async () => {
               referrerpolicy="no-referrer"
               @error="avatarError = true"
             />
-            <span v-else>
+            <span v-else class="text-white font-extrabold">
               {{ authStore.profile?.display_name?.charAt(0).toUpperCase() || 'F' }}
             </span>
           </NuxtLink>

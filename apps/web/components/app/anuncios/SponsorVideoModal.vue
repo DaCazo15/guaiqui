@@ -212,17 +212,17 @@ const handleClose = () => {
     >
       <div
         v-if="modelValue && video"
-        class="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-5 overflow-y-auto bg-slate-950/80 backdrop-blur-sm"
+        class="fixed inset-0 z-50 flex items-stretch sm:items-center justify-center p-0 sm:p-5 overflow-hidden sm:overflow-y-auto bg-slate-950 sm:bg-slate-950/80 sm:backdrop-blur-sm"
         role="dialog"
         aria-modal="true"
       >
-        <!-- Modal Card Container con Branding Guaiqueríes -->
+        <!-- Modal Card Container con Branding Guaiqueríes: Pantalla completa en Móvil -->
         <div
-          class="relative w-full max-w-3xl bg-white rounded-guaiqui-2xl border-2 border-guaiqui-primary shadow-2xl overflow-hidden flex flex-col my-auto animate-in fade-in zoom-in-95 duration-200"
+          class="relative w-full h-[100dvh] sm:h-auto sm:max-w-3xl bg-white rounded-none sm:rounded-guaiqui-2xl border-0 sm:border-2 border-guaiqui-primary shadow-2xl overflow-y-auto sm:overflow-hidden flex flex-col justify-between my-0 sm:my-auto animate-in fade-in zoom-in-95 duration-200"
           @click.stop
         >
           <!-- Header Branded: Verde Guaiqueríes sólido con logo oficial y nombre del video (SIN PUNTOS) -->
-          <div class="bg-[#0B7A3B] bg-gradient-to-r from-[#064E27] via-[#0B7A3B] to-emerald-800 text-white p-4 sm:p-5 relative flex items-center justify-between border-b-4 border-[#C8102E] shadow-md">
+          <div class="bg-[#0B7A3B] bg-gradient-to-r from-[#064E27] via-[#0B7A3B] to-emerald-800 text-white p-3.5 sm:p-5 relative flex items-center justify-between border-b-2 sm:border-b-4 border-[#C8102E] shadow-md shrink-0">
             <div class="flex items-center gap-3 min-w-0">
               <div class="w-11 h-11 rounded-full bg-white p-1 shrink-0 shadow-md border-2 border-[#C8102E] flex items-center justify-center">
                 <img src="/logo.png" alt="Guaiqueríes" class="w-full h-full object-contain" />
@@ -284,7 +284,7 @@ const handleClose = () => {
           </div>
 
           <!-- Barra de Progreso y Tiempo Guaiqueríes -->
-          <div class="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 space-y-4">
+          <div class="p-4 sm:p-5 bg-slate-50 border-t border-slate-200 space-y-4 flex-1 flex flex-col justify-between overflow-y-auto">
             <!-- Título del Timer y Controles -->
             <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-2.5 text-xs sm:text-sm">
               <div class="flex items-center gap-2.5 flex-wrap">
@@ -394,11 +394,11 @@ const handleClose = () => {
             </p>
 
             <!-- BOTONES DE ACCIÓN: ÚNICAMENTE BOTÓN DE CERRAR Y BOTÓN DE REDIRECCIONAR -->
-            <div class="flex items-center justify-between gap-3 pt-2 border-t border-slate-200">
+            <div class="flex items-center justify-between gap-3 pt-3 border-t border-slate-200 shrink-0 pb-2 sm:pb-0">
               <!-- Botón de Cerrar Modal -->
               <button
                 type="button"
-                class="px-5 py-2.5 rounded-guaiqui-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
+                class="flex-1 sm:flex-initial px-5 py-3 sm:py-2.5 rounded-guaiqui-xl border border-slate-300 bg-white hover:bg-slate-100 text-slate-700 font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-colors cursor-pointer shadow-xs"
                 @click="handleClose"
               >
                 <i class="bi bi-x-circle text-sm text-slate-500"></i>
@@ -410,7 +410,7 @@ const handleClose = () => {
                 :href="redirectUrl"
                 target="_blank"
                 rel="noopener noreferrer"
-                class="px-6 py-2.5 rounded-guaiqui-xl bg-slate-900 hover:bg-slate-800 text-white font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-sm border border-slate-700 cursor-pointer"
+                class="flex-1 sm:flex-initial px-6 py-3 sm:py-2.5 rounded-guaiqui-xl bg-slate-900 hover:bg-slate-800 text-white font-display font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-2 transition-all shadow-sm border border-slate-700 cursor-pointer text-center"
               >
                 <span>{{ video.cta_text || 'Visitar Patrocinador' }}</span>
                 <i class="bi bi-box-arrow-up-right text-xs text-emerald-400"></i>
