@@ -85,7 +85,7 @@ export const useTriviaStore = defineStore('trivias', () => {
     }
   }
 
-  async function fetchLeaderboard(period: 'monthly' | 'weekly' = 'monthly') {
+  async function fetchLeaderboard(period: 'all_time' | 'monthly' | 'weekly' = 'all_time') {
     isLoading.value = true
     errorMessage.value = null
     try {

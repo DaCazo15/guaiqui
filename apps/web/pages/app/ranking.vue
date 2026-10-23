@@ -14,9 +14,10 @@ useSeoMeta({
 })
 
 const triviaStore = useTriviaStore()
-const currentPeriod = ref<'monthly' | 'weekly'>('monthly')
+const currentPeriod = ref<'all_time' | 'monthly' | 'weekly'>('all_time')
 
 const tabs = [
+  { id: 'all_time', label: 'Ranking General' },
   { id: 'monthly', label: 'Ranking Mensual' },
   { id: 'weekly', label: 'Ranking Semanal' },
 ]
@@ -26,7 +27,7 @@ onMounted(async () => {
 })
 
 async function handleTabChange(tabId: string) {
-  currentPeriod.value = tabId as 'monthly' | 'weekly'
+  currentPeriod.value = tabId as 'all_time' | 'monthly' | 'weekly'
   await triviaStore.fetchLeaderboard(currentPeriod.value)
 }
 

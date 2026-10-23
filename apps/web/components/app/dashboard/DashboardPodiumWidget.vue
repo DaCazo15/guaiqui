@@ -9,7 +9,7 @@ const authStore = useAuthStore()
 
 onMounted(async () => {
   if (triviaStore.leaderboard.length === 0) {
-    await triviaStore.fetchLeaderboard('monthly')
+    await triviaStore.fetchLeaderboard('all_time')
   }
 })
 

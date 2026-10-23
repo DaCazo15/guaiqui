@@ -45,7 +45,7 @@ defineProps<{
         >
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-black uppercase tracking-wider text-guaiqui-text">
-              Bloque 1 (Videos 1 a 10)
+              Bloque 1
             </span>
             <span
               v-if="completedToday < 10"
@@ -85,7 +85,7 @@ defineProps<{
         >
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-black uppercase tracking-wider text-guaiqui-text">
-              Bloque 2 (Videos 11 a 20)
+              Bloque 2
             </span>
             <span
               v-if="completedToday >= 10 && completedToday < 20"
@@ -131,7 +131,7 @@ defineProps<{
         >
           <div class="flex items-center justify-between">
             <span class="text-[11px] font-black uppercase tracking-wider text-guaiqui-text">
-              Bloques 3, 4 y 5 (Videos 21 a 50)
+              Bloques 3 (Videos 21 a 50)
             </span>
             <span
               v-if="completedToday >= 20 && completedToday < 50"
