@@ -77,6 +77,7 @@ Hero, carrusel, cinta de anuncios, cómo funciona, plantilla, historia, equipo d
 - Preferir **composables y helpers** para lógica reutilizable.
 - Preferir **slots sobre props** en modales y botones (componentes de presentación genéricos).
 - Seguir la regla de **Vue Component Modularizer**: componentes de más de ~100-150 líneas de template deben descomponerse en subcomponentes enfocados (ver regla global `vue-component-modularizer`).
+- **Animaciones (GSAP)**: Para animaciones usa GSAP y sus skills instaladas. Ante dudas consulta https://gsap.com/docs/v3/. En Vue, crea las animaciones dentro de `gsap.context()` y haz `revert()` al desmontar el componente. Respeta `prefers-reduced-motion` con `gsap.matchMedia()`. GSAP y todos sus plugins son gratuitos y se instalan desde el paquete npm 'gsap'.
 
 ---
 
