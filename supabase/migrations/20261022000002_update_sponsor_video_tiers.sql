@@ -100,3 +100,48 @@ $$;
 
 REVOKE ALL ON FUNCTION public.claim_video_points(UUID) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.claim_video_points(UUID) TO authenticated;
+
+-- Function to get daily video progress and tier reward
+CREATE OR REPLACE FUNCTION public.get_daily_video_progress()
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, pg_temp
+AS $$
+DECLARE
+    v_uid UUID;
+    v_today DATE := (NOW() AT TIME ZONE 'America/Caracas')::date;
+    v_views_today INT;
+    v_points_today INT;
+    v_tier_reward INT;
+BEGIN
+    v_uid := public.assert_active_verified_fan();
+
+    SELECT 
+        COUNT(*),
+        COALESCE(SUM(amount), 0)
+    INTO v_views_today, v_points_today
+    FROM public.ledger_entries
+    WHERE fan_id = v_uid 
+      AND source_type = 'sponsor_video' 
+      AND (created_at AT TIME ZONE 'America/Caracas')::date = v_today;
+
+    IF v_views_today < 10 THEN
+        v_tier_reward := 5;
+    ELSIF v_views_today < 20 THEN
+        v_tier_reward := 10;
+    ELSE
+        v_tier_reward := 15;
+    END IF;
+
+    RETURN jsonb_build_object(
+        'completed_today', v_views_today,
+        'points_earned_today', v_points_today,
+        'current_tier_reward', v_tier_reward,
+        'max_daily', 50
+    );
+END;
+$$;
+
+REVOKE ALL ON FUNCTION public.get_daily_video_progress() FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.get_daily_video_progress() TO authenticated;

@@ -27,7 +27,6 @@ const claiming = ref(false)
 const videos = ref<SponsorVideo[]>([])
 const selectedVideo = ref<SponsorVideo | null>(null)
 const isModalOpen = ref(false)
-const todayClaims = ref<Array<{ source_id: string; amount: number }>>([])
 
 const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
@@ -37,37 +36,50 @@ const getCaracasTodayStr = () => {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Caracas' }).format(new Date())
 }
 
-const completedToday = computed(() => {
-  return todayClaims.value.length
-})
+const completedToday = ref(0)
+const pointsEarnedToday = ref(0)
+const currentTierReward = ref(5)
 
-const pointsEarnedToday = computed(() => {
-  return todayClaims.value.reduce((acc, curr) => acc + (curr.amount || 0), 0)
-})
-
-const currentTierReward = computed(() => {
-  if (completedToday.value < 10) return 5
-  if (completedToday.value < 20) return 10
-  return 15
-})
-
-const loadClaims = async () => {
-  if (!user.value?.id) return
+const loadDailyProgress = async () => {
   try {
-    const todayStr = getCaracasTodayStr()
-    const { data, error } = await client
-      .from('ledger_entries')
-      .select('source_id, amount')
-      .eq('fan_id', user.value.id)
-      .eq('source_type', 'sponsor_video')
-      .gte('created_at', `${todayStr}T00:00:00-04:00`)
+    const { data, error } = await client.rpc('get_daily_video_progress')
+    if (error) {
+      if (user.value?.id) {
+        const todayStr = getCaracasTodayStr()
+        const { data: fallbackData } = await client
+          .from('ledger_entries')
+          .select('source_id, amount')
+          .eq('fan_id', user.value.id)
+          .eq('source_type', 'sponsor_video')
+          .gte('created_at', `${todayStr}T00:00:00-04:00`)
+        if (fallbackData) {
+          completedToday.value = fallbackData.length
+          pointsEarnedToday.value = fallbackData.reduce((acc, curr: any) => acc + (curr.amount || 0), 0)
+          currentTierReward.value = completedToday.value < 10 ? 5 : completedToday.value < 20 ? 10 : 15
+        }
+      }
+      return
+    }
 
-    if (error) throw error
-    todayClaims.value = (data as any) || []
+    if (data) {
+      completedToday.value = Number(data.completed_today) || 0
+      pointsEarnedToday.value = Number(data.points_earned_today) || 0
+      currentTierReward.value = Number(data.current_tier_reward) || 5
+    }
   } catch (err: any) {
-    console.warn('Error loading today claims:', err)
+    console.warn('Error loading daily video progress:', err)
   }
 }
+
+watch(
+  () => user.value?.id,
+  (newId) => {
+    if (newId) {
+      loadDailyProgress()
+    }
+  },
+  { immediate: true }
+)
 
 const loadVideos = async () => {
   loading.value = true
@@ -83,7 +95,7 @@ const loadVideos = async () => {
     if (error) throw error
     videos.value = (data as SponsorVideo[]) || []
 
-    await loadClaims()
+    await loadDailyProgress()
 
     if (videos.value.length > 0) {
       selectedVideo.value = videos.value[0]
@@ -142,10 +154,10 @@ const handleVideoCompleted = async (videoId: string) => {
         points: data.points_awarded,
         completed_today: data.completed_today,
       })
-      await loadClaims()
+      await loadDailyProgress()
     } else if (data?.already_claimed) {
       infoMessage.value = data.message || 'Ya has validado este video hoy.'
-      await loadClaims()
+      await loadDailyProgress()
     }
   } catch (err: any) {
     console.error('Error auto-crediting video points:', err)
