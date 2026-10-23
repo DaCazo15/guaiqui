@@ -206,6 +206,9 @@ onMounted(loadSlides)
             {{ carouselEnabled ? 'Activado' : 'Desactivado' }}
           </span>
         </div>
+        <p class="text-xs text-slate-400">
+          Reemplaza la tarjeta fija de la derecha por un carrusel dinámico de hasta 5 posts con transiciones GSAP, pase a 4s, dots y arrastre táctil.
+        </p>
       </div>
 
       <label class="relative inline-flex items-center cursor-pointer shrink-0">
