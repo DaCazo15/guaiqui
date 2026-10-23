@@ -29,10 +29,18 @@ const triggerHeroFileInput = () => {
   heroFileInput.value?.click()
 }
 
+const MAX_FILE_SIZE_MB = 20
+
 const handleHeroImageUpload = async (event: Event) => {
   const target = event.target as HTMLInputElement
   const file = target.files?.[0]
   if (!file) return
+
+  if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+    alert(`La imagen seleccionada supera el límite permitido de ${MAX_FILE_SIZE_MB}MB (${(file.size / (1024 * 1024)).toFixed(1)}MB). Por favor elige una imagen más ligera o comprimida.`)
+    if (heroFileInput.value) heroFileInput.value.value = ''
+    return
+  }
 
   uploadingImage.value = true
   try {
@@ -49,7 +57,8 @@ const handleHeroImageUpload = async (event: Event) => {
     const { data } = supabase.storage.from('site-media').getPublicUrl(path)
     emit('update:heroImageUrl', data.publicUrl)
   } catch (err: any) {
-    alert('Error al subir imagen de fondo: ' + (err.message || 'Desconocido'))
+    console.error('Error al subir imagen de fondo:', err)
+    alert('Error al subir imagen de fondo: ' + (err.message || 'Error de conexión HTTP2'))
   } finally {
     uploadingImage.value = false
     if (heroFileInput.value) heroFileInput.value.value = ''

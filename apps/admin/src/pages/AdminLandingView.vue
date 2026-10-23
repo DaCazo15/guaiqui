@@ -277,6 +277,7 @@ onMounted(loadData)
       <div v-if="activeTab === 'carousel'" class="space-y-6">
         <HeroCarouselManager
           v-model:carousel-enabled="settings.hero_carousel_enabled"
+          @toggle-carousel="saveSettings"
         />
 
         <div class="flex justify-end pt-2">

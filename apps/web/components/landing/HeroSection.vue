@@ -13,21 +13,61 @@ const { gsap } = useGSAP()
 const heroContainer = ref<HTMLElement | null>(null)
 let mm: gsap.MatchMedia | null = null
 
-const nextGame = ref<any>(null)
-const loadingGame = ref(true)
+// Server-side + client hydrated data fetch using useAsyncData
+const { data: heroData } = await useAsyncData('landing-hero-data', async () => {
+  try {
+    const [gameRes, settsRes, slidesRes] = await Promise.all([
+      (supabase as any)
+        .from('games')
+        .select('*')
+        .in('status', ['scheduled', 'live'])
+        .order('game_date', { ascending: true })
+        .limit(1)
+        .maybeSingle(),
+      (supabase as any)
+        .from('landing_settings')
+        .select('*')
+        .eq('id', 1)
+        .maybeSingle(),
+      (supabase as any)
+        .from('hero_carousel_slides')
+        .select('*')
+        .eq('is_published', true)
+        .order('order_index', { ascending: true })
+    ])
 
-const heroTitle = ref('Juega, gana puntos y canjea con tu equipo')
-const heroSubtitle = ref('La plataforma oficial de fidelización de Guaiqueríes de Margarita. Responde trivias diarias, demuestra tu pasión insular y reclama camisetas, pases y premios reales gratis.')
-const ctaPrimaryText = ref('Regístrate Gratis Ahora')
-const ctaPrimaryUrl = ref('/registro')
-const ctaSecondaryText = ref('Ver cómo funciona')
-const ctaSecondaryUrl = ref('/#como-funciona')
+    return {
+      game: gameRes.data || null,
+      settings: settsRes.data || null,
+      slides: (slidesRes.data as HeroCarouselSlide[]) || []
+    }
+  } catch (err) {
+    console.error('Error fetching hero data:', err)
+    return {
+      game: null,
+      settings: null,
+      slides: []
+    }
+  }
+})
 
-// Hero Image, Carousel, and Card Customization
-const heroImageUrl = ref('')
-const heroCarouselEnabled = ref(false)
-const heroCardColor = ref('')
-const heroSlides = ref<HeroCarouselSlide[]>([])
+const nextGame = computed(() => heroData.value?.game || null)
+const settings = computed(() => heroData.value?.settings || null)
+const heroSlides = computed<HeroCarouselSlide[]>(() => heroData.value?.slides || [])
+
+const heroTitle = computed(() => settings.value?.hero_title || 'Juega, gana puntos y canjea con tu equipo')
+const heroSubtitle = computed(() => settings.value?.hero_subtitle || 'La plataforma oficial de fidelización de Guaiqueríes de Margarita. Responde trivias diarias, demuestra tu pasión insular y reclama camisetas, pases y premios reales gratis.')
+const ctaPrimaryText = computed(() => settings.value?.cta_primary_text || 'Regístrate Gratis Ahora')
+const ctaPrimaryUrl = computed(() => {
+  const url = settings.value?.cta_primary_url
+  if (!url) return '/registro'
+  return url === '/register' ? '/registro' : url
+})
+const ctaSecondaryText = computed(() => settings.value?.cta_secondary_text || 'Ver cómo funciona')
+const ctaSecondaryUrl = computed(() => settings.value?.cta_secondary_url || '/#como-funciona')
+const heroImageUrl = computed(() => settings.value?.hero_image_url || '')
+const heroCarouselEnabled = computed(() => Boolean(settings.value?.hero_carousel_enabled))
+const heroCardColor = computed(() => settings.value?.hero_card_color || '')
 
 const formattedGameDate = computed(() => {
   if (!nextGame.value?.game_date) return null
@@ -41,54 +81,7 @@ const formattedGameTime = computed(() => {
   return d.toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })
 })
 
-onMounted(async () => {
-  loadingGame.value = true
-  try {
-    const [gameRes, settsRes] = await Promise.all([
-      supabase
-        .from('games')
-        .select('*')
-        .in('status', ['scheduled', 'live'])
-        .order('game_date', { ascending: true })
-        .limit(1)
-        .maybeSingle(),
-      supabase
-        .from('landing_settings')
-        .select('*')
-        .eq('id', 1)
-        .maybeSingle()
-    ])
-
-    nextGame.value = gameRes.data || null
-
-    if (settsRes.data) {
-      const s = settsRes.data
-      if (s.hero_title) heroTitle.value = s.hero_title
-      if (s.hero_subtitle) heroSubtitle.value = s.hero_subtitle
-      if (s.cta_primary_text) ctaPrimaryText.value = s.cta_primary_text
-      if (s.cta_primary_url) ctaPrimaryUrl.value = s.cta_primary_url === '/register' ? '/registro' : s.cta_primary_url
-      if (s.cta_secondary_text) ctaSecondaryText.value = s.cta_secondary_text
-      if (s.cta_secondary_url) ctaSecondaryUrl.value = s.cta_secondary_url
-      if (s.hero_image_url) heroImageUrl.value = s.hero_image_url
-      if (s.hero_carousel_enabled !== undefined) heroCarouselEnabled.value = s.hero_carousel_enabled
-      if (s.hero_card_color) heroCardColor.value = s.hero_card_color
-
-      // If carousel is enabled, fetch published hero slides
-      if (s.hero_carousel_enabled) {
-        const { data: slidesData } = await supabase
-          .from('hero_carousel_slides')
-          .select('*')
-          .eq('is_published', true)
-          .order('order_index', { ascending: true })
-
-        heroSlides.value = (slidesData as HeroCarouselSlide[]) || []
-      }
-    }
-  } catch (_err) {
-    nextGame.value = null
-  } finally {
-    loadingGame.value = false
-  }
+onMounted(() => {
 
   // Animaciones Cinéticas GSAP con accesibilidad prefers-reduced-motion
   if (heroContainer.value) {

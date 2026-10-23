@@ -10,6 +10,7 @@ const props = defineProps<{
 
 const emit = defineEmits<{
   (e: 'update:carouselEnabled', value: boolean): void
+  (e: 'toggleCarousel'): void
 }>()
 
 const slides = ref<HeroCarouselSlide[]>([])
@@ -19,6 +20,7 @@ const showEditorModal = ref(false)
 const uploadingImage = ref(false)
 const fileInput = ref<HTMLInputElement | null>(null)
 const errorMessage = ref<string | null>(null)
+const MAX_FILE_SIZE_MB = 20
 
 const form = ref({
   id: '',
@@ -94,6 +96,12 @@ const handleFileUpload = async (event: Event) => {
   const file = target.files?.[0]
   if (!file) return
 
+  if (file.size > MAX_FILE_SIZE_MB * 1024 * 1024) {
+    alert(`La imagen seleccionada supera el límite permitido de ${MAX_FILE_SIZE_MB}MB (${(file.size / (1024 * 1024)).toFixed(1)}MB). Por favor elige una imagen más ligera o comprimida.`)
+    if (fileInput.value) fileInput.value.value = ''
+    return
+  }
+
   uploadingImage.value = true
   try {
     const ext = file.name.split('.').pop()
@@ -109,7 +117,8 @@ const handleFileUpload = async (event: Event) => {
     const { data } = supabase.storage.from('site-media').getPublicUrl(path)
     form.value.image_url = data.publicUrl
   } catch (err: any) {
-    alert('Error al subir imagen: ' + (err.message || 'Desconocido'))
+    console.error('Error al subir imagen de post:', err)
+    alert('Error al subir imagen: ' + (err.message || 'Error de conexión HTTP2'))
   } finally {
     uploadingImage.value = false
     if (fileInput.value) fileInput.value.value = ''
@@ -197,16 +206,16 @@ onMounted(loadSlides)
             {{ carouselEnabled ? 'Activado' : 'Desactivado' }}
           </span>
         </div>
-        <p class="text-xs text-slate-400">
-          Reemplaza la tarjeta fija de la derecha por un carrusel dinámico de hasta 5 posts con transiciones GSAP, pase a 4s, dots y arrastre táctil.
-        </p>
       </div>
 
       <label class="relative inline-flex items-center cursor-pointer shrink-0">
         <input
           type="checkbox"
           :checked="carouselEnabled"
-          @change="emit('update:carouselEnabled', ($event.target as HTMLInputElement).checked)"
+          @change="
+            emit('update:carouselEnabled', ($event.target as HTMLInputElement).checked);
+            emit('toggleCarousel');
+          "
           class="sr-only peer"
         />
         <div class="w-12 h-6 bg-slate-800 peer-focus:outline-hidden rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-500"></div>
