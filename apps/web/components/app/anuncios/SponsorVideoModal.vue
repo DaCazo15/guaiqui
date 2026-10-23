@@ -1,7 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, watch, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { PearlIcon } from '@guaiqui/ui'
-import { getGoogleDriveEmbedUrl, type SponsorVideo } from '@guaiqui/shared'
+import { getGoogleDriveEmbedUrl, extractGoogleDriveFileId, type SponsorVideo } from '@guaiqui/shared'
 
 const props = defineProps<{
   modelValue: boolean
@@ -15,11 +15,30 @@ const emit = defineEmits<{
   (e: 'claim', videoId: string): void
 }>()
 
+const videoRef = ref<HTMLVideoElement | null>(null)
+const iframeRef = ref<HTMLIFrameElement | null>(null)
+const useIframeFallback = ref(false)
+
 const isPlaying = ref(false)
 const hasStarted = ref(false)
 const elapsedSeconds = ref(0)
 const isDotActive = ref(false)
 let timerInterval: any = null
+let isIframeHovered = false
+
+const driveFileId = computed(() => {
+  if (!props.video) return null
+  return props.video.drive_file_id || extractGoogleDriveFileId(props.video.video_url)
+})
+
+const directVideoUrl = computed(() => {
+  if (!props.video?.video_url) return ''
+  // Si tenemos ID de Google Drive, usamos el stream directo mp4
+  if (driveFileId.value) {
+    return `https://drive.google.com/uc?export=download&id=${driveFileId.value}`
+  }
+  return props.video.video_url
+})
 
 const embedUrl = computed(() => {
   if (!props.video?.video_url) return ''
@@ -28,12 +47,6 @@ const embedUrl = computed(() => {
 
 const redirectUrl = computed(() => {
   return props.video?.redirect_url || 'https://www.instagram.com/guaiqueriesbbc/'
-})
-
-const isDirectVideo = computed(() => {
-  if (!props.video?.video_url) return false
-  const url = props.video.video_url.toLowerCase()
-  return url.endsWith('.mp4') || url.endsWith('.webm') || url.endsWith('.ogg')
 })
 
 const requiredSeconds = computed(() => {
@@ -54,7 +67,7 @@ const isUnlocked = computed(() => {
 })
 
 const startTimer = () => {
-  if (isPlaying.value || isUnlocked.value) return
+  if (isUnlocked.value) return
   isPlaying.value = true
   hasStarted.value = true
 
@@ -76,22 +89,82 @@ const pauseTimer = () => {
   }
 }
 
+// Inicia tanto el video real como el temporizador
+const handlePlay = async () => {
+  if (isUnlocked.value) return
+  startTimer()
+
+  if (!useIframeFallback.value && videoRef.value) {
+    try {
+      await videoRef.value.play()
+    } catch (err) {
+      console.warn('Error al reproducir video nativo:', err)
+    }
+  }
+}
+
+// Pausa tanto el video real como el temporizador
+const handlePause = () => {
+  pauseTimer()
+
+  if (!useIframeFallback.value && videoRef.value) {
+    try {
+      videoRef.value.pause()
+    } catch (err) {
+      console.warn('Error al pausar video nativo:', err)
+    }
+  }
+}
+
 const togglePlay = () => {
   if (isPlaying.value) {
-    pauseTimer()
+    handlePause()
   } else {
-    startTimer()
+    handlePlay()
   }
+}
+
+const handleVideoError = () => {
+  console.warn('El stream directo falló, alternando al reproductor embebido de Google Drive.')
+  useIframeFallback.value = true
 }
 
 const resetWatchProgress = () => {
   pauseTimer()
+  if (videoRef.value) {
+    try {
+      videoRef.value.pause()
+      videoRef.value.currentTime = 0
+    } catch {}
+  }
   hasStarted.value = false
   elapsedSeconds.value = 0
   isDotActive.value = false
+  useIframeFallback.value = false
 }
 
-// Escuchar cambios de visibilidad de la modal (NO auto-iniciar el temporizador)
+// Detección de interacción con iframe (por si se usa fallback de Drive)
+const onIframeMouseEnter = () => {
+  isIframeHovered = true
+}
+
+const onIframeMouseLeave = () => {
+  isIframeHovered = false
+}
+
+const onWindowBlur = () => {
+  if (isIframeHovered && !isPlaying.value && !isUnlocked.value && props.modelValue) {
+    startTimer()
+  }
+}
+
+onMounted(() => {
+  if (typeof window !== 'undefined') {
+    window.addEventListener('blur', onWindowBlur)
+  }
+})
+
+// Escuchar cambios de visibilidad de la modal
 watch(
   () => props.modelValue,
   (isOpen) => {
@@ -99,7 +172,7 @@ watch(
   }
 )
 
-// Escuchar cambio de video (NO auto-iniciar)
+// Escuchar cambio de video
 watch(
   () => props.video?.id,
   () => {
@@ -109,6 +182,9 @@ watch(
 
 onUnmounted(() => {
   resetWatchProgress()
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('blur', onWindowBlur)
+  }
 })
 
 const handleClose = () => {
@@ -181,36 +257,42 @@ const handleClaim = () => {
 
           <!-- Cuerpo: Reproductor de Video -->
           <div class="relative bg-black aspect-video w-full overflow-hidden flex items-center justify-center group">
-            <!-- HTML5 Video si es enlace directo -->
+            <!-- 1. Reproductor de Video Nativo (Inicia y pausa automáticamente con el botón Play) -->
             <video
-              v-if="isDirectVideo"
-              :src="video.video_url"
+              v-if="!useIframeFallback"
+              ref="videoRef"
+              :src="directVideoUrl"
               class="w-full h-full object-contain"
+              playsinline
               controls
               @play="startTimer"
               @pause="pauseTimer"
               @ended="pauseTimer"
+              @error="handleVideoError"
             ></video>
 
-            <!-- Google Drive Iframe -->
+            <!-- 2. Fallback Iframe de Google Drive si el stream directo no está disponible -->
             <iframe
               v-else-if="embedUrl"
+              ref="iframeRef"
               :src="embedUrl"
               class="w-full h-full border-0"
               allow="autoplay; encrypted-media"
               allowfullscreen
               title="Reproductor de Video Patrocinado"
+              @mouseenter="onIframeMouseEnter"
+              @mouseleave="onIframeMouseLeave"
             ></iframe>
 
             <div v-else class="text-white text-xs p-6 text-center">
               No se pudo cargar el reproductor del video.
             </div>
 
-            <!-- Overlay Inicial: "Haz clic para Iniciar Video" (Evita auto-arranque prematuro) -->
+            <!-- Botón Central Inicial: Inicia el video real Y arranca el contador simultáneamente -->
             <div
-              v-if="!hasStarted"
-              class="absolute inset-0 bg-slate-950/75 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center z-10 cursor-pointer transition-opacity duration-300"
-              @click="startTimer"
+              v-if="!hasStarted && !isPlaying"
+              class="absolute inset-0 bg-slate-950/40 backdrop-blur-xs flex flex-col items-center justify-center p-6 text-center z-10 cursor-pointer transition-opacity duration-300"
+              @click="handlePlay"
             >
               <button
                 type="button"
@@ -220,10 +302,10 @@ const handleClaim = () => {
                 <i class="bi bi-play-fill ml-1"></i>
               </button>
               <h4 class="mt-4 font-display font-black text-white text-lg sm:text-xl uppercase tracking-wider drop-shadow-md">
-                Haz clic para Iniciar Video
+                Reproducir Video
               </h4>
               <p class="text-xs text-slate-200 mt-1 max-w-sm">
-                Al reproducir el video comenzará el conteo de tiempo para validar y acreditar tus puntos.
+                Haz clic para iniciar el video y comenzar a validar tus puntos.
               </p>
             </div>
 
@@ -231,10 +313,10 @@ const handleClaim = () => {
             <div
               v-else-if="!isPlaying && !isUnlocked"
               class="absolute top-3 left-3 bg-slate-900/95 text-amber-300 text-xs font-bold px-3.5 py-2 rounded-full border border-amber-400/50 shadow-xl flex items-center gap-2 backdrop-blur-xs z-10 cursor-pointer"
-              @click="startTimer"
+              @click="handlePlay"
             >
               <i class="bi bi-pause-circle-fill text-amber-400 text-base animate-pulse"></i>
-              <span>Tiempo pausado — Haz clic aquí o en Reanudar</span>
+              <span>Video en pausa — Haz clic para Reanudar</span>
             </div>
           </div>
 
@@ -243,20 +325,18 @@ const handleClaim = () => {
             <!-- Título del Timer y Contador -->
             <div class="flex items-center justify-between text-xs sm:text-sm">
               <div class="flex items-center gap-2.5">
-                <!-- Botón de Play/Pausa -->
+                <!-- Botón de Play/Pausa que inicia/pausa video y temporizador -->
                 <button
                   type="button"
-                  class="px-3 py-1.5 rounded-lg text-xs font-bold font-mono transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs border"
+                  class="px-3.5 py-1.5 rounded-lg text-xs font-bold font-mono transition-colors flex items-center gap-1.5 cursor-pointer shadow-xs border"
                   :class="[
-                    !hasStarted
+                    !hasStarted || !isPlaying
                       ? 'bg-[#0B7A3B] hover:bg-emerald-700 text-white border-emerald-800'
-                      : isPlaying
-                        ? 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
-                        : 'bg-emerald-100 text-emerald-900 border-emerald-300 hover:bg-emerald-200'
+                      : 'bg-amber-100 text-amber-900 border-amber-300 hover:bg-amber-200'
                   ]"
                   @click="togglePlay"
                 >
-                  <i :class="!hasStarted || !isPlaying ? 'bi bi-play-fill text-sm' : 'bi bi-pause-fill text-sm'"></i>
+                  <i :class="!isPlaying ? 'bi bi-play-fill text-sm' : 'bi bi-pause-fill text-sm'"></i>
                   <span>{{ !hasStarted ? 'Iniciar Video' : isPlaying ? 'Pausar' : 'Reanudar' }}</span>
                 </button>
 
