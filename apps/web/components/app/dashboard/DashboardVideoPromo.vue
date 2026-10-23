@@ -62,7 +62,6 @@ onMounted(async () => {
     <NuxtLink to="/app/anuncios" class="shrink-0 w-full sm:w-auto relative z-10">
       <button class="w-full sm:w-auto px-5 py-2.5 rounded-guaiqui-lg bg-gradient-to-r from-emerald-500 to-guaiqui-primary hover:from-emerald-400 hover:to-emerald-600 text-white font-display font-black text-xs uppercase tracking-wider shadow-md shadow-emerald-950/50 flex items-center justify-center gap-2 transition-all duration-200 hover:scale-[1.02] active:scale-[0.98] cursor-pointer">
         <span>Ver Videos</span>
-        <i class="bi bi-arrow-right"></i>
       </button>
     </NuxtLink>
   </div>

@@ -86,7 +86,6 @@ useSeoMeta({
           class="w-full sm:w-auto px-4 py-2 bg-guaiqui-primary hover:bg-guaiqui-primary-dark text-white text-xs font-bold uppercase tracking-wider rounded-guaiqui-md transition-colors flex items-center justify-center gap-1.5 cursor-pointer shadow-guaiqui-xs"
         >
           <span>Ver Videos</span>
-          <i class="bi bi-arrow-right"></i>
         </button>
       </NuxtLink>
     </div>
