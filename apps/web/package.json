@@ -22,7 +22,8 @@
     "pinia": "^2.2.0",
     "posthog-js": "^1.215.0",
     "qrcode": "^1.5.4",
-    "vue": "^3.5.43"
+    "vue": "^3.5.43",
+    "gsap": "^3.12.7"
   },
   "devDependencies": {
     "@nuxtjs/tailwindcss": "^6.12.0",

@@ -17,13 +17,19 @@ const navItems = [
 </script>
 
 <template>
-  <nav class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0B7A3B] bg-gradient-to-r from-[#064E27] via-[#0B7A3B] to-emerald-800 border-t-2 border-[#C8102E] shadow-2xl px-2 py-1.5 text-white">
+  <nav
+    class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0B7A3B] bg-gradient-to-r from-[#064E27] via-[#0B7A3B] to-emerald-800 border-t-2 border-[#C8102E] shadow-2xl px-2 pt-1.5 text-white"
+    style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));"
+    aria-label="Navegación principal inferior"
+  >
     <div class="flex justify-around items-center">
       <NuxtLink
         v-for="item in navItems"
         :key="item.path"
         :to="item.path"
-        class="flex flex-col items-center py-1 px-3 rounded-guaiqui-lg transition-all duration-150"
+        :aria-label="item.name"
+        :aria-current="route.path === item.path ? 'page' : undefined"
+        class="flex flex-col items-center justify-center min-w-[48px] min-h-[44px] py-1 px-3 rounded-guaiqui-lg transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
         :class="[
           route.path === item.path
             ? 'text-white font-black bg-black/30 ring-1 ring-white/30 shadow-inner'
@@ -33,7 +39,7 @@ const navItems = [
         <!-- Ícono personalizado para Perfil con foto circular del usuario -->
         <template v-if="item.path === '/app/perfil'">
           <div
-            class="w-[22px] h-[22px] rounded-full overflow-hidden mb-0.5 border flex items-center justify-center shrink-0 transition-all duration-150"
+            class="w-[24px] h-[24px] rounded-full overflow-hidden mb-0.5 border flex items-center justify-center shrink-0 transition-colors duration-150"
             :class="[
               route.path === item.path
                 ? 'border-white ring-2 ring-white shadow-xs'
@@ -44,6 +50,8 @@ const navItems = [
               v-if="authStore.profile?.avatar_url && !avatarError"
               :src="authStore.profile.avatar_url"
               :alt="authStore.profile?.display_name || 'Perfil'"
+              width="24"
+              height="24"
               class="w-full h-full object-cover"
               referrerpolicy="no-referrer"
               @error="avatarError = true"
@@ -54,10 +62,10 @@ const navItems = [
             >
               {{ authStore.profile.display_name.charAt(0).toUpperCase() }}
             </span>
-            <i v-else :class="['bi', item.icon, 'text-xs text-white']"></i>
+            <i v-else :class="['bi', item.icon, 'text-xs text-white']" aria-hidden="true"></i>
           </div>
         </template>
-        <i v-else :class="['bi', item.icon, 'text-lg mb-0.5']"></i>
+        <i v-else :class="['bi', item.icon, 'text-lg mb-0.5']" aria-hidden="true"></i>
         <span class="text-[10px] tracking-tight">{{ item.name }}</span>
       </NuxtLink>
     </div>

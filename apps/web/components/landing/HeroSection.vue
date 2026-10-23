@@ -1,10 +1,15 @@
 <script setup lang="ts">
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { BaseButton, BaseBadge, PearlIcon } from '@guaiqui/ui'
 import { useAnalytics } from '~/composables/useAnalytics'
+import { useGSAP } from '~/composables/useGSAP'
 
 const { trackEvent } = useAnalytics()
 const supabase = useSupabaseClient()
+const { gsap } = useGSAP()
+
+const heroContainer = ref<HTMLElement | null>(null)
+let mm: gsap.MatchMedia | null = null
 
 const nextGame = ref<any>(null)
 const loadingGame = ref(true)
@@ -62,6 +67,98 @@ onMounted(async () => {
   } finally {
     loadingGame.value = false
   }
+
+  // Animaciones Cinéticas GSAP con accesibilidad prefers-reduced-motion
+  if (heroContainer.value) {
+    mm = gsap.matchMedia()
+    mm.add(
+      {
+        reduceMotion: '(prefers-reduced-motion: reduce)',
+        all: '(min-width: 0px)',
+      },
+      (context) => {
+        const { reduceMotion } = context.conditions as { reduceMotion: boolean }
+        const tl = gsap.timeline({
+          defaults: {
+            ease: 'power3.out',
+            duration: reduceMotion ? 0 : 0.8,
+          },
+        })
+
+        tl.from('.hero-badge', {
+          y: -15,
+          autoAlpha: 0,
+          duration: reduceMotion ? 0 : 0.6,
+        })
+          .from(
+            '.hero-headline',
+            {
+              y: 25,
+              autoAlpha: 0,
+              duration: reduceMotion ? 0 : 0.8,
+            },
+            '-=0.4'
+          )
+          .from(
+            '.hero-subtitle',
+            {
+              y: 20,
+              autoAlpha: 0,
+              duration: reduceMotion ? 0 : 0.7,
+            },
+            '-=0.5'
+          )
+          .from(
+            '.hero-cta',
+            {
+              scale: 0.94,
+              y: 12,
+              autoAlpha: 0,
+              stagger: 0.12,
+              ease: 'back.out(1.5)',
+              duration: reduceMotion ? 0 : 0.6,
+            },
+            '-=0.4'
+          )
+          .from(
+            '.hero-guarantee',
+            {
+              autoAlpha: 0,
+              y: 8,
+              stagger: 0.08,
+              duration: reduceMotion ? 0 : 0.5,
+            },
+            '-=0.3'
+          )
+          .from(
+            '.hero-card',
+            {
+              x: 30,
+              autoAlpha: 0,
+              duration: reduceMotion ? 0 : 0.8,
+              ease: 'power2.out',
+            },
+            '-=0.7'
+          )
+
+        if (!reduceMotion) {
+          gsap.to('.hero-card', {
+            y: '-=6',
+            repeat: -1,
+            yoyo: true,
+            ease: 'sine.inOut',
+            duration: 3.2,
+            delay: 1,
+          })
+        }
+      },
+      heroContainer.value
+    )
+  }
+})
+
+onUnmounted(() => {
+  mm?.revert()
 })
 
 const handleHeroRegister = () => {
@@ -74,7 +171,7 @@ const handleHeroHowItWorks = () => {
 </script>
 
 <template>
-  <section class="relative bg-gradient-to-b from-guaiqui-primary-dark via-emerald-900 to-slate-950 text-white overflow-hidden py-16 sm:py-24 px-4 sm:px-8">
+  <section ref="heroContainer" class="relative bg-gradient-to-b from-guaiqui-primary-dark via-emerald-900 to-slate-950 text-white overflow-hidden py-16 sm:py-24 px-4 sm:px-8">
     <!-- Subtle Background Pattern Overlay for Text Legibility -->
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-black/60 pointer-events-none" />
 
@@ -82,7 +179,7 @@ const handleHeroHowItWorks = () => {
       <!-- Left Content -->
       <div class="lg:col-span-7 space-y-6 text-center lg:text-left">
         <!-- Social Proof Badge -->
-        <div class="inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 text-xs font-semibold text-emerald-200">
+        <div class="hero-badge inline-flex items-center gap-2 bg-white/10 backdrop-blur-md px-3.5 py-1.5 rounded-full border border-white/20 text-xs font-semibold text-emerald-200">
           <BaseBadge variant="soft" size="sm">Fan Zone 2026</BaseBadge>
           <span class="flex items-center gap-1">
             Plataforma Oficial de Fidelización
@@ -90,24 +187,24 @@ const handleHeroHowItWorks = () => {
         </div>
 
         <!-- Headline -->
-        <h1 class="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tight leading-none">
+        <h1 class="hero-headline font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl uppercase tracking-tight leading-none">
           {{ heroTitle }}
         </h1>
 
         <!-- Subtitle -->
-        <p class="text-emerald-100 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed">
+        <p class="hero-subtitle text-emerald-100 text-base sm:text-lg max-w-2xl mx-auto lg:mx-0 leading-relaxed">
           {{ heroSubtitle }}
         </p>
 
         <!-- Double CTA Buttons -->
         <div class="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 pt-2">
-          <NuxtLink :to="ctaPrimaryUrl" class="w-full sm:w-auto">
+          <NuxtLink :to="ctaPrimaryUrl" class="hero-cta w-full sm:w-auto">
             <BaseButton variant="primary" size="lg" block @click="handleHeroRegister">
               {{ ctaPrimaryText }}
             </BaseButton>
           </NuxtLink>
 
-          <NuxtLink :to="ctaSecondaryUrl" class="w-full sm:w-auto">
+          <NuxtLink :to="ctaSecondaryUrl" class="hero-cta w-full sm:w-auto">
             <BaseButton variant="secondary" size="lg" block @click="handleHeroHowItWorks">
               {{ ctaSecondaryText }}
             </BaseButton>
@@ -116,14 +213,14 @@ const handleHeroHowItWorks = () => {
 
         <!-- Free Guarantee Notice -->
         <div class="flex items-center justify-center lg:justify-start gap-4 text-xs text-emerald-200/90 pt-2 font-medium">
-          <span class="flex items-center gap-1.5"><i class="bi bi-check-lg text-emerald-400"></i> 100% Gratuito</span>
-          <span class="flex items-center gap-1.5"><i class="bi bi-check-lg text-emerald-400"></i> Sin tarjetas ni pagos</span>
-          <span class="flex items-center gap-1.5"><i class="bi bi-check-lg text-emerald-400"></i> Premios reales</span>
+          <span class="hero-guarantee flex items-center gap-1.5"><i class="bi bi-check-lg text-emerald-400"></i> 100% Gratuito</span>
+          <span class="hero-guarantee flex items-center gap-1.5"><i class="bi bi-check-lg text-emerald-400"></i> Sin tarjetas ni pagos</span>
+          <span class="hero-guarantee flex items-center gap-1.5"><i class="bi bi-check-lg text-emerald-400"></i> Premios reales</span>
         </div>
       </div>
 
       <!-- Right Content: Dynamic Next Match Card OR Institutional Fan Zone Card -->
-      <div class="lg:col-span-5 w-full max-w-md mx-auto">
+      <div class="hero-card lg:col-span-5 w-full max-w-md mx-auto">
         <!-- Case 1: Real scheduled match in database -->
         <div
           v-if="nextGame"

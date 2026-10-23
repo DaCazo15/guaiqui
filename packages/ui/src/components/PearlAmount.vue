@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed, watch } from 'vue'
 import { formatPerlitas } from '@guaiqui/shared'
 import PearlIcon, { type PearlIconSize } from './PearlIcon.vue'
 
@@ -8,6 +8,7 @@ interface Props {
   size?: 'sm' | 'md' | 'lg' | 'xl'
   showLabel?: boolean
   label?: string
+  animated?: boolean
 }
 
 const props = withDefaults(defineProps<Props>(), {
@@ -15,9 +16,43 @@ const props = withDefaults(defineProps<Props>(), {
   size: 'md',
   showLabel: false,
   label: 'puntos',
+  animated: false,
 })
 
-const formatted = computed(() => formatPerlitas(props.amount))
+const displayAmount = ref(props.amount)
+
+watch(
+  () => props.amount,
+  (newVal, oldVal) => {
+    if (!props.animated || typeof window === 'undefined') {
+      displayAmount.value = newVal
+      return
+    }
+
+    const start = oldVal ?? 0
+    const end = newVal
+    const startTime = performance.now()
+    const duration = 750
+
+    const step = (currentTime: number) => {
+      const elapsed = currentTime - startTime
+      const progress = Math.min(elapsed / duration, 1)
+      const easeProgress = 1 - Math.pow(1 - progress, 3)
+      displayAmount.value = Math.round(start + (end - start) * easeProgress)
+
+      if (progress < 1) {
+        requestAnimationFrame(step)
+      } else {
+        displayAmount.value = end
+      }
+    }
+
+    requestAnimationFrame(step)
+  },
+  { immediate: true }
+)
+
+const formatted = computed(() => formatPerlitas(displayAmount.value))
 
 const sizeClasses = computed(() => {
   switch (props.size) {

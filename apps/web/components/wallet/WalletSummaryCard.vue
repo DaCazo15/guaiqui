@@ -32,7 +32,7 @@ const emit = defineEmits<{
         <div class="pt-2">
           <p class="text-xs text-guaiqui-text-muted">Balance Disponible</p>
           <div class="mt-1 flex items-baseline">
-            <PearlAmount :amount="summary.balance" size="xl" show-label />
+            <PearlAmount :amount="summary.balance" size="xl" show-label animated />
           </div>
         </div>
       </div>
