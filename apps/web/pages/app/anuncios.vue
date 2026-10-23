@@ -1,12 +1,14 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { BaseBadge, PearlIcon } from '@guaiqui/ui'
+import { BaseBadge } from '@guaiqui/ui'
 import { useSupabaseClient, useSupabaseUser } from '#imports'
 import { useAnalytics } from '~/composables/useAnalytics'
 import type { SponsorVideo } from '@guaiqui/shared'
 
 import SponsorEmptyState from '~/components/app/anuncios/SponsorEmptyState.vue'
-import SponsorVideoPlayer from '~/components/app/anuncios/SponsorVideoPlayer.vue'
+import SponsorExplainCard from '~/components/app/anuncios/SponsorExplainCard.vue'
+import SponsorDailySummary from '~/components/app/anuncios/SponsorDailySummary.vue'
+import SponsorVideoModal from '~/components/app/anuncios/SponsorVideoModal.vue'
 import SponsorVideoList from '~/components/app/anuncios/SponsorVideoList.vue'
 
 definePageMeta({
@@ -18,10 +20,13 @@ const client = useSupabaseClient()
 const user = useSupabaseUser()
 const analytics = useAnalytics()
 
+const MAX_DAILY_VIDEOS = 50
+
 const loading = ref(true)
 const claiming = ref(false)
 const videos = ref<SponsorVideo[]>([])
 const selectedVideo = ref<SponsorVideo | null>(null)
+const isModalOpen = ref(false)
 const todayClaims = ref<Array<{ source_id: string; amount: number }>>([])
 
 const errorMessage = ref<string | null>(null)
@@ -32,26 +37,18 @@ const getCaracasTodayStr = () => {
   return new Intl.DateTimeFormat('en-CA', { timeZone: 'America/Caracas' }).format(new Date())
 }
 
-const claimedVideoIds = computed(() => {
-  const set = new Set<string>()
-  for (const c of todayClaims.value) {
-    if (c.source_id) {
-      const parts = c.source_id.split(':')
-      if (parts.length >= 3) {
-        set.add(parts[2])
-      }
-    }
-  }
-  return set
+const completedToday = computed(() => {
+  return todayClaims.value.length
 })
 
 const pointsEarnedToday = computed(() => {
   return todayClaims.value.reduce((acc, curr) => acc + (curr.amount || 0), 0)
 })
 
-const isCurrentVideoClaimedToday = computed(() => {
-  if (!selectedVideo.value) return false
-  return claimedVideoIds.value.has(selectedVideo.value.id)
+const currentTierReward = computed(() => {
+  if (completedToday.value < 10) return 5
+  if (completedToday.value < 20) return 10
+  return 15
 })
 
 const loadClaims = async () => {
@@ -89,9 +86,7 @@ const loadVideos = async () => {
     await loadClaims()
 
     if (videos.value.length > 0) {
-      // Priorizar un video no reclamado hoy, o el primero de la lista
-      const unclaimed = videos.value.find((v) => !claimedVideoIds.value.has(v.id))
-      selectedVideo.value = unclaimed || videos.value[0]
+      selectedVideo.value = videos.value[0]
     } else {
       selectedVideo.value = null
     }
@@ -103,13 +98,33 @@ const loadVideos = async () => {
   }
 }
 
+// Abrir modal con video seleccionado de forma aleatoria
+const handleOpenRandomVideo = () => {
+  if (videos.value.length === 0) return
+  if (completedToday.value >= MAX_DAILY_VIDEOS) {
+    infoMessage.value = 'Has alcanzado el límite diario de 50 videos. ¡Vuelve mañana para seguir acumulando!'
+    return
+  }
+
+  const randomIndex = Math.floor(Math.random() * videos.value.length)
+  selectedVideo.value = videos.value[randomIndex]
+  isModalOpen.value = true
+
+  analytics.trackEvent('sponsor_video_opened_random', {
+    video_id: selectedVideo.value.id,
+    title: selectedVideo.value.title,
+    tier_reward: currentTierReward.value,
+  })
+}
+
+// Abrir modal seleccionando un video puntual de la lista
 const handleSelectVideo = (video: SponsorVideo) => {
   selectedVideo.value = video
-  successMessage.value = null
-  infoMessage.value = null
+  isModalOpen.value = true
   analytics.trackEvent('sponsor_video_selected', { video_id: video.id, title: video.title })
 }
 
+// Reclamar puntos en servidor
 const handleClaimPoints = async (videoId: string) => {
   if (claiming.value) return
   claiming.value = true
@@ -122,15 +137,18 @@ const handleClaimPoints = async (videoId: string) => {
     if (error) throw error
 
     if (data?.success) {
-      successMessage.value = `¡Felicidades! Se han agregado +${data.points_awarded} puntos a tu billetera.`
+      successMessage.value = `¡Excelente! Se han acreditado +${data.points_awarded} puntos a tu billetera.`
       analytics.trackEvent('sponsor_video_points_claimed', {
         video_id: videoId,
         points: data.points_awarded,
+        completed_today: data.completed_today,
       })
       await loadClaims()
+      isModalOpen.value = false
     } else if (data?.already_claimed) {
       infoMessage.value = data.message || 'Ya has reclamado los puntos de este video hoy.'
       await loadClaims()
+      isModalOpen.value = false
     }
   } catch (err: any) {
     console.error('Error claiming video points:', err)
@@ -167,7 +185,7 @@ useSeoMeta({
       </p>
     </div>
 
-    <!-- Feedback Banners -->
+    <!-- Mensajes de Feedback -->
     <div
       v-if="errorMessage"
       class="p-4 bg-red-50 border border-red-200 rounded-guaiqui-xl text-red-700 text-sm flex items-start gap-3 shadow-xs"
@@ -207,45 +225,23 @@ useSeoMeta({
       </button>
     </div>
 
-    <!-- Progreso y Resumen de Hoy -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-      <div class="p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm flex items-center justify-between">
-        <div>
-          <span class="text-[11px] font-bold uppercase tracking-wider text-guaiqui-text-muted block">
-            Videos Reclamados Hoy
-          </span>
-          <div class="flex items-baseline gap-1.5 mt-1">
-            <span class="font-display font-black text-2xl text-guaiqui-primary">
-              {{ claimedVideoIds.size }}
-            </span>
-            <span class="text-xs text-guaiqui-text-muted font-medium">
-              / {{ videos.length }} disponibles
-            </span>
-          </div>
-        </div>
-        <div class="w-10 h-10 rounded-full bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl border border-emerald-100">
-          <i class="bi bi-check2-all"></i>
-        </div>
-      </div>
+    <!-- 1. Tarjeta Explicativa: Cómo funciona, tramos y reglas -->
+    <SponsorExplainCard
+      :completed-today="completedToday"
+      :max-daily="MAX_DAILY_VIDEOS"
+      :current-tier-reward="currentTierReward"
+    />
 
-      <div class="p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm flex items-center justify-between">
-        <div>
-          <span class="text-[11px] font-bold uppercase tracking-wider text-guaiqui-text-muted block">
-            Puntos Ganados Hoy
-          </span>
-          <div class="flex items-center gap-2 mt-1">
-            <PearlIcon size="md" />
-            <span class="font-display font-black text-2xl text-guaiqui-text">
-              +{{ pointsEarnedToday }}
-            </span>
-            <span class="text-xs text-guaiqui-text-muted font-medium">puntos</span>
-          </div>
-        </div>
-        <div class="w-10 h-10 rounded-full bg-amber-50 text-amber-600 flex items-center justify-center text-xl border border-amber-100">
-          <i class="bi bi-coin"></i>
-        </div>
-      </div>
-    </div>
+    <!-- 2. Resumen Diario con Métricas y Botón "Ver Video" -->
+    <SponsorDailySummary
+      :completed-today="completedToday"
+      :points-earned-today="pointsEarnedToday"
+      :active-videos-count="videos.length"
+      :max-daily="MAX_DAILY_VIDEOS"
+      :current-tier-reward="currentTierReward"
+      :loading="loading"
+      @watch="handleOpenRandomVideo"
+    />
 
     <!-- Estado de Carga -->
     <div v-if="loading" class="p-16 text-center text-guaiqui-text-muted space-y-3">
@@ -253,28 +249,41 @@ useSeoMeta({
       <p class="text-sm font-medium">Cargando videos de patrocinadores...</p>
     </div>
 
-    <!-- Estado Vacío -->
+    <!-- Estado Vacío si no hay videos -->
     <SponsorEmptyState v-else-if="videos.length === 0" />
 
-    <!-- Reproductor y Catálogo -->
-    <div v-else class="space-y-8">
-      <!-- Reproductor Principal del Video Seleccionado -->
-      <SponsorVideoPlayer
-        v-if="selectedVideo"
-        :video="selectedVideo"
-        :is-claimed-today="isCurrentVideoClaimedToday"
-        :claiming="claiming"
-        @claim="handleClaimPoints"
-      />
+    <!-- Catálogo de videos disponibles en rotación -->
+    <div v-else class="space-y-4">
+      <div class="flex items-center justify-between border-b border-guaiqui-border pb-3">
+        <div>
+          <h3 class="font-display font-bold text-lg text-guaiqui-text uppercase tracking-wide">
+            Videos en Rotación
+          </h3>
+          <p class="text-xs text-guaiqui-text-muted">
+            Catálogo de patrocinadores oficiales de la temporada
+          </p>
+        </div>
+        <span class="text-xs font-mono font-semibold text-guaiqui-primary">
+          {{ videos.length }} patrocinador{{ videos.length > 1 ? 'es' : '' }}
+        </span>
+      </div>
 
-      <!-- Selector / Lista de Videos si hay más de 1 -->
       <SponsorVideoList
-        v-if="videos.length > 1 && selectedVideo"
+        v-if="selectedVideo"
         :videos="videos"
         :selected-video-id="selectedVideo.id"
-        :claimed-video-ids="claimedVideoIds"
+        :claimed-video-ids="new Set()"
         @select="handleSelectVideo"
       />
     </div>
+
+    <!-- 3. Modal de Video Guaiqueríes (con temporizador, barra verde, dot bandana y acciones) -->
+    <SponsorVideoModal
+      v-model="isModalOpen"
+      :video="selectedVideo"
+      :reward-points="currentTierReward"
+      :claiming="claiming"
+      @claim="handleClaimPoints"
+    />
   </div>
 </template>

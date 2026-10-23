@@ -85,9 +85,9 @@ const emit = defineEmits<{
               <span class="flex items-center gap-1">
                 <i class="bi bi-stopwatch text-[11px]"></i> {{ video.min_seconds }}s
               </span>
-              <span class="font-bold text-emerald-700 flex items-center gap-1 font-mono">
+              <span class="font-bold text-guaiqui-primary flex items-center gap-1 font-mono text-[11px]">
                 <PearlIcon size="xs" />
-                +{{ video.reward_points }}
+                Puntos por tramo
               </span>
             </div>
           </div>

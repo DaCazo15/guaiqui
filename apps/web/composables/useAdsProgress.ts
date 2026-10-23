@@ -52,6 +52,13 @@ export function useAdsProgress() {
     }
   }
 
+  const currentTierPoints = computed(() => {
+    const completed = progress.value?.completed_today ?? 0
+    if (completed < 10) return 5
+    if (completed < 20) return 10
+    return 15
+  })
+
   return {
     progress,
     activeVideosCount,
@@ -60,6 +67,7 @@ export function useAdsProgress() {
     isAdsEnabled,
     canWatch,
     remainingToday,
+    currentTierPoints,
     fetchProgress,
   }
 }
