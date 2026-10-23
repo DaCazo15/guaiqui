@@ -93,7 +93,7 @@ const myBalance = computed(() => {
           <div class="truncate">
             <p class="text-xs font-bold text-guaiqui-text truncate flex items-center gap-1.5">
               <span>{{ item.display_name }}</span>
-          </p>
+            </p>
           </div>
         </div>
 

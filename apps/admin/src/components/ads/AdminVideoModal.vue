@@ -116,10 +116,10 @@ const handleSave = () => {
 
 <template>
   <BaseModal
-    :model-value="isOpen"
+    :is-open="isOpen"
     :title="video ? 'Editar Video de Patrocinador' : 'Nuevo Video de Patrocinador'"
     size="lg"
-    @update:model-value="(val: boolean) => !val && emit('close')"
+    @close="emit('close')"
   >
     <div class="space-y-6">
       <div v-if="localError" class="p-3 bg-red-950/80 border border-red-800 text-red-300 rounded-lg text-xs flex items-center gap-2">

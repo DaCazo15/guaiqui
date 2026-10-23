@@ -229,10 +229,10 @@ onMounted(() => {
 
       <!-- Modal de Confirmación de Eliminación -->
       <BaseModal
-        :model-value="!!videoToDelete"
+        :is-open="!!videoToDelete"
         title="Confirmar Eliminación"
         size="sm"
-        @update:model-value="(val: boolean) => !val && (videoToDelete = null)"
+        @close="videoToDelete = null"
       >
         <div class="space-y-3 text-center py-2">
           <div class="w-12 h-12 rounded-full bg-red-950/80 border border-red-800 text-red-400 flex items-center justify-center text-2xl mx-auto">

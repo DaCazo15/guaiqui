@@ -4,6 +4,7 @@ import { computed, watch, onMounted, onUnmounted } from 'vue'
 export type ModalSize = 'sm' | 'md' | 'lg' | 'xl'
 
 interface Props {
+  modelValue?: boolean
   open?: boolean
   isOpen?: boolean
   title?: string
@@ -12,6 +13,7 @@ interface Props {
 }
 
 const props = withDefaults(defineProps<Props>(), {
+  modelValue: undefined,
   open: undefined,
   isOpen: undefined,
   title: '',
@@ -20,6 +22,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const isModalOpen = computed(() => {
+  if (props.modelValue !== undefined) return props.modelValue
   if (props.open !== undefined) return props.open
   if (props.isOpen !== undefined) return props.isOpen
   return false
@@ -27,6 +30,7 @@ const isModalOpen = computed(() => {
 
 const emit = defineEmits<{
   (e: 'close'): void
+  (e: 'update:modelValue', value: boolean): void
   (e: 'update:open', value: boolean): void
   (e: 'update:isOpen', value: boolean): void
 }>()
@@ -34,6 +38,7 @@ const emit = defineEmits<{
 const close = () => {
   if (props.closable) {
     emit('close')
+    emit('update:modelValue', false)
     emit('update:open', false)
     emit('update:isOpen', false)
   }
