@@ -243,40 +243,6 @@ useSeoMeta({
       @watch="handleOpenRandomVideo"
     />
 
-    <!-- Estado de Carga -->
-    <div v-if="loading" class="p-16 text-center text-guaiqui-text-muted space-y-3">
-      <i class="bi bi-arrow-repeat animate-spin text-3xl text-guaiqui-primary"></i>
-      <p class="text-sm font-medium">Cargando videos de patrocinadores...</p>
-    </div>
-
-    <!-- Estado Vacío si no hay videos -->
-    <SponsorEmptyState v-else-if="videos.length === 0" />
-
-    <!-- Catálogo de videos disponibles en rotación -->
-    <div v-else class="space-y-4">
-      <div class="flex items-center justify-between border-b border-guaiqui-border pb-3">
-        <div>
-          <h3 class="font-display font-bold text-lg text-guaiqui-text uppercase tracking-wide">
-            Videos en Rotación
-          </h3>
-          <p class="text-xs text-guaiqui-text-muted">
-            Catálogo de patrocinadores oficiales de la temporada
-          </p>
-        </div>
-        <span class="text-xs font-mono font-semibold text-guaiqui-primary">
-          {{ videos.length }} patrocinador{{ videos.length > 1 ? 'es' : '' }}
-        </span>
-      </div>
-
-      <SponsorVideoList
-        v-if="selectedVideo"
-        :videos="videos"
-        :selected-video-id="selectedVideo.id"
-        :claimed-video-ids="new Set()"
-        @select="handleSelectVideo"
-      />
-    </div>
-
     <!-- 3. Modal de Video Guaiqueríes (con temporizador, barra verde, dot bandana y acciones) -->
     <SponsorVideoModal
       v-model="isModalOpen"
