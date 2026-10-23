@@ -158,15 +158,7 @@ const handleVideoCompleted = async (videoId: string) => {
           points: data.points_awarded,
           completed_today: data.completed_today,
         })
-      } else {
-        const remaining = data.videos_until_next_block ?? (10 - (data.completed_today % 10))
-        infoMessage.value = `¡Video completado! Progreso del bloque: ${data.completed_today % 10}/10 videos. Te faltan ${remaining} video${remaining > 1 ? 's' : ''} para ganar tus puntos.`
-        analytics.trackEvent('sponsor_video_progress_incremented', {
-          video_id: videoId,
-          completed_today: data.completed_today,
-          remaining_until_block: remaining,
-        })
-      }
+      } 
       await loadDailyProgress()
     } else if (data?.already_claimed) {
       infoMessage.value = data.message || 'Ya has validado este video hoy.'
