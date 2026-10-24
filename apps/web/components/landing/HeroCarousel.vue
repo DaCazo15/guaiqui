@@ -235,7 +235,7 @@ watch(() => props.slides.length, () => {
     <!-- Center Content Area -->
     <div
       ref="slideContentRef"
-      class="relative z-10 max-w-5xl mx-auto px-6 sm:px-12 py-16 sm:py-24 text-left flex flex-col items-center justify-center space-y-6"
+      class="relative z-10 max-w-5xl mx-auto px-6 sm:px-12 py-16 sm:py-24 text-left flex flex-col items-start justify-start space-y-6"
     >
 
       <!-- Slide Title -->
