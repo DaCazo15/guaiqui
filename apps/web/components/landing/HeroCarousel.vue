@@ -235,13 +235,8 @@ watch(() => props.slides.length, () => {
     <!-- Center Content Area -->
     <div
       ref="slideContentRef"
-      class="relative z-10 max-w-5xl mx-auto px-6 sm:px-12 py-16 sm:py-24 text-center flex flex-col items-center justify-center space-y-6"
+      class="relative z-10 max-w-5xl mx-auto px-6 sm:px-12 py-16 sm:py-24 text-left flex flex-col items-center justify-center space-y-6"
     >
-      <!-- Tag / Badge -->
-      <div class="hero-carousel-anim-el inline-flex items-center gap-2 bg-guaiqui-primary text-white text-xs font-extrabold uppercase px-4 py-1.5 rounded-full shadow-lg border border-white/20 tracking-wider">
-        <i class="bi bi-star-fill text-amber-300 text-[10px]"></i>
-        <span>{{ currentSlide.tag || 'Fan Zone Oficial' }}</span>
-      </div>
 
       <!-- Slide Title -->
       <h1 class="hero-carousel-anim-el font-display font-extrabold text-4xl sm:text-6xl lg:text-7xl uppercase tracking-tight leading-none text-white drop-shadow-xl max-w-4xl">
@@ -270,19 +265,6 @@ watch(() => props.slides.length, () => {
             <i class="bi bi-arrow-right ml-2"></i>
           </BaseButton>
         </NuxtLink>
-      </div>
-
-      <!-- Guarantees Notice -->
-      <div class="hero-carousel-anim-el flex flex-wrap items-center justify-center gap-6 text-xs sm:text-sm text-emerald-200/90 pt-4 font-medium">
-        <span class="flex items-center gap-1.5">
-          <i class="bi bi-check-lg text-emerald-400"></i> 100% Gratuito
-        </span>
-        <span class="flex items-center gap-1.5">
-          <i class="bi bi-check-lg text-emerald-400"></i> Sin tarjetas ni pagos
-        </span>
-        <span class="flex items-center gap-1.5">
-          <i class="bi bi-check-lg text-emerald-400"></i> Premios reales
-        </span>
       </div>
     </div>
 
@@ -314,7 +296,7 @@ watch(() => props.slides.length, () => {
       v-if="slides.length > 1"
       class="absolute bottom-6 sm:bottom-8 left-0 right-0 z-20 flex items-center justify-center gap-4 px-4 pointer-events-none"
     >
-      <div class="pointer-events-auto flex items-center gap-3 bg-black/50 backdrop-blur-md px-5 py-2.5 rounded-full border border-white/15 shadow-xl">
+      <div class="pointer-events-auto flex items-center gap-3 bg-black/50 backdrop-blur-md px-5 py-2.5 rounded-full shadow-xl">
         <!-- Dots -->
         <div class="flex items-center gap-2">
           <button
@@ -326,10 +308,6 @@ watch(() => props.slides.length, () => {
             class="group relative h-2.5 transition-all duration-300 rounded-full focus:outline-hidden cursor-pointer"
             :class="currentIndex === idx ? 'w-8 bg-emerald-400' : 'w-2.5 bg-white/30 hover:bg-white/60'"
           >
-            <span
-              v-if="currentIndex === idx && !isPaused"
-              class="absolute inset-0 bg-white/40 rounded-full animate-pulse"
-            ></span>
           </button>
         </div>
 
