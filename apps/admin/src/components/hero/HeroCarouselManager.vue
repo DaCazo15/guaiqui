@@ -26,10 +26,17 @@ const form = ref({
   id: '',
   title: '',
   tag: 'Fan Zone',
+  tag_variant: 'primary' as 'primary' | 'gold' | 'accent',
   subtitle: '',
   image_url: '',
+  image_layout: 'background' as 'background' | 'right',
   cta_text: 'Ver Más',
   cta_url: '/registro',
+  cta_secondary_text: '',
+  cta_secondary_url: '',
+  highlight_title: '',
+  highlight_subtitle: '',
+  highlight_badge: '',
   order_index: 1,
   is_published: true
 })
@@ -60,10 +67,17 @@ const openNew = () => {
     id: '',
     title: '',
     tag: 'Fan Zone',
+    tag_variant: 'primary',
     subtitle: '',
     image_url: '',
+    image_layout: 'background',
     cta_text: 'Ver Más',
     cta_url: '/registro',
+    cta_secondary_text: '',
+    cta_secondary_url: '',
+    highlight_title: '',
+    highlight_subtitle: '',
+    highlight_badge: '',
     order_index: slides.value.length + 1,
     is_published: true
   }
@@ -76,10 +90,17 @@ const openEdit = (slide: HeroCarouselSlide) => {
     id: slide.id,
     title: slide.title,
     tag: slide.tag || '',
+    tag_variant: (slide.tag_variant as any) || 'primary',
     subtitle: slide.subtitle || '',
     image_url: slide.image_url || '',
+    image_layout: (slide.image_layout as any) || 'background',
     cta_text: slide.cta_text || 'Ver Más',
     cta_url: slide.cta_url || '/registro',
+    cta_secondary_text: slide.cta_secondary_text || '',
+    cta_secondary_url: slide.cta_secondary_url || '',
+    highlight_title: slide.highlight_title || '',
+    highlight_subtitle: slide.highlight_subtitle || '',
+    highlight_badge: slide.highlight_badge || '',
     order_index: slide.order_index,
     is_published: slide.is_published
   }
@@ -137,10 +158,17 @@ const saveSlide = async () => {
     const payload = {
       title: form.value.title,
       tag: form.value.tag || null,
+      tag_variant: form.value.tag_variant || 'primary',
       subtitle: form.value.subtitle || null,
       image_url: form.value.image_url || null,
+      image_layout: form.value.image_layout || 'background',
       cta_text: form.value.cta_text || null,
       cta_url: form.value.cta_url || null,
+      cta_secondary_text: form.value.cta_secondary_text || null,
+      cta_secondary_url: form.value.cta_secondary_url || null,
+      highlight_title: form.value.highlight_title || null,
+      highlight_subtitle: form.value.highlight_subtitle || null,
+      highlight_badge: form.value.highlight_badge || null,
       order_index: form.value.order_index,
       is_published: form.value.is_published,
       updated_at: new Date().toISOString()
@@ -274,18 +302,31 @@ onMounted(loadSlides)
             </div>
 
             <div class="min-w-0 space-y-0.5">
-              <div class="flex items-center gap-2">
+              <div class="flex items-center gap-2 flex-wrap">
                 <span class="font-bold text-xs font-mono text-emerald-400">#{{ slide.order_index }}</span>
-                <span v-if="slide.tag" class="text-[10px] font-semibold uppercase px-2 py-0.5 rounded bg-amber-400/10 text-amber-300 border border-amber-400/20">
+                <span
+                  v-if="slide.tag"
+                  :class="[
+                    'text-[10px] font-semibold uppercase px-2 py-0.5 rounded border',
+                    slide.tag_variant === 'gold' ? 'bg-amber-400/10 text-amber-300 border-amber-400/30' :
+                    slide.tag_variant === 'accent' ? 'bg-red-400/10 text-red-300 border-red-400/30' :
+                    'bg-emerald-400/10 text-emerald-300 border-emerald-400/30'
+                  ]"
+                >
                   {{ slide.tag }}
+                </span>
+                <span
+                  class="text-[10px] font-medium px-1.5 py-0.5 rounded bg-slate-800 text-slate-400"
+                >
+                  {{ slide.image_layout === 'right' ? 'Foto Derecha' : 'Fondo Completo' }}
                 </span>
                 <span class="text-sm font-bold text-white truncate">{{ slide.title }}</span>
               </div>
               <p class="text-xs text-slate-400 truncate max-w-md">{{ slide.subtitle || 'Sin descripción' }}</p>
-              <div class="text-[11px] text-slate-500 flex items-center gap-2">
-                <span>Botón: <strong class="text-slate-400">{{ slide.cta_text || 'Ver Más' }}</strong></span>
-                <span>•</span>
-                <span class="truncate">{{ slide.cta_url || '/registro' }}</span>
+              <div class="text-[11px] text-slate-500 flex items-center gap-2 flex-wrap">
+                <span>CTA: <strong class="text-slate-300">{{ slide.cta_text || 'Ver Más' }}</strong></span>
+                <span v-if="slide.cta_secondary_text">• 2do: <strong class="text-slate-300">{{ slide.cta_secondary_text }}</strong></span>
+                <span v-if="slide.highlight_title">• Tarjeta: <strong class="text-emerald-400">{{ slide.highlight_title }}</strong></span>
               </div>
             </div>
           </div>
@@ -312,53 +353,112 @@ onMounted(loadSlides)
     <BaseModal
       v-if="showEditorModal"
       :is-open="showEditorModal"
-      :title="form.id ? 'Editar Post del Carrusel' : 'Nuevo Post para el Hero'"
+      :title="form.id ? 'Editar Diapositiva del Carrusel' : 'Nueva Diapositiva para el Hero'"
       size="lg"
       @close="showEditorModal = false"
     >
-      <div class="space-y-4">
+      <div class="space-y-5 max-h-[75vh] overflow-y-auto pr-1">
         <div v-if="errorMessage" class="p-3 bg-red-950/80 border border-red-800 text-red-200 text-xs rounded-lg flex items-center gap-2">
           <i class="bi bi-exclamation-triangle-fill text-red-400"></i>
           <span>{{ errorMessage }}</span>
         </div>
 
-        <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <BaseInput
-            label="Etiqueta / Badge"
-            v-model="form.tag"
-            placeholder="Ej: Próximo Partido, Concurso"
-            class="sm:col-span-2"
-          />
-          <BaseInput
-            label="Orden (1 al 5)"
-            type="number"
-            min="1"
-            max="5"
-            v-model.number="form.order_index"
-          />
+        <!-- Section 1: Badge & Order -->
+        <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+          <div class="sm:col-span-6">
+            <BaseInput
+              label="Etiqueta / Badge"
+              v-model="form.tag"
+              placeholder="Ej: Próximo Partido, Fan Zone, Concurso"
+            />
+          </div>
+
+          <div class="sm:col-span-4 flex flex-col gap-1.5">
+            <label class="text-xs font-semibold text-slate-300">Estilo de Etiqueta</label>
+            <select
+              v-model="form.tag_variant"
+              class="w-full rounded-lg bg-slate-900 border border-slate-700 text-white px-3 py-2 text-sm focus:border-guaiqui-primary focus:outline-hidden"
+            >
+              <option value="primary">Verde Tribu (Oficial)</option>
+              <option value="gold">Dorado Campeón (Premios / Estrellas)</option>
+              <option value="accent">Rojo Bandana (En Vivo / Urgente)</option>
+            </select>
+          </div>
+
+          <div class="sm:col-span-2">
+            <BaseInput
+              label="Orden (1-5)"
+              type="number"
+              min="1"
+              max="5"
+              v-model.number="form.order_index"
+            />
+          </div>
         </div>
 
+        <!-- Section 2: Headline & Subtitle -->
         <BaseInput
-          label="Título del Post"
+          label="Título Principal de la Diapositiva"
           v-model="form.title"
           placeholder="Ej: ¡Gran Final Oriental en el Gimnasio!"
           required
         />
 
         <div class="flex flex-col gap-1.5">
-          <label class="text-xs font-semibold text-slate-300">Descripción Breve</label>
+          <label class="text-xs font-semibold text-slate-300">Descripción / Subtítulo</label>
           <textarea
             v-model="form.subtitle"
             rows="2"
-            placeholder="Ej: Acompáñanos este sábado y participa por premios exclusivos..."
+            placeholder="Ej: Acompáñanos este sábado y gana perlitas exclusivas respondiendo trivias..."
             class="w-full rounded-lg bg-slate-900 border border-slate-700 text-white px-3 py-2 text-sm focus:border-guaiqui-primary focus:outline-hidden"
           ></textarea>
         </div>
 
-        <!-- Image Upload -->
-        <div class="space-y-2 p-3 bg-slate-900/80 border border-slate-700/80 rounded-xl">
-          <label class="text-xs font-semibold text-slate-300 block">Imagen del Post</label>
-          <div class="flex items-center gap-3">
+        <!-- Section 3: Image & Layout Mode -->
+        <div class="space-y-3 p-4 bg-slate-900/80 border border-slate-700/80 rounded-xl">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-white flex items-center gap-1.5">
+              <i class="bi bi-image text-emerald-400"></i> Imagen y Presentación
+            </label>
+          </div>
+
+          <!-- Layout selector: Full background vs Right image -->
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <label
+              :class="[
+                'p-3 rounded-xl border cursor-pointer flex items-center gap-3 transition-all',
+                form.image_layout === 'background'
+                  ? 'bg-emerald-950/40 border-emerald-500 text-white'
+                  : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+              ]"
+            >
+              <input type="radio" value="background" v-model="form.image_layout" class="sr-only" />
+              <i class="bi bi-aspect-ratio text-xl text-emerald-400"></i>
+              <div>
+                <div class="text-xs font-bold">Fondo Inmersivo</div>
+                <div class="text-[11px] text-slate-400">Cubre todo el Hero con overlay oscuro</div>
+              </div>
+            </label>
+
+            <label
+              :class="[
+                'p-3 rounded-xl border cursor-pointer flex items-center gap-3 transition-all',
+                form.image_layout === 'right'
+                  ? 'bg-emerald-950/40 border-emerald-500 text-white'
+                  : 'bg-slate-950/60 border-slate-800 text-slate-400 hover:border-slate-700'
+              ]"
+            >
+              <input type="radio" value="right" v-model="form.image_layout" class="sr-only" />
+              <i class="bi bi-person-workspace text-xl text-emerald-400"></i>
+              <div>
+                <div class="text-xs font-bold">Foto a la Derecha</div>
+                <div class="text-[11px] text-slate-400">Texto a la izquierda e imagen destacada</div>
+              </div>
+            </label>
+          </div>
+
+          <!-- File upload -->
+          <div class="flex items-center gap-3 pt-2">
             <div class="w-16 h-16 rounded-lg bg-slate-950 border border-slate-800 overflow-hidden shrink-0 flex items-center justify-center">
               <img v-if="form.image_url" :src="form.image_url" alt="Preview" class="w-full h-full object-cover" />
               <i v-else class="bi bi-image text-slate-600 text-2xl"></i>
@@ -402,17 +502,69 @@ onMounted(loadSlides)
           </div>
         </div>
 
-        <!-- CTA Button -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <!-- Section 4: Dual CTA Buttons -->
+        <div class="space-y-3 p-4 bg-slate-900/80 border border-slate-700/80 rounded-xl">
+          <label class="text-xs font-bold text-white flex items-center gap-1.5">
+            <i class="bi bi-cursor-fill text-emerald-400"></i> Botones de Acción (CTAs)
+          </label>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <BaseInput
+              label="Botón Principal (Texto)"
+              v-model="form.cta_text"
+              placeholder="Ej: Únete a la Tribu, Ver Más"
+            />
+            <BaseInput
+              label="Enlace Botón Principal"
+              v-model="form.cta_url"
+              placeholder="Ej: /registro o /trivias"
+            />
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-2 border-t border-slate-800">
+            <BaseInput
+              label="Botón Secundario (Opcional)"
+              v-model="form.cta_secondary_text"
+              placeholder="Ej: Ver Premios, Ver Cómo Funciona"
+            />
+            <BaseInput
+              label="Enlace Botón Secundario"
+              v-model="form.cta_secondary_url"
+              placeholder="Ej: /tienda o #como-funciona"
+            />
+          </div>
+        </div>
+
+        <!-- Section 5: Floating Highlight Card (Optional) -->
+        <div class="space-y-3 p-4 bg-slate-900/80 border border-slate-700/80 rounded-xl">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-white flex items-center gap-1.5">
+              <i class="bi bi-card-heading text-emerald-400"></i> Micro-Tarjeta Flotante Destacada (Opcional)
+            </label>
+            <span class="text-[11px] text-slate-400">Aparece flotando para dar volumen y dinamismo</span>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
+            <div class="sm:col-span-4">
+              <BaseInput
+                label="Insignia / Badge"
+                v-model="form.highlight_badge"
+                placeholder="Ej: En Vivo, Premio, Fan"
+              />
+            </div>
+            <div class="sm:col-span-8">
+              <BaseInput
+                label="Título de la Tarjeta"
+                v-model="form.highlight_title"
+                placeholder="Ej: Camiseta Oficial 2026 o Trotamundos vs Guaiqueríes"
+              />
+            </div>
+          </div>
+
           <BaseInput
-            label="Texto del Botón (CTA)"
-            v-model="form.cta_text"
-            placeholder="Ej: Ver Más, Comprar Entradas"
-          />
-          <BaseInput
-            label="Enlace del Botón"
-            v-model="form.cta_url"
-            placeholder="Ej: /registro o #premios"
+            label="Detalle / Subtítulo de la Tarjeta"
+            v-model="form.highlight_subtitle"
+            placeholder="Ej: Canjeable por 2,500 perlitas | Edición Limitada"
           />
         </div>
       </div>

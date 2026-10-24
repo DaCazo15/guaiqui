@@ -468,10 +468,17 @@ export interface HeroCarouselSlide {
   id: string
   title: string
   tag?: string | null
+  tag_variant?: 'primary' | 'gold' | 'accent' | null
   subtitle?: string | null
   image_url?: string | null
   cta_text?: string | null
   cta_url?: string | null
+  cta_secondary_text?: string | null
+  cta_secondary_url?: string | null
+  highlight_title?: string | null
+  highlight_subtitle?: string | null
+  highlight_badge?: string | null
+  image_layout?: 'background' | 'right' | null
   order_index: number
   is_published: boolean
   created_at: string
