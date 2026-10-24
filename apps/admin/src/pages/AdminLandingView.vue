@@ -2,23 +2,13 @@
 import { ref, onMounted } from 'vue'
 import { RouterLink } from 'vue-router'
 import AdminLayout from '../components/layout/AdminLayout.vue'
-import { BaseButton, BaseInput, BaseCard, BaseBadge, BaseTable, BaseModal } from '@guaiqui/ui'
+import { BaseButton, BaseInput, BaseCard } from '@guaiqui/ui'
 import { supabase } from '../lib/supabase'
 import HeroAppearanceControl from '../components/hero/HeroAppearanceControl.vue'
 import HeroCarouselManager from '../components/hero/HeroCarouselManager.vue'
 import type { LandingSettings } from '@guaiqui/shared'
 
-interface StandingRow {
-  id: string
-  team_name: string
-  games_played: number
-  wins: number
-  losses: number
-  points: number
-  order_index: number
-}
-
-const activeTab = ref<'hero' | 'carousel' | 'standings'>('hero')
+const activeTab = ref<'hero' | 'carousel'>('hero')
 
 const settings = ref<LandingSettings>({
   id: 1,
@@ -39,33 +29,10 @@ const settings = ref<LandingSettings>({
   hero_card_color: ''
 })
 
-const standings = ref<StandingRow[]>([])
 const loading = ref(true)
 const actionLoading = ref(false)
 const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
-
-// Standings modal
-const showStandingModal = ref(false)
-const standingForm = ref({
-  id: '',
-  team_name: '',
-  games_played: 0,
-  wins: 0,
-  losses: 0,
-  points: 0,
-  order_index: 1
-})
-
-const standingsColumns = [
-  { key: 'order_index', label: 'Pos' },
-  { key: 'team_name', label: 'Equipo' },
-  { key: 'games_played', label: 'JJ', align: 'center' as const },
-  { key: 'wins', label: 'JG', align: 'center' as const },
-  { key: 'losses', label: 'JP', align: 'center' as const },
-  { key: 'points', label: 'PTS', align: 'center' as const },
-  { key: 'actions', label: 'Acciones', align: 'right' as const }
-]
 
 const loadData = async () => {
   loading.value = true
@@ -74,9 +41,6 @@ const loadData = async () => {
     if (setts) {
       settings.value = setts
     }
-
-    const { data: stData } = await supabase.from('standings').select('*').order('order_index', { ascending: true })
-    standings.value = stData || []
   } catch (err: any) {
     console.error('Error loading landing data:', err)
   } finally {
@@ -103,62 +67,6 @@ const saveSettings = async () => {
   }
 }
 
-const openNewStanding = () => {
-  standingForm.value = {
-    id: '',
-    team_name: '',
-    games_played: 0,
-    wins: 0,
-    losses: 0,
-    points: 0,
-    order_index: standings.value.length + 1
-  }
-  showStandingModal.value = true
-}
-
-const editStanding = (row: StandingRow) => {
-  standingForm.value = { ...row }
-  showStandingModal.value = true
-}
-
-const saveStanding = async () => {
-  if (!standingForm.value.team_name) return
-  actionLoading.value = true
-  try {
-    const payload = {
-      team_name: standingForm.value.team_name,
-      games_played: Number(standingForm.value.games_played),
-      wins: Number(standingForm.value.wins),
-      losses: Number(standingForm.value.losses),
-      points: Number(standingForm.value.wins * 2 + standingForm.value.losses),
-      order_index: Number(standingForm.value.order_index)
-    }
-
-    if (standingForm.value.id) {
-      await supabase.from('standings').update(payload).eq('id', standingForm.value.id)
-    } else {
-      await supabase.from('standings').insert(payload)
-    }
-
-    successMessage.value = 'Equipo guardado en la tabla de clasificación.'
-    showStandingModal.value = false
-    await loadData()
-  } catch (err: any) {
-    errorMessage.value = err.message
-  } finally {
-    actionLoading.value = false
-  }
-}
-
-const deleteStanding = async (id: string) => {
-  if (!confirm('¿Desea eliminar este equipo de la tabla de clasificación?')) return
-  try {
-    await supabase.from('standings').delete().eq('id', id)
-    await loadData()
-  } catch (err: any) {
-    errorMessage.value = err.message
-  }
-}
 
 onMounted(loadData)
 </script>
@@ -224,15 +132,7 @@ onMounted(loadData)
             title="Carrusel Activo"
           ></span>
         </button>
-        <button
-          @click="activeTab = 'standings'"
-          :class="[
-            'px-4 py-2 rounded-xl text-sm font-semibold transition-all',
-            activeTab === 'standings' ? 'bg-emerald-600 text-white shadow-xs' : 'text-slate-400 hover:text-white hover:bg-slate-800/60'
-          ]"
-        >
-          <i class="bi bi-trophy mr-1.5"></i> Tabla de Clasificación
-        </button>
+
       </div>
 
       <!-- TAB 1: Hero Section & Theme -->
@@ -324,57 +224,6 @@ onMounted(loadData)
         </div>
       </div>
 
-      <!-- TAB 3: Standings / Tabla de Clasificación -->
-      <div v-if="activeTab === 'standings'" class="space-y-6">
-        <div class="flex items-center justify-between">
-          <p class="text-sm text-slate-400">Tabla de Posiciones de la Temporada SPB.</p>
-          <BaseButton variant="primary" size="sm" @click="openNewStanding">
-            <i class="bi bi-plus-lg mr-1.5"></i> Agregar Equipo
-          </BaseButton>
-        </div>
-
-        <BaseTable :columns="standingsColumns" :data="standings" :loading="loading" empty-text="No hay equipos en la clasificación">
-          <template #cell-order_index="{ row }">
-            <span class="font-bold text-emerald-400 font-mono">#{{ (row as StandingRow).order_index }}</span>
-          </template>
-
-          <template #cell-team_name="{ row }">
-            <span class="font-semibold text-slate-100">{{ (row as StandingRow).team_name }}</span>
-          </template>
-
-          <template #cell-actions="{ row }">
-            <div class="flex items-center justify-end gap-1.5">
-              <button @click="editStanding(row as StandingRow)" class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg">
-                <i class="bi bi-pencil"></i>
-              </button>
-              <button @click="deleteStanding((row as StandingRow).id)" class="p-1.5 text-red-400 hover:bg-red-950 rounded-lg">
-                <i class="bi bi-trash"></i>
-              </button>
-            </div>
-          </template>
-        </BaseTable>
-      </div>
     </div>
-
-    <!-- Modal Standing Editor -->
-    <BaseModal v-if="showStandingModal" :is-open="showStandingModal" title="Equipo en Clasificación" @close="showStandingModal = false">
-      <div class="space-y-4">
-        <BaseInput label="Nombre del Equipo" v-model="standingForm.team_name" placeholder="Ej: Guaiqueríes de Margarita" />
-
-        <div class="grid grid-cols-2 gap-4">
-          <BaseInput label="Juegos Jugados (JJ)" type="number" v-model.number="standingForm.games_played" />
-          <BaseInput label="Juegos Ganados (JG)" type="number" v-model.number="standingForm.wins" />
-          <BaseInput label="Juegos Perdidos (JP)" type="number" v-model.number="standingForm.losses" />
-          <BaseInput label="Orden de Posición (#)" type="number" v-model.number="standingForm.order_index" />
-        </div>
-      </div>
-
-      <template #footer>
-        <div class="flex items-center justify-end gap-3">
-          <BaseButton variant="secondary" @click="showStandingModal = false">Cancelar</BaseButton>
-          <BaseButton variant="primary" :loading="actionLoading" @click="saveStanding">Guardar Equipo</BaseButton>
-        </div>
-      </template>
-    </BaseModal>
   </AdminLayout>
 </template>
