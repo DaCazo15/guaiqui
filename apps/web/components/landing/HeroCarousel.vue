@@ -296,7 +296,7 @@ watch(() => props.slides.length, () => {
       v-if="slides.length > 1"
       class="absolute bottom-6 sm:bottom-8 left-0 right-0 z-20 flex items-center justify-center gap-4 px-4 pointer-events-none"
     >
-      <div class="pointer-events-auto flex items-center gap-3 bg-black/50 backdrop-blur-md px-5 py-2.5 rounded-full shadow-xl">
+      <div class="pointer-events-auto flex items-center gap-3 bg-white/50 backdrop-blur-md px-5 py-2.5 rounded-full shadow-xl">
         <!-- Dots -->
         <div class="flex items-center gap-2">
           <button
@@ -310,11 +310,6 @@ watch(() => props.slides.length, () => {
           >
           </button>
         </div>
-
-        <!-- Slide Counter -->
-        <span class="text-xs font-mono font-bold text-white/80 border-l border-white/20 pl-3">
-          {{ currentIndex + 1 }} / {{ slides.length }}
-        </span>
       </div>
     </div>
   </div>
