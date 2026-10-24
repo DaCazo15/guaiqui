@@ -70,7 +70,7 @@ const handleHeroImageUpload = async (event: Event) => {
   <div class="space-y-5 p-5 rounded-2xl bg-slate-900 border border-slate-800">
     <h4 class="text-sm font-bold text-white uppercase tracking-wider flex items-center gap-2">
       <i class="bi bi-palette-fill text-emerald-400"></i>
-      Fondo del Hero y Personalización de Apariencia
+      Imagen del Hero
     </h4>
 
     <!-- Hero Background Image Upload -->
@@ -79,7 +79,6 @@ const handleHeroImageUpload = async (event: Event) => {
         <label class="text-xs font-semibold text-slate-300">
           Imagen de Fondo del Hero
         </label>
-        <span class="text-[11px] text-slate-400">Se combina con el gradiente oficial de la tribu</span>
       </div>
 
       <div class="flex items-center gap-4">
@@ -113,7 +112,7 @@ const handleHeroImageUpload = async (event: Event) => {
               :loading="uploadingImage"
               @click="triggerHeroFileInput"
             >
-              <i class="bi bi-cloud-arrow-up mr-1.5"></i> Subir Imagen al Hero
+              <i class="bi bi-cloud-arrow-up mr-1.5"></i> Subir Imagen
             </BaseButton>
 
             <button

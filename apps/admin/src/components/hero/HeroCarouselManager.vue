@@ -30,6 +30,7 @@ const form = ref({
   subtitle: '',
   image_url: '',
   image_layout: 'background' as 'background' | 'right',
+  text_align: 'left' as 'left' | 'center',
   cta_text: 'Ver Más',
   cta_url: '/registro',
   cta_secondary_text: '',
@@ -37,6 +38,10 @@ const form = ref({
   highlight_title: '',
   highlight_subtitle: '',
   highlight_badge: '',
+  show_guarantees: true,
+  guarantee_1: '100% Gratuito',
+  guarantee_2: 'Sin tarjetas ni pagos',
+  guarantee_3: 'Recompensas Reales',
   order_index: 1,
   is_published: true
 })
@@ -71,6 +76,7 @@ const openNew = () => {
     subtitle: '',
     image_url: '',
     image_layout: 'background',
+    text_align: 'left',
     cta_text: 'Ver Más',
     cta_url: '/registro',
     cta_secondary_text: '',
@@ -78,6 +84,10 @@ const openNew = () => {
     highlight_title: '',
     highlight_subtitle: '',
     highlight_badge: '',
+    show_guarantees: true,
+    guarantee_1: '100% Gratuito',
+    guarantee_2: 'Sin tarjetas ni pagos',
+    guarantee_3: 'Recompensas Reales',
     order_index: slides.value.length + 1,
     is_published: true
   }
@@ -94,6 +104,7 @@ const openEdit = (slide: HeroCarouselSlide) => {
     subtitle: slide.subtitle || '',
     image_url: slide.image_url || '',
     image_layout: (slide.image_layout as any) || 'background',
+    text_align: (slide.text_align as any) || 'left',
     cta_text: slide.cta_text || 'Ver Más',
     cta_url: slide.cta_url || '/registro',
     cta_secondary_text: slide.cta_secondary_text || '',
@@ -101,6 +112,10 @@ const openEdit = (slide: HeroCarouselSlide) => {
     highlight_title: slide.highlight_title || '',
     highlight_subtitle: slide.highlight_subtitle || '',
     highlight_badge: slide.highlight_badge || '',
+    show_guarantees: slide.show_guarantees !== false,
+    guarantee_1: slide.guarantee_1 || '100% Gratuito',
+    guarantee_2: slide.guarantee_2 || 'Sin tarjetas ni pagos',
+    guarantee_3: slide.guarantee_3 || 'Recompensas Reales',
     order_index: slide.order_index,
     is_published: slide.is_published
   }
@@ -162,6 +177,7 @@ const saveSlide = async () => {
       subtitle: form.value.subtitle || null,
       image_url: form.value.image_url || null,
       image_layout: form.value.image_layout || 'background',
+      text_align: form.value.text_align || 'left',
       cta_text: form.value.cta_text || null,
       cta_url: form.value.cta_url || null,
       cta_secondary_text: form.value.cta_secondary_text || null,
@@ -169,6 +185,10 @@ const saveSlide = async () => {
       highlight_title: form.value.highlight_title || null,
       highlight_subtitle: form.value.highlight_subtitle || null,
       highlight_badge: form.value.highlight_badge || null,
+      show_guarantees: form.value.show_guarantees,
+      guarantee_1: form.value.guarantee_1 || null,
+      guarantee_2: form.value.guarantee_2 || null,
+      guarantee_3: form.value.guarantee_3 || null,
       order_index: form.value.order_index,
       is_published: form.value.is_published,
       updated_at: new Date().toISOString()
@@ -320,6 +340,14 @@ onMounted(loadSlides)
                 >
                   {{ slide.image_layout === 'right' ? 'Foto Derecha' : 'Fondo Completo' }}
                 </span>
+                <span
+                  :class="[
+                    'text-[10px] font-semibold px-1.5 py-0.5 rounded',
+                    slide.is_published ? 'bg-emerald-950 text-emerald-400 border border-emerald-500/30' : 'bg-slate-800 text-slate-500'
+                  ]"
+                >
+                  {{ slide.is_published ? 'Publicado' : 'Borrador' }}
+                </span>
                 <span class="text-sm font-bold text-white truncate">{{ slide.title }}</span>
               </div>
               <p class="text-xs text-slate-400 truncate max-w-md">{{ slide.subtitle || 'Sin descripción' }}</p>
@@ -363,7 +391,7 @@ onMounted(loadSlides)
           <span>{{ errorMessage }}</span>
         </div>
 
-        <!-- Section 1: Badge & Order -->
+        <!-- Section 1: Badge, Variant & Order -->
         <div class="grid grid-cols-1 sm:grid-cols-12 gap-3">
           <div class="sm:col-span-6">
             <BaseInput
@@ -566,6 +594,74 @@ onMounted(loadSlides)
             v-model="form.highlight_subtitle"
             placeholder="Ej: Canjeable por 2,500 perlitas | Edición Limitada"
           />
+        </div>
+
+        <!-- Section 6: Trust Guarantees / Sellos de Confianza por Diapositiva -->
+        <div class="space-y-3 p-4 bg-slate-900/80 border border-slate-700/80 rounded-xl">
+          <div class="flex items-center justify-between">
+            <label class="text-xs font-bold text-white flex items-center gap-1.5">
+              <i class="bi bi-shield-check text-emerald-400"></i> Sellos de Confianza / Beneficios (Pie del Slide)
+            </label>
+            <label class="flex items-center gap-2 cursor-pointer text-xs text-slate-300">
+              <input
+                type="checkbox"
+                v-model="form.show_guarantees"
+                class="w-4 h-4 accent-emerald-500 rounded"
+              />
+              <span>Mostrar en este slide</span>
+            </label>
+          </div>
+
+          <div v-if="form.show_guarantees" class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+            <BaseInput
+              label="Sello 1"
+              v-model="form.guarantee_1"
+              placeholder="Ej: 100% Gratuito o Gimnasio La Asunción"
+            />
+            <BaseInput
+              label="Sello 2"
+              v-model="form.guarantee_2"
+              placeholder="Ej: Sin tarjetas o En Vivo por TV"
+            />
+            <BaseInput
+              label="Sello 3"
+              v-model="form.guarantee_3"
+              placeholder="Ej: Recompensas Reales o +300 Perlitas"
+            />
+          </div>
+        </div>
+
+        <!-- Section 7: Opciones de Alineación y Publicación -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-4 bg-slate-900/80 border border-slate-700/80 rounded-xl items-center">
+          <!-- Text alignment -->
+          <div>
+            <label class="text-xs font-semibold text-slate-300 block mb-1.5">Alineación del Texto</label>
+            <div class="flex items-center gap-3">
+              <label class="flex items-center gap-1.5 text-xs text-white cursor-pointer">
+                <input type="radio" value="left" v-model="form.text_align" class="accent-emerald-500" />
+                <span>Alineado a la Izquierda</span>
+              </label>
+              <label class="flex items-center gap-1.5 text-xs text-white cursor-pointer">
+                <input type="radio" value="center" v-model="form.text_align" class="accent-emerald-500" />
+                <span>Centrado</span>
+              </label>
+            </div>
+          </div>
+
+          <!-- Publication status -->
+          <div class="sm:text-right">
+            <label class="text-xs font-semibold text-slate-300 block mb-1.5">Estado de la Diapositiva</label>
+            <label class="inline-flex items-center gap-2 cursor-pointer">
+              <input
+                type="checkbox"
+                v-model="form.is_published"
+                class="w-4 h-4 accent-emerald-500 rounded"
+              />
+              <span class="text-xs font-bold" :class="form.is_published ? 'text-emerald-400' : 'text-slate-500'">
+                {{ form.is_published ? 'Publicada (Visible en Portada)' : 'Borrador (Oculta)' }}
+              </span>
+            </label>
+          </div>
         </div>
       </div>
 

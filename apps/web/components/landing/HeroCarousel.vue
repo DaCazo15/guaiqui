@@ -33,6 +33,10 @@ const isRightImageLayout = computed(() => {
   return currentSlide.value?.image_layout === 'right' && Boolean(currentSlide.value?.image_url)
 })
 
+const isCenterAligned = computed(() => {
+  return currentSlide.value?.text_align === 'center'
+})
+
 const badgeClasses = computed(() => {
   const variant = currentSlide.value?.tag_variant || 'primary'
   if (variant === 'gold') {
@@ -318,11 +322,20 @@ watch(() => props.slides.length, () => {
             </NuxtLink>
           </div>
 
-          <!-- Trust Badges -->
-          <div class="hero-carousel-anim-el flex flex-wrap items-center gap-6 text-xs text-emerald-200/90 pt-3 font-medium">
-            <span class="flex items-center gap-1.5"><i class="bi bi-check-lg text-emerald-400"></i> 100% Gratuito</span>
-            <span class="flex items-center gap-1.5"><i class="bi bi-shield-check text-emerald-400"></i> Sin pagos</span>
-            <span class="flex items-center gap-1.5"><i class="bi bi-gem text-emerald-400"></i> Recompensas Reales</span>
+          <!-- Trust Badges (Dynamic) -->
+          <div
+            v-if="currentSlide.show_guarantees !== false"
+            class="hero-carousel-anim-el flex flex-wrap items-center gap-6 text-xs text-emerald-200/90 pt-3 font-medium"
+          >
+            <span v-if="currentSlide.guarantee_1" class="flex items-center gap-1.5">
+              <i class="bi bi-check-lg text-emerald-400"></i> {{ currentSlide.guarantee_1 }}
+            </span>
+            <span v-if="currentSlide.guarantee_2" class="flex items-center gap-1.5">
+              <i class="bi bi-shield-check text-emerald-400"></i> {{ currentSlide.guarantee_2 }}
+            </span>
+            <span v-if="currentSlide.guarantee_3" class="flex items-center gap-1.5">
+              <i class="bi bi-gem text-emerald-400"></i> {{ currentSlide.guarantee_3 }}
+            </span>
           </div>
         </div>
 
@@ -364,7 +377,8 @@ watch(() => props.slides.length, () => {
       <div
         v-else
         ref="slideContentRef"
-        class="w-full max-w-xl lg:max-w-2xl text-left flex flex-col items-start justify-start space-y-6"
+        class="w-full max-w-xl lg:max-w-2xl flex flex-col space-y-6"
+        :class="isCenterAligned ? 'text-center items-center justify-center mx-auto' : 'text-left items-start justify-start'"
       >
         <!-- Tag / Badge -->
         <div
@@ -384,13 +398,17 @@ watch(() => props.slides.length, () => {
         <!-- Slide Subtitle -->
         <p
           v-if="currentSlide.subtitle"
-          class="hero-carousel-anim-el text-emerald-100 text-base sm:text-lg lg:text-xl max-w-xl text-left leading-relaxed drop-shadow-md"
+          class="hero-carousel-anim-el text-emerald-100 text-base sm:text-lg lg:text-xl max-w-xl leading-relaxed drop-shadow-md"
+          :class="isCenterAligned ? 'mx-auto text-center' : 'text-left'"
         >
           {{ currentSlide.subtitle }}
         </p>
 
         <!-- Dual CTA Buttons -->
-        <div class="hero-carousel-anim-el pt-2 flex flex-wrap items-center justify-start gap-4">
+        <div
+          class="hero-carousel-anim-el pt-2 flex flex-wrap items-center gap-4"
+          :class="isCenterAligned ? 'justify-center' : 'justify-start'"
+        >
           <NuxtLink v-if="currentSlide.cta_text" :to="currentSlide.cta_url || '/registro'">
             <BaseButton
               variant="primary"
@@ -423,7 +441,7 @@ watch(() => props.slides.length, () => {
           <div class="w-10 h-10 rounded-xl bg-guaiqui-primary/20 border border-guaiqui-primary/40 flex items-center justify-center text-emerald-400 text-lg shrink-0">
             <i class="bi bi-trophy-fill"></i>
           </div>
-          <div class="min-w-0 flex-1">
+          <div class="min-w-0 flex-1 text-left">
             <div class="flex items-center gap-2">
               <span v-if="currentSlide.highlight_badge" class="text-[9px] font-bold uppercase px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-300">
                 {{ currentSlide.highlight_badge }}
@@ -436,11 +454,21 @@ watch(() => props.slides.length, () => {
           </div>
         </div>
 
-        <!-- Trust Badges -->
-        <div class="hero-carousel-anim-el flex flex-wrap items-center gap-6 text-xs text-emerald-200/90 pt-3 font-medium">
-          <span class="flex items-center gap-1.5"><i class="bi bi-check-lg text-emerald-400"></i> 100% Gratuito</span>
-          <span class="flex items-center gap-1.5"><i class="bi bi-shield-check text-emerald-400"></i> Sin pagos</span>
-          <span class="flex items-center gap-1.5"><i class="bi bi-gem text-emerald-400"></i> Recompensas Reales</span>
+        <!-- Trust Badges (Dynamic) -->
+        <div
+          v-if="currentSlide.show_guarantees !== false"
+          class="hero-carousel-anim-el flex flex-wrap items-center gap-6 text-xs text-emerald-200/90 pt-3 font-medium"
+          :class="isCenterAligned ? 'justify-center' : 'justify-start'"
+        >
+          <span v-if="currentSlide.guarantee_1" class="flex items-center gap-1.5">
+            <i class="bi bi-check-lg text-emerald-400"></i> {{ currentSlide.guarantee_1 }}
+          </span>
+          <span v-if="currentSlide.guarantee_2" class="flex items-center gap-1.5">
+            <i class="bi bi-shield-check text-emerald-400"></i> {{ currentSlide.guarantee_2 }}
+          </span>
+          <span v-if="currentSlide.guarantee_3" class="flex items-center gap-1.5">
+            <i class="bi bi-gem text-emerald-400"></i> {{ currentSlide.guarantee_3 }}
+          </span>
         </div>
       </div>
     </div>

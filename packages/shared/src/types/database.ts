@@ -479,6 +479,11 @@ export interface HeroCarouselSlide {
   highlight_subtitle?: string | null
   highlight_badge?: string | null
   image_layout?: 'background' | 'right' | null
+  guarantee_1?: string | null
+  guarantee_2?: string | null
+  guarantee_3?: string | null
+  show_guarantees?: boolean
+  text_align?: 'left' | 'center'
   order_index: number
   is_published: boolean
   created_at: string
