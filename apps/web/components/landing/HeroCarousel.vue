@@ -201,7 +201,7 @@ watch(() => props.slides.length, () => {
   <div
     v-if="currentSlide"
     ref="slideContainer"
-    class="relative w-full min-h-[560px] sm:min-h-[640px] lg:min-h-[700px] flex items-center justify-center overflow-hidden bg-slate-950 text-white select-none cursor-grab active:cursor-grabbing"
+    class="relative w-full min-h-[560px] sm:min-h-[640px] lg:min-h-[700px] flex items-center overflow-hidden bg-slate-950 text-white select-none cursor-grab active:cursor-grabbing"
     @mouseenter="isPaused = true"
     @mouseleave="handleMouseLeave"
     @touchstart="handleTouchStart"
@@ -226,45 +226,45 @@ watch(() => props.slides.length, () => {
         class="w-full h-full bg-gradient-to-b from-guaiqui-primary-dark via-emerald-950 to-slate-950"
       ></div>
 
-      <!-- High-contrast overlays for text legibility and brand aesthetics -->
-      <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/75 to-slate-950/40"></div>
-      <div class="absolute inset-0 bg-gradient-to-r from-guaiqui-primary-dark/80 via-transparent to-slate-950/70"></div>
+      <!-- High-contrast overlays for text legibility and brand aesthetics (enhanced gradient on the left) -->
+      <div class="absolute inset-0 bg-gradient-to-t from-slate-950 via-slate-950/70 to-slate-950/40"></div>
+      <div class="absolute inset-0 bg-gradient-to-r from-slate-950/90 via-slate-950/60 to-transparent"></div>
       <div class="absolute inset-0 bg-[radial-gradient(circle_at_top,_var(--tw-gradient-stops))] from-emerald-500/15 via-transparent to-black/60"></div>
     </div>
 
-    <!-- Center Content Area -->
-    <div
-      ref="slideContentRef"
-      class="relative z-10 max-w-5xl mx-auto px-6 sm:px-12 py-16 sm:py-24 text-left flex flex-col items-start justify-start space-y-6"
-    >
-
-      <!-- Slide Title -->
-      <h1 class="hero-carousel-anim-el font-display font-extrabold text-4xl sm:text-6xl lg:text-7xl uppercase tracking-tight leading-none text-white drop-shadow-xl max-w-4xl">
-        {{ currentSlide.title }}
-      </h1>
-
-      <!-- Slide Subtitle -->
-      <p
-        v-if="currentSlide.subtitle"
-        class="hero-carousel-anim-el text-emerald-100 text-base sm:text-lg lg:text-xl max-w-2xl mx-auto leading-relaxed drop-shadow-md"
+    <!-- Left-aligned Content Area -->
+    <div class="relative z-10 max-w-7xl mx-auto px-6 sm:px-12 lg:px-20 py-16 sm:py-24 w-full flex items-center justify-start">
+      <div
+        ref="slideContentRef"
+        class="w-full max-w-xl lg:max-w-2xl text-left flex flex-col items-start justify-start space-y-6"
       >
-        {{ currentSlide.subtitle }}
-      </p>
+        <!-- Slide Title -->
+        <h1 class="hero-carousel-anim-el font-display font-extrabold text-4xl sm:text-6xl lg:text-7xl uppercase tracking-tight leading-none text-white drop-shadow-xl">
+          {{ currentSlide.title }}
+        </h1>
 
-      <!-- CTA Button -->
-      <div class="hero-carousel-anim-el pt-2 flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto">
-        <NuxtLink :to="currentSlide.cta_url || '/registro'" class="w-full sm:w-auto">
-          <BaseButton
-            variant="primary"
-            size="lg"
-            block
-            class="shadow-xl shadow-emerald-950/80 px-8"
-            @click="handleCtaClick"
-          >
-            <span>{{ currentSlide.cta_text || 'Ver Más' }}</span>
-            <i class="bi bi-arrow-right ml-2"></i>
-          </BaseButton>
-        </NuxtLink>
+        <!-- Slide Subtitle -->
+        <p
+          v-if="currentSlide.subtitle"
+          class="hero-carousel-anim-el text-emerald-100 text-base sm:text-lg lg:text-xl max-w-xl text-left leading-relaxed drop-shadow-md"
+        >
+          {{ currentSlide.subtitle }}
+        </p>
+
+        <!-- CTA Button -->
+        <div class="hero-carousel-anim-el pt-2 flex items-center justify-start gap-4">
+          <NuxtLink :to="currentSlide.cta_url || '/registro'">
+            <BaseButton
+              variant="primary"
+              size="lg"
+              class="shadow-xl shadow-emerald-950/80 px-8"
+              @click="handleCtaClick"
+            >
+              <span>{{ currentSlide.cta_text || 'Ver Más' }}</span>
+              <i class="bi bi-arrow-right ml-2"></i>
+            </BaseButton>
+          </NuxtLink>
+        </div>
       </div>
     </div>
 
