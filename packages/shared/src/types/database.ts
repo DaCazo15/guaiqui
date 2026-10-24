@@ -489,10 +489,14 @@ export interface LandingSettings {
   id: number
   hero_title: string
   hero_subtitle: string
+  hero_badge_text?: string | null
   cta_primary_text: string
   cta_primary_url: string
   cta_secondary_text: string
   cta_secondary_url: string
+  hero_guarantee_1?: string | null
+  hero_guarantee_2?: string | null
+  hero_guarantee_3?: string | null
   dark_mode_enabled: boolean
   theme_color: string
   hero_image_url?: string | null

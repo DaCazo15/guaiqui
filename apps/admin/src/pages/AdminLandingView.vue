@@ -24,14 +24,18 @@ const settings = ref<LandingSettings>({
   id: 1,
   hero_title: 'La Tribu Insular Vive en la Fan Zone Oficial',
   hero_subtitle: 'Gana perlitas exclusivas respondiendo trivias, participando en dinámicas de cancha y canjeándolas por recompensas reales de Guaiqueríes.',
+  hero_badge_text: 'Fan Zone Oficial • Temporada 2026',
   cta_primary_text: 'Únete a la Tribu Gratis',
   cta_primary_url: '/register',
   cta_secondary_text: 'Explorar Premios',
   cta_secondary_url: '#premios',
+  hero_guarantee_1: '100% Gratuito',
+  hero_guarantee_2: 'Sin tarjetas ni pagos',
+  hero_guarantee_3: 'Premios y Perlitas Reales',
   dark_mode_enabled: true,
   theme_color: '#059669',
   hero_image_url: '',
-  hero_carousel_enabled: false,
+  hero_carousel_enabled: true,
   hero_card_color: ''
 })
 
@@ -239,6 +243,11 @@ onMounted(loadData)
           </h3>
 
           <div class="grid grid-cols-1 gap-4">
+            <BaseInput
+              label="Insignia Superior / Badge del Hero"
+              v-model="settings.hero_badge_text"
+              placeholder="Ej: Fan Zone Oficial • Temporada 2026"
+            />
             <BaseInput label="Título Principal de la Landing" v-model="settings.hero_title" />
             <div>
               <label class="block text-xs font-semibold text-slate-300 mb-1">Subtítulo / Descripción Hero</label>
@@ -255,6 +264,34 @@ onMounted(loadData)
             <BaseInput label="Enlace Botón Principal" v-model="settings.cta_primary_url" />
             <BaseInput label="Texto Botón Secundario" v-model="settings.cta_secondary_text" />
             <BaseInput label="Enlace Botón Secundario" v-model="settings.cta_secondary_url" />
+          </div>
+
+          <!-- Sellos de Confianza / Garantías del Hero -->
+          <div class="space-y-3 pt-4 border-t border-slate-800">
+            <div class="flex items-center justify-between">
+              <label class="text-xs font-bold text-white flex items-center gap-1.5">
+                <i class="bi bi-shield-check text-emerald-400"></i> Sellos de Confianza (Pie del Hero)
+              </label>
+              <span class="text-[11px] text-slate-400">3 distintivos que aparecen debajo de los botones</span>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-3">
+              <BaseInput
+                label="Sello 1"
+                v-model="settings.hero_guarantee_1"
+                placeholder="Ej: 100% Gratuito"
+              />
+              <BaseInput
+                label="Sello 2"
+                v-model="settings.hero_guarantee_2"
+                placeholder="Ej: Sin tarjetas ni pagos"
+              />
+              <BaseInput
+                label="Sello 3"
+                v-model="settings.hero_guarantee_3"
+                placeholder="Ej: Premios y Perlitas Reales"
+              />
+            </div>
           </div>
 
           <!-- Hero Appearance Control (Background Image, Card Color, Theme) -->

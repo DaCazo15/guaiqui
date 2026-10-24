@@ -55,6 +55,10 @@ const ctaPrimaryUrl = computed(() => {
 })
 const ctaSecondaryText = computed(() => settings.value?.cta_secondary_text || 'Ver cómo funciona')
 const ctaSecondaryUrl = computed(() => settings.value?.cta_secondary_url || '/#como-funciona')
+const heroBadgeText = computed(() => settings.value?.hero_badge_text || 'Fan Zone Oficial • Temporada 2026')
+const heroGuarantee1 = computed(() => settings.value?.hero_guarantee_1 || '100% Gratuito')
+const heroGuarantee2 = computed(() => settings.value?.hero_guarantee_2 || 'Sin tarjetas ni pagos')
+const heroGuarantee3 = computed(() => settings.value?.hero_guarantee_3 || 'Premios y Perlitas Reales')
 const heroImageUrl = computed(() => settings.value?.hero_image_url || '')
 const heroCarouselEnabled = computed(() => Boolean(settings.value?.hero_carousel_enabled))
 
@@ -78,11 +82,20 @@ onMounted(() => {
           },
         })
 
-        tl.from('.hero-headline', {
-          y: 25,
+        tl.from('.hero-badge', {
+          y: -15,
           autoAlpha: 0,
-          duration: reduceMotion ? 0 : 0.8,
+          duration: reduceMotion ? 0 : 0.6,
         })
+          .from(
+            '.hero-headline',
+            {
+              y: 25,
+              autoAlpha: 0,
+              duration: reduceMotion ? 0 : 0.8,
+            },
+            '-=0.4'
+          )
           .from(
             '.hero-subtitle',
             {
@@ -156,7 +169,13 @@ const handleHeroHowItWorks = () => {
     <div class="absolute inset-0 bg-[radial-gradient(circle_at_top_right,_var(--tw-gradient-stops))] from-emerald-500/10 via-transparent to-black/60 pointer-events-none" />
 
     <!-- Centered Hero Content without the right card -->
-    <div class="max-w-4xl mx-auto relative z-10 text-center space-y-8">
+    <div class="max-w-4xl mx-auto relative z-10 text-center space-y-6">
+      <!-- Top Badge / Distintivo -->
+      <div v-if="heroBadgeText" class="hero-badge inline-flex items-center gap-2 bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-extrabold uppercase px-4 py-1.5 rounded-full shadow-lg">
+        <i class="bi bi-star-fill text-amber-300 text-[10px]"></i>
+        <span>{{ heroBadgeText }}</span>
+      </div>
+
       <!-- Headline -->
       <h1 class="hero-headline font-display font-extrabold text-4xl sm:text-6xl lg:text-7xl uppercase tracking-tight leading-none text-white drop-shadow-md">
         {{ heroTitle }}
@@ -170,13 +189,13 @@ const handleHeroHowItWorks = () => {
       <!-- Double CTA Buttons -->
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
         <NuxtLink :to="ctaPrimaryUrl" class="hero-cta w-full sm:w-auto">
-          <BaseButton variant="primary" size="lg" block @click="handleHeroRegister">
+          <BaseButton variant="primary" size="lg" block class="px-8 shadow-xl shadow-emerald-950/80" @click="handleHeroRegister">
             {{ ctaPrimaryText }}
           </BaseButton>
         </NuxtLink>
 
-        <NuxtLink :to="ctaSecondaryUrl" class="hero-cta w-full sm:w-auto">
-          <BaseButton variant="secondary" size="lg" block @click="handleHeroHowItWorks">
+        <NuxtLink v-if="ctaSecondaryText" :to="ctaSecondaryUrl" class="hero-cta w-full sm:w-auto">
+          <BaseButton variant="secondary" size="lg" block class="px-8 bg-white/10 hover:bg-white/20 border border-white/20 text-white shadow-lg" @click="handleHeroHowItWorks">
             {{ ctaSecondaryText }}
           </BaseButton>
         </NuxtLink>
@@ -184,14 +203,14 @@ const handleHeroHowItWorks = () => {
 
       <!-- Free Guarantee Notice -->
       <div class="flex flex-wrap items-center justify-center gap-6 text-xs sm:text-sm text-emerald-200/90 pt-4 font-medium">
-        <span class="hero-guarantee flex items-center gap-1.5">
-          <i class="bi bi-check-lg text-emerald-400"></i> 100% Gratuito
+        <span v-if="heroGuarantee1" class="hero-guarantee flex items-center gap-1.5">
+          <i class="bi bi-check-lg text-emerald-400"></i> {{ heroGuarantee1 }}
         </span>
-        <span class="hero-guarantee flex items-center gap-1.5">
-          <i class="bi bi-check-lg text-emerald-400"></i> Sin tarjetas ni pagos
+        <span v-if="heroGuarantee2" class="hero-guarantee flex items-center gap-1.5">
+          <i class="bi bi-shield-check text-emerald-400"></i> {{ heroGuarantee2 }}
         </span>
-        <span class="hero-guarantee flex items-center gap-1.5">
-          <i class="bi bi-check-lg text-emerald-400"></i> Premios reales
+        <span v-if="heroGuarantee3" class="hero-guarantee flex items-center gap-1.5">
+          <i class="bi bi-gem text-emerald-400"></i> {{ heroGuarantee3 }}
         </span>
       </div>
     </div>
