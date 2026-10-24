@@ -385,7 +385,7 @@ onMounted(loadSlides)
       size="lg"
       @close="showEditorModal = false"
     >
-      <div class="space-y-5 max-h-[75vh] overflow-y-auto pr-1">
+      <div class="space-y-5">
         <div v-if="errorMessage" class="p-3 bg-red-950/80 border border-red-800 text-red-200 text-xs rounded-lg flex items-center gap-2">
           <i class="bi bi-exclamation-triangle-fill text-red-400"></i>
           <span>{{ errorMessage }}</span>
