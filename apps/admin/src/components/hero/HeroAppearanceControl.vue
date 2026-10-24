@@ -64,14 +64,6 @@ const handleHeroImageUpload = async (event: Event) => {
     if (heroFileInput.value) heroFileInput.value.value = ''
   }
 }
-
-const CARD_COLORS = [
-  { label: 'Translúcido Oficial', value: '' },
-  { label: 'Verde Oscuro Esmeralda', value: '#064E27' },
-  { label: 'Verde Tribu Intenso', value: '#0B7A3B' },
-  { label: 'Noche Pizarra', value: '#0F172A' },
-  { label: 'Rojo Bandana', value: '#9B0B22' }
-]
 </script>
 
 <template>
@@ -130,7 +122,7 @@ const CARD_COLORS = [
               @click="emit('update:heroImageUrl', '')"
               class="text-xs text-red-400 hover:text-red-300 inline-flex items-center gap-1"
             >
-              <i class="bi bi-trash"></i> Quitar imagen (usar solo gradiente)
+              <i class="bi bi-trash"></i> Quitar imagen
             </button>
           </div>
 
@@ -145,46 +137,7 @@ const CARD_COLORS = [
       </div>
     </div>
 
-    <!-- Hero Card Color (for the right card when carousel is not active) -->
-    <div class="space-y-2 p-4 rounded-xl bg-slate-950/60 border border-slate-800">
-      <div class="flex items-center justify-between">
-        <label class="text-xs font-semibold text-slate-300">
-          Color de la Tarjeta del Hero (Modo Fijo)
-        </label>
-        <span class="text-[11px] text-slate-400">Aplica si el carrusel está desactivado</span>
-      </div>
 
-      <div class="flex flex-wrap items-center gap-2">
-        <button
-          v-for="color in CARD_COLORS"
-          :key="color.value"
-          type="button"
-          @click="emit('update:heroCardColor', color.value)"
-          :class="[
-            'px-2.5 py-1 rounded-lg text-xs font-medium border flex items-center gap-1.5 transition-all',
-            heroCardColor === color.value
-              ? 'ring-2 ring-emerald-400 border-white text-white font-semibold'
-              : 'border-slate-700 text-slate-400 hover:border-slate-500'
-          ]"
-        >
-          <span
-            class="w-3 h-3 rounded-full border border-black/30 shrink-0"
-            :style="{ backgroundColor: color.value || 'rgba(255,255,255,0.1)' }"
-          ></span>
-          <span>{{ color.label }}</span>
-        </button>
-
-        <div class="flex items-center gap-1.5 ml-auto">
-          <input
-            type="color"
-            :value="heroCardColor || '#064E27'"
-            @input="emit('update:heroCardColor', ($event.target as HTMLInputElement).value)"
-            class="w-7 h-7 rounded-lg cursor-pointer bg-slate-800 border border-slate-700 p-0.5"
-          />
-          <span class="text-[11px] text-slate-400">Color libre</span>
-        </div>
-      </div>
-    </div>
 
     <!-- Theme & Dark Mode -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-4 rounded-xl bg-slate-950/60 border border-slate-800">

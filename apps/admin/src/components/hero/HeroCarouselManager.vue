@@ -207,7 +207,7 @@ onMounted(loadSlides)
           </span>
         </div>
         <p class="text-xs text-slate-400">
-          Reemplaza la tarjeta fija de la derecha por un carrusel dinámico de hasta 5 posts con transiciones GSAP, pase a 4s, dots y arrastre táctil.
+          Convierte toda la sección Hero de la portada en un carrusel dinámico a pantalla completa (hasta 5 diapositivas con imagen de fondo, título, descripción y botón de acción). Si se desactiva, se muestra el Hero institucional clásico.
         </p>
       </div>
 
