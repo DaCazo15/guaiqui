@@ -1,243 +1,97 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '../components/layout/AdminLayout.vue'
-import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
-import { supabase } from '../lib/supabase'
+import TeamRosterTab from '../components/team-admin/TeamRosterTab.vue'
+import TeamCalendarTab from '../components/team-admin/TeamCalendarTab.vue'
+import TeamStaffTab from '../components/team-admin/TeamStaffTab.vue'
 
-interface TeamMemberRow {
-  id: string
-  name: string
-  role: string
-  group_category: 'directiva' | 'tecnico' | 'logistica'
-  photo_url?: string
-  order_index: number
-  is_published: boolean
-  created_at: string
-}
+type TeamTab = 'roster' | 'calendar' | 'staff'
 
-const members = ref<TeamMemberRow[]>([])
-const loading = ref(true)
-const actionLoading = ref(false)
-const errorMessage = ref<string | null>(null)
-const successMessage = ref<string | null>(null)
+const route = useRoute()
+const router = useRouter()
 
-const showModal = ref(false)
-const form = ref({
-  id: '',
-  name: '',
-  role: '',
-  group_category: 'tecnico' as 'directiva' | 'tecnico' | 'logistica',
-  photo_url: '',
-  order_index: 0,
-  is_published: true
-})
+const activeTab = ref<TeamTab>('roster')
 
-const columns = [
-  { key: 'name', label: 'Nombre' },
-  { key: 'role', label: 'Cargo / Rol' },
-  { key: 'group_category', label: 'Grupo' },
-  { key: 'order_index', label: 'Orden', align: 'center' as const },
-  { key: 'is_published', label: 'Estado', align: 'center' as const },
-  { key: 'actions', label: 'Acciones', align: 'right' as const }
+const tabs = [
+  { id: 'roster' as const, label: 'Plantilla de Jugadores', icon: 'bi-person-bounding-box', description: 'Roster oficial, dorsales y jugadores estrella' },
+  { id: 'calendar' as const, label: 'Calendario de Partidos', icon: 'bi-calendar-event', description: 'Encuentros, sedes, estados y marcadores' },
+  { id: 'staff' as const, label: 'Cuerpo Técnico & Directiva', icon: 'bi-person-lines-fill', description: 'Personal directivo, técnico y staff' }
 ]
 
-const categoryLabels: Record<string, string> = {
-  directiva: 'Directiva',
-  tecnico: 'Cuerpo Técnico',
-  logistica: 'Staff / Logística'
+const setTab = (tab: TeamTab) => {
+  activeTab.value = tab
+  router.replace({ query: { ...route.query, tab } })
 }
 
-const loadMembers = async () => {
-  loading.value = true
-  try {
-    const { data, error } = await supabase
-      .from('site_team_members')
-      .select('*')
-      .order('order_index', { ascending: true })
-
-    if (error) throw error
-    members.value = data || []
-  } catch (err: any) {
-    errorMessage.value = err.message
-  } finally {
-    loading.value = false
+const syncTabFromRoute = () => {
+  const queryTab = route.query.tab as string
+  if (queryTab && ['roster', 'calendar', 'staff'].includes(queryTab)) {
+    activeTab.value = queryTab as TeamTab
+  } else if (route.query.tab === 'plantilla') {
+    activeTab.value = 'roster'
+  } else if (route.query.tab === 'calendario' || route.query.tab === 'partidos') {
+    activeTab.value = 'calendar'
+  } else if (route.query.tab === 'cuerpo-tecnico') {
+    activeTab.value = 'staff'
   }
 }
 
-const openNew = () => {
-  form.value = {
-    id: '',
-    name: '',
-    role: '',
-    group_category: 'tecnico',
-    photo_url: '',
-    order_index: members.value.length + 1,
-    is_published: true
-  }
-  showModal.value = true
-}
+onMounted(() => {
+  syncTabFromRoute()
+})
 
-const editRow = (row: TeamMemberRow) => {
-  form.value = {
-    id: row.id,
-    name: row.name,
-    role: row.role,
-    group_category: row.group_category,
-    photo_url: row.photo_url || '',
-    order_index: row.order_index,
-    is_published: row.is_published
-  }
-  showModal.value = true
-}
-
-const saveRow = async () => {
-  if (!form.value.name || !form.value.role) {
-    errorMessage.value = 'El nombre y el cargo son obligatorios.'
-    return
-  }
-
-  actionLoading.value = true
-  errorMessage.value = null
-  try {
-    const payload = {
-      name: form.value.name,
-      role: form.value.role,
-      group_category: form.value.group_category,
-      photo_url: form.value.photo_url || null,
-      order_index: form.value.order_index,
-      is_published: form.value.is_published
-    }
-
-    if (form.value.id) {
-      const { error } = await supabase.from('site_team_members').update(payload).eq('id', form.value.id)
-      if (error) throw error
-    } else {
-      const { error } = await supabase.from('site_team_members').insert(payload)
-      if (error) throw error
-    }
-
-    successMessage.value = 'Miembro del equipo guardado correctamente.'
-    showModal.value = false
-    await loadMembers()
-  } catch (err: any) {
-    errorMessage.value = err.message
-  } finally {
-    actionLoading.value = false
-  }
-}
-
-const deleteRow = async (id: string) => {
-  if (!confirm('¿Desea eliminar este miembro del equipo?')) return
-  actionLoading.value = true
-  try {
-    const { error } = await supabase.from('site_team_members').delete().eq('id', id)
-    if (error) throw error
-    successMessage.value = 'Miembro eliminado.'
-    await loadMembers()
-  } catch (err: any) {
-    errorMessage.value = err.message
-  } finally {
-    actionLoading.value = false
-  }
-}
-
-onMounted(loadMembers)
+watch(() => route.query.tab, () => {
+  syncTabFromRoute()
+})
 </script>
 
 <template>
   <AdminLayout>
     <div class="max-w-7xl mx-auto space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <!-- Section Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800">
         <div>
-          <h1 class="text-2xl sm:text-3xl font-bold font-title text-white">Equipo de Trabajo y Directiva</h1>
-          <p class="text-sm text-slate-400">Administrar el personal técnico, directiva y staff mostrados en la landing pública.</p>
+          <h1 class="text-2xl font-bold font-title text-white flex items-center gap-2">
+            <i class="bi bi-shield-shaded text-emerald-400"></i>
+            Gestión del Equipo
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Administra la plantilla oficial de jugadores, calendario de partidos y cuerpo técnico desde una sola sección.
+          </p>
         </div>
-        <BaseButton variant="primary" @click="openNew">
-          <i class="bi bi-plus-lg mr-1.5"></i> Agregar Integrante
-        </BaseButton>
       </div>
 
-      <div v-if="errorMessage" class="p-4 bg-red-950/80 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
-        <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-red-400 hover:text-red-200"><i class="bi bi-x-lg"></i></button>
-      </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-950/80 border border-emerald-800 text-emerald-300 rounded-xl text-sm flex items-center justify-between">
-        <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-emerald-400 hover:text-emerald-200"><i class="bi bi-x-lg"></i></button>
-      </div>
-
-      <BaseTable :columns="columns" :data="members" :loading="loading" empty-text="No hay integrantes registrados">
-        <template #cell-name="{ row }">
-          <div class="flex items-center gap-3">
-            <img :src="(row as any).photo_url || 'https://placehold.co/100x100?text=Guaiqueri'" class="w-9 h-9 rounded-full object-cover bg-slate-800 border border-slate-700" />
-            <span class="font-semibold text-white">{{ (row as any).name }}</span>
-          </div>
-        </template>
-
-        <template #cell-role="{ row }">
-          <span class="text-sm text-slate-300">{{ (row as any).role }}</span>
-        </template>
-
-        <template #cell-group_category="{ row }">
-          <BaseBadge variant="info">
-            {{ categoryLabels[(row as any).group_category] || (row as any).group_category }}
-          </BaseBadge>
-        </template>
-
-        <template #cell-order_index="{ row }">
-          <span class="text-xs text-slate-400 font-mono">{{ (row as any).order_index }}</span>
-        </template>
-
-        <template #cell-is_published="{ row }">
-          <BaseBadge :variant="(row as any).is_published ? 'success' : 'soft'">
-            {{ (row as any).is_published ? 'Visible' : 'Oculto' }}
-          </BaseBadge>
-        </template>
-
-        <template #cell-actions="{ row }">
-          <div class="flex items-center justify-end gap-1.5">
-            <button @click="editRow(row as any)" class="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
-              <i class="bi bi-pencil"></i>
-            </button>
-            <button @click="deleteRow((row as any).id)" class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-950 rounded-lg transition-colors" title="Eliminar">
-              <i class="bi bi-trash"></i>
-            </button>
-          </div>
-        </template>
-      </BaseTable>
-    </div>
-
-    <!-- Modal Editor -->
-    <BaseModal v-if="showModal" :is-open="showModal" title="Integrante del Equipo" @close="showModal = false">
-      <div class="space-y-4">
-        <BaseInput label="Nombre Completo" v-model="form.name" placeholder="Ej: Fernando Duró" />
-        <BaseInput label="Cargo o Rol" v-model="form.role" placeholder="Ej: Director Técnico" />
-
-        <BaseSelect
-          label="Categoría de Grupo"
-          v-model="form.group_category"
-          :options="[
-            { value: 'directiva', label: 'Directiva' },
-            { value: 'tecnico', label: 'Cuerpo Técnico' },
-            { value: 'logistica', label: 'Staff / Logística' }
+      <!-- Dynamic Tab Buttons -->
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 p-1.5 bg-slate-950/80 border border-slate-800/80 rounded-2xl shadow-inner">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          type="button"
+          @click="setTab(tab.id)"
+          :class="[
+            'px-4 py-3 rounded-xl text-left transition-all duration-200 flex flex-col justify-center gap-1 group relative',
+            activeTab === tab.id
+              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/60 ring-1 ring-emerald-400/30'
+              : 'text-slate-400 hover:text-white hover:bg-slate-900/80'
           ]"
-        />
-
-        <BaseInput label="URL de Foto (Opcional)" v-model="form.photo_url" placeholder="https://..." />
-        <BaseInput label="Orden de Aparición" type="number" v-model.number="form.order_index" />
-
-        <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer pt-2">
-          <input type="checkbox" v-model="form.is_published" class="accent-emerald-500 rounded" />
-          <span>Publicado / Visible en la Web</span>
-        </label>
+        >
+          <div class="flex items-center gap-2">
+            <i :class="['bi', tab.icon, 'text-base', activeTab === tab.id ? 'text-white' : 'text-slate-400 group-hover:text-emerald-400']"></i>
+            <span class="text-xs sm:text-sm font-bold tracking-tight">{{ tab.label }}</span>
+          </div>
+          <span :class="['text-[11px] truncate', activeTab === tab.id ? 'text-emerald-100' : 'text-slate-500']">
+            {{ tab.description }}
+          </span>
+        </button>
       </div>
 
-      <template #footer>
-        <div class="flex items-center justify-end gap-3">
-          <BaseButton variant="secondary" @click="showModal = false">Cancelar</BaseButton>
-          <BaseButton variant="primary" :loading="actionLoading" @click="saveRow">Guardar Integrante</BaseButton>
-        </div>
-      </template>
-    </BaseModal>
+      <!-- Dynamic Tab Content Render -->
+      <div class="pt-2">
+        <TeamRosterTab v-if="activeTab === 'roster'" />
+        <TeamCalendarTab v-else-if="activeTab === 'calendar'" />
+        <TeamStaffTab v-else-if="activeTab === 'staff'" />
+      </div>
+    </div>
   </AdminLayout>
 </template>

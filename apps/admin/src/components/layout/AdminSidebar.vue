@@ -29,14 +29,8 @@ const platformNavItems = [
 ]
 
 const cmsNavItems = [
-  { name: 'admin-landing', path: '/admin/landing', label: 'Hero', icon: 'bi-layout-text-window-reverse' },
-  { name: 'admin-carrusel', path: '/admin/carrusel', label: 'Carrusel Landing', icon: 'bi-images' },
-  { name: 'admin-cta', path: '/admin/cta', label: 'CTA', icon: 'bi-megaphone-fill' },
-  { name: 'admin-login-modal', path: '/admin/contenido/modal-de-bienvenida', label: 'Pop-up Bienvenida', icon: 'bi-window-stack' },
-  { name: 'admin-anuncios', path: '/admin/anuncios', label: 'Cinta Anuncios', icon: 'bi-megaphone' },
-  { name: 'admin-partidos', path: '/admin/partidos', label: 'Calendario', icon: 'bi-calendar-event' },
-  { name: 'admin-jugadores', path: '/admin/jugadores', label: 'Plantilla', icon: 'bi-person-bounding-box' },
-  { name: 'admin-equipo', path: '/admin/equipo', label: 'Cuerpo Técnico', icon: 'bi-person-lines-fill' },
+  { name: 'admin-landing', path: '/admin/landing', label: 'Landing', icon: 'bi-window-fullscreen' },
+  { name: 'admin-equipo', path: '/admin/equipo', label: 'Equipo', icon: 'bi-shield-shaded' },
   { name: 'admin-instagram', path: '/admin/instagram', label: 'Instagram', icon: 'bi-instagram' },
   { name: 'admin-faq', path: '/admin/faq', label: 'Preguntas Frecuentes', icon: 'bi-patch-question' },
   { name: 'admin-historia', path: '/admin/historia', label: 'Historia', icon: 'bi-hourglass-split' },

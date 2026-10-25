@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import AnnouncementBar from '~/components/landing/AnnouncementBar.vue'
 import Navbar from '~/components/landing/Navbar.vue'
 import HeroSection from '~/components/landing/HeroSection.vue'
 import FeaturedCarousel from '~/components/landing/FeaturedCarousel.vue'
@@ -28,13 +27,10 @@ useSeoMeta({
 
 <template>
   <div class="min-h-screen bg-guaiqui-bg text-guaiqui-text selection:bg-guaiqui-primary selection:text-white">
-    <!-- 1. AnnouncementBar -->
-    <AnnouncementBar />
-
-    <!-- 2. Navbar Sticky -->
+    <!-- 1. Navbar Sticky -->
     <Navbar />
 
-    <!-- 3. HeroSection -->
+    <!-- 2. HeroSection (includes integrated AnnouncementBar) -->
     <HeroSection />
 
     <!-- 3.1 Optional CTA after Hero -->

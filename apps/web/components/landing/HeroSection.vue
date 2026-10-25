@@ -4,6 +4,7 @@ import { BaseButton } from '@guaiqui/ui'
 import { useAnalytics } from '~/composables/useAnalytics'
 import { useGSAP } from '~/composables/useGSAP'
 import HeroCarousel from './HeroCarousel.vue'
+import AnnouncementBar from './AnnouncementBar.vue'
 import type { HeroCarouselSlide } from '@guaiqui/shared'
 
 const { trackEvent } = useAnalytics()
@@ -147,12 +148,16 @@ const handleHeroHowItWorks = () => {
 </script>
 
 <template>
-  <!-- MODE A: Hero Carousel Full Screen (Active) -->
-  <section v-if="isCarouselActive" class="w-full relative overflow-hidden">
-    <HeroCarousel :slides="heroSlides" />
-  </section>
+  <div class="w-full relative">
+    <!-- Cinta de Anuncios integrada dentro de la sección Hero -->
+    <AnnouncementBar />
 
-  <!-- MODE B: Classic Hero Layout (Carousel Inactive / No Slides) -->
+    <!-- MODE A: Hero Carousel Full Screen (Active) -->
+    <section v-if="isCarouselActive" class="w-full relative overflow-hidden">
+      <HeroCarousel :slides="heroSlides" />
+    </section>
+
+    <!-- MODE B: Classic Hero Layout (Carousel Inactive / No Slides) -->
   <section
     v-else
     ref="heroContainer"
@@ -215,4 +220,5 @@ const handleHeroHowItWorks = () => {
       </div>
     </div>
   </section>
+  </div>
 </template>

@@ -108,8 +108,8 @@ test.describe('Fase 9B: Gestión de Contenidos Landing & Políticas (apps/admin)
     await page.click('button[type="submit"]')
 
     await page.waitForURL('**/admin/dashboard')
-    await page.click('text=Cinta Anuncios')
-    await page.waitForURL('**/admin/anuncios')
+    await page.click('text=Landing')
+    await page.waitForURL('**/admin/landing')
 
     await page.click('button:has-text("Nuevo Anuncio")')
     await page.fill('input[placeholder*="Ej: ¡Hoy jugamos en casa!"]', '¡Atención Fanáticos: Trivia Activa!')
@@ -127,8 +127,9 @@ test.describe('Fase 9B: Gestión de Contenidos Landing & Políticas (apps/admin)
     await page.click('button[type="submit"]')
 
     await page.waitForURL('**/admin/dashboard')
-    await page.click('text=Carrusel Hero')
-    await page.waitForURL('**/admin/carrusel')
+    await page.click('text=Landing')
+    await page.waitForURL('**/admin/landing')
+    await page.click('button:has-text("Carrusel Landing")')
 
     await page.click('button:has-text("Nueva Diapositiva")')
     await page.fill('input[placeholder*="Ej: Gran Clásico"]', 'Gran Final SPB 2026')

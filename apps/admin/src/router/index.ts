@@ -15,8 +15,6 @@ import AdminDashboardView from '../pages/AdminDashboardView.vue'
 import AdminAnalyticsView from '../pages/AdminAnalyticsView.vue'
 import AdminTriviasView from '../pages/AdminTriviasView.vue'
 import AdminProductsView from '../pages/AdminProductsView.vue'
-import AdminPlayersView from '../pages/AdminPlayersView.vue'
-import AdminGamesView from '../pages/AdminGamesView.vue'
 import AdminEconomyView from '../pages/AdminEconomyView.vue'
 import AdminPersonalView from '../pages/AdminPersonalView.vue'
 import AdminFansView from '../pages/AdminFansView.vue'
@@ -24,8 +22,6 @@ import AdminSegmentsView from '../pages/AdminSegmentsView.vue'
 import AdminRiskView from '../pages/AdminRiskView.vue'
 import AdminIssuesView from '../pages/AdminIssuesView.vue'
 import AdminAuditView from '../pages/AdminAuditView.vue'
-import AdminAnnouncementsView from '../pages/AdminAnnouncementsView.vue'
-import AdminCarouselView from '../pages/AdminCarouselView.vue'
 import AdminHistoryView from '../pages/AdminHistoryView.vue'
 import AdminTeamView from '../pages/AdminTeamView.vue'
 import AdminFaqView from '../pages/AdminFaqView.vue'
@@ -34,9 +30,7 @@ import AdminPoliciesView from '../pages/AdminPoliciesView.vue'
 import AdminInstagramView from '../pages/AdminInstagramView.vue'
 import AdminLandingView from '../pages/AdminLandingView.vue'
 import AdminBirthdayView from '../pages/AdminBirthdayView.vue'
-import AdminLoginModalView from '../pages/AdminLoginModalView.vue'
 import AdminAdsView from '../pages/AdminAdsView.vue'
-import AdminCtaView from '../pages/AdminCtaView.vue'
 import Enroll2FAView from '../pages/Enroll2FAView.vue'
 import Verify2FAView from '../pages/Verify2FAView.vue'
 
@@ -144,15 +138,11 @@ export const router = createRouter({
     },
     {
       path: '/admin/jugadores',
-      name: 'admin-jugadores',
-      component: AdminPlayersView,
-      meta: { requiresAdmin: true }
+      redirect: '/admin/equipo?tab=roster'
     },
     {
       path: '/admin/partidos',
-      name: 'admin-partidos',
-      component: AdminGamesView,
-      meta: { requiresAdmin: true }
+      redirect: '/admin/equipo?tab=calendar'
     },
     {
       path: '/admin/economia',
@@ -210,21 +200,15 @@ export const router = createRouter({
     },
     {
       path: '/admin/cta',
-      name: 'admin-cta',
-      component: AdminCtaView,
-      meta: { requiresAdmin: true }
+      redirect: '/admin/landing?tab=cta'
     },
     {
       path: '/admin/anuncios',
-      name: 'admin-anuncios',
-      component: AdminAnnouncementsView,
-      meta: { requiresAdmin: true }
+      redirect: '/admin/landing?tab=hero'
     },
     {
       path: '/admin/carrusel',
-      name: 'admin-carrusel',
-      component: AdminCarouselView,
-      meta: { requiresAdmin: true }
+      redirect: '/admin/landing?tab=carousel'
     },
     {
       path: '/admin/historia',
@@ -258,9 +242,7 @@ export const router = createRouter({
     },
     {
       path: '/admin/contenido/modal-de-bienvenida',
-      name: 'admin-login-modal',
-      component: AdminLoginModalView,
-      meta: { requiresAdmin: true }
+      redirect: '/admin/landing?tab=popup'
     },
     {
       path: '/admin/politicas',

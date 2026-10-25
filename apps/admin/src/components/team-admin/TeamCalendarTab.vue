@@ -1,0 +1,330 @@
+<script setup lang="ts">
+import { ref, onMounted } from 'vue'
+import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
+import { caracasInputToISO, isoToCaracasInput, nowCaracasInput, formatCaracas } from '@guaiqui/shared'
+import { supabase } from '../../lib/supabase'
+
+interface GameRow {
+  id: string
+  opponent: string
+  location: string
+  game_date: string
+  is_home: boolean
+  status: 'scheduled' | 'live' | 'finished' | 'cancelled'
+  our_score: number
+  opponent_score: number
+}
+
+const games = ref<GameRow[]>([])
+const loading = ref(true)
+const actionLoading = ref(false)
+const errorMessage = ref<string | null>(null)
+const successMessage = ref<string | null>(null)
+
+const showEditorModal = ref(false)
+const gameForm = ref({
+  id: '',
+  opponent: '',
+  location: 'Gimnasio Ciudad de La Asunción',
+  game_date: '',
+  is_home: true,
+  status: 'scheduled' as 'scheduled' | 'live' | 'finished' | 'cancelled',
+  our_score: 0,
+  opponent_score: 0,
+})
+
+const columns = [
+  { key: 'opponent', label: 'Rival' },
+  { key: 'game_date', label: 'Fecha del Partido' },
+  { key: 'is_home', label: 'Sede' },
+  { key: 'score', label: 'Marcador', align: 'center' as const },
+  { key: 'status', label: 'Estado', align: 'center' as const },
+  { key: 'actions', label: 'Acciones', align: 'right' as const },
+]
+
+const statusOptions = [
+  { value: 'scheduled', label: 'Programado' },
+  { value: 'live', label: 'En Vivo (Disputándose)' },
+  { value: 'finished', label: 'Finalizado' },
+  { value: 'cancelled', label: 'Cancelado' }
+]
+
+const loadGames = async () => {
+  loading.value = true
+  errorMessage.value = null
+  try {
+    const { data, error } = await supabase
+      .from('games')
+      .select('*')
+      .order('game_date', { ascending: false })
+
+    if (error) throw error
+    games.value = data || []
+  } catch (err: any) {
+    errorMessage.value = err.message
+  } finally {
+    loading.value = false
+  }
+}
+
+const openNewGame = () => {
+  gameForm.value = {
+    id: '',
+    opponent: '',
+    location: 'Gimnasio Ciudad de La Asunción',
+    game_date: nowCaracasInput(),
+    is_home: true,
+    status: 'scheduled',
+    our_score: 0,
+    opponent_score: 0,
+  }
+  showEditorModal.value = true
+}
+
+const editGame = (g: GameRow) => {
+  gameForm.value = {
+    id: g.id,
+    opponent: g.opponent,
+    location: g.location,
+    game_date: g.game_date ? isoToCaracasInput(g.game_date) : '',
+    is_home: g.is_home,
+    status: g.status,
+    our_score: g.our_score || 0,
+    opponent_score: g.opponent_score || 0,
+  }
+  showEditorModal.value = true
+}
+
+const saveGame = async () => {
+  if (!gameForm.value.opponent.trim()) {
+    errorMessage.value = 'El nombre del rival es obligatorio.'
+    return
+  }
+  if (!gameForm.value.game_date) {
+    errorMessage.value = 'La fecha y hora del partido es obligatoria.'
+    return
+  }
+
+  actionLoading.value = true
+  errorMessage.value = null
+  try {
+    const payload = {
+      opponent: gameForm.value.opponent.trim(),
+      location: gameForm.value.location.trim() || 'Gimnasio Ciudad de La Asunción',
+      game_date: caracasInputToISO(gameForm.value.game_date),
+      is_home: Boolean(gameForm.value.is_home),
+      status: gameForm.value.status,
+      our_score: Number(gameForm.value.our_score) || 0,
+      opponent_score: Number(gameForm.value.opponent_score) || 0,
+    }
+
+    if (gameForm.value.id) {
+      const { error } = await supabase
+        .from('games')
+        .update(payload)
+        .eq('id', gameForm.value.id)
+      if (error) throw error
+      successMessage.value = 'Partido actualizado correctamente.'
+    } else {
+      const { error } = await supabase
+        .from('games')
+        .insert(payload)
+      if (error) throw error
+      successMessage.value = 'Partido programado exitosamente en el calendario.'
+    }
+
+    showEditorModal.value = false
+    await loadGames()
+  } catch (err: any) {
+    errorMessage.value = err.message
+  } finally {
+    actionLoading.value = false
+  }
+}
+
+const cancelGame = async (id: string) => {
+  if (!confirm('¿Desea marcar este partido como cancelado?')) return
+  actionLoading.value = true
+  try {
+    const { error } = await supabase
+      .from('games')
+      .update({ status: 'cancelled' })
+      .eq('id', id)
+    if (error) throw error
+    successMessage.value = 'Partido marcado como cancelado.'
+    await loadGames()
+  } catch (err: any) {
+    errorMessage.value = err.message
+  } finally {
+    actionLoading.value = false
+  }
+}
+
+const deleteGame = async (g: GameRow) => {
+  if (!confirm(`¿Desea eliminar permanentemente el partido contra ${g.opponent}? Esta acción no se puede deshacer.`)) {
+    return
+  }
+  actionLoading.value = true
+  try {
+    const { error } = await supabase
+      .from('games')
+      .delete()
+      .eq('id', g.id)
+    if (error) throw error
+    successMessage.value = 'Partido eliminado del calendario.'
+    await loadGames()
+  } catch (err: any) {
+    errorMessage.value = err.message
+  } finally {
+    actionLoading.value = false
+  }
+}
+
+onMounted(() => {
+  loadGames()
+})
+</script>
+
+<template>
+  <div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-800">
+      <div>
+        <h3 class="text-lg font-bold font-title text-white flex items-center gap-2">
+          <i class="bi bi-calendar-event text-emerald-400"></i>
+          Calendario de Partidos
+        </h3>
+        <p class="text-xs text-slate-400 mt-1">
+          Programación de partidos oficiales, sedes, estados y marcadores.
+        </p>
+      </div>
+      <BaseButton variant="primary" size="sm" @click="openNewGame">
+        <i class="bi bi-calendar-plus mr-1.5"></i> Programar Partido
+      </BaseButton>
+    </div>
+
+    <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-200 rounded-xl text-sm flex items-center justify-between">
+      <span>{{ errorMessage }}</span>
+      <button @click="errorMessage = null" class="text-red-400 hover:text-red-200">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+    <div v-if="successMessage" class="p-4 bg-emerald-950/60 border border-emerald-800 text-emerald-200 rounded-xl text-sm flex items-center justify-between">
+      <span>{{ successMessage }}</span>
+      <button @click="successMessage = null" class="text-emerald-400 hover:text-emerald-200">
+        <i class="bi bi-x-lg"></i>
+      </button>
+    </div>
+
+    <BaseTable
+      :columns="columns"
+      :data="(games as any[])"
+      :loading="loading"
+      empty-text="No hay partidos registrados en el calendario. Haz clic en 'Programar Partido' para registrar el primero."
+    >
+      <template #cell-opponent="{ row }">
+        <span class="font-bold text-white">Guaiqueríes vs {{ (row as GameRow).opponent }}</span>
+      </template>
+
+      <template #cell-game_date="{ row }">
+        <span class="text-xs text-slate-300">{{ (row as GameRow).game_date ? formatCaracas((row as GameRow).game_date) : '' }}</span>
+      </template>
+
+      <template #cell-is_home="{ row }">
+        <span class="text-xs font-semibold px-2 py-0.5 rounded-full bg-slate-800 border border-slate-700 text-slate-300">
+          {{ (row as GameRow).is_home ? 'Casa (La Asunción)' : 'Visitante' }}
+        </span>
+      </template>
+
+      <template #cell-score="{ row }">
+        <span v-if="(row as GameRow).status === 'scheduled'" class="text-xs text-slate-500 font-mono italic">
+          Por disputar
+        </span>
+        <span v-else class="font-mono text-sm font-bold text-emerald-400">
+          {{ (row as GameRow).our_score }} - {{ (row as GameRow).opponent_score }}
+        </span>
+      </template>
+
+      <template #cell-status="{ row }">
+        <BaseBadge :variant="(row as GameRow).status === 'finished' ? 'success' : (row as GameRow).status === 'live' ? 'danger' : (row as GameRow).status === 'scheduled' ? 'accent' : 'soft'">
+          {{ (row as GameRow).status === 'finished' ? 'Finalizado' : (row as GameRow).status === 'live' ? 'EN VIVO' : (row as GameRow).status === 'scheduled' ? 'Programado' : 'Cancelado' }}
+        </BaseBadge>
+      </template>
+
+      <template #cell-actions="{ row }">
+        <div class="flex items-center justify-end gap-1.5">
+          <button
+            @click="editGame(row as GameRow)"
+            class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors"
+            title="Editar / Actualizar Marcador"
+          >
+            <i class="bi bi-pencil"></i>
+          </button>
+          <button
+            v-if="(row as GameRow).status !== 'cancelled'"
+            @click="cancelGame((row as GameRow).id)"
+            class="p-1.5 text-amber-400 hover:bg-amber-950/60 rounded-lg transition-colors"
+            title="Cancelar Partido"
+          >
+            <i class="bi bi-calendar-x"></i>
+          </button>
+          <button
+            @click="deleteGame(row as GameRow)"
+            class="p-1.5 text-red-400 hover:bg-red-950/60 rounded-lg transition-colors"
+            title="Eliminar permanentemente"
+          >
+            <i class="bi bi-trash"></i>
+          </button>
+        </div>
+      </template>
+    </BaseTable>
+
+    <!-- Modal Game Editor -->
+    <BaseModal
+      v-if="showEditorModal"
+      :is-open="showEditorModal"
+      :title="gameForm.id ? 'Editar Partido / Cargar Marcador' : 'Programar Partido en Calendario'"
+      @close="showEditorModal = false"
+    >
+      <div class="space-y-4">
+        <BaseInput label="Equipo Rival" v-model="gameForm.opponent" placeholder="Ej: Cocodrilos de Caracas" />
+        <BaseInput label="Sede / Gimnasio" v-model="gameForm.location" placeholder="Ej: Gimnasio Ciudad de La Asunción" />
+        <BaseInput label="Fecha y Hora del Partido (GMT-4 Hora Caracas)" type="datetime-local" v-model="gameForm.game_date" />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Condición de Sede</label>
+            <select
+              :value="gameForm.is_home ? 'home' : 'away'"
+              @change="gameForm.is_home = ($event.target as HTMLSelectElement).value === 'home'"
+              class="w-full bg-slate-950 border border-slate-800 text-white rounded-xl p-2.5 text-sm focus:outline-none focus:border-emerald-500"
+            >
+              <option value="home">Local (Casa - La Asunción)</option>
+              <option value="away">Visitante</option>
+            </select>
+          </div>
+
+          <BaseSelect
+            label="Estado del Partido"
+            v-model="gameForm.status"
+            :options="statusOptions"
+          />
+        </div>
+
+        <div class="p-4 bg-slate-950 border border-slate-800 rounded-xl space-y-3">
+          <label class="block text-xs font-semibold text-slate-300">Puntaje / Marcador (Opcional si aún no se disputa)</label>
+          <div class="grid grid-cols-2 gap-4">
+            <BaseInput label="Guaiqueríes" type="number" v-model="gameForm.our_score" placeholder="0" />
+            <BaseInput label="Rival" type="number" v-model="gameForm.opponent_score" placeholder="0" />
+          </div>
+        </div>
+      </div>
+
+      <template #footer>
+        <div class="flex items-center justify-end gap-3">
+          <BaseButton variant="secondary" @click="showEditorModal = false">Cancelar</BaseButton>
+          <BaseButton variant="primary" :loading="actionLoading" @click="saveGame">Guardar Partido</BaseButton>
+        </div>
+      </template>
+    </BaseModal>
+  </div>
+</template>
