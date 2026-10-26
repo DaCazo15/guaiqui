@@ -32,7 +32,11 @@ const initScanner = async () => {
     }
   } catch (err: any) {
     console.error('Error listing cameras:', err)
-    errorMessage.value = 'Permiso de cámara denegado o no disponible.'
+    if (err?.name === 'NotAllowedError' || String(err).includes('Permission denied')) {
+      errorMessage.value = 'Permiso de cámara bloqueado. Activa el permiso de cámara en el icono de candado o configuración del navegador.'
+    } else {
+      errorMessage.value = 'Permiso de cámara denegado o no disponible en este dispositivo.'
+    }
   }
 }
 
@@ -155,8 +159,8 @@ onUnmounted(() => {
         <i class="bi bi-camera-video-off text-3xl text-red-400 mb-2"></i>
         <p class="text-xs text-red-300 font-medium mb-3">{{ errorMessage }}</p>
         <button
-          @click="startScanning"
-          class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg"
+          @click="initScanner"
+          class="px-3 py-1.5 bg-slate-800 hover:bg-slate-700 text-white text-xs font-semibold rounded-lg transition-colors cursor-pointer"
         >
           Reintentar Cámara
         </button>
