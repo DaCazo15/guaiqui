@@ -27,6 +27,15 @@ const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 
 const showModal = ref(false)
+const failedImages = ref<Record<string, boolean>>({})
+
+const getInitials = (name: string) => {
+  if (!name) return 'GM'
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 1) return parts[0].substring(0, 2).toUpperCase()
+  return (parts[0][0] + parts[1][0]).toUpperCase()
+}
+
 const form = ref({
   id: '',
   name: '',
@@ -249,11 +258,18 @@ onMounted(() => {
 
     <BaseTable :columns="columns" :data="legends" :loading="loading" empty-text="No hay leyendas registradas">
       <template #cell-image_url="{ row }">
-        <img
-          :src="(row as LegendRow).image_url || 'https://placehold.co/100x100?text=Guaiqueri'"
-          class="w-10 h-10 rounded-full object-cover border border-slate-700 bg-slate-800 mx-auto"
-          :alt="(row as LegendRow).name"
-        />
+        <div class="w-10 h-10 rounded-full overflow-hidden border border-slate-700 bg-slate-800 mx-auto flex items-center justify-center shrink-0 shadow-inner">
+          <img
+            v-if="(row as LegendRow).image_url && !failedImages[(row as LegendRow).id]"
+            :src="(row as LegendRow).image_url || undefined"
+            class="w-full h-full object-cover"
+            :alt="(row as LegendRow).name"
+            @error="failedImages[(row as LegendRow).id] = true"
+          />
+          <span v-else class="text-xs font-bold text-emerald-400 font-display">
+            {{ getInitials((row as LegendRow).name) }}
+          </span>
+        </div>
       </template>
 
       <template #cell-name="{ row }">

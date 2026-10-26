@@ -890,6 +890,13 @@ export type Database = {
           cta_secondary_text: string
           cta_secondary_url: string
           dark_mode_enabled: boolean
+          footer_brand_description: string | null
+          footer_copyright: string | null
+          footer_disclaimer: string | null
+          footer_location: string | null
+          footer_support_hours: string | null
+          footer_support_text: string | null
+          footer_support_url: string | null
           hero_badge_text: string | null
           hero_card_color: string | null
           hero_carousel_enabled: boolean
@@ -909,6 +916,13 @@ export type Database = {
           cta_secondary_text?: string
           cta_secondary_url?: string
           dark_mode_enabled?: boolean
+          footer_brand_description?: string | null
+          footer_copyright?: string | null
+          footer_disclaimer?: string | null
+          footer_location?: string | null
+          footer_support_hours?: string | null
+          footer_support_text?: string | null
+          footer_support_url?: string | null
           hero_badge_text?: string | null
           hero_card_color?: string | null
           hero_carousel_enabled?: boolean
@@ -928,6 +942,13 @@ export type Database = {
           cta_secondary_text?: string
           cta_secondary_url?: string
           dark_mode_enabled?: boolean
+          footer_brand_description?: string | null
+          footer_copyright?: string | null
+          footer_disclaimer?: string | null
+          footer_location?: string | null
+          footer_support_hours?: string | null
+          footer_support_text?: string | null
+          footer_support_url?: string | null
           hero_badge_text?: string | null
           hero_card_color?: string | null
           hero_carousel_enabled?: boolean

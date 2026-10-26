@@ -1,6 +1,54 @@
 <script setup lang="ts">
+import { computed } from 'vue'
 import { PearlIcon } from '@guaiqui/ui'
 import BandanaSeparator from './BandanaSeparator.vue'
+
+const supabase = useSupabaseClient()
+
+interface SocialLink {
+  id: string
+  platform: string
+  label: string
+  url: string
+  icon: string
+}
+
+const { data: footerData } = await useAsyncData('landing-footer-data', async () => {
+  try {
+    const [settingsRes, socialRes] = await Promise.all([
+      supabase
+        .from('landing_settings')
+        .select('footer_brand_description, footer_location, footer_support_text, footer_support_hours, footer_support_url, footer_copyright, footer_disclaimer')
+        .limit(1)
+        .single(),
+      supabase
+        .from('social_links')
+        .select('id, platform, label, url, icon')
+        .eq('is_published', true)
+        .order('order_index', { ascending: true })
+    ])
+
+    return {
+      settings: settingsRes.data || null,
+      socialLinks: (socialRes.data as SocialLink[]) || []
+    }
+  } catch (_e) {
+    return {
+      settings: null,
+      socialLinks: []
+    }
+  }
+})
+
+const brandDesc = computed(() => footerData.value?.settings?.footer_brand_description || 'Plataforma oficial de fidelización de Guaiqueríes de Margarita. Fan Zone 2026.')
+const locationText = computed(() => footerData.value?.settings?.footer_location || 'Gimnasio Ciudad de La Asunción, Nueva Esparta')
+const supportText = computed(() => footerData.value?.settings?.footer_support_text || '¿Tienes alguna duda sobre tus puntos o tu canje?')
+const supportHours = computed(() => footerData.value?.settings?.footer_support_hours || 'Atención presencial en días de juego: 4:00 PM a 9:00 PM.')
+const supportUrl = computed(() => footerData.value?.settings?.footer_support_url || '/contacto')
+const copyrightText = computed(() => footerData.value?.settings?.footer_copyright || '© 2026 Guaiqueríes de Margarita. Todos los derechos reservados.')
+const disclaimerText = computed(() => footerData.value?.settings?.footer_disclaimer || 'Sin pagos con dinero real • 100% Fidelización Gratuita')
+
+const socialList = computed(() => footerData.value?.socialLinks || [])
 </script>
 
 <template>
@@ -8,7 +56,7 @@ import BandanaSeparator from './BandanaSeparator.vue'
     <BandanaSeparator />
 
     <div class="max-w-6xl mx-auto px-4 sm:px-8 py-12 grid grid-cols-1 md:grid-cols-4 gap-8">
-      <!-- Col 1: Brand -->
+      <!-- Col 1: Brand & Redes -->
       <div class="space-y-4 md:col-span-1">
         <NuxtLink to="/" class="flex items-center gap-2 text-white font-display font-extrabold text-xl tracking-tight uppercase">
           <span class="w-8 h-8 rounded-full bg-guaiqui-primary text-white flex items-center justify-center font-bold text-sm">
@@ -21,12 +69,27 @@ import BandanaSeparator from './BandanaSeparator.vue'
         </NuxtLink>
 
         <p class="text-xs text-slate-400 leading-relaxed">
-          Plataforma oficial de fidelización de Guaiqueríes de Margarita. Fan Zone 2026.
+          {{ brandDesc }}
         </p>
 
         <div class="text-xs text-emerald-400 font-semibold flex items-center gap-1.5">
           <i class="bi bi-geo-alt-fill"></i>
-          <span>Gimnasio Ciudad de La Asunción, Nueva Esparta</span>
+          <span>{{ locationText }}</span>
+        </div>
+
+        <!-- Social Media Icons Row -->
+        <div v-if="socialList.length > 0" class="pt-2 flex items-center gap-2 flex-wrap">
+          <a
+            v-for="s in socialList"
+            :key="s.id"
+            :href="s.url"
+            target="_blank"
+            rel="noopener noreferrer"
+            :title="s.label"
+            class="w-8 h-8 rounded-lg bg-slate-900 border border-slate-800 hover:border-emerald-500 hover:text-emerald-400 text-slate-300 flex items-center justify-center text-sm transition-all duration-150 shadow-sm"
+          >
+            <i :class="['bi', s.icon || 'bi-link-45deg']"></i>
+          </a>
         </div>
       </div>
 
@@ -66,13 +129,13 @@ import BandanaSeparator from './BandanaSeparator.vue'
           Atención al Fanático
         </h4>
         <p class="text-xs text-slate-300">
-          ¿Tienes alguna duda sobre tus puntos o tu canje?
+          {{ supportText }}
         </p>
-        <NuxtLink to="/contacto" class="inline-block text-xs font-semibold text-emerald-400 hover:underline">
+        <NuxtLink :to="supportUrl" class="inline-block text-xs font-semibold text-emerald-400 hover:underline">
           Contactar con Soporte →
         </NuxtLink>
         <div class="pt-2 text-[11px] text-slate-400">
-          Atención presencial en días de juego: 4:00 PM a 9:00 PM.
+          {{ supportHours }}
         </div>
       </div>
     </div>
@@ -80,8 +143,8 @@ import BandanaSeparator from './BandanaSeparator.vue'
     <!-- Subfooter copyright -->
     <div class="border-t border-slate-900 bg-slate-950 py-4 px-4 text-center text-xs text-slate-500">
       <div class="max-w-6xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-2">
-        <span>© 2026 Guaiqueríes de Margarita. Todos los derechos reservados.</span>
-        <span>Sin pagos con dinero real • 100% Fidelización Gratuita</span>
+        <span>{{ copyrightText }}</span>
+        <span>{{ disclaimerText }}</span>
       </div>
     </div>
   </footer>

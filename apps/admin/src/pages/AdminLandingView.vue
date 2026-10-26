@@ -6,8 +6,9 @@ import LandingHeroTab from '../components/landing-admin/LandingHeroTab.vue'
 import LandingCarouselTab from '../components/landing-admin/LandingCarouselTab.vue'
 import LandingCtaTab from '../components/landing-admin/LandingCtaTab.vue'
 import LandingWelcomeModalTab from '../components/landing-admin/LandingWelcomeModalTab.vue'
+import LandingFooterTab from '../components/landing-admin/LandingFooterTab.vue'
 
-type LandingTab = 'hero' | 'carousel' | 'cta' | 'popup'
+type LandingTab = 'hero' | 'carousel' | 'cta' | 'popup' | 'footer'
 
 const route = useRoute()
 const router = useRouter()
@@ -18,7 +19,8 @@ const tabs = [
   { id: 'hero' as const, label: 'Hero & Anuncios', icon: 'bi-layout-text-window-reverse', description: 'Cabecera, textos, distintivos y cinta de anuncios' },
   { id: 'carousel' as const, label: 'Carrusel Landing', icon: 'bi-images', description: 'Diapositivas y carrusel interactivo' },
   { id: 'cta' as const, label: 'Llamados a la Acción (CTA)', icon: 'bi-megaphone-fill', description: 'Bloques de conversión y frases de impacto' },
-  { id: 'popup' as const, label: 'Pop-up Bienvenida', icon: 'bi-window-stack', description: 'Modal inicial de bienvenida para fanáticos' }
+  { id: 'popup' as const, label: 'Pop-up Bienvenida', icon: 'bi-window-stack', description: 'Modal inicial de bienvenida para fanáticos' },
+  { id: 'footer' as const, label: 'Pie de Página (Footer)', icon: 'bi-layout-sidebar-inset-reverse', description: 'Redes sociales, textos legales y soporte' }
 ]
 
 const setTab = (tab: LandingTab) => {
@@ -28,10 +30,12 @@ const setTab = (tab: LandingTab) => {
 
 const syncTabFromRoute = () => {
   const queryTab = route.query.tab as string
-  if (queryTab && ['hero', 'carousel', 'cta', 'popup'].includes(queryTab)) {
+  if (queryTab && ['hero', 'carousel', 'cta', 'popup', 'footer'].includes(queryTab)) {
     activeTab.value = queryTab as LandingTab
   } else if (route.query.tab === 'anuncios') {
     activeTab.value = 'hero'
+  } else if (route.query.tab === 'pie' || route.query.tab === 'redes') {
+    activeTab.value = 'footer'
   }
 }
 
@@ -61,7 +65,7 @@ watch(() => route.query.tab, () => {
       </div>
 
       <!-- Dynamic Tab Buttons -->
-      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 p-1.5 bg-slate-950/80 border border-slate-800/80 rounded-2xl shadow-inner">
+      <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-2.5 p-1.5 bg-slate-950/80 border border-slate-800/80 rounded-2xl shadow-inner">
         <button
           v-for="tab in tabs"
           :key="tab.id"
@@ -90,6 +94,7 @@ watch(() => route.query.tab, () => {
         <LandingCarouselTab v-else-if="activeTab === 'carousel'" />
         <LandingCtaTab v-else-if="activeTab === 'cta'" />
         <LandingWelcomeModalTab v-else-if="activeTab === 'popup'" />
+        <LandingFooterTab v-else-if="activeTab === 'footer'" />
       </div>
     </div>
   </AdminLayout>
