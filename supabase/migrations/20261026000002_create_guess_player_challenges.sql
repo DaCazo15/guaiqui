@@ -54,7 +54,7 @@ CREATE POLICY "Admin manages guess_player_challenges"
     ON public.guess_player_challenges
     FOR ALL
     TO authenticated
-    USING (public.is_admin());
+    USING (public.is_admin_check());
 
 CREATE POLICY "Authenticated users view published guess_player_challenges"
     ON public.guess_player_challenges
@@ -73,7 +73,7 @@ CREATE POLICY "Admin manages all guess_player_votes"
     ON public.guess_player_votes
     FOR ALL
     TO authenticated
-    USING (public.is_admin());
+    USING (public.is_admin_check());
 
 -- RPC: Get active "¿Quién es?" challenges hiding target player until voted
 CREATE OR REPLACE FUNCTION public.get_active_who_is_challenges()
