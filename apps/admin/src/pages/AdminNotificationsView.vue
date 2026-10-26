@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import NotificationTemplateCard from '../components/notifications/NotificationTemplateCard.vue'
 import NotificationTemplateEditModal from '../components/notifications/NotificationTemplateEditModal.vue'
+import NotificationEmailWebhookCard from '../components/notifications/NotificationEmailWebhookCard.vue'
 import { supabase } from '../lib/supabase'
 import type { NotificationTemplate } from '@guaiqui/shared'
 
@@ -133,6 +134,9 @@ onMounted(() => {
           Las notificaciones del sistema son eventos automáticos desencadenados por el ciclo de vida del club (publicación de trivias, fechas de cierre, liberación o rechazo de perlitas retenidas). En esta sección puedes personalizar el contenido, títulos y variables de cada mensaje sin alterar la lógica de negocio.
         </div>
       </div>
+
+      <!-- Email Channel & Webhook Configuration -->
+      <NotificationEmailWebhookCard />
 
       <!-- Loading State -->
       <div v-if="loading" class="grid grid-cols-1 md:grid-cols-2 gap-4">
