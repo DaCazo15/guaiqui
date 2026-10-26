@@ -55,7 +55,12 @@ const startScanning = async () => {
       selectedCameraId.value,
       {
         fps: 10,
-        qrbox: { width: 250, height: 250 }
+        aspectRatio: 1.0,
+        qrbox: (viewfinderWidth: number, viewfinderHeight: number) => {
+          const edge = Math.min(viewfinderWidth, viewfinderHeight)
+          const size = Math.max(160, Math.floor(edge * 0.72))
+          return { width: size, height: size }
+        }
       },
       (decodedText) => {
         const now = Date.now()
@@ -152,10 +157,10 @@ onUnmounted(() => {
     </div>
 
     <!-- Scanner container viewport -->
-    <div class="relative w-full aspect-square max-w-sm mx-auto bg-slate-950 rounded-2xl overflow-hidden border-2 border-dashed border-emerald-500/30 flex items-center justify-center">
+    <div class="relative w-full aspect-square max-w-sm mx-auto bg-slate-950 rounded-2xl overflow-hidden border-2 border-dashed border-emerald-500/30">
       <div :id="scannerContainerId" class="w-full h-full"></div>
 
-      <div v-if="errorMessage" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-6 text-center">
+      <div v-if="errorMessage" class="absolute inset-0 bg-slate-950/90 flex flex-col items-center justify-center p-6 text-center z-10">
         <i class="bi bi-camera-video-off text-3xl text-red-400 mb-2"></i>
         <p class="text-xs text-red-300 font-medium mb-3">{{ errorMessage }}</p>
         <button
@@ -172,3 +177,44 @@ onUnmounted(() => {
     </p>
   </div>
 </template>
+
+<style scoped>
+:deep(#qr-reader-container) {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  border: none !important;
+  padding: 0 !important;
+  overflow: hidden !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+:deep(#qr-reader-container > div) {
+  position: relative !important;
+  width: 100% !important;
+  height: 100% !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+
+:deep(#qr-reader-container video) {
+  width: 100% !important;
+  height: 100% !important;
+  object-fit: cover !important;
+  object-position: center center !important;
+  display: block !important;
+  border-radius: 0.875rem !important;
+}
+
+:deep(#qr-reader-container canvas) {
+  max-width: 100% !important;
+  max-height: 100% !important;
+}
+
+:deep(#qr-shaded-region) {
+  border-color: rgba(15, 23, 42, 0.65) !important;
+}
+</style>
