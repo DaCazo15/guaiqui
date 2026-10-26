@@ -2,11 +2,13 @@
 import { ref, onMounted } from 'vue'
 import { BaseCard, BaseButton, PearlAmount } from '@guaiqui/ui'
 import { formatCaracas } from '@guaiqui/shared'
-import type { ActiveWhoIsChallenge } from '@guaiqui/shared'
+import type { ActiveWhoIsChallenge, ActiveTriviaPoll } from '@guaiqui/shared'
 import { useTriviaStore } from '~/stores/trivias'
 import { useAuthStore } from '~/stores/auth'
 import TriviaPlayButton from '~/components/app/dashboard/TriviaPlayButton.vue'
 import WhoIsGameModal from '~/components/trivia/WhoIsGameModal.vue'
+import PollsListSection from '~/components/trivia/PollsListSection.vue'
+import PollVoteModal from '~/components/trivia/PollVoteModal.vue'
 
 definePageMeta({
   layout: 'app',
@@ -15,14 +17,14 @@ definePageMeta({
 
 useSeoMeta({
   title: 'Trivias & Reto «¿Quién es?» — Guaiqueríes de Margarita',
-  description: 'Participa en las trivias oficiales y adivina el jugador por su silueta o dorsal para ganar perlitas.',
+  description: 'Participa en las trivias oficiales, adivina el jugador por su silueta o dorsal y predice resultados de partidos para ganar perlitas.',
 })
 
 const supabase = useSupabaseClient()
 const triviaStore = useTriviaStore()
 const authStore = useAuthStore()
 
-type MainTab = 'questions' | 'who_is'
+type MainTab = 'questions' | 'who_is' | 'polls'
 const activeTab = ref<MainTab>('questions')
 
 // Retos ¿Quién es?
@@ -32,10 +34,17 @@ const whoIsLoading = ref(false)
 const selectedWhoIsChallenge = ref<ActiveWhoIsChallenge | null>(null)
 const isWhoIsModalOpen = ref(false)
 
+// Encuestas y Predicciones
+const polls = ref<ActiveTriviaPoll[]>([])
+const pollsLoading = ref(false)
+const selectedPoll = ref<ActiveTriviaPoll | null>(null)
+const isPollModalOpen = ref(false)
+
 onMounted(async () => {
   await Promise.all([
     triviaStore.fetchTrivias(),
-    loadWhoIsData()
+    loadWhoIsData(),
+    loadPollsData()
   ])
 })
 
@@ -58,6 +67,34 @@ async function loadWhoIsData() {
   } finally {
     whoIsLoading.value = false
   }
+}
+
+async function loadPollsData() {
+  pollsLoading.value = true
+  try {
+    const { data, error } = await supabase.rpc('get_active_trivia_polls')
+    if (error) throw error
+    polls.value = data || []
+  } catch (err) {
+    console.error('Error cargando encuestas de partido:', err)
+  } finally {
+    pollsLoading.value = false
+  }
+}
+
+function openPoll(poll: ActiveTriviaPoll) {
+  selectedPoll.value = poll
+  isPollModalOpen.value = true
+}
+
+async function onPollVoted({ pollId, optionId }: { pollId: string; optionId: string }) {
+  await loadPollsData()
+  // Actualizar también selectedPoll si el modal sigue abierto
+  if (selectedPoll.value && selectedPoll.value.id === pollId) {
+    const updated = polls.value.find(p => p.id === pollId)
+    if (updated) selectedPoll.value = updated
+  }
+  authStore.fetchProfile()
 }
 
 function openWhoIsChallenge(challenge: ActiveWhoIsChallenge) {
@@ -129,8 +166,8 @@ function getEstimatedReward(t: any): number {
       </div>
     </div>
 
-    <!-- Pestañas Principales (Trivias Clásicas vs ¿Quién es?) -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 p-1.5 bg-slate-100 rounded-2xl border border-guaiqui-border shadow-inner">
+    <!-- Pestañas Principales (Trivias Clásicas vs ¿Quién es? vs Encuestas) -->
+    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-1.5 bg-slate-100 rounded-2xl border border-guaiqui-border shadow-inner">
       <button
         type="button"
         @click="activeTab = 'questions'"
@@ -141,13 +178,13 @@ function getEstimatedReward(t: any): number {
             : 'text-guaiqui-text-muted hover:text-guaiqui-text hover:bg-white/80'
         ]"
       >
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-lg" :class="activeTab === 'questions' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'">
+        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0" :class="activeTab === 'questions' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'">
           <i class="bi bi-question-diamond-fill"></i>
         </div>
-        <div>
-          <div class="font-display font-bold text-sm tracking-wide uppercase">Trivias de Preguntas</div>
-          <div class="text-[11px]" :class="activeTab === 'questions' ? 'text-emerald-100' : 'text-slate-500'">
-            Cuestionarios clásicos por tiempo limitado
+        <div class="min-w-0">
+          <div class="font-display font-bold text-sm tracking-wide uppercase truncate">Trivias de Preguntas</div>
+          <div class="text-[11px] truncate" :class="activeTab === 'questions' ? 'text-emerald-100' : 'text-slate-500'">
+            Cuestionarios por tiempo
           </div>
         </div>
       </button>
@@ -162,18 +199,44 @@ function getEstimatedReward(t: any): number {
             : 'text-guaiqui-text-muted hover:text-guaiqui-text hover:bg-white/80'
         ]"
       >
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-lg" :class="activeTab === 'who_is' ? 'bg-emerald-500/30 text-emerald-400' : 'bg-slate-200 text-slate-600'">
+        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0" :class="activeTab === 'who_is' ? 'bg-emerald-500/30 text-emerald-400' : 'bg-slate-200 text-slate-600'">
           <i class="bi bi-person-bounding-box"></i>
         </div>
-        <div>
+        <div class="min-w-0">
           <div class="font-display font-bold text-sm tracking-wide uppercase flex items-center gap-2">
-            <span>¿Quién es?</span>
-            <span class="text-[9px] px-2 py-0.2 rounded-full font-sans font-bold uppercase tracking-wider" :class="activeTab === 'who_is' ? 'bg-emerald-500 text-slate-950' : 'bg-emerald-100 text-emerald-800'">
+            <span class="truncate">«¿Quién es?»</span>
+            <span class="text-[9px] px-1.5 py-0.2 rounded-full font-sans font-bold uppercase tracking-wider shrink-0" :class="activeTab === 'who_is' ? 'bg-emerald-500 text-slate-950' : 'bg-emerald-100 text-emerald-800'">
               Reto
             </span>
           </div>
-          <div class="text-[11px]" :class="activeTab === 'who_is' ? 'text-emerald-300' : 'text-slate-500'">
-            Adivina por silueta o dorsal con conteo de 5s
+          <div class="text-[11px] truncate" :class="activeTab === 'who_is' ? 'text-emerald-300' : 'text-slate-500'">
+            Siluetas y dorsales
+          </div>
+        </div>
+      </button>
+
+      <button
+        type="button"
+        @click="activeTab = 'polls'"
+        :class="[
+          'px-4 py-3 rounded-xl text-left transition-all duration-200 flex items-center gap-3',
+          activeTab === 'polls'
+            ? 'bg-gradient-to-r from-emerald-800 to-slate-900 text-white shadow-md ring-1 ring-emerald-500/50'
+            : 'text-guaiqui-text-muted hover:text-guaiqui-text hover:bg-white/80'
+        ]"
+      >
+        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0" :class="activeTab === 'polls' ? 'bg-emerald-500/30 text-emerald-400' : 'bg-slate-200 text-slate-600'">
+          <i class="bi bi-bar-chart-fill"></i>
+        </div>
+        <div class="min-w-0">
+          <div class="font-display font-bold text-sm tracking-wide uppercase flex items-center gap-2">
+            <span class="truncate">Encuestas</span>
+            <span class="text-[9px] px-1.5 py-0.2 rounded-full font-sans font-bold uppercase tracking-wider shrink-0" :class="activeTab === 'polls' ? 'bg-amber-400 text-slate-950' : 'bg-amber-100 text-amber-800'">
+              Partidos
+            </span>
+          </div>
+          <div class="text-[11px] truncate" :class="activeTab === 'polls' ? 'text-emerald-200' : 'text-slate-500'">
+            Predicciones en vivo
           </div>
         </div>
       </button>
@@ -364,6 +427,14 @@ function getEstimatedReward(t: any): number {
       </div>
     </div>
 
+    <!-- PESTAÑA 3: ENCUESTAS & PREDICCIONES -->
+    <PollsListSection
+      v-else-if="activeTab === 'polls'"
+      :polls="polls"
+      :loading="pollsLoading"
+      @select-poll="openPoll"
+    />
+
     <!-- Modal Interactivo "¿Quién es?" -->
     <WhoIsGameModal
       :is-open="isWhoIsModalOpen"
@@ -371,6 +442,14 @@ function getEstimatedReward(t: any): number {
       :players="rosterPlayers"
       @close="isWhoIsModalOpen = false"
       @voted="onWhoIsVoted"
+    />
+
+    <!-- Modal Interactivo Encuestas de Partido -->
+    <PollVoteModal
+      :is-open="isPollModalOpen"
+      :poll="selectedPoll"
+      @close="isPollModalOpen = false"
+      @voted="onPollVoted"
     />
   </div>
 </template>

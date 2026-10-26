@@ -256,4 +256,45 @@ describe('Bulk Import Configuration and Validation', () => {
       expect(insertedPayloads[0].dorsal_number).toBe(10)
     })
   })
+
+  describe('polls config', () => {
+    it('validates required fields: titulo and opciones', () => {
+      const config = BULK_CONFIGS.polls
+      expect(config.validateRow({}, 0).valid).toBe(false)
+      expect(config.validateRow({ titulo: '¿Quién será MVP?' }, 0).valid).toBe(false)
+      expect(config.validateRow({ titulo: '¿Quién será MVP?', opciones: 'Solo una' }, 0).valid).toBe(false)
+      expect(config.validateRow({ titulo: '¿Quién será MVP?', opciones: 'Pedro; Heissler' }, 0).valid).toBe(true)
+    })
+
+    it('processes rows correctly calling admin_upsert_trivia_poll RPC', async () => {
+      const config = BULK_CONFIGS.polls
+      let rpcCalls: any[] = []
+
+      const mockSupabase = {
+        rpc: async (fn: string, args: any) => {
+          rpcCalls.push({ fn, args })
+          return { data: { id: 'poll-123' }, error: null }
+        }
+      }
+
+      const result = await config.processRows([
+        {
+          titulo: '¿Quién meterá más triples?',
+          descripcion: 'Elige tu favorito',
+          opciones: 'Chourio; Guillent; Carrera',
+          perlitas: 60,
+          estado: 'publicado'
+        }
+      ], mockSupabase)
+
+      expect(result.successCount).toBe(1)
+      expect(rpcCalls).toHaveLength(1)
+      expect(rpcCalls[0].fn).toBe('admin_upsert_trivia_poll')
+      expect(rpcCalls[0].args.p_poll.title).toBe('¿Quién meterá más triples?')
+      expect(rpcCalls[0].args.p_poll.reward_pearls).toBe(60)
+      expect(rpcCalls[0].args.p_options).toHaveLength(3)
+      expect(rpcCalls[0].args.p_options[0].label).toBe('Chourio')
+    })
+  })
 })
+

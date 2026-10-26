@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx'
 import { caracasInputToISO } from '@guaiqui/shared'
 
-export type BulkImportType = 'trivias' | 'players' | 'staff' | 'games' | 'products' | 'who_is'
+export type BulkImportType = 'trivias' | 'players' | 'staff' | 'games' | 'products' | 'who_is' | 'polls'
 
 export interface BulkColumnDef {
   key: string
@@ -678,6 +678,99 @@ export const BULK_CONFIGS: Record<BulkImportType, BulkImportConfig> = {
       return {
         successCount: payloads.length,
         message: `${payloads.length} reto(s) de "¿Quién es?" programado(s) exitosamente.`
+      }
+    }
+  },
+
+  // 7. ENCUESTAS / PREDICCIONES
+  polls: {
+    type: 'polls',
+    title: 'Carga Masiva de Encuestas & Predicciones',
+    entityName: 'Encuestas',
+    templateFileName: 'plantilla_encuestas_guaiqueries',
+    columns: [
+      { key: 'titulo', label: 'Pregunta / Título', required: true, example: '¿Quién será el MVP del partido?' },
+      { key: 'descripcion', label: 'Descripción (Opcional)', example: 'Vota antes de que termine el primer cuarto.' },
+      { key: 'opciones', label: 'Opciones (Separadas por punto y coma ;)', required: true, example: 'Pedro Chourio; Heissler Guillent; Michael Carrera; Otro' },
+      { key: 'perlitas', label: 'Perlitas de Premio', example: 50 },
+      { key: 'fecha_inicio', label: 'Fecha Inicio (YYYY-MM-DD HH:MM)', example: '2026-05-10 18:00' },
+      { key: 'fecha_cierre', label: 'Fecha Cierre (YYYY-MM-DD HH:MM)', example: '2026-05-10 21:00' },
+      { key: 'estado', label: 'Estado (publicado/borrador)', example: 'publicado' }
+    ],
+    sampleData: [
+      {
+        titulo: '¿Quién será el MVP de la noche?',
+        descripcion: 'Elige tu jugador preferido antes de que termine la primera mitad.',
+        opciones: 'Pedro Chourio; Heissler Guillent; José Ascanio; Otro',
+        perlitas: 50,
+        fecha_inicio: '2026-05-10 18:00',
+        fecha_cierre: '2026-05-10 20:30',
+        estado: 'publicado'
+      },
+      {
+        titulo: '¿Cuántos triples anotará Guaiqueríes hoy?',
+        descripcion: 'Predicción perimetral del equipo insular.',
+        opciones: 'Menos de 8 triples; Entre 8 y 12 triples; Más de 12 triples',
+        perlitas: 40,
+        fecha_inicio: '2026-05-12 18:00',
+        fecha_cierre: '2026-05-12 19:30',
+        estado: 'publicado'
+      }
+    ],
+    validateRow: (row, index) => {
+      const errors: string[] = []
+      if (!row.titulo?.toString().trim()) {
+        errors.push(`Fila ${index + 1}: El título de la encuesta es obligatorio`)
+      }
+      const rawOpts = row.opciones?.toString().trim()
+      if (!rawOpts) {
+        errors.push(`Fila ${index + 1}: Debes especificar al menos dos opciones separadas por punto y coma (;)`)
+      } else {
+        const split = rawOpts.split(/[;,]/).map((s: string) => s.trim()).filter(Boolean)
+        if (split.length < 2) {
+          errors.push(`Fila ${index + 1}: La encuesta debe tener al menos 2 opciones (ej: Opción 1; Opción 2)`)
+        }
+      }
+      return { valid: errors.length === 0, errors }
+    },
+    processRows: async (rows, supabase) => {
+      let created = 0
+      for (const r of rows) {
+        const title = String(r.titulo).trim()
+        const desc = r.descripcion ? String(r.descripcion).trim() : null
+        const reward = r.perlitas ? Math.max(0, Number(r.perlitas)) : 50
+        const status = String(r.estado || 'publicado').trim().toLowerCase() === 'borrador' ? 'draft' : 'published'
+
+        const startsAt = r.fecha_inicio ? caracasInputToISO(String(r.fecha_inicio).trim()) : new Date().toISOString()
+        const closesAt = r.fecha_cierre ? caracasInputToISO(String(r.fecha_cierre).trim()) : new Date(Date.now() + 2 * 86400000).toISOString()
+
+        const rawOpts = String(r.opciones || '')
+        const optionLabels = rawOpts.split(/[;,]/).map((s: string) => s.trim()).filter(Boolean)
+        const optionsPayload = optionLabels.map((lbl: string, idx: number) => ({
+          label: lbl,
+          order_index: idx + 1
+        }))
+
+        const pollPayload = {
+          title,
+          description: desc,
+          reward_pearls: reward,
+          status,
+          starts_at: startsAt,
+          closes_at: closesAt
+        }
+
+        const { error } = await supabase.rpc('admin_upsert_trivia_poll', {
+          p_poll: pollPayload,
+          p_options: optionsPayload
+        })
+        if (error) throw error
+        created++
+      }
+
+      return {
+        successCount: created,
+        message: `${created} encuesta(s) de predicción creada(s) exitosamente.`
       }
     }
   }

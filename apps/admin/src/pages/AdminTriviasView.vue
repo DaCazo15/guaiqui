@@ -4,8 +4,9 @@ import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import TriviasQuestionsTab from '../components/trivia-admin/TriviasQuestionsTab.vue'
 import TriviasWhoIsTab from '../components/trivia-admin/TriviasWhoIsTab.vue'
+import TriviasPollsTab from '../components/trivia-admin/TriviasPollsTab.vue'
 
-type TriviaTab = 'questions' | 'who_is'
+type TriviaTab = 'questions' | 'who_is' | 'polls'
 
 const route = useRoute()
 const router = useRouter()
@@ -14,7 +15,8 @@ const activeTab = ref<TriviaTab>('questions')
 
 const tabs = [
   { id: 'questions' as const, label: 'Trivias de Preguntas', icon: 'bi-question-diamond-fill', description: 'Cuestionarios clásicos por tiempo y preguntas de opción múltiple' },
-  { id: 'who_is' as const, label: '¿Quién es?', icon: 'bi-person-bounding-box', description: 'Adivina el jugador por silueta o dorsal con conteo regresivo' }
+  { id: 'who_is' as const, label: '«¿Quién es?»', icon: 'bi-person-bounding-box', description: 'Adivina el jugador por silueta o dorsal con conteo regresivo' },
+  { id: 'polls' as const, label: 'Encuestas & Predicciones', icon: 'bi-bar-chart-fill', description: 'Predicciones de partido con respuesta incógnita hasta el final' }
 ]
 
 const setTab = (tab: TriviaTab) => {
@@ -24,12 +26,14 @@ const setTab = (tab: TriviaTab) => {
 
 const syncTabFromRoute = () => {
   const queryTab = route.query.tab as string
-  if (queryTab && ['questions', 'who_is'].includes(queryTab)) {
+  if (queryTab && ['questions', 'who_is', 'polls'].includes(queryTab)) {
     activeTab.value = queryTab as TriviaTab
   } else if (route.query.tab === 'quien-es' || route.query.tab === 'quien_es') {
     activeTab.value = 'who_is'
   } else if (route.query.tab === 'preguntas') {
     activeTab.value = 'questions'
+  } else if (route.query.tab === 'encuestas' || route.query.tab === 'predicciones') {
+    activeTab.value = 'polls'
   }
 }
 
@@ -53,13 +57,13 @@ watch(() => route.query.tab, () => {
             Gestión de Trivias y Juegos
           </h1>
           <p class="text-xs sm:text-sm text-slate-400 mt-1">
-            Administra los cuestionarios oficiales de la Tribu y los retos interactivos de «¿Quién es?» por silueta o dorsal.
+            Administra cuestionarios clásicos, retos de siluetas de «¿Quién es?» y encuestas de predicciones de partidos con resolución automática.
           </p>
         </div>
       </div>
 
       <!-- Dynamic Tab Buttons -->
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 p-1.5 bg-slate-950/80 border border-slate-800/80 rounded-2xl shadow-inner">
+      <div class="grid grid-cols-1 sm:grid-cols-3 gap-2.5 p-1.5 bg-slate-950/80 border border-slate-800/80 rounded-2xl shadow-inner">
         <button
           v-for="tab in tabs"
           :key="tab.id"
@@ -86,6 +90,7 @@ watch(() => route.query.tab, () => {
       <div class="pt-2">
         <TriviasQuestionsTab v-if="activeTab === 'questions'" />
         <TriviasWhoIsTab v-else-if="activeTab === 'who_is'" />
+        <TriviasPollsTab v-else-if="activeTab === 'polls'" />
       </div>
     </div>
   </AdminLayout>

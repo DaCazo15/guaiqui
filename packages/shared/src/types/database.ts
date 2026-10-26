@@ -563,6 +563,87 @@ export interface ActiveWhoIsChallenge {
   has_voted: boolean
 }
 
+export type TriviaPollStatus = 'draft' | 'published' | 'closed' | 'resolved' | 'cancelled'
+
+export interface TriviaPoll {
+  id: string
+  game_id?: string | null
+  title: string
+  description?: string | null
+  reward_pearls: number
+  status: TriviaPollStatus
+  starts_at: string
+  closes_at: string
+  correct_option_id?: string | null
+  resolved_at?: string | null
+  resolved_by?: string | null
+  created_at: string
+}
+
+export interface TriviaPollOption {
+  id: string
+  poll_id: string
+  label: string
+  player_id?: string | null
+  order_index: number
+  votes_count: number
+  created_at: string
+}
+
+export interface TriviaPollVote {
+  id: string
+  poll_id: string
+  fan_id: string
+  option_id: string
+  is_winner?: boolean | null
+  pearls_awarded: number
+  created_at: string
+}
+
+export interface ActiveTriviaPoll {
+  id: string
+  game_id?: string | null
+  title: string
+  description?: string | null
+  reward_pearls: number
+  status: TriviaPollStatus
+  starts_at: string
+  closes_at: string
+  is_closed: boolean
+  is_resolved: boolean
+  resolved_at?: string | null
+  created_at: string
+  correct_option_id?: string | null
+  game?: {
+    id: string
+    opponent: string
+    game_date: string
+    is_home: boolean
+    location: string
+  } | null
+  user_vote?: {
+    vote_id: string
+    option_id: string
+    is_winner?: boolean | null
+    pearls_awarded: number
+    voted_at: string
+  } | null
+  options: Array<{
+    id: string
+    label: string
+    order_index: number
+    votes_count: number
+    player_id?: string | null
+    player?: {
+      id: string
+      name: string
+      jersey_number: number
+      photo_url?: string | null
+      position?: string | null
+    } | null
+  }>
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -599,6 +680,9 @@ export interface Database {
       hero_carousel_slides: { Row: HeroCarouselSlide; Insert: Partial<HeroCarouselSlide>; Update: Partial<HeroCarouselSlide>; Relationships: [] }
       guess_player_challenges: { Row: GuessPlayerChallenge; Insert: Partial<GuessPlayerChallenge>; Update: Partial<GuessPlayerChallenge>; Relationships: [] }
       guess_player_votes: { Row: GuessPlayerVote; Insert: Partial<GuessPlayerVote>; Update: Partial<GuessPlayerVote>; Relationships: [] }
+      trivia_polls: { Row: TriviaPoll; Insert: Partial<TriviaPoll>; Update: Partial<TriviaPoll>; Relationships: [] }
+      trivia_poll_options: { Row: TriviaPollOption; Insert: Partial<TriviaPollOption>; Update: Partial<TriviaPollOption>; Relationships: [] }
+      trivia_poll_votes: { Row: TriviaPollVote; Insert: Partial<TriviaPollVote>; Update: Partial<TriviaPollVote>; Relationships: [] }
     }
     Views: Record<string, any>
     Functions: {
