@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable } from '@guaiqui/ui'
 import { supabase } from '../lib/supabase'
+import BulkImportModal from '../components/common/BulkImportModal.vue'
 
 interface PlayerRow {
   id: string
@@ -25,6 +26,7 @@ const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 
 const showEditorModal = ref(false)
+const showBulkImportModal = ref(false)
 const playerForm = ref({
   id: '',
   name: '',
@@ -205,7 +207,10 @@ onMounted(loadPlayers)
             Gestión exclusiva y manual de los jugadores oficiales de Guaiqueríes de Margarita.
           </p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 flex-wrap">
+          <BaseButton variant="secondary" @click="showBulkImportModal = true">
+            <i class="bi bi-file-earmark-spreadsheet text-emerald-400 mr-1.5"></i> Carga Masiva (Excel / CSV)
+          </BaseButton>
           <BaseButton variant="primary" @click="openNewPlayer">
             <i class="bi bi-person-plus mr-1.5"></i> Agregar Jugador
           </BaseButton>
@@ -326,5 +331,13 @@ onMounted(loadPlayers)
         </div>
       </template>
     </BaseModal>
+
+    <!-- Bulk Import Modal -->
+    <BulkImportModal
+      :is-open="showBulkImportModal"
+      type="players"
+      @close="showBulkImportModal = false"
+      @success="loadPlayers"
+    />
   </AdminLayout>
 </template>

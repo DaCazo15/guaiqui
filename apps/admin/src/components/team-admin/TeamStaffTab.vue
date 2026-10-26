@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
 import { supabase } from '../../lib/supabase'
+import BulkImportModal from '../common/BulkImportModal.vue'
 
 interface TeamMemberRow {
   id: string
@@ -21,6 +22,7 @@ const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 
 const showModal = ref(false)
+const showBulkImportModal = ref(false)
 const form = ref({
   id: '',
   name: '',
@@ -158,9 +160,14 @@ onMounted(() => {
           Personal técnico, directiva y staff mostrados en la página pública del equipo.
         </p>
       </div>
-      <BaseButton variant="primary" size="sm" @click="openNew">
-        <i class="bi bi-plus-lg mr-1.5"></i> Agregar Integrante
-      </BaseButton>
+      <div class="flex items-center gap-2 flex-wrap">
+        <BaseButton variant="secondary" size="sm" @click="showBulkImportModal = true">
+          <i class="bi bi-file-earmark-spreadsheet text-emerald-400 mr-1.5"></i> Carga Masiva (Excel / CSV)
+        </BaseButton>
+        <BaseButton variant="primary" size="sm" @click="openNew">
+          <i class="bi bi-plus-lg mr-1.5"></i> Agregar Integrante
+        </BaseButton>
+      </div>
     </div>
 
     <div v-if="errorMessage" class="p-4 bg-red-950/80 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
@@ -244,5 +251,13 @@ onMounted(() => {
         </div>
       </template>
     </BaseModal>
+
+    <!-- Bulk Import Modal -->
+    <BulkImportModal
+      :is-open="showBulkImportModal"
+      type="staff"
+      @close="showBulkImportModal = false"
+      @success="loadMembers"
+    />
   </div>
 </template>

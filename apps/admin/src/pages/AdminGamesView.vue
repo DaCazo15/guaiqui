@@ -4,6 +4,7 @@ import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
 import { caracasInputToISO, isoToCaracasInput, nowCaracasInput, formatCaracas } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
+import BulkImportModal from '../components/common/BulkImportModal.vue'
 
 interface GameRow {
   id: string
@@ -23,6 +24,7 @@ const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 
 const showEditorModal = ref(false)
+const showBulkImportModal = ref(false)
 const gameForm = ref({
   id: '',
   opponent: '',
@@ -187,7 +189,10 @@ onMounted(loadGames)
             Programación de encuentros del club, asignación de sedes y carga de resultados oficiales.
           </p>
         </div>
-        <div class="flex items-center gap-3">
+        <div class="flex items-center gap-3 flex-wrap">
+          <BaseButton variant="secondary" @click="showBulkImportModal = true">
+            <i class="bi bi-file-earmark-spreadsheet text-emerald-400 mr-1.5"></i> Carga Masiva (Excel / CSV)
+          </BaseButton>
           <BaseButton variant="primary" @click="openNewGame">
             <i class="bi bi-calendar-plus mr-1.5"></i> Programar Partido
           </BaseButton>
@@ -328,5 +333,13 @@ onMounted(loadGames)
         </div>
       </template>
     </BaseModal>
+
+    <!-- Bulk Import Modal -->
+    <BulkImportModal
+      :is-open="showBulkImportModal"
+      type="games"
+      @close="showBulkImportModal = false"
+      @success="loadGames"
+    />
   </AdminLayout>
 </template>

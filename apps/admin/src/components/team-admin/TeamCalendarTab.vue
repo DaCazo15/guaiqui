@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
 import { caracasInputToISO, isoToCaracasInput, nowCaracasInput, formatCaracas } from '@guaiqui/shared'
 import { supabase } from '../../lib/supabase'
+import BulkImportModal from '../common/BulkImportModal.vue'
 
 interface GameRow {
   id: string
@@ -22,6 +23,7 @@ const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
 
 const showEditorModal = ref(false)
+const showBulkImportModal = ref(false)
 const gameForm = ref({
   id: '',
   opponent: '',
@@ -197,9 +199,14 @@ onMounted(() => {
           Programación de partidos oficiales, sedes, estados y marcadores.
         </p>
       </div>
-      <BaseButton variant="primary" size="sm" @click="openNewGame">
-        <i class="bi bi-calendar-plus mr-1.5"></i> Programar Partido
-      </BaseButton>
+      <div class="flex items-center gap-2 flex-wrap">
+        <BaseButton variant="secondary" size="sm" @click="showBulkImportModal = true">
+          <i class="bi bi-file-earmark-spreadsheet text-emerald-400 mr-1.5"></i> Carga Masiva (Excel / CSV)
+        </BaseButton>
+        <BaseButton variant="primary" size="sm" @click="openNewGame">
+          <i class="bi bi-calendar-plus mr-1.5"></i> Programar Partido
+        </BaseButton>
+      </div>
     </div>
 
     <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-200 rounded-xl text-sm flex items-center justify-between">
@@ -326,5 +333,13 @@ onMounted(() => {
         </div>
       </template>
     </BaseModal>
+
+    <!-- Bulk Import Modal -->
+    <BulkImportModal
+      :is-open="showBulkImportModal"
+      type="games"
+      @close="showBulkImportModal = false"
+      @success="loadGames"
+    />
   </div>
 </template>

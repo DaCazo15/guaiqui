@@ -4,6 +4,7 @@ import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
 import { caracasInputToISO, isoToCaracasInput, nowCaracasInput } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
+import BulkImportModal from '../components/common/BulkImportModal.vue'
 
 interface ProductRow {
   id: string
@@ -32,6 +33,7 @@ const filterCategory = ref('')
 
 const showEditorModal = ref(false)
 const showDeleteModal = ref(false)
+const showBulkImportModal = ref(false)
 const selectedProduct = ref<ProductRow | null>(null)
 const uploadingImage = ref(false)
 
@@ -231,9 +233,14 @@ onMounted(loadProducts)
           <h1 class="text-2xl sm:text-3xl font-bold font-title text-white">Catálogo de Productos</h1>
           <p class="text-sm text-slate-400">Crear, modificar, eliminar y gestionar stock de productos canjeables.</p>
         </div>
-        <BaseButton variant="primary" @click="openNewProduct">
-          <i class="bi bi-plus-lg mr-1.5"></i> Nuevo Producto
-        </BaseButton>
+        <div class="flex items-center gap-3 flex-wrap">
+          <BaseButton variant="secondary" @click="showBulkImportModal = true">
+            <i class="bi bi-file-earmark-spreadsheet text-emerald-400 mr-1.5"></i> Carga Masiva (Excel / CSV)
+          </BaseButton>
+          <BaseButton variant="primary" @click="openNewProduct">
+            <i class="bi bi-plus-lg mr-1.5"></i> Nuevo Producto
+          </BaseButton>
+        </div>
       </div>
 
       <!-- Filters Toolbar -->
@@ -382,5 +389,13 @@ onMounted(loadProducts)
         </div>
       </template>
     </BaseModal>
+
+    <!-- Bulk Import Modal -->
+    <BulkImportModal
+      :is-open="showBulkImportModal"
+      type="products"
+      @close="showBulkImportModal = false"
+      @success="loadProducts"
+    />
   </AdminLayout>
 </template>

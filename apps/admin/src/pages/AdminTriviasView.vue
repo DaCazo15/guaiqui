@@ -4,6 +4,7 @@ import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
 import { caracasInputToISO, isoToCaracasInput, nowCaracasInput, formatCaracas } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
+import BulkImportModal from '../components/common/BulkImportModal.vue'
 
 interface OptionForm {
   id?: string
@@ -49,6 +50,7 @@ const successMessage = ref<string | null>(null)
 const showEditorModal = ref(false)
 const showPreviewModal = ref(false)
 const showDeleteModal = ref(false)
+const showBulkImportModal = ref(false)
 const selectedTrivia = ref<TriviaRow | null>(null)
 
 // Form state
@@ -302,9 +304,14 @@ onMounted(loadTriviasAndSegments)
           <h1 class="text-2xl sm:text-3xl font-bold font-title text-white">Gestión de Trivias</h1>
           <p class="text-sm text-slate-400">Crear, modificar, tiempo limitado, segmentar y eliminar trivias para los fanáticos.</p>
         </div>
-        <BaseButton variant="primary" @click="openNewTrivia">
-          <i class="bi bi-plus-lg mr-1.5"></i> Nueva Trivia
-        </BaseButton>
+        <div class="flex items-center gap-3 flex-wrap">
+          <BaseButton variant="secondary" @click="showBulkImportModal = true">
+            <i class="bi bi-file-earmark-spreadsheet text-emerald-400 mr-1.5"></i> Carga Masiva (Excel / CSV)
+          </BaseButton>
+          <BaseButton variant="primary" @click="openNewTrivia">
+            <i class="bi bi-plus-lg mr-1.5"></i> Nueva Trivia
+          </BaseButton>
+        </div>
       </div>
 
       <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-200 rounded-xl text-sm flex items-center justify-between">
@@ -476,5 +483,13 @@ onMounted(loadTriviasAndSegments)
         </div>
       </div>
     </BaseModal>
+
+    <!-- Bulk Import Modal -->
+    <BulkImportModal
+      :is-open="showBulkImportModal"
+      type="trivias"
+      @close="showBulkImportModal = false"
+      @success="loadTriviasAndSegments"
+    />
   </AdminLayout>
 </template>
