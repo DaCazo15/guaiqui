@@ -1,6 +1,9 @@
 -- Migration: 20261026000002_create_guess_player_challenges.sql
 -- Description: Creates guess_player_challenges and guess_player_votes tables with secure RPC functions for "¿Quién es?" game mode.
 
+-- 0. Ensure players table has photo_url column for official player portrait / silhouette
+ALTER TABLE public.players ADD COLUMN IF NOT EXISTS photo_url TEXT;
+
 CREATE TABLE IF NOT EXISTS public.guess_player_challenges (
     id UUID DEFAULT gen_random_uuid() NOT NULL,
     player_id UUID NOT NULL REFERENCES public.players(id) ON DELETE CASCADE,

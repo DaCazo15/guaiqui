@@ -17,6 +17,7 @@ interface PlayerRow {
   is_active: boolean
   is_star: boolean
   instagram_url?: string | null
+  photo_url?: string | null
 }
 
 const players = ref<PlayerRow[]>([])
@@ -39,6 +40,7 @@ const playerForm = ref({
   is_active: true,
   is_star: false,
   instagram_url: '',
+  photo_url: '',
 })
 
 const columns = [
@@ -81,6 +83,7 @@ const openNewPlayer = () => {
     is_active: true,
     is_star: false,
     instagram_url: '',
+    photo_url: '',
   }
   showEditorModal.value = true
 }
@@ -98,6 +101,7 @@ const editPlayer = (p: PlayerRow) => {
     is_active: p.is_active,
     is_star: p.is_star,
     instagram_url: p.instagram_url || '',
+    photo_url: p.photo_url || '',
   }
   showEditorModal.value = true
 }
@@ -131,6 +135,7 @@ const savePlayer = async () => {
       is_active: Boolean(playerForm.value.is_active),
       is_star: Boolean(playerForm.value.is_star),
       instagram_url: formattedIg,
+      photo_url: playerForm.value.photo_url?.trim() || null,
     }
 
     if (playerForm.value.id) {
@@ -241,7 +246,19 @@ onMounted(loadPlayers)
         </template>
 
         <template #cell-name="{ row }">
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-2.5">
+            <img
+              v-if="(row as PlayerRow).photo_url"
+              :src="(row as PlayerRow).photo_url!"
+              :alt="(row as PlayerRow).name"
+              class="w-7 h-7 rounded-full object-cover border border-emerald-500/40 bg-slate-900"
+            />
+            <div
+              v-else
+              class="w-7 h-7 rounded-full bg-slate-800 border border-slate-700 text-slate-400 text-xs flex items-center justify-center font-bold"
+            >
+              #{{ (row as PlayerRow).jersey_number }}
+            </div>
             <span class="font-bold text-white">{{ (row as PlayerRow).name }}</span>
             <a
               v-if="(row as PlayerRow).instagram_url"
@@ -311,6 +328,7 @@ onMounted(loadPlayers)
         </div>
         <BaseInput label="Biografía / Notas" v-model="playerForm.bio" placeholder="Trayectoria o méritos del jugador" />
         <BaseInput label="Perfil de Instagram (URL o @usuario)" v-model="playerForm.instagram_url" placeholder="https://instagram.com/nombre o @nombre" />
+        <BaseInput label="URL de Fotografía del Jugador (Opcional)" v-model="playerForm.photo_url" placeholder="https://..." />
 
         <div class="flex items-center gap-6 border-t border-slate-800 pt-3">
           <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer">

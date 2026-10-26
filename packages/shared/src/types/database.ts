@@ -173,6 +173,7 @@ export interface Player {
   is_active: boolean
   is_star: boolean
   instagram_url?: string | null
+  photo_url?: string | null
   created_at: string
 }
 

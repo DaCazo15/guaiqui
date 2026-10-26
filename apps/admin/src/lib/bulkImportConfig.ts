@@ -253,6 +253,7 @@ export const BULK_CONFIGS: Record<BulkImportType, BulkImportConfig> = {
       { key: 'es_estrella', label: 'Es Estrella (SI/NO)', example: 'SI' },
       { key: 'activo', label: 'Activo (SI/NO)', example: 'SI' },
       { key: 'instagram', label: 'Instagram (@usuario o URL)', example: '@ascanio14' },
+      { key: 'url_foto', label: 'URL de Fotografía', example: 'https://...' },
       { key: 'biografia', label: 'Biografía breve', example: 'Pilar defensivo de la tribu y selección nacional.' }
     ],
     sampleData: [
@@ -266,6 +267,7 @@ export const BULK_CONFIGS: Record<BulkImportType, BulkImportConfig> = {
         es_estrella: 'SI',
         activo: 'SI',
         instagram: '@ascanio14',
+        url_foto: '',
         biografia: 'Pilar defensivo de la tribu insular.'
       },
       {
@@ -321,7 +323,8 @@ export const BULK_CONFIGS: Record<BulkImportType, BulkImportConfig> = {
           bio: r.biografia ? String(r.biografia).trim() : null,
           is_active: parseBoolean(r.activo, true),
           is_star: parseBoolean(r.es_estrella, false),
-          instagram_url: formattedIg
+          instagram_url: formattedIg,
+          photo_url: r.url_foto ? String(r.url_foto).trim() : null
         }
       })
 
