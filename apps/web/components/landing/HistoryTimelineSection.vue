@@ -27,8 +27,7 @@ const currentIndex = ref(0)
 const milestones = ref<MilestoneItem[]>([])
 const loading = ref(true)
 
-let mm: gsap.MatchMedia | null = null
-let tween: gsap.core.Tween | null = null
+let ctx: gsap.Context | null = null
 
 const championshipYears = ['1978 - 1982', '1997', '2007', '2021', '2024']
 
@@ -53,40 +52,104 @@ const formatMilestones = (rawItems: any[]): MilestoneItem[] => {
   })
 }
 
-// Navegación interactiva por índice (teclado, flechas o píldoras de año)
-const goToIndex = (index: number) => {
-  const targetIdx = Math.max(0, Math.min(milestones.value.length - 1, index))
-  currentIndex.value = targetIdx
-
-  if (process.client && window.innerWidth >= 1024 && tween?.scrollTrigger) {
-    const st = tween.scrollTrigger
-    const progress = targetIdx / Math.max(1, milestones.value.length - 1)
-    const targetScroll = st.start + progress * (st.end - st.start)
-    window.scrollTo({ top: targetScroll, behavior: 'smooth' })
-  } else if (trackEl.value) {
-    const cardEl = trackEl.value.children[targetIdx] as HTMLElement | undefined
-    if (cardEl) {
-      cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
-    }
+// Actualizar porcentaje y tarjeta activa en tiempo real
+const updateScrollState = () => {
+  const wrapper = trackWrapperRef.value
+  if (!wrapper) return
+  const maxScroll = wrapper.scrollWidth - wrapper.clientWidth
+  if (maxScroll > 0) {
+    const progress = Math.max(0, Math.min(1, wrapper.scrollLeft / maxScroll))
+    scrollProgress.value = Math.round(progress * 100)
+    const cardIdx = Math.round(progress * (milestones.value.length - 1))
+    currentIndex.value = Math.min(milestones.value.length - 1, Math.max(0, cardIdx))
+  } else {
+    scrollProgress.value = 0
+    currentIndex.value = 0
   }
 }
 
-const handlePrev = () => goToIndex(currentIndex.value - 1)
-const handleNext = () => goToIndex(currentIndex.value + 1)
-const handleSelectYear = (_year: string, index: number) => goToIndex(index)
+// Navegar suavemente con GSAP hacia una tarjeta por índice
+const scrollToCard = (index: number) => {
+  const targetIdx = Math.max(0, Math.min(milestones.value.length - 1, index))
+  currentIndex.value = targetIdx
+  const wrapper = trackWrapperRef.value
+  const track = trackEl.value
+  if (!wrapper || !track) return
 
-// En móvil: calcular progreso a partir del scroll nativo del track
-const handleMobileTrackScroll = (e: Event) => {
-  if (process.client && window.innerWidth < 1024) {
-    const target = e.target as HTMLElement
-    if (!target) return
-    const maxScroll = target.scrollWidth - target.clientWidth
-    if (maxScroll > 0) {
-      const progress = target.scrollLeft / maxScroll
-      scrollProgress.value = Math.round(progress * 100)
-      const cardIdx = Math.round(progress * (milestones.value.length - 1))
-      currentIndex.value = Math.min(milestones.value.length - 1, Math.max(0, cardIdx))
-    }
+  const card = track.children[targetIdx] as HTMLElement | undefined
+  if (card) {
+    const targetLeft = card.offsetLeft - (wrapper.clientWidth - card.clientWidth) / 2
+    gsap.to(wrapper, {
+      scrollLeft: Math.max(0, targetLeft),
+      duration: 0.5,
+      ease: 'power2.out',
+      onUpdate: updateScrollState,
+      onComplete: updateScrollState,
+    })
+  }
+}
+
+const handlePrev = () => scrollToCard(currentIndex.value - 1)
+const handleNext = () => scrollToCard(currentIndex.value + 1)
+const handleSelectYear = (_year: string, index: number) => scrollToCard(index)
+
+// 1. Manejador de la Rueda del Ratón (Mouse Wheel) para desplazamiento horizontal fluido
+const handleWheel = (e: WheelEvent) => {
+  const wrapper = trackWrapperRef.value
+  if (!wrapper) return
+
+  const delta = Math.abs(e.deltaX) > Math.abs(e.deltaY) ? e.deltaX : e.deltaY
+  if (Math.abs(delta) < 4) return
+
+  const maxScroll = wrapper.scrollWidth - wrapper.clientWidth
+  if (maxScroll <= 0) return
+
+  const atStart = wrapper.scrollLeft <= 5
+  const atEnd = wrapper.scrollLeft >= maxScroll - 5
+
+  // Si se desliza hacia adelante y no ha llegado al final, o hacia atrás y no está al inicio:
+  // Convertir el desplazamiento vertical de la rueda en scroll horizontal interactivo
+  if ((delta > 0 && !atEnd) || (delta < 0 && !atStart)) {
+    e.preventDefault()
+    wrapper.scrollLeft += delta * 1.3
+    updateScrollState()
+  }
+}
+
+// 2. Manejador de Arrastre con el Ratón / Touch (Mouse Drag)
+let isDragging = false
+let startX = 0
+let scrollLeftStart = 0
+let hasMoved = false
+
+const handlePointerDown = (e: PointerEvent) => {
+  const wrapper = trackWrapperRef.value
+  if (!wrapper) return
+  isDragging = true
+  hasMoved = false
+  startX = e.pageX - wrapper.offsetLeft
+  scrollLeftStart = wrapper.scrollLeft
+  wrapper.style.cursor = 'grabbing'
+}
+
+const handlePointerMove = (e: PointerEvent) => {
+  if (!isDragging) return
+  const wrapper = trackWrapperRef.value
+  if (!wrapper) return
+  const x = e.pageX - wrapper.offsetLeft
+  const walk = (x - startX) * 1.4
+  if (Math.abs(walk) > 4) {
+    hasMoved = true
+    wrapper.scrollLeft = scrollLeftStart - walk
+    updateScrollState()
+  }
+}
+
+const handlePointerUp = () => {
+  isDragging = false
+  const wrapper = trackWrapperRef.value
+  if (wrapper) {
+    wrapper.style.cursor = 'grab'
   }
 }
 
@@ -123,62 +186,42 @@ onMounted(async () => {
 
   await nextTick()
 
-  // Inicializar GSAP ScrollTrigger con Pinned Horizontal Scroll según Guía GSAP
+  // Inicializar GSAP ScrollTrigger para animar la entrada de la sección
   if (sectionContainer.value && trackEl.value && process.client) {
-    mm = gsap.matchMedia()
+    ctx = gsap.context(() => {
+      const mm = gsap.matchMedia()
+      mm.add(
+        {
+          reduceMotion: '(prefers-reduced-motion: reduce)',
+          all: '(min-width: 0px)',
+        },
+        (context) => {
+          const { reduceMotion } = context.conditions as { reduceMotion: boolean }
+          if (reduceMotion) return
 
-    mm.add(
-      {
-        isDesktop: '(min-width: 1024px)',
-        isMobile: '(max-width: 1023px)',
-        reduceMotion: '(prefers-reduced-motion: reduce)',
-      },
-      (context) => {
-        const { isDesktop, reduceMotion } = context.conditions as {
-          isDesktop: boolean
-          isMobile: boolean
-          reduceMotion: boolean
-        }
-
-        if (isDesktop && !reduceMotion) {
-          const track = trackEl.value
-          const container = sectionContainer.value
-          if (!track || !container) return
-
-          // Calcular distancia exacta de desplazamiento horizontal
-          const getScrollDistance = () => {
-            const viewportW = window.innerWidth
-            return Math.max(0, track.scrollWidth - viewportW + 180)
-          }
-
-          tween = gsap.to(track, {
-            x: () => -getScrollDistance(),
-            ease: 'none', // Regla estricta de guia-gsap: ease "none" para sincronizar scroll
+          gsap.from('.history-card', {
+            y: 35,
+            autoAlpha: 0,
+            duration: 0.8,
+            stagger: 0.12,
+            ease: 'power3.out',
             scrollTrigger: {
-              trigger: container,
-              pin: true,
-              scrub: 1,
-              start: 'top top',
-              end: () => `+=${getScrollDistance()}`,
-              invalidateOnRefresh: true,
-              anticipatePin: 1,
-              onUpdate: (self) => {
-                scrollProgress.value = Math.round(self.progress * 100)
-                const cardIndex = Math.round(self.progress * (milestones.value.length - 1))
-                currentIndex.value = Math.min(milestones.value.length - 1, Math.max(0, cardIndex))
-              },
+              trigger: sectionContainer.value,
+              start: 'top 80%',
+              once: true,
             },
           })
         }
-      }
-    )
+      )
+    }, sectionContainer.value)
 
+    updateScrollState()
     ScrollTrigger?.refresh()
   }
 })
 
 onUnmounted(() => {
-  mm?.revert()
+  ctx?.revert()
 })
 </script>
 
@@ -186,15 +229,15 @@ onUnmounted(() => {
   <section
     id="historia"
     ref="sectionContainer"
-    class="relative bg-gradient-to-b from-slate-950 via-[#031d10] to-slate-950 text-white overflow-hidden"
+    class="relative bg-gradient-to-b from-slate-950 via-[#031d10] to-slate-950 text-white overflow-hidden py-10 sm:py-14 px-4 sm:px-8"
   >
     <!-- Efectos lumínicos de cancha y atmósfera nocturna -->
     <div class="absolute inset-0 bg-[radial-gradient(ellipse_80%_60%_at_50%_-20%,rgba(16,185,129,0.18),rgba(255,255,255,0))] pointer-events-none" />
     <div class="absolute -left-40 top-1/3 w-96 h-96 bg-emerald-600/10 rounded-full blur-3xl pointer-events-none" />
     <div class="absolute -right-40 bottom-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
-    <!-- CONTENEDOR PRINCIPAL: En Desktop se fija (Pin) a pantalla completa -->
-    <div class="h-full min-h-[580px] lg:h-screen flex flex-col justify-between pt-20 pb-10 px-4 sm:px-8 max-w-7xl mx-auto w-full relative z-10">
+    <!-- CONTENEDOR PRINCIPAL -->
+    <div class="max-w-7xl mx-auto w-full flex flex-col justify-between gap-6 relative z-10">
       
       <!-- 1. HEADER MODULAR: Título, Píldoras de Años, Progreso y Flechas -->
       <HistoryTimelineHeader
@@ -206,11 +249,17 @@ onUnmounted(() => {
         @select-year="handleSelectYear"
       />
 
-      <!-- 2. TRACK HORIZONTAL (Animado con GSAP en Desktop / Swipe Nativo en Móvil) -->
+      <!-- 2. TRACK HORIZONTAL INTERACTIVO: Soporta Rueda del Ratón, Arrastre Drag y Swipe -->
       <div
         ref="trackWrapperRef"
-        class="my-auto py-6 overflow-x-auto lg:overflow-visible scrollbar-none snap-x snap-mandatory lg:snap-none"
-        @scroll="handleMobileTrackScroll"
+        class="py-4 overflow-x-auto scrollbar-none cursor-grab active:cursor-grabbing select-none"
+        @scroll.passive="updateScrollState"
+        @wheel="handleWheel"
+        @pointerdown="handlePointerDown"
+        @pointermove="handlePointerMove"
+        @pointerup="handlePointerUp"
+        @pointercancel="handlePointerUp"
+        @mouseleave="handlePointerUp"
       >
         <div
           ref="trackEl"
@@ -234,7 +283,7 @@ onUnmounted(() => {
 </template>
 
 <style scoped>
-/* Ocultar barra de scroll para navegación swipe móvil */
+/* Ocultar barra de scroll estándar para experiencia inmersiva */
 .scrollbar-none::-webkit-scrollbar {
   display: none;
 }

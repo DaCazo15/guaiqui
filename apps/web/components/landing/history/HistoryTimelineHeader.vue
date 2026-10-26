@@ -21,13 +21,13 @@ const emit = defineEmits<{
 </script>
 
 <template>
-  <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-6 border-b border-emerald-900/60 pb-5 shrink-0">
-    <div class="space-y-2 max-w-2xl">
-      <div class="inline-flex items-center gap-2 bg-emerald-950/80 border border-emerald-500/30 px-3.5 py-1 rounded-full text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest">
+  <div class="flex flex-col lg:flex-row lg:items-end justify-between gap-4 border-b border-emerald-900/60 pb-4 shrink-0">
+    <div class="space-y-1.5 max-w-2xl">
+      <div class="inline-flex items-center gap-2 bg-emerald-950/80 border border-emerald-500/30 px-3 py-0.5 rounded-full text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest">
         <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
         49 Años de Tradición Insular
       </div>
-      <h2 class="font-display font-black text-3xl sm:text-4xl lg:text-5xl uppercase tracking-tight text-white">
+      <h2 class="font-display font-black text-2xl sm:text-3xl lg:text-4xl uppercase tracking-tight text-white">
         Línea del Tiempo <span class="text-emerald-400">Histórica</span>
       </h2>
       <p class="text-xs sm:text-sm text-slate-300">
@@ -35,7 +35,7 @@ const emit = defineEmits<{
       </p>
 
       <!-- Píldoras de Años / Hitos para navegación rápida -->
-      <div class="hidden sm:flex flex-wrap items-center gap-1.5 pt-2">
+      <div class="hidden sm:flex flex-wrap items-center gap-1.5 pt-1.5">
         <button
           v-for="(m, idx) in milestones"
           :key="m.id"
@@ -57,9 +57,9 @@ const emit = defineEmits<{
     </div>
 
     <!-- Controles de Progreso y Navegación de Flechas -->
-    <div class="flex items-center lg:flex-col lg:items-end justify-between gap-3 shrink-0">
+    <div class="flex items-center lg:flex-col lg:items-end justify-between gap-2.5 shrink-0">
       <!-- Indicador de Desplazamiento Horizontal con Barra y Porcentaje -->
-      <div class="flex flex-col gap-1.5 min-w-[180px] sm:min-w-[220px]">
+      <div class="flex flex-col gap-1 min-w-[180px] sm:min-w-[220px]">
         <div class="flex items-center justify-between w-full text-xs font-mono">
           <span class="text-slate-400">Progreso Histórico</span>
           <span class="font-bold text-amber-400 tabular-nums">{{ scrollProgress }}%</span>
@@ -71,7 +71,7 @@ const emit = defineEmits<{
           />
         </div>
         <span class="hidden lg:flex text-[10px] text-slate-400 items-center gap-1">
-          <i class="bi bi-mouse text-emerald-400"></i> Desplaza verticalmente o usa las flechas
+          <i class="bi bi-arrows-expand text-emerald-400"></i> Rueda del ratón, arrastra o usa las flechas
         </span>
       </div>
 
