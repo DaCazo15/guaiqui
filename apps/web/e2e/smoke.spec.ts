@@ -8,7 +8,7 @@ test.describe('Staging & Production Smoke Tests @smoke', () => {
   });
 
   test('Auth page renders login and register forms', async ({ page }) => {
-    await page.goto('/auth');
+    await page.goto('/login');
     await expect(page.locator('input[type="email"]')).toBeVisible();
   });
 

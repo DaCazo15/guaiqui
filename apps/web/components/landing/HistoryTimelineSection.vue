@@ -1,7 +1,10 @@
 <script setup lang="ts">
-import { ref, onMounted, onUnmounted, nextTick } from 'vue'
+import { ref, computed, onMounted, onUnmounted, nextTick } from 'vue'
 import { useGSAP } from '~/composables/useGSAP'
-import { historyMilestones as defaultMilestones, type Milestone } from '~/data/landingData'
+import { historyMilestones as defaultMilestones } from '~/data/landingData'
+import HistoryTimelineHeader from './history/HistoryTimelineHeader.vue'
+import HistoryTimelineCard from './history/HistoryTimelineCard.vue'
+import HistoryTimelineFooter from './history/HistoryTimelineFooter.vue'
 
 interface MilestoneItem {
   id: string
@@ -16,14 +19,20 @@ const supabase = useSupabaseClient()
 const { gsap, ScrollTrigger } = useGSAP()
 
 const sectionContainer = ref<HTMLElement | null>(null)
+const trackWrapperRef = ref<HTMLElement | null>(null)
 const trackEl = ref<HTMLElement | null>(null)
+
 const scrollProgress = ref(0)
+const currentIndex = ref(0)
 const milestones = ref<MilestoneItem[]>([])
 const loading = ref(true)
 
 let mm: gsap.MatchMedia | null = null
+let tween: gsap.core.Tween | null = null
 
 const championshipYears = ['1978 - 1982', '1997', '2007', '2021', '2024']
+
+const activeYear = computed(() => milestones.value[currentIndex.value]?.year)
 
 const formatMilestones = (rawItems: any[]): MilestoneItem[] => {
   return rawItems.map((m, idx) => {
@@ -44,6 +53,43 @@ const formatMilestones = (rawItems: any[]): MilestoneItem[] => {
   })
 }
 
+// Navegación interactiva por índice (teclado, flechas o píldoras de año)
+const goToIndex = (index: number) => {
+  const targetIdx = Math.max(0, Math.min(milestones.value.length - 1, index))
+  currentIndex.value = targetIdx
+
+  if (process.client && window.innerWidth >= 1024 && tween?.scrollTrigger) {
+    const st = tween.scrollTrigger
+    const progress = targetIdx / Math.max(1, milestones.value.length - 1)
+    const targetScroll = st.start + progress * (st.end - st.start)
+    window.scrollTo({ top: targetScroll, behavior: 'smooth' })
+  } else if (trackEl.value) {
+    const cardEl = trackEl.value.children[targetIdx] as HTMLElement | undefined
+    if (cardEl) {
+      cardEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' })
+    }
+  }
+}
+
+const handlePrev = () => goToIndex(currentIndex.value - 1)
+const handleNext = () => goToIndex(currentIndex.value + 1)
+const handleSelectYear = (_year: string, index: number) => goToIndex(index)
+
+// En móvil: calcular progreso a partir del scroll nativo del track
+const handleMobileTrackScroll = (e: Event) => {
+  if (process.client && window.innerWidth < 1024) {
+    const target = e.target as HTMLElement
+    if (!target) return
+    const maxScroll = target.scrollWidth - target.clientWidth
+    if (maxScroll > 0) {
+      const progress = target.scrollLeft / maxScroll
+      scrollProgress.value = Math.round(progress * 100)
+      const cardIdx = Math.round(progress * (milestones.value.length - 1))
+      currentIndex.value = Math.min(milestones.value.length - 1, Math.max(0, cardIdx))
+    }
+  }
+}
+
 onMounted(async () => {
   loading.value = true
   try {
@@ -55,7 +101,6 @@ onMounted(async () => {
 
     if (data && data.length > 0) {
       const items = formatMilestones(data)
-      // Asegurar que el hito de la Fan Zone 2026 cierre la saga
       if (!items.some((i) => i.year.includes('2026'))) {
         items.push({
           id: 'm-2026',
@@ -78,7 +123,7 @@ onMounted(async () => {
 
   await nextTick()
 
-  // Inicializar GSAP ScrollTrigger con Pinned Horizontal Scroll
+  // Inicializar GSAP ScrollTrigger con Pinned Horizontal Scroll según Guía GSAP
   if (sectionContainer.value && trackEl.value && process.client) {
     mm = gsap.matchMedia()
 
@@ -100,27 +145,34 @@ onMounted(async () => {
           const container = sectionContainer.value
           if (!track || !container) return
 
-          const getTotalDistance = () => Math.max(0, track.scrollWidth - window.innerWidth + 160)
+          // Calcular distancia exacta de desplazamiento horizontal
+          const getScrollDistance = () => {
+            const viewportW = window.innerWidth
+            return Math.max(0, track.scrollWidth - viewportW + 180)
+          }
 
-          gsap.to(track, {
-            x: () => -getTotalDistance(),
-            ease: 'none',
+          tween = gsap.to(track, {
+            x: () => -getScrollDistance(),
+            ease: 'none', // Regla estricta de guia-gsap: ease "none" para sincronizar scroll
             scrollTrigger: {
               trigger: container,
               pin: true,
               scrub: 1,
               start: 'top top',
-              end: () => `+=${getTotalDistance()}`,
+              end: () => `+=${getScrollDistance()}`,
               invalidateOnRefresh: true,
+              anticipatePin: 1,
               onUpdate: (self) => {
                 scrollProgress.value = Math.round(self.progress * 100)
+                const cardIndex = Math.round(self.progress * (milestones.value.length - 1))
+                currentIndex.value = Math.min(milestones.value.length - 1, Math.max(0, cardIndex))
               },
             },
           })
         }
-      },
-      sectionContainer.value
+      }
     )
+
     ScrollTrigger?.refresh()
   }
 })
@@ -142,130 +194,40 @@ onUnmounted(() => {
     <div class="absolute -right-40 bottom-1/4 w-96 h-96 bg-amber-500/10 rounded-full blur-3xl pointer-events-none" />
 
     <!-- CONTENEDOR PRINCIPAL: En Desktop se fija (Pin) a pantalla completa -->
-    <div class="h-full min-h-[580px] lg:h-screen flex flex-col justify-between py-12 lg:py-14 px-4 sm:px-8 max-w-7xl mx-auto w-full relative z-10">
+    <div class="h-full min-h-[580px] lg:h-screen flex flex-col justify-between pt-20 pb-10 px-4 sm:px-8 max-w-7xl mx-auto w-full relative z-10">
       
-      <!-- 1. HEADER DE LA SECCIÓN CON CONTADOR DE PROGRESO CINÉTICO -->
-      <div class="flex flex-col sm:flex-row sm:items-end justify-between gap-4 border-b border-emerald-900/60 pb-6 shrink-0">
-        <div class="space-y-2">
-          <div class="inline-flex items-center gap-2 bg-emerald-950/80 border border-emerald-500/30 px-3.5 py-1 rounded-full text-xs font-mono font-bold text-emerald-400 uppercase tracking-widest">
-            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            49 Años de Tradición Insular
-          </div>
-          <h2 class="font-display font-black text-3xl sm:text-4xl lg:text-5xl uppercase tracking-tight text-white">
-            Línea del Tiempo <span class="text-emerald-400">Histórica</span>
-          </h2>
-          <p class="text-xs sm:text-sm text-slate-300 max-w-xl">
-            De La Asunción a la inmortalidad. Desliza para revivir las gestas y títulos que consagraron a Guaiqueríes de Margarita.
-          </p>
-        </div>
-
-        <!-- Indicador de Desplazamiento Horizontal con Barra y Porcentaje -->
-        <div class="hidden lg:flex flex-col items-end gap-1.5 min-w-[200px]">
-          <div class="flex items-center justify-between w-full text-xs font-mono">
-            <span class="text-slate-400">Progreso Histórico</span>
-            <span class="font-bold text-amber-400 tabular-nums">{{ scrollProgress }}%</span>
-          </div>
-          <div class="w-full h-1.5 bg-slate-800 rounded-full overflow-hidden border border-white/10">
-            <div
-              class="h-full bg-gradient-to-r from-emerald-500 via-emerald-400 to-amber-400 rounded-full transition-all duration-150"
-              :style="{ width: `${scrollProgress}%` }"
-            />
-          </div>
-          <span class="text-[10px] text-slate-400 flex items-center gap-1">
-            <i class="bi bi-mouse text-emerald-400"></i> Desplaza verticalmente para navegar
-          </span>
-        </div>
-      </div>
+      <!-- 1. HEADER MODULAR: Título, Píldoras de Años, Progreso y Flechas -->
+      <HistoryTimelineHeader
+        :scroll-progress="scrollProgress"
+        :milestones="milestones"
+        :active-year="activeYear"
+        @prev="handlePrev"
+        @next="handleNext"
+        @select-year="handleSelectYear"
+      />
 
       <!-- 2. TRACK HORIZONTAL (Animado con GSAP en Desktop / Swipe Nativo en Móvil) -->
-      <div class="my-auto py-6 overflow-x-auto lg:overflow-visible scrollbar-none snap-x snap-mandatory lg:snap-none">
+      <div
+        ref="trackWrapperRef"
+        class="my-auto py-6 overflow-x-auto lg:overflow-visible scrollbar-none snap-x snap-mandatory lg:snap-none"
+        @scroll="handleMobileTrackScroll"
+      >
         <div
           ref="trackEl"
           class="flex items-stretch gap-6 sm:gap-8 px-2 sm:px-4 w-max"
         >
-          <div
+          <HistoryTimelineCard
             v-for="(m, idx) in milestones"
             :key="m.id"
-            class="snap-center w-[300px] sm:w-[380px] lg:w-[420px] shrink-0 bg-slate-900/80 backdrop-blur-xl border rounded-guaiqui-2xl p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden transition-all duration-300 group hover:border-emerald-400/80 hover:shadow-[0_10px_35px_-10px_rgba(16,185,129,0.3)]"
-            :class="[
-              m.isChampionship
-                ? 'border-amber-400/50 bg-gradient-to-b from-slate-900/95 via-emerald-950/40 to-slate-900/95'
-                : 'border-white/15',
-            ]"
-          >
-            <!-- Marca de agua gigante con el Año en el fondo -->
-            <div class="font-display font-black text-7xl sm:text-8xl text-white/[0.04] absolute -right-2 -bottom-2 select-none pointer-events-none group-hover:text-emerald-400/10 transition-colors">
-              {{ m.year.split(' ')[0] }}
-            </div>
-
-            <!-- Cabecera de la Tarjeta -->
-            <div class="space-y-3 relative z-10">
-              <div class="flex items-center justify-between gap-2">
-                <!-- Badge de Tipo de Hito -->
-                <span
-                  class="text-[10px] font-extrabold uppercase tracking-wider px-2.5 py-1 rounded-md border"
-                  :class="[
-                    m.isChampionship
-                      ? 'bg-amber-400/20 text-amber-300 border-amber-400/40'
-                      : 'bg-emerald-500/15 text-emerald-300 border-emerald-500/30',
-                  ]"
-                >
-                  <i v-if="m.isChampionship" class="bi bi-trophy-fill mr-1 text-amber-400"></i>
-                  {{ m.badge }}
-                </span>
-
-                <!-- Número de Orden -->
-                <span class="text-xs font-mono font-bold text-slate-500">
-                  #0{{ idx + 1 }}
-                </span>
-              </div>
-
-              <!-- Año Destacado -->
-              <div class="font-display font-black text-3xl sm:text-4xl text-amber-400 tracking-tight flex items-baseline gap-2">
-                <span>{{ m.year }}</span>
-                <span v-if="m.isChampionship" class="text-xs font-normal text-amber-300 font-body">
-                  ★ Corona Nacional
-                </span>
-              </div>
-
-              <!-- Título del Hito -->
-              <h3 class="font-display font-bold text-lg sm:text-xl text-white uppercase tracking-wide leading-snug group-hover:text-emerald-300 transition-colors">
-                {{ m.title }}
-              </h3>
-
-              <!-- Narrativa Histórica -->
-              <p class="text-xs sm:text-sm text-slate-300 leading-relaxed pt-1">
-                {{ m.description }}
-              </p>
-            </div>
-
-            <!-- Pie de la Tarjeta con Detalle de Identidad Insular -->
-            <div class="mt-6 pt-4 border-t border-white/10 flex items-center justify-between text-[11px] text-slate-400 relative z-10">
-              <span class="flex items-center gap-1.5">
-                <i class="bi bi-geo-alt-fill text-emerald-400"></i>
-                La Asunción, Nva. Esparta
-              </span>
-              <span class="font-mono text-emerald-400/80 font-semibold uppercase">
-                Tribu Verde
-              </span>
-            </div>
-          </div>
+            :milestone="m"
+            :index="idx"
+            :is-active="idx === currentIndex"
+          />
         </div>
       </div>
 
-      <!-- 3. FOOTER DEL PANEL CON LÍNEA DE TIEMPO INTERACTIVA -->
-      <div class="pt-4 border-t border-emerald-900/40 flex items-center justify-between text-xs text-slate-400 shrink-0">
-        <div class="flex items-center gap-2">
-          <i class="bi bi-shield-check text-emerald-400 text-base"></i>
-          <span>Archivo Histórico Oficial de Guaiqueríes de Margarita</span>
-        </div>
-        <div class="flex items-center gap-3">
-          <span class="hidden sm:inline">1977 — 2026</span>
-          <span class="px-2 py-0.5 rounded bg-emerald-500/20 text-emerald-300 font-mono text-[10px] uppercase font-bold">
-            9 Campeonatos
-          </span>
-        </div>
-      </div>
+      <!-- 3. FOOTER MODULAR: Metadatos y Campeonatos -->
+      <HistoryTimelineFooter />
 
     </div>
   </section>

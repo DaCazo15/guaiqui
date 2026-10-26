@@ -15,21 +15,27 @@ const supabase = useSupabaseClient()
 
 const containerRef = ref<HTMLElement | null>(null)
 
-const { data: activeCta } = await useAsyncData(`landing-cta-${props.placement}`, async () => {
-  try {
-    const { data } = await (supabase as any)
-      .from('landing_ctas')
-      .select('*')
-      .eq('is_published', true)
-      .eq('is_active', true)
-      .eq('placement', props.placement)
-      .limit(1)
-      .maybeSingle()
-    return data as LandingCta | null
-  } catch (_e) {
-    return null
+const { data: activeCta } = await useAsyncData(
+  `landing-cta-${props.placement}`,
+  async () => {
+    try {
+      const { data } = await (supabase as any)
+        .from('landing_ctas')
+        .select('*')
+        .eq('is_published', true)
+        .eq('is_active', true)
+        .eq('placement', props.placement)
+        .limit(1)
+        .maybeSingle()
+      return (data as LandingCta) ?? null
+    } catch (_e) {
+      return null
+    }
+  },
+  {
+    default: () => null,
   }
-})
+)
 
 // Fallback logic: only before_footer provides default container if none active; after_hero returns null if inactive
 const cta = computed(() => {
