@@ -511,6 +511,57 @@ export interface LandingSettings {
   updated_at?: string | null
 }
 
+export type ChallengeType = 'silhouette' | 'dorsal'
+export type ChallengeStatus = 'draft' | 'published' | 'archived'
+
+export interface GuessPlayerChallenge {
+  id: string
+  player_id: string
+  challenge_type: ChallengeType
+  title: string
+  clue?: string | null
+  custom_image_url?: string | null
+  dorsal_number?: number | null
+  reward_pearls: number
+  status: ChallengeStatus
+  starts_at: string
+  ends_at: string
+  created_at: string
+}
+
+export interface GuessPlayerVote {
+  id: string
+  challenge_id: string
+  fan_id: string
+  selected_player_id: string
+  is_correct: boolean
+  pearls_awarded: number
+  created_at: string
+}
+
+export interface ActiveWhoIsChallenge {
+  id: string
+  challenge_type: ChallengeType
+  title: string
+  clue?: string | null
+  custom_image_url?: string | null
+  dorsal_number?: number | null
+  reward_pearls: number
+  status: ChallengeStatus
+  starts_at: string
+  ends_at: string
+  created_at: string
+  player_id?: string | null
+  player_name?: string | null
+  player_photo_url?: string | null
+  player_jersey_number?: number | null
+  selected_player_id?: string | null
+  is_correct?: boolean | null
+  pearls_awarded?: number | null
+  voted_at?: string | null
+  has_voted: boolean
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -545,6 +596,8 @@ export interface Database {
       landing_ctas: { Row: LandingCta; Insert: Partial<LandingCta>; Update: Partial<LandingCta>; Relationships: [] }
       landing_settings: { Row: LandingSettings; Insert: Partial<LandingSettings>; Update: Partial<LandingSettings>; Relationships: [] }
       hero_carousel_slides: { Row: HeroCarouselSlide; Insert: Partial<HeroCarouselSlide>; Update: Partial<HeroCarouselSlide>; Relationships: [] }
+      guess_player_challenges: { Row: GuessPlayerChallenge; Insert: Partial<GuessPlayerChallenge>; Update: Partial<GuessPlayerChallenge>; Relationships: [] }
+      guess_player_votes: { Row: GuessPlayerVote; Insert: Partial<GuessPlayerVote>; Update: Partial<GuessPlayerVote>; Relationships: [] }
     }
     Views: Record<string, any>
     Functions: {

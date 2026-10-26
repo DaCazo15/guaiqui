@@ -191,4 +191,69 @@ describe('Bulk Import Configuration and Validation', () => {
       expect(result.errors.length).toBeGreaterThanOrEqual(2)
     })
   })
+
+  describe('Who Is Challenges Validation', () => {
+    const config = BULK_CONFIGS.who_is
+
+    it('validates a correct who_is challenge row', () => {
+      const validRow = config.sampleData[0]
+      const result = config.validateRow(validRow, 0)
+      expect(result.valid).toBe(true)
+      expect(result.errors).toHaveLength(0)
+    })
+
+    it('flags missing dorsal or player name', () => {
+      const invalidRow = {
+        dorsal_o_nombre: ''
+      }
+      const result = config.validateRow(invalidRow, 0)
+      expect(result.valid).toBe(false)
+      expect(result.errors).toHaveLength(1)
+    })
+
+    it('processes rows correctly by resolving player from roster', async () => {
+      let insertedPayloads: any[] = []
+      const mockSupabase = {
+        from: (table: string) => {
+          if (table === 'players') {
+            return {
+              select: () => ({
+                data: [
+                  { id: 'p-1', name: 'Alfonso Smith', jersey_number: 10 },
+                  { id: 'p-2', name: 'José Martínez', jersey_number: 7 }
+                ],
+                error: null
+              })
+            }
+          }
+          if (table === 'guess_player_challenges') {
+            return {
+              insert: async (payloads: any[]) => {
+                insertedPayloads = payloads
+                return { error: null }
+              }
+            }
+          }
+          return {}
+        }
+      }
+
+      const result = await config.processRows([
+        {
+          dorsal_o_nombre: '10',
+          tipo: 'silueta',
+          titulo: '¿Quién es este Guaiquerí?',
+          pista: 'Base armador',
+          perlitas: 50,
+          estado: 'publicado'
+        }
+      ], mockSupabase)
+
+      expect(result.successCount).toBe(1)
+      expect(insertedPayloads).toHaveLength(1)
+      expect(insertedPayloads[0].player_id).toBe('p-1')
+      expect(insertedPayloads[0].challenge_type).toBe('silhouette')
+      expect(insertedPayloads[0].dorsal_number).toBe(10)
+    })
+  })
 })

@@ -1,7 +1,7 @@
 import * as XLSX from 'xlsx'
 import { caracasInputToISO } from '@guaiqui/shared'
 
-export type BulkImportType = 'trivias' | 'players' | 'staff' | 'games' | 'products'
+export type BulkImportType = 'trivias' | 'players' | 'staff' | 'games' | 'products' | 'who_is'
 
 export interface BulkColumnDef {
   key: string
@@ -78,6 +78,13 @@ export function normalizeProductCategory(val: any): 'physical' | 'experience' | 
   if (s.includes('exp') || s.includes('saludo') || s.includes('pase')) return 'experience'
   if (s.includes('sort') || s.includes('rifa') || s.includes('raffle')) return 'raffle'
   return 'physical'
+}
+
+export function normalizeChallengeType(val: any): 'silhouette' | 'dorsal' {
+  if (!val) return 'silhouette'
+  const s = String(val).trim().toLowerCase()
+  if (s.includes('dor') || s.includes('num') || s.includes('camiset')) return 'dorsal'
+  return 'silhouette'
 }
 
 // Configs by Entity
@@ -572,6 +579,102 @@ export const BULK_CONFIGS: Record<BulkImportType, BulkImportConfig> = {
       return {
         successCount: count,
         message: `${count} producto(s) guardado(s) en la tienda de canje.`
+      }
+    }
+  },
+
+  // 6. WHO IS / ¿QUIÉN ES?
+  who_is: {
+    type: 'who_is',
+    title: 'Carga Masiva de Retos ¿Quién es?',
+    entityName: 'Retos ¿Quién es?',
+    templateFileName: 'plantilla_quien_es_guaiqueries',
+    columns: [
+      { key: 'dorsal_o_nombre', label: 'Dorsal o Nombre del Jugador', required: true, example: '10' },
+      { key: 'tipo', label: 'Tipo de Reto (silueta / dorsal)', required: true, example: 'silueta' },
+      { key: 'titulo', label: 'Título del Reto', example: '¿Quién es este jugador de la Tribu?' },
+      { key: 'pista', label: 'Pista (Opcional)', example: 'Posición: Base, campeón de la SuperLiga' },
+      { key: 'perlitas', label: 'Perlitas de Recompensa', example: 50 },
+      { key: 'url_imagen', label: 'URL Imagen Personalizada (Opcional)', example: '' },
+      { key: 'inicio', label: 'Fecha Inicio (YYYY-MM-DD HH:mm)', example: '2026-06-01 09:00' },
+      { key: 'fin', label: 'Fecha Fin (YYYY-MM-DD HH:mm)', example: '2026-06-15 23:59' },
+      { key: 'estado', label: 'Estado (publicado / borrador)', example: 'publicado' }
+    ],
+    sampleData: [
+      {
+        dorsal_o_nombre: '10',
+        tipo: 'silueta',
+        titulo: '¿Quién es este Guaiquerí?',
+        pista: 'Líder en asistencias de la temporada.',
+        perlitas: 50,
+        url_imagen: '',
+        inicio: '2026-06-01 09:00',
+        fin: '2026-06-15 23:59',
+        estado: 'publicado'
+      },
+      {
+        dorsal_o_nombre: '7',
+        tipo: 'dorsal',
+        titulo: 'Adivina qué jugador viste este dorsal',
+        pista: 'Alero estrella con gran tiro perimetral.',
+        perlitas: 50,
+        url_imagen: '',
+        inicio: '2026-06-05 10:00',
+        fin: '2026-06-20 22:00',
+        estado: 'publicado'
+      }
+    ],
+    validateRow: (row, index) => {
+      const errors: string[] = []
+      if (!row.dorsal_o_nombre?.toString().trim()) {
+        errors.push(`Fila ${index + 1}: El dorsal o nombre del jugador es obligatorio.`)
+      }
+      return { valid: errors.length === 0, errors }
+    },
+    processRows: async (rows, supabase) => {
+      const { data: players, error: pErr } = await supabase.from('players').select('id, name, jersey_number')
+      if (pErr) throw pErr
+
+      const playerList: any[] = players || []
+      const payloads: any[] = []
+
+      for (let i = 0; i < rows.length; i++) {
+        const r = rows[i]
+        const query = String(r.dorsal_o_nombre).trim().toLowerCase()
+        const queryNumber = Number(query)
+
+        const matchedPlayer = playerList.find((p: any) => {
+          if (!isNaN(queryNumber) && p.jersey_number === queryNumber) return true
+          return p.name.toLowerCase().includes(query)
+        })
+
+        if (!matchedPlayer) {
+          throw new Error(`Fila ${i + 1}: No se encontró ningún jugador en la plantilla con dorsal o nombre "${r.dorsal_o_nombre}".`)
+        }
+
+        const isPublished = parseBoolean(r.estado, true)
+        const challengeType = normalizeChallengeType(r.tipo)
+
+        payloads.push({
+          player_id: matchedPlayer.id,
+          challenge_type: challengeType,
+          title: r.titulo ? String(r.titulo).trim() : '¿Quién es este jugador?',
+          clue: r.pista ? String(r.pista).trim() : null,
+          custom_image_url: r.url_imagen ? String(r.url_imagen).trim() : null,
+          dorsal_number: matchedPlayer.jersey_number,
+          reward_pearls: Number(r.perlitas) || 50,
+          status: isPublished ? 'published' : 'draft',
+          starts_at: r.inicio ? parseDateToISO(r.inicio) : new Date().toISOString(),
+          ends_at: r.fin ? parseDateToISO(r.fin) : new Date(Date.now() + 7 * 86400000).toISOString()
+        })
+      }
+
+      const { error } = await supabase.from('guess_player_challenges').insert(payloads)
+      if (error) throw error
+
+      return {
+        successCount: payloads.length,
+        message: `${payloads.length} reto(s) de "¿Quién es?" programado(s) exitosamente.`
       }
     }
   }
