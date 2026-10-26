@@ -8,11 +8,11 @@ const authStore = useAuthStore()
 const avatarError = ref(false)
 
 const navItems = [
-  { name: 'Inicio', path: '/app', icon: 'bi-house-door-fill' },
-  { name: 'Trivias', path: '/app/trivias', icon: 'bi-patch-question-fill' },
-  { name: 'Billetera', path: '/app/billetera', icon: 'bi-wallet2' },
-  { name: 'Tienda', path: '/app/tienda', icon: 'bi-bag-heart-fill' },
-  { name: 'Perfil', path: '/app/perfil', icon: 'bi-person-fill' },
+  { name: 'Inicio', routeName: 'app', path: '/app', icon: 'bi-house-door-fill' },
+  { name: 'Trivias', routeName: 'app-trivias', path: '/app/trivias', icon: 'bi-patch-question-fill' },
+  { name: 'Billetera', routeName: 'app-billetera', path: '/app/billetera', icon: 'bi-wallet2' },
+  { name: 'Tienda', routeName: 'app-tienda', path: '/app/tienda', icon: 'bi-bag-heart-fill' },
+  { name: 'Perfil', routeName: 'app-perfil', path: '/app/perfil', icon: 'bi-person-fill' },
 ]
 </script>
 
@@ -25,13 +25,13 @@ const navItems = [
     <div class="flex justify-around items-center">
       <NuxtLink
         v-for="item in navItems"
-        :key="item.path"
-        :to="item.path"
+        :key="item.routeName"
+        :to="{ name: item.routeName }"
         :aria-label="item.name"
-        :aria-current="route.path === item.path ? 'page' : undefined"
+        :aria-current="route.name === item.routeName || route.path === item.path ? 'page' : undefined"
         class="flex flex-col items-center justify-center min-w-[48px] min-h-[44px] py-1 px-3 rounded-guaiqui-lg transition-colors duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
         :class="[
-          route.path === item.path
+          route.name === item.routeName || route.path === item.path
             ? 'text-white font-black bg-black/30 ring-1 ring-white/30 shadow-inner'
             : 'text-emerald-100/75 hover:text-white hover:bg-white/10 font-semibold',
         ]"
@@ -41,7 +41,7 @@ const navItems = [
           <div
             class="w-[24px] h-[24px] rounded-full overflow-hidden mb-0.5 border flex items-center justify-center shrink-0 transition-colors duration-150"
             :class="[
-              route.path === item.path
+              route.name === item.routeName || route.path === item.path
                 ? 'border-white ring-2 ring-white shadow-xs'
                 : 'border-white/60 opacity-90'
             ]"

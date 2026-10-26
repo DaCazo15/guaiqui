@@ -23,11 +23,10 @@ const handleRegister = () => {
 }
 
 const navLinks = [
-  { label: 'Inicio', to: '/' },
-  { label: 'Salón de la Fama', to: '/salon-de-la-fama' },
-  { label: 'Historia', to: '/historia' },
-  { label: 'Plantilla', to: '/plantilla' },
-  { label: 'Equipo', to: '/equipo-de-trabajo' },
+  { label: 'Inicio', name: 'index' },
+  { label: 'Historia', name: 'salon-de-la-fama' },
+  { label: 'Plantilla', name: 'plantilla' },
+  { label: 'Equipo', name: 'equipo-de-trabajo' },
 ]
 </script>
 
@@ -35,7 +34,7 @@ const navLinks = [
   <header class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-guaiqui-border shadow-xs">
     <div class="max-w-6xl mx-auto px-4 sm:px-8 h-16 flex items-center justify-between gap-4">
       <!-- Brand Logo -->
-      <NuxtLink to="/" class="flex items-center gap-2 text-guaiqui-primary font-display font-extrabold text-xl sm:text-2xl tracking-tight uppercase group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-guaiqui-primary rounded-md p-1">
+      <NuxtLink :to="{ name: 'index' }" class="flex items-center gap-2 text-guaiqui-primary font-display font-extrabold text-xl sm:text-2xl tracking-tight uppercase group focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-guaiqui-primary rounded-md p-1">
         <img src="/logo.png" alt="Guaiqueríes Logo" class="w-8 h-8 object-contain group-hover:scale-105 transition-transform" />
         <span class="flex items-center gap-1">
           <span>GUAIQUERÍES</span>
@@ -46,8 +45,8 @@ const navLinks = [
       <nav class="hidden md:flex items-center gap-6 text-sm font-semibold text-guaiqui-text">
         <NuxtLink
           v-for="link in navLinks"
-          :key="link.to"
-          :to="link.to"
+          :key="link.name"
+          :to="{ name: link.name }"
           class="hover:text-guaiqui-primary transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-guaiqui-primary rounded-sm px-1 py-0.5"
         >
           {{ link.label }}
@@ -56,14 +55,14 @@ const navLinks = [
 
       <!-- Action Buttons -->
       <div class="flex items-center gap-2 sm:gap-3">
-        <NuxtLink to="/login" class="hidden sm:inline-flex">
+        <NuxtLink :to="{ name: 'login' }" class="hidden sm:inline-flex">
           <BaseButton variant="secondary" size="sm" @click="handleLogin">
             Iniciar sesión
           </BaseButton>
         </NuxtLink>
 
         <!-- Primary Register Button (ALWAYS visible outside drawer on mobile too) -->
-        <NuxtLink to="/registro">
+        <NuxtLink :to="{ name: 'registro' }">
           <BaseButton variant="primary" size="sm" @click="handleRegister">
             Regístrate
           </BaseButton>
@@ -112,8 +111,8 @@ const navLinks = [
       >
         <NuxtLink
           v-for="link in navLinks"
-          :key="link.to"
-          :to="link.to"
+          :key="link.name"
+          :to="{ name: link.name }"
           class="py-2 px-3 text-base font-semibold text-guaiqui-text hover:bg-guaiqui-surface rounded-guaiqui-md transition-colors"
           @click="closeMobileMenu"
         >
@@ -121,7 +120,7 @@ const navLinks = [
         </NuxtLink>
 
         <div class="pt-2 border-t border-guaiqui-border flex flex-col gap-2">
-          <NuxtLink to="/login" @click="closeMobileMenu">
+          <NuxtLink :to="{ name: 'login' }" @click="closeMobileMenu">
             <BaseButton variant="secondary" block @click="handleLogin">
               Iniciar sesión
             </BaseButton>

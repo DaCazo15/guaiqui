@@ -106,7 +106,7 @@ watch(() => route.path, () => {
           <RouterLink
             v-for="item in platformNavItems"
             :key="item.name"
-            :to="item.path"
+            :to="{ name: item.name }"
             @click="emit('close')"
             :class="[
               'flex items-center gap-3 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all duration-150',
@@ -128,7 +128,7 @@ watch(() => route.path, () => {
           <RouterLink
             v-for="item in cmsNavItems"
             :key="item.name"
-            :to="item.path"
+            :to="{ name: item.name }"
             @click="emit('close')"
             :class="[
               'flex items-center gap-3 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all duration-150',
@@ -145,7 +145,7 @@ watch(() => route.path, () => {
         <!-- Section 3: Switch to Staff / Operations -->
         <div class="pt-3 border-t border-slate-800">
           <RouterLink
-            to="/staff/cola"
+            :to="{ name: 'staff-queue' }"
             @click="emit('close')"
             class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-semibold text-xs text-slate-300 bg-slate-800/80 hover:bg-emerald-950/80 hover:text-emerald-300 border border-slate-700 hover:border-emerald-700 transition-all"
           >

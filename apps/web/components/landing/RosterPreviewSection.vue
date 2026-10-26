@@ -43,7 +43,7 @@ onMounted(async () => {
           </h2>
         </div>
 
-        <NuxtLink to="/plantilla">
+        <NuxtLink :to="{ name: 'plantilla' }">
           <BaseButton variant="secondary" size="md">
             Ver Plantilla Completa
           </BaseButton>

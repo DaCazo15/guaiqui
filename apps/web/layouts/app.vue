@@ -48,7 +48,7 @@ onMounted(async () => {
         <div class="flex items-center gap-2.5">
           <!-- Pearl Balance Badge -->
           <NuxtLink
-            to="/app/billetera"
+            :to="{ name: 'app-billetera' }"
             aria-label="Ir a mi billetera de puntos"
             class="flex items-center gap-1.5 text-xs font-black text-amber-900 bg-amber-300 hover:bg-amber-200 border border-amber-400 px-2.5 py-1 rounded-full shadow-xs transition-colors"
           >
@@ -61,7 +61,7 @@ onMounted(async () => {
 
           <!-- User Avatar -->
           <NuxtLink
-            to="/app/perfil"
+            :to="{ name: 'app-perfil' }"
             aria-label="Ir a mi perfil"
             class="w-8 h-8 rounded-full bg-white/20 border-2 border-white/60 text-white flex items-center justify-center font-bold text-xs overflow-hidden shrink-0 shadow-xs"
             title="Mi perfil"

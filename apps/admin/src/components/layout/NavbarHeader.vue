@@ -61,7 +61,7 @@ const handleSignOut = async () => {
       <!-- Switcher for admin role -->
       <RouterLink
         v-if="authStore.staffMember?.role === 'admin' && isAdminRoute"
-        to="/staff/cola"
+        :to="{ name: 'staff-queue' }"
         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-slate-300 bg-slate-800 hover:bg-emerald-950/80 hover:text-emerald-400 border border-slate-700 hover:border-emerald-700 rounded-lg transition-all"
         title="Ir al panel operativo de taquilla"
       >
@@ -71,7 +71,7 @@ const handleSignOut = async () => {
 
       <RouterLink
         v-else-if="authStore.staffMember?.role === 'admin' && !isAdminRoute"
-        to="/admin/dashboard"
+        :to="{ name: 'admin-dashboard' }"
         class="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900/80 border border-emerald-700 rounded-lg transition-all shadow-inner"
         title="Volver al panel de administración"
       >

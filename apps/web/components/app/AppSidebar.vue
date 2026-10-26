@@ -10,18 +10,18 @@ const authStore = useAuthStore()
 const avatarError = ref(false)
 
 const navItems = [
-  { name: 'Inicio', path: '/app', icon: 'bi-house-door-fill' },
-  { name: 'Mi Perfil', path: '/app/perfil', icon: 'bi-person-fill' },
-  { name: 'Billetera', path: '/app/billetera', icon: 'bi-wallet2' },
-  { name: 'Trivias', path: '/app/trivias', icon: 'bi-patch-question-fill' },
-  { name: 'Ranking', path: '/app/ranking', icon: 'bi-trophy-fill' },
-  { name: 'Tienda', path: '/app/tienda', icon: 'bi-bag-heart-fill' },
-  { name: 'Mis Canjes', path: '/app/canjes', icon: 'bi-gift-fill' },
-  { name: 'Ver Anuncios', path: '/app/anuncios', icon: 'bi-play-btn-fill' },
-  { name: 'Partidos', path: '/app/partidos', icon: 'bi-calendar-event-fill' },
-  { name: 'Plantilla', path: '/app/plantilla', icon: 'bi-people-fill' },
-  { name: 'Salón de la Fama', path: '/app/salon-de-la-fama', icon: 'bi-award-fill' },
-  { name: 'Ajustes', path: '/app/ajustes', icon: 'bi-gear-fill' },
+  { name: 'Inicio', routeName: 'app', path: '/app', icon: 'bi-house-door-fill' },
+  { name: 'Mi Perfil', routeName: 'app-perfil', path: '/app/perfil', icon: 'bi-person-fill' },
+  { name: 'Billetera', routeName: 'app-billetera', path: '/app/billetera', icon: 'bi-wallet2' },
+  { name: 'Trivias', routeName: 'app-trivias', path: '/app/trivias', icon: 'bi-patch-question-fill' },
+  { name: 'Ranking', routeName: 'app-ranking', path: '/app/ranking', icon: 'bi-trophy-fill' },
+  { name: 'Tienda', routeName: 'app-tienda', path: '/app/tienda', icon: 'bi-bag-heart-fill' },
+  { name: 'Mis Canjes', routeName: 'app-canjes', path: '/app/canjes', icon: 'bi-gift-fill' },
+  { name: 'Ver Anuncios', routeName: 'app-anuncios', path: '/app/anuncios', icon: 'bi-play-btn-fill' },
+  { name: 'Partidos', routeName: 'app-partidos', path: '/app/partidos', icon: 'bi-calendar-event-fill' },
+  { name: 'Plantilla', routeName: 'app-plantilla', path: '/app/plantilla', icon: 'bi-people-fill' },
+  { name: 'Salón de la Fama', routeName: 'app-salon-de-la-fama', path: '/app/salon-de-la-fama', icon: 'bi-award-fill' },
+  { name: 'Ajustes', routeName: 'app-ajustes', path: '/app/ajustes', icon: 'bi-gear-fill' },
 ]
 
 const handleLogout = async () => {
@@ -77,11 +77,11 @@ const handleLogout = async () => {
     <nav class="flex-1 space-y-1 overflow-y-auto pr-1">
       <NuxtLink
         v-for="item in navItems"
-        :key="item.path"
-        :to="item.path"
+        :key="item.routeName"
+        :to="{ name: item.routeName }"
         class="flex items-center gap-3 px-3 py-2.5 rounded-guaiqui-md text-sm font-medium transition-all duration-150"
         :class="[
-          route.path === item.path
+          route.name === item.routeName || route.path === item.path
             ? 'bg-guaiqui-primary text-white font-semibold shadow-guaiqui-sm'
             : 'text-guaiqui-text-muted hover:text-guaiqui-text hover:bg-guaiqui-surface',
         ]"

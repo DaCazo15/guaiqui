@@ -99,12 +99,11 @@ const socialList = computed(() => footerData.value?.socialLinks || [])
           Navegación
         </h4>
         <ul class="space-y-2 text-xs text-slate-300">
-          <li><NuxtLink to="/" class="hover:text-emerald-400 transition-colors">Inicio</NuxtLink></li>
+          <li><NuxtLink :to="{ name: 'index' }" class="hover:text-emerald-400 transition-colors">Inicio</NuxtLink></li>
           <li><NuxtLink to="/#como-funciona" class="hover:text-emerald-400 transition-colors">La App</NuxtLink></li>
-          <li><NuxtLink to="/salon-de-la-fama" class="hover:text-emerald-400 transition-colors">Salón de la Fama</NuxtLink></li>
-          <li><NuxtLink to="/historia" class="hover:text-emerald-400 transition-colors">Historia de la Tribu</NuxtLink></li>
-          <li><NuxtLink to="/plantilla" class="hover:text-emerald-400 transition-colors">Plantilla de Jugadores</NuxtLink></li>
-          <li><NuxtLink to="/equipo-de-trabajo" class="hover:text-emerald-400 transition-colors">Cuerpo Técnico y Directiva</NuxtLink></li>
+          <li><NuxtLink :to="{ name: 'salon-de-la-fama' }" class="hover:text-emerald-400 transition-colors">Salón de la Fama</NuxtLink></li>
+          <li><NuxtLink :to="{ name: 'plantilla' }" class="hover:text-emerald-400 transition-colors">Plantilla de Jugadores</NuxtLink></li>
+          <li><NuxtLink :to="{ name: 'equipo-de-trabajo' }" class="hover:text-emerald-400 transition-colors">Cuerpo Técnico y Directiva</NuxtLink></li>
         </ul>
       </div>
 
@@ -114,12 +113,12 @@ const socialList = computed(() => footerData.value?.socialLinks || [])
           Políticas & Legales
         </h4>
         <ul class="space-y-2 text-xs text-slate-300">
-          <li><NuxtLink to="/politicas/terminos" class="hover:text-emerald-400 transition-colors">Términos y Condiciones</NuxtLink></li>
-          <li><NuxtLink to="/politicas/privacidad" class="hover:text-emerald-400 transition-colors">Política de Privacidad</NuxtLink></li>
-          <li><NuxtLink to="/politicas/perlitas" class="hover:text-emerald-400 transition-colors">Reglas de la Economía de Puntos</NuxtLink></li>
-          <li><NuxtLink to="/politicas/canjes" class="hover:text-emerald-400 transition-colors">Reglamento de Canje y Entregas</NuxtLink></li>
+          <li><NuxtLink :to="{ name: 'politicas-terminos' }" class="hover:text-emerald-400 transition-colors">Términos y Condiciones</NuxtLink></li>
+          <li><NuxtLink :to="{ name: 'politicas-privacidad' }" class="hover:text-emerald-400 transition-colors">Política de Privacidad</NuxtLink></li>
+          <li><NuxtLink :to="{ name: 'politicas-perlitas' }" class="hover:text-emerald-400 transition-colors">Reglas de la Economía de Puntos</NuxtLink></li>
+          <li><NuxtLink :to="{ name: 'politicas-canjes' }" class="hover:text-emerald-400 transition-colors">Reglamento de Canje y Entregas</NuxtLink></li>
           <li><button class="hover:text-emerald-400 transition-colors text-left font-medium" @click="useAnalytics().setConsent(false)">Configuración de Cookies</button></li>
-          <li><NuxtLink to="/faq" class="hover:text-emerald-400 transition-colors">Preguntas Frecuentes (FAQ)</NuxtLink></li>
+          <li><NuxtLink :to="{ name: 'faq' }" class="hover:text-emerald-400 transition-colors">Preguntas Frecuentes (FAQ)</NuxtLink></li>
         </ul>
       </div>
 

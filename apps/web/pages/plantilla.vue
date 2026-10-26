@@ -243,7 +243,7 @@ const filteredRoster = computed(() => {
               </p>
             </div>
             <div class="flex items-center gap-3">
-              <NuxtLink to="/equipo-de-trabajo">
+              <NuxtLink :to="{ name: 'equipo-de-trabajo' }">
                 <BaseButton variant="secondary" size="md">
                   Ver Todo el Personal
                 </BaseButton>

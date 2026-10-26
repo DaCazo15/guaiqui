@@ -45,7 +45,7 @@ const handleRewardClick = (name: string) => {
           </h2>
         </div>
 
-        <NuxtLink to="/registro">
+        <NuxtLink :to="{ name: 'registro' }">
           <BaseButton variant="primary" size="md">
             {{ products.length > 0 ? `Ver Todos los Premios (${products.length}+)` : 'Explorar la Tribu' }}
           </BaseButton>
@@ -72,7 +72,7 @@ const handleRewardClick = (name: string) => {
           Los artículos oficiales, indumentaria y experiencias exclusivas para canje con puntos serán anunciados próximamente por la directiva del club. ¡Acumula puntos jugando trivias desde ahora!
         </p>
         <div class="pt-2">
-          <NuxtLink to="/registro">
+          <NuxtLink :to="{ name: 'registro' }">
             <BaseButton variant="primary" size="sm">
               Registrarme para Acumular Puntos
             </BaseButton>

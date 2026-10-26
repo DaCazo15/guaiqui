@@ -59,7 +59,7 @@ const isActive = (path: string) => route.path.startsWith(path)
         <RouterLink
           v-for="item in navItems"
           :key="item.name"
-          :to="item.path"
+          :to="{ name: item.name }"
           @click="emit('close')"
           :class="[
             'flex items-center gap-3 px-3 py-2.5 rounded-xl font-medium text-xs sm:text-sm transition-all duration-150',
@@ -75,7 +75,7 @@ const isActive = (path: string) => route.path.startsWith(path)
         <!-- Link back to Admin for users with admin role -->
         <div v-if="authStore.staffMember?.role === 'admin'" class="pt-4 border-t border-slate-800">
           <RouterLink
-            to="/admin/dashboard"
+            :to="{ name: 'admin-dashboard' }"
             @click="emit('close')"
             class="flex items-center gap-2.5 px-3 py-2 rounded-xl font-semibold text-xs text-emerald-300 bg-emerald-950/80 hover:bg-emerald-900/80 border border-emerald-700 transition-all shadow-inner"
           >

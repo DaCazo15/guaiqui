@@ -67,7 +67,7 @@ onMounted(async () => {
       </div>
 
       <div v-if="accordionItems.length > 0" class="text-center pt-4">
-        <NuxtLink to="/faq">
+        <NuxtLink :to="{ name: 'faq' }">
           <BaseButton variant="ghost" size="md">
             Ver todas las preguntas en el Centro de Ayuda →
           </BaseButton>

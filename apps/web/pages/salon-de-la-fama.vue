@@ -42,15 +42,15 @@ useSeoMeta({
           </div>
 
           <div class="pt-2 flex flex-wrap items-center justify-center gap-3">
-            <NuxtLink to="/app/trivias">
+            <NuxtLink :to="{ name: 'app-trivias' }">
               <BaseButton variant="primary" size="lg">
                 <i class="bi bi-play-circle-fill mr-2"></i>
                 <span>Jugar Trivias Ahora</span>
               </BaseButton>
             </NuxtLink>
-            <NuxtLink to="/historia">
+            <NuxtLink :to="{ name: 'index' }">
               <BaseButton variant="outline" size="lg">
-                <span>Ver Historia Completa</span>
+                <span>Volver al Inicio</span>
                 <i class="bi bi-arrow-right ml-2"></i>
               </BaseButton>
             </NuxtLink>
