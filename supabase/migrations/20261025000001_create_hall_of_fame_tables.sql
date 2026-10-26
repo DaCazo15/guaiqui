@@ -62,6 +62,14 @@ ALTER TABLE public.hall_of_fame_legends ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.hall_of_fame_championships ENABLE ROW LEVEL SECURITY;
 
 -- 5. RLS Policies
+-- Drop existing policies if any
+DROP POLICY IF EXISTS "Jerseys Public Read" ON public.hall_of_fame_jerseys;
+DROP POLICY IF EXISTS "Jerseys Admin All" ON public.hall_of_fame_jerseys;
+DROP POLICY IF EXISTS "Legends Public Read" ON public.hall_of_fame_legends;
+DROP POLICY IF EXISTS "Legends Admin All" ON public.hall_of_fame_legends;
+DROP POLICY IF EXISTS "Championships Public Read" ON public.hall_of_fame_championships;
+DROP POLICY IF EXISTS "Championships Admin All" ON public.hall_of_fame_championships;
+
 -- Jerseys
 CREATE POLICY "Jerseys Public Read" ON public.hall_of_fame_jerseys
     FOR SELECT TO public
@@ -69,7 +77,8 @@ CREATE POLICY "Jerseys Public Read" ON public.hall_of_fame_jerseys
 
 CREATE POLICY "Jerseys Admin All" ON public.hall_of_fame_jerseys
     FOR ALL TO authenticated
-    USING (is_admin_check());
+    USING (public.is_admin_check())
+    WITH CHECK (public.is_admin_check());
 
 -- Legends
 CREATE POLICY "Legends Public Read" ON public.hall_of_fame_legends
@@ -78,7 +87,8 @@ CREATE POLICY "Legends Public Read" ON public.hall_of_fame_legends
 
 CREATE POLICY "Legends Admin All" ON public.hall_of_fame_legends
     FOR ALL TO authenticated
-    USING (is_admin_check());
+    USING (public.is_admin_check())
+    WITH CHECK (public.is_admin_check());
 
 -- Championships
 CREATE POLICY "Championships Public Read" ON public.hall_of_fame_championships
@@ -87,7 +97,8 @@ CREATE POLICY "Championships Public Read" ON public.hall_of_fame_championships
 
 CREATE POLICY "Championships Admin All" ON public.hall_of_fame_championships
     FOR ALL TO authenticated
-    USING (is_admin_check());
+    USING (public.is_admin_check())
+    WITH CHECK (public.is_admin_check());
 
 -- 6. Grants
 GRANT SELECT ON public.hall_of_fame_jerseys TO anon, authenticated;
