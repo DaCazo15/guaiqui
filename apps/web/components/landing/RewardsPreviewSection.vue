@@ -15,7 +15,7 @@ onMounted(async () => {
     const { data } = await supabase
       .from('products')
       .select('*')
-      .eq('is_active', true)
+      .eq('active', true)
       .order('created_at', { ascending: false })
       .limit(6)
     products.value = data || []
