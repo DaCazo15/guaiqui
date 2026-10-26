@@ -986,6 +986,26 @@ export interface ActiveProgressiveClue {
   } | null
 }
 
+// ==========================================
+// 6. NOTIFICATION TEMPLATES
+// ==========================================
+export interface NotificationTemplateVariable {
+  key: string
+  label: string
+}
+
+export interface NotificationTemplate {
+  id: string
+  title_template: string
+  body_template: string
+  description: string
+  category: 'trivias' | 'economy' | 'system'
+  available_variables: NotificationTemplateVariable[]
+  is_active: boolean
+  updated_at: string
+  updated_by?: string | null
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -1036,6 +1056,7 @@ export interface Database {
       flash_trivia_attempts: { Row: FlashTriviaAttempt; Insert: Partial<FlashTriviaAttempt>; Update: Partial<FlashTriviaAttempt>; Relationships: [] }
       progressive_clue_challenges: { Row: ProgressiveClueChallenge; Insert: Partial<ProgressiveClueChallenge>; Update: Partial<ProgressiveClueChallenge>; Relationships: [] }
       progressive_clue_votes: { Row: ProgressiveClueVote; Insert: Partial<ProgressiveClueVote>; Update: Partial<ProgressiveClueVote>; Relationships: [] }
+      notification_templates: { Row: NotificationTemplate; Insert: Partial<NotificationTemplate>; Update: Partial<NotificationTemplate>; Relationships: [] }
     }
     Views: Record<string, any>
     Functions: {

@@ -25,6 +25,7 @@ const platformNavItems = [
   { name: 'admin-segmentos', path: '/admin/segmentos', label: 'Segmentos', icon: 'bi-pie-chart' },
   { name: 'admin-riesgo', path: '/admin/riesgo', label: 'Control Riesgo', icon: 'bi-shield-exclamation' },
   { name: 'admin-incidencias', path: '/admin/incidencias', label: 'Incidencias', icon: 'bi-exclamation-triangle' },
+  { name: 'admin-notificaciones', path: '/admin/notificaciones', label: 'Notificaciones', icon: 'bi-bell' },
   { name: 'admin-auditoria', path: '/admin/auditoria', label: 'Auditoría', icon: 'bi-shield-check' }
 ]
 

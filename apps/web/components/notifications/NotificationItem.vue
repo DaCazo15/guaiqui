@@ -14,8 +14,10 @@ const emit = defineEmits<{
 const categoryIcon = computed(() => {
   const type = props.notification.type
   if (type.startsWith('redemption_')) return 'bi-gift-fill text-guaiqui-primary'
-  if (type === 'pearls_released') return 'bi-coin text-guaiqui-perlita'
+  if (type === 'pearls_released') return 'bi-coin text-amber-500'
+  if (type === 'pearls_revoked') return 'bi-exclamation-octagon-fill text-rose-600'
   if (type === 'new_trivia') return 'bi-patch-question-fill text-blue-600'
+  if (type === 'trivia_expiring') return 'bi-hourglass-split text-amber-500'
   if (type === 'match_day') return 'bi-trophy-fill text-amber-500'
   return 'bi-bell-fill text-guaiqui-text-muted'
 })

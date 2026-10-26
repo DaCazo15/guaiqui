@@ -30,6 +30,7 @@ import AdminPoliciesView from '../pages/AdminPoliciesView.vue'
 import AdminLandingView from '../pages/AdminLandingView.vue'
 import AdminBirthdayView from '../pages/AdminBirthdayView.vue'
 import AdminAdsView from '../pages/AdminAdsView.vue'
+import AdminNotificationsView from '../pages/AdminNotificationsView.vue'
 import Enroll2FAView from '../pages/Enroll2FAView.vue'
 import Verify2FAView from '../pages/Verify2FAView.vue'
 
@@ -189,6 +190,12 @@ export const router = createRouter({
       path: '/admin/auditoria',
       name: 'admin-auditoria',
       component: AdminAuditView,
+      meta: { requiresAdmin: true }
+    },
+    {
+      path: '/admin/notificaciones',
+      name: 'admin-notificaciones',
+      component: AdminNotificationsView,
       meta: { requiresAdmin: true }
     },
     {
