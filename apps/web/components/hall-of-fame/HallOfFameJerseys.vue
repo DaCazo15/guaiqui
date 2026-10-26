@@ -1,5 +1,36 @@
 <script setup lang="ts">
-import { retiredJerseys } from '~/data/hallOfFameData'
+import { computed } from 'vue'
+import { retiredJerseys as fallbackJerseys, type RetiredJersey } from '~/data/hallOfFameData'
+
+const supabase = useSupabaseClient()
+
+const { data: dbJerseys } = await useAsyncData('hall-of-fame-jerseys', async () => {
+  try {
+    const { data, error } = await supabase
+      .from('hall_of_fame_jerseys')
+      .select('*')
+      .eq('is_published', true)
+      .order('order_index', { ascending: true })
+
+    if (error || !data || data.length === 0) return null
+    return data.map((j: any): RetiredJersey => ({
+      number: j.jersey_number,
+      name: j.player_name,
+      nickname: j.nickname || '',
+      position: j.position || '',
+      years: j.years_active || '',
+      titlesCount: j.titles_count,
+      titlesBadge: j.titles_badge || undefined,
+      highlight: j.highlight || '',
+      description: j.description || '',
+      badgeIcon: j.badge_icon || 'bi-star-fill'
+    }))
+  } catch (_e) {
+    return null
+  }
+})
+
+const retiredJerseys = computed(() => dbJerseys.value || fallbackJerseys)
 </script>
 
 <template>

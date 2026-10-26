@@ -1,5 +1,31 @@
 <script setup lang="ts">
-import { championshipsList } from '~/data/hallOfFameData'
+import { computed } from 'vue'
+import { championshipsList as fallbackChampionships, type ChampionshipTitle } from '~/data/hallOfFameData'
+
+const supabase = useSupabaseClient()
+
+const { data: dbChampionships } = await useAsyncData('hall-of-fame-championships', async () => {
+  try {
+    const { data, error } = await supabase
+      .from('hall_of_fame_championships')
+      .select('*')
+      .eq('is_published', true)
+      .order('year', { ascending: true })
+
+    if (error || !data || data.length === 0) return null
+    return data.map((c: any): ChampionshipTitle => ({
+      year: c.year,
+      tournament: c.tournament,
+      runnerUp: c.runner_up || '',
+      highlight: c.highlight || '',
+      isHexa: Boolean(c.is_hexa)
+    }))
+  } catch (_e) {
+    return null
+  }
+})
+
+const championshipsList = computed(() => dbChampionships.value || fallbackChampionships)
 </script>
 
 <template>

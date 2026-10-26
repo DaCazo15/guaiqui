@@ -23,7 +23,6 @@ export default defineNuxtConfig({
         '/aceptar-terminos',
         '/historia',
         '/salon-de-la-fama',
-        '/noticias',
         '/plantilla',
         '/equipo-de-trabajo',
         '/como-funciona',

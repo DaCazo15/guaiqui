@@ -21,7 +21,6 @@ const navItems = [
   { name: 'Partidos', path: '/app/partidos', icon: 'bi-calendar-event-fill' },
   { name: 'Plantilla', path: '/app/plantilla', icon: 'bi-people-fill' },
   { name: 'Salón de la Fama', path: '/app/salon-de-la-fama', icon: 'bi-award-fill' },
-  { name: 'Noticias', path: '/app/noticias', icon: 'bi-newspaper' },
   { name: 'Ajustes', path: '/app/ajustes', icon: 'bi-gear-fill' },
 ]
 

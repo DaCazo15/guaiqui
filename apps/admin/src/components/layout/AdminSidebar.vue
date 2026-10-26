@@ -31,9 +31,8 @@ const platformNavItems = [
 const cmsNavItems = [
   { name: 'admin-landing', path: '/admin/landing', label: 'Landing', icon: 'bi-window-fullscreen' },
   { name: 'admin-equipo', path: '/admin/equipo', label: 'Equipo', icon: 'bi-shield-shaded' },
-  { name: 'admin-instagram', path: '/admin/instagram', label: 'Instagram', icon: 'bi-instagram' },
+  { name: 'admin-historia', path: '/admin/historia', label: 'Salón de la Fama', icon: 'bi-trophy-fill' },
   { name: 'admin-faq', path: '/admin/faq', label: 'Preguntas Frecuentes', icon: 'bi-patch-question' },
-  { name: 'admin-historia', path: '/admin/historia', label: 'Historia', icon: 'bi-hourglass-split' },
   { name: 'admin-politicas', path: '/admin/politicas', label: 'Políticas', icon: 'bi-journal-check' },
   { name: 'admin-cumpleanos', path: '/admin/cumpleanos', label: 'Cumpleaños', icon: 'bi-gift' }
 ]

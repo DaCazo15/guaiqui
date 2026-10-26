@@ -27,7 +27,6 @@ import AdminTeamView from '../pages/AdminTeamView.vue'
 import AdminFaqView from '../pages/AdminFaqView.vue'
 import AdminStatsView from '../pages/AdminStatsView.vue'
 import AdminPoliciesView from '../pages/AdminPoliciesView.vue'
-import AdminInstagramView from '../pages/AdminInstagramView.vue'
 import AdminLandingView from '../pages/AdminLandingView.vue'
 import AdminBirthdayView from '../pages/AdminBirthdayView.vue'
 import AdminAdsView from '../pages/AdminAdsView.vue'
@@ -236,9 +235,11 @@ export const router = createRouter({
     },
     {
       path: '/admin/instagram',
-      name: 'admin-instagram',
-      component: AdminInstagramView,
-      meta: { requiresAdmin: true }
+      redirect: '/admin/landing'
+    },
+    {
+      path: '/admin/salon-de-la-fama',
+      redirect: '/admin/historia'
     },
     {
       path: '/admin/contenido/modal-de-bienvenida',

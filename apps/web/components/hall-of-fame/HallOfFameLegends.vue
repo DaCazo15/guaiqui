@@ -1,12 +1,42 @@
 <script setup lang="ts">
 import { ref, computed } from 'vue'
-import { legendaryFigures } from '~/data/hallOfFameData'
+import { legendaryFigures as fallbackLegends, type LegendFigure } from '~/data/hallOfFameData'
 
+const supabase = useSupabaseClient()
 const activeCategory = ref<'all' | 'gold_era' | 'modern_era' | 'builder'>('all')
 
+const { data: dbLegends } = await useAsyncData('hall-of-fame-legends', async () => {
+  try {
+    const { data, error } = await supabase
+      .from('hall_of_fame_legends')
+      .select('*')
+      .eq('is_published', true)
+      .order('order_index', { ascending: true })
+
+    if (error || !data || data.length === 0) return null
+    return data.map((l: any): LegendFigure => ({
+      id: l.id,
+      name: l.name,
+      nickname: l.nickname || '',
+      role: l.role,
+      category: l.category,
+      era: l.era || '',
+      position: l.position || undefined,
+      titles: Array.isArray(l.titles) ? l.titles : [],
+      achievements: Array.isArray(l.achievements) ? l.achievements : [],
+      bio: l.bio || '',
+      image_url: l.image_url || '/images/historia/san-shepherd.png'
+    }))
+  } catch (_e) {
+    return null
+  }
+})
+
+const legendaryFigures = computed(() => dbLegends.value || fallbackLegends)
+
 const filteredLegends = computed(() => {
-  if (activeCategory.value === 'all') return legendaryFigures
-  return legendaryFigures.filter((l) => l.category === activeCategory.value)
+  if (activeCategory.value === 'all') return legendaryFigures.value
+  return legendaryFigures.value.filter((l) => l.category === activeCategory.value)
 })
 </script>
 

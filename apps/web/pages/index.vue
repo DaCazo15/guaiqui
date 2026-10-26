@@ -13,7 +13,6 @@ import StaffGridSection from '~/components/landing/StaffGridSection.vue'
 import FaqSection from '~/components/landing/FaqSection.vue'
 import FinalCtaSection from '~/components/landing/FinalCtaSection.vue'
 import SiteFooter from '~/components/landing/SiteFooter.vue'
-import InstagramSection from '~/components/landing/InstagramSection.vue'
 
 // SEO Meta
 useSeoMeta({
@@ -66,10 +65,7 @@ useSeoMeta({
     <!-- 13. FaqAccordion -->
     <FaqSection />
 
-    <!-- 14. Instagram Mosaic -->
-    <InstagramSection />
-
-    <!-- 15. FinalCta & SiteFooter -->
+    <!-- 14. FinalCta & SiteFooter -->
     <FinalCtaSection placement="before_footer" />
     <SiteFooter />
   </div>

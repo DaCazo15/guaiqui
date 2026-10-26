@@ -1,214 +1,102 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
+import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '../components/layout/AdminLayout.vue'
-import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable } from '@guaiqui/ui'
-import { supabase } from '../lib/supabase'
+import HistoryJerseysTab from '../components/history-admin/HistoryJerseysTab.vue'
+import HistoryLegendsTab from '../components/history-admin/HistoryLegendsTab.vue'
+import HistoryChampionshipsTab from '../components/history-admin/HistoryChampionshipsTab.vue'
+import HistoryMilestonesTab from '../components/history-admin/HistoryMilestonesTab.vue'
 
-interface MilestoneRow {
-  id: string
-  year: string
-  title: string
-  text: string
-  image_url?: string
-  order_index: number
-  is_published: boolean
-  created_at: string
-}
+type HistoryTab = 'jerseys' | 'legends' | 'championships' | 'milestones'
 
-const milestones = ref<MilestoneRow[]>([])
-const loading = ref(true)
-const actionLoading = ref(false)
-const errorMessage = ref<string | null>(null)
-const successMessage = ref<string | null>(null)
+const route = useRoute()
+const router = useRouter()
 
-const showEditorModal = ref(false)
-const form = ref({
-  id: '',
-  year: '1977',
-  title: '',
-  text: '',
-  image_url: '',
-  order_index: 0,
-  is_published: true
-})
+const activeTab = ref<HistoryTab>('jerseys')
 
-const columns = [
-  { key: 'year', label: 'Año / Época', align: 'center' as const, width: '100px' },
-  { key: 'title', label: 'Hito Histórico' },
-  { key: 'is_published', label: 'Publicado', align: 'center' as const },
-  { key: 'actions', label: 'Acciones', align: 'right' as const }
+const tabs = [
+  { id: 'jerseys' as const, label: 'Dorsales Retirados', icon: 'bi-award-fill', description: 'Camisetas inmortales en el techo de El Fortín' },
+  { id: 'legends' as const, label: 'Leyendas Inmortales', icon: 'bi-star-fill', description: 'Jugadores, entrenadores y forjadores históricos' },
+  { id: 'championships' as const, label: 'Campeonatos & Palmarés', icon: 'bi-trophy-fill', description: 'Las 9 estrellas nacionales consagradas' },
+  { id: 'milestones' as const, label: 'Línea de Tiempo', icon: 'bi-hourglass-split', description: 'Cronología e hitos históricos del club' }
 ]
 
-const loadMilestones = async () => {
-  loading.value = true
-  try {
-    const { data, error } = await supabase
-      .from('history_milestones')
-      .select('*')
-      .order('order_index', { ascending: true })
+const setTab = (tab: HistoryTab) => {
+  activeTab.value = tab
+  router.replace({ query: { ...route.query, tab } })
+}
 
-    if (error) throw error
-    milestones.value = data || []
-  } catch (err: any) {
-    errorMessage.value = err.message
-  } finally {
-    loading.value = false
+const syncTabFromRoute = () => {
+  const queryTab = route.query.tab as string
+  if (queryTab && ['jerseys', 'legends', 'championships', 'milestones'].includes(queryTab)) {
+    activeTab.value = queryTab as HistoryTab
+  } else if (route.query.tab === 'dorsales') {
+    activeTab.value = 'jerseys'
+  } else if (route.query.tab === 'leyendas') {
+    activeTab.value = 'legends'
+  } else if (route.query.tab === 'trofeos' || route.query.tab === 'campeonatos') {
+    activeTab.value = 'championships'
+  } else if (route.query.tab === 'hitos' || route.query.tab === 'historia') {
+    activeTab.value = 'milestones'
   }
 }
 
-const openNew = () => {
-  form.value = {
-    id: '',
-    year: '1977',
-    title: '',
-    text: '',
-    image_url: '',
-    order_index: milestones.value.length,
-    is_published: true
-  }
-  showEditorModal.value = true
-}
+onMounted(() => {
+  syncTabFromRoute()
+})
 
-const editRow = (row: MilestoneRow) => {
-  form.value = {
-    id: row.id,
-    year: row.year,
-    title: row.title,
-    text: row.text,
-    image_url: row.image_url || '',
-    order_index: row.order_index,
-    is_published: row.is_published
-  }
-  showEditorModal.value = true
-}
-
-const saveRow = async () => {
-  if (!form.value.title || !form.value.year) {
-    errorMessage.value = 'El año y el título son obligatorios.'
-    return
-  }
-
-  actionLoading.value = true
-  errorMessage.value = null
-  try {
-    const payload = {
-      year: form.value.year,
-      title: form.value.title,
-      text: form.value.text,
-      image_url: form.value.image_url || null,
-      order_index: Number(form.value.order_index),
-      is_published: form.value.is_published
-    }
-
-    if (form.value.id) {
-      const { error } = await supabase.from('history_milestones').update(payload).eq('id', form.value.id)
-      if (error) throw error
-    } else {
-      const { error } = await supabase.from('history_milestones').insert(payload)
-      if (error) throw error
-    }
-
-    successMessage.value = 'Hito histórico guardado correctamente.'
-    showEditorModal.value = false
-    await loadMilestones()
-  } catch (err: any) {
-    errorMessage.value = err.message
-  } finally {
-    actionLoading.value = false
-  }
-}
-
-const deleteRow = async (id: string) => {
-  if (!confirm('¿Desea eliminar este hito histórico?')) return
-  actionLoading.value = true
-  try {
-    const { error } = await supabase.from('history_milestones').delete().eq('id', id)
-    if (error) throw error
-    successMessage.value = 'Hito eliminado.'
-    await loadMilestones()
-  } catch (err: any) {
-    errorMessage.value = err.message
-  } finally {
-    actionLoading.value = false
-  }
-}
-
-onMounted(loadMilestones)
+watch(() => route.query.tab, () => {
+  syncTabFromRoute()
+})
 </script>
 
 <template>
   <AdminLayout>
     <div class="max-w-7xl mx-auto space-y-6">
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <!-- Section Header -->
+      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2 border-b border-slate-800">
         <div>
-          <h1 class="text-2xl font-bold font-title text-white">Historia y Cronología del Club</h1>
-          <p class="text-sm text-slate-400 mt-1">Gestionar hitos históricos para la sección /historia del sitio.</p>
+          <h1 class="text-2xl font-bold font-title text-white flex items-center gap-2">
+            <i class="bi bi-trophy text-emerald-400"></i>
+            Salón de la Fama & Historia del Club
+          </h1>
+          <p class="text-xs sm:text-sm text-slate-400 mt-1">
+            Administra los dorsales retirados, leyendas inmortales, trofeos de campeonato e hitos históricos de la Tribu.
+          </p>
         </div>
-        <BaseButton variant="primary" @click="openNew">
-          <i class="bi bi-plus-lg mr-1.5"></i> Nuevo Hito
-        </BaseButton>
       </div>
 
-      <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-200 rounded-xl text-sm flex items-center justify-between">
-        <span>{{ errorMessage }}</span>
-        <button @click="errorMessage = null" class="text-red-400 hover:text-red-200"><i class="bi bi-x-lg"></i></button>
-      </div>
-      <div v-if="successMessage" class="p-4 bg-emerald-950/60 border border-emerald-800 text-emerald-200 rounded-xl text-sm flex items-center justify-between">
-        <span>{{ successMessage }}</span>
-        <button @click="successMessage = null" class="text-emerald-400 hover:text-emerald-200"><i class="bi bi-x-lg"></i></button>
-      </div>
-
-      <BaseTable :columns="columns" :data="milestones" :loading="loading" empty-text="No hay hitos registrados">
-        <template #cell-year="{ row }">
-          <span class="font-mono font-bold text-emerald-400">{{ (row as any).year }}</span>
-        </template>
-
-        <template #cell-title="{ row }">
-          <div class="font-semibold text-white">{{ (row as any).title }}</div>
-          <div class="text-xs text-slate-400 truncate max-w-md">{{ (row as any).text }}</div>
-        </template>
-
-        <template #cell-is_published="{ row }">
-          <BaseBadge :variant="(row as any).is_published ? 'success' : 'soft'">
-            {{ (row as any).is_published ? 'Publicado' : 'Borrador' }}
-          </BaseBadge>
-        </template>
-
-        <template #cell-actions="{ row }">
-          <div class="flex items-center justify-end gap-1.5">
-            <button @click="editRow(row as any)" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
-              <i class="bi bi-pencil"></i>
-            </button>
-            <button @click="deleteRow((row as any).id)" class="p-1.5 text-red-400 hover:bg-red-950/60 rounded-lg transition-colors" title="Eliminar">
-              <i class="bi bi-trash"></i>
-            </button>
+      <!-- Dynamic Tab Buttons -->
+      <div class="grid grid-cols-2 lg:grid-cols-4 gap-2.5 p-1.5 bg-slate-950/80 border border-slate-800/80 rounded-2xl shadow-inner">
+        <button
+          v-for="tab in tabs"
+          :key="tab.id"
+          type="button"
+          @click="setTab(tab.id)"
+          :class="[
+            'px-4 py-3 rounded-xl text-left transition-all duration-200 flex flex-col justify-center gap-1 group relative',
+            activeTab === tab.id
+              ? 'bg-emerald-600 text-white shadow-lg shadow-emerald-950/60 ring-1 ring-emerald-400/30'
+              : 'text-slate-400 hover:text-white hover:bg-slate-900/80'
+          ]"
+        >
+          <div class="flex items-center gap-2">
+            <i :class="['bi', tab.icon, 'text-base', activeTab === tab.id ? 'text-white' : 'text-slate-400 group-hover:text-emerald-400']"></i>
+            <span class="text-xs sm:text-sm font-bold tracking-tight">{{ tab.label }}</span>
           </div>
-        </template>
-      </BaseTable>
-    </div>
-
-    <!-- Modal Editor -->
-    <BaseModal v-if="showEditorModal" :is-open="showEditorModal" title="Editor de Hito Histórico" @close="showEditorModal = false">
-      <div class="space-y-4">
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
-          <BaseInput label="Año / Período" v-model="form.year" placeholder="1977 o 1978 - 1982" />
-          <BaseInput label="Orden (#)" type="number" v-model="form.order_index" />
-        </div>
-        <BaseInput label="Título del Hito" v-model="form.title" placeholder="Ej: Fundación del Club" />
-        <BaseInput label="Texto / Descripción" v-model="form.text" placeholder="Reseña histórica..." />
-        
-        <label class="flex items-center gap-2 text-sm text-slate-300 cursor-pointer pt-2">
-          <input type="checkbox" v-model="form.is_published" class="accent-emerald-500 rounded" />
-          <span>Publicado en la Web</span>
-        </label>
+          <span :class="['text-[11px] truncate hidden sm:block', activeTab === tab.id ? 'text-emerald-100' : 'text-slate-500']">
+            {{ tab.description }}
+          </span>
+        </button>
       </div>
 
-      <template #footer>
-        <div class="flex items-center justify-end gap-3">
-          <BaseButton variant="secondary" @click="showEditorModal = false">Cancelar</BaseButton>
-          <BaseButton variant="primary" :loading="actionLoading" @click="saveRow">Guardar Hito</BaseButton>
-        </div>
-      </template>
-    </BaseModal>
+      <!-- Dynamic Tab Content Render -->
+      <div class="pt-2">
+        <HistoryJerseysTab v-if="activeTab === 'jerseys'" />
+        <HistoryLegendsTab v-else-if="activeTab === 'legends'" />
+        <HistoryChampionshipsTab v-else-if="activeTab === 'championships'" />
+        <HistoryMilestonesTab v-else-if="activeTab === 'milestones'" />
+      </div>
+    </div>
   </AdminLayout>
 </template>
