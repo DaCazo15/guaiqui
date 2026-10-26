@@ -125,6 +125,40 @@ describe('Bulk Import Configuration and Validation', () => {
       expect(result.errors).toHaveLength(0)
     })
 
+    it('includes url_logo_rival column and sample logo url', () => {
+      const logoCol = config.columns.find(c => c.key === 'url_logo_rival')
+      expect(logoCol).toBeDefined()
+      expect(logoCol?.required).toBeFalsy()
+      expect(config.sampleData[0].url_logo_rival).toBeTruthy()
+    })
+
+    it('maps url_logo_rival correctly in processRows', async () => {
+      let insertedPayloads: any[] = []
+      const mockSupabase = {
+        from: (table: string) => ({
+          insert: async (payloads: any[]) => {
+            insertedPayloads = payloads
+            return { error: null }
+          }
+        })
+      }
+
+      await config.processRows([
+        {
+          rival: 'Trotamundos de Carabobo',
+          url_logo_rival: 'https://images.sofascore.com/team-348731.png',
+          fecha_partido: '2026-06-12 19:30',
+          sede: 'La Asunción',
+          es_local: 'SI',
+          estado: 'scheduled'
+        }
+      ], mockSupabase)
+
+      expect(insertedPayloads).toHaveLength(1)
+      expect(insertedPayloads[0].opponent).toBe('Trotamundos de Carabobo')
+      expect(insertedPayloads[0].opponent_logo_url).toBe('https://images.sofascore.com/team-348731.png')
+    })
+
     it('flags missing rival or game date', () => {
       const invalidRow = {
         rival: '',

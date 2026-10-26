@@ -9,6 +9,7 @@ import BulkImportModal from '../components/common/BulkImportModal.vue'
 interface GameRow {
   id: string
   opponent: string
+  opponent_logo_url?: string | null
   location: string
   game_date: string
   is_home: boolean
@@ -28,6 +29,7 @@ const showBulkImportModal = ref(false)
 const gameForm = ref({
   id: '',
   opponent: '',
+  opponent_logo_url: '',
   location: 'Gimnasio Ciudad de La Asunción',
   game_date: '',
   is_home: true,
@@ -67,6 +69,7 @@ const openNewGame = () => {
   gameForm.value = {
     id: '',
     opponent: '',
+    opponent_logo_url: '',
     location: 'Gimnasio Ciudad de La Asunción',
     game_date: nowCaracasInput(),
     is_home: true,
@@ -81,6 +84,7 @@ const editGame = (g: GameRow) => {
   gameForm.value = {
     id: g.id,
     opponent: g.opponent,
+    opponent_logo_url: g.opponent_logo_url || '',
     location: g.location,
     game_date: g.game_date ? isoToCaracasInput(g.game_date) : '',
     is_home: g.is_home,
@@ -106,6 +110,7 @@ const saveGame = async () => {
   try {
     const payload = {
       opponent: gameForm.value.opponent.trim(),
+      opponent_logo_url: gameForm.value.opponent_logo_url.trim() || null,
       location: gameForm.value.location.trim() || 'Gimnasio Ciudad de La Asunción',
       game_date: caracasInputToISO(gameForm.value.game_date),
       is_home: Boolean(gameForm.value.is_home),
@@ -219,7 +224,34 @@ onMounted(loadGames)
         empty-text="No hay partidos registrados en el calendario. Haz clic en 'Programar Partido' para registrar el primero."
       >
         <template #cell-opponent="{ row }">
-          <span class="font-bold text-white">Guaiqueríes vs {{ (row as GameRow).opponent }}</span>
+          <div class="flex items-center gap-3 py-1">
+            <div class="relative w-10 h-10 rounded-xl bg-slate-900 border border-slate-700/80 p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
+              <img
+                v-if="(row as GameRow).opponent_logo_url"
+                :src="(row as GameRow).opponent_logo_url!"
+                :alt="(row as GameRow).opponent"
+                class="w-full h-full object-contain"
+                loading="lazy"
+              />
+              <div
+                v-else
+                class="w-full h-full rounded-lg bg-emerald-950/60 border border-emerald-800/40 flex items-center justify-center text-emerald-400 font-display font-black text-xs"
+              >
+                <i class="bi bi-shield-shaded text-sm"></i>
+              </div>
+            </div>
+            <div class="flex flex-col min-w-0">
+              <div class="flex items-center gap-1.5 flex-wrap">
+                <span class="text-xs font-semibold text-emerald-400">Guaiqueríes</span>
+                <span class="text-[11px] text-slate-500 font-bold">vs</span>
+                <span class="font-bold text-white tracking-tight">{{ (row as GameRow).opponent }}</span>
+              </div>
+              <span class="text-[11px] text-slate-400 truncate flex items-center gap-1 mt-0.5">
+                <i class="bi bi-geo-alt text-[10px] text-slate-500"></i>
+                {{ (row as GameRow).location }}
+              </span>
+            </div>
+          </div>
         </template>
 
         <template #cell-game_date="{ row }">
@@ -284,7 +316,36 @@ onMounted(loadGames)
       @close="showEditorModal = false"
     >
       <div class="space-y-4">
-        <BaseInput label="Equipo Rival" v-model="gameForm.opponent" placeholder="Ej: Trotamundos de Carabobo" />
+        <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-end">
+          <div class="sm:col-span-2">
+            <BaseInput label="Equipo Rival" v-model="gameForm.opponent" placeholder="Ej: Trotamundos de Carabobo" />
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-slate-300 mb-1">Logo del Rival</label>
+            <div class="h-10 px-3 rounded-xl bg-slate-950 border border-slate-800 flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg bg-slate-900 border border-slate-700 p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
+                <img
+                  v-if="gameForm.opponent_logo_url?.trim()"
+                  :src="gameForm.opponent_logo_url.trim()"
+                  :alt="gameForm.opponent || 'Logo Rival'"
+                  class="w-full h-full object-contain"
+                />
+                <i v-else class="bi bi-shield-shaded text-slate-500 text-xs"></i>
+              </div>
+              <span class="text-[11px] text-slate-400 truncate">
+                {{ gameForm.opponent_logo_url?.trim() ? 'Logo asignado' : 'Sin logo' }}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <BaseInput
+          label="URL del Logo del Rival (Opcional)"
+          v-model="gameForm.opponent_logo_url"
+          placeholder="https://ejemplo.com/logos/rival.png"
+          hint="Enlace web directo en formato PNG, SVG o WEBP para mostrar el escudo del equipo rival."
+        />
+
         <BaseInput label="Ubicación / Gimnasio" v-model="gameForm.location" placeholder="Ej: Gimnasio Ciudad de La Asunción" />
         <BaseInput label="Fecha y Hora — Hora de Caracas (GMT-4)" type="datetime-local" v-model="gameForm.game_date" />
 

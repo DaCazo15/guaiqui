@@ -238,8 +238,15 @@ const formatDate = (dateStr: string) => {
               </h3>
               <span class="text-xs text-guaiqui-text-muted font-medium">Rival SPB</span>
             </div>
-            <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-display font-black text-xl border border-slate-300 shrink-0 order-1 md:order-2">
-              <i class="bi bi-shield-fill text-slate-500"></i>
+            <div class="w-12 h-12 rounded-xl bg-slate-100 text-slate-700 flex items-center justify-center font-display font-black text-xl border border-slate-300 shrink-0 order-1 md:order-2 overflow-hidden p-1 shadow-sm">
+              <img
+                v-if="game.opponent_logo_url"
+                :src="game.opponent_logo_url"
+                :alt="game.opponent"
+                class="w-full h-full object-contain"
+                loading="lazy"
+              />
+              <i v-else class="bi bi-shield-fill text-slate-500"></i>
             </div>
           </div>
         </div>

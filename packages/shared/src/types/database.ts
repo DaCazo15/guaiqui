@@ -179,6 +179,7 @@ export interface Player {
 export interface Game {
   id: string
   opponent: string
+  opponent_logo_url?: string | null
   location: string
   game_date: string
   is_home: boolean

@@ -178,7 +178,16 @@ onBeforeUnmount(() => {
         <!-- Equipo Rival Dinámico -->
         <div class="flex flex-col items-center text-center space-y-1.5">
           <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-slate-900 border-2 border-slate-600 p-1.5 shadow-lg flex items-center justify-center">
-            <div class="w-full h-full rounded-full bg-gradient-to-br from-blue-900 to-indigo-950 flex items-center justify-center text-amber-400 text-xl font-black font-display border border-blue-400/30">
+            <img
+              v-if="nextGame.opponent_logo_url"
+              :src="nextGame.opponent_logo_url"
+              :alt="nextGame.opponent"
+              class="w-full h-full object-contain drop-shadow"
+            />
+            <div
+              v-else
+              class="w-full h-full rounded-full bg-gradient-to-br from-blue-900 to-indigo-950 flex items-center justify-center text-amber-400 text-xl font-black font-display border border-blue-400/30"
+            >
               <i class="bi bi-shield-shaded"></i>
             </div>
             <span class="absolute -bottom-1 px-1.5 py-0.2 rounded-full bg-blue-700 text-white text-[8px] font-black uppercase tracking-wider">
