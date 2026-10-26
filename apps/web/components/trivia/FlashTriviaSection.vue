@@ -36,6 +36,23 @@ const openChallenge = (item: ActiveFlashTrivia) => {
   isGameModalOpen.value = true
 }
 
+const handleCloseModal = () => {
+  if (isPlaying.value && !resultData.value) {
+    // Si se sale sin enviar su respuesta final, se cancela el timer y NO consume el intento
+    clearInterval(timerInterval)
+    isPlaying.value = false
+    answers.value = []
+  }
+  isGameModalOpen.value = false
+}
+
+watch(isGameModalOpen, (isOpen) => {
+  if (!isOpen) {
+    clearInterval(timerInterval)
+    isPlaying.value = false
+  }
+})
+
 const startCountdown = () => {
   isPlaying.value = true
   currentQuestionIndex.value = 0
@@ -48,7 +65,9 @@ const startCountdown = () => {
       timeLeft.value--
     } else {
       clearInterval(timerInterval)
-      finishSession()
+      if (isGameModalOpen.value && isPlaying.value) {
+        finishSession()
+      }
     }
   }, 1000)
 }
@@ -73,7 +92,7 @@ const selectAnswer = (optionKey: string) => {
 const finishSession = async () => {
   clearInterval(timerInterval)
   isPlaying.value = false
-  if (!selectedChallenge.value) return
+  if (!selectedChallenge.value || !isGameModalOpen.value) return
 
   isSubmitting.value = true
   errorMessage.value = null
@@ -178,7 +197,7 @@ onUnmounted(() => {
     </div>
 
     <!-- Play Modal -->
-    <BaseModal v-model="isGameModalOpen" :title="selectedChallenge?.title || 'Trivia Flash'" size="lg">
+    <BaseModal v-model="isGameModalOpen" :title="selectedChallenge?.title || 'Trivia Flash'" size="lg" @close="handleCloseModal">
       <div v-if="selectedChallenge" class="space-y-4 text-left">
         <!-- Ready Screen -->
         <div v-if="!isPlaying && !resultData" class="text-center py-6 space-y-4">
@@ -188,7 +207,7 @@ onUnmounted(() => {
           <div class="space-y-1">
             <h3 class="font-display font-bold text-xl text-slate-900">¿Listo para el desafío de 60 segundos?</h3>
             <p class="text-xs text-slate-600 max-w-md mx-auto">
-              Tienes {{ selectedChallenge.time_limit_seconds }} segundos para contestar la mayor cantidad de preguntas posible. Si sales antes de empezar, el reto no se consume.
+              Tienes {{ selectedChallenge.time_limit_seconds }} segundos para contestar la mayor cantidad de preguntas posible. Si sales antes de enviar, el reto no se consume y sigue disponible.
             </p>
           </div>
           <BaseButton variant="primary" size="lg" @click="startCountdown">
@@ -261,8 +280,8 @@ onUnmounted(() => {
 
       <template #footer>
         <div class="flex items-center justify-end gap-2">
-          <BaseButton variant="outline" size="sm" @click="isGameModalOpen = false" :disabled="isPlaying">
-            {{ isPlaying ? 'Jugando...' : 'Cerrar' }}
+          <BaseButton variant="outline" size="sm" @click="handleCloseModal">
+            {{ isPlaying ? 'Salir (no consume intento)' : 'Cerrar' }}
           </BaseButton>
         </div>
       </template>
