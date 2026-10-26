@@ -130,6 +130,7 @@ const handleRewardClick = (name: string) => {
           :key="item.id"
           variant="interactive"
           padding="md"
+          :spotlight="true"
           class="reward-card flex flex-col justify-between"
           @click="handleRewardClick(item.title)"
         >

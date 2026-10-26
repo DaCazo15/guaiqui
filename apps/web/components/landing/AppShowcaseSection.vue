@@ -82,8 +82,17 @@ onUnmounted(() => {
   <section ref="sectionRef" class="py-16 sm:py-24 bg-guaiqui-surface border-y border-guaiqui-border px-4 sm:px-8 overflow-hidden">
     <div class="max-w-6xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
       <!-- Left Column: PWA App Mockup -->
-      <div class="lg:col-span-5 flex justify-center">
-        <div ref="phoneRef" class="w-full max-w-xs bg-slate-950 p-4 rounded-[40px] shadow-2xl border-4 border-slate-800 text-white relative">
+      <div class="lg:col-span-5 flex justify-center relative">
+        <!-- Ambient Green Backlight Glow -->
+        <div class="absolute w-72 h-72 bg-emerald-500/15 rounded-full blur-3xl pointer-events-none -top-6 -left-6" />
+
+        <div ref="phoneRef" class="w-full max-w-xs bg-slate-950 p-4 rounded-[40px] shadow-[0_25px_60px_-15px_rgba(0,0,0,0.4)] border-4 border-slate-800 text-white relative z-10 transition-transform duration-300 hover:scale-[1.02]">
+          <!-- Floating badge inspired by 21st.dev -->
+          <div class="absolute -top-3 -right-4 bg-emerald-900/90 backdrop-blur-md border border-emerald-400/40 px-3 py-1.5 rounded-full text-[10px] font-mono font-bold text-emerald-300 shadow-lg flex items-center gap-1.5 z-20">
+            <span class="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
+            Fan Verificado
+          </div>
+
           <!-- Camera notch -->
           <div class="w-28 h-4 bg-slate-800 rounded-full mx-auto mb-4" />
 

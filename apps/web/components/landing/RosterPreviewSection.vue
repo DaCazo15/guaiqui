@@ -122,6 +122,7 @@ onUnmounted(() => {
           :key="p.id"
           variant="default"
           padding="md"
+          :spotlight="true"
           class="player-card hover:border-guaiqui-primary transition-all duration-200 bg-white"
         >
           <div class="flex items-center gap-4">

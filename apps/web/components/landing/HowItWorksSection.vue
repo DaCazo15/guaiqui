@@ -67,6 +67,7 @@ onUnmounted(() => {
           v-for="step in howItWorksSteps"
           :key="step.step"
           variant="outline"
+          :spotlight="true"
           class="step-card relative hover:border-guaiqui-primary hover:shadow-guaiqui-md transition-all duration-200"
         >
           <div class="space-y-4">

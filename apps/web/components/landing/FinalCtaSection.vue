@@ -192,8 +192,9 @@ onUnmounted(() => {
       </p>
 
       <div class="cta-anim-child pt-2">
-        <NuxtLink :to="cta.button_url || '/registro'">
-          <BaseButton variant="primary" size="lg" @click="handleCtaClick">
+        <NuxtLink :to="cta.button_url || '/registro'" class="relative inline-block group">
+          <div class="absolute -inset-0.5 bg-gradient-to-r from-emerald-400 via-amber-300 to-emerald-400 rounded-guaiqui-lg blur-xs opacity-70 group-hover:opacity-100 transition duration-300 group-hover:shadow-[0_0_25px_rgba(16,185,129,0.5)]" />
+          <BaseButton variant="primary" size="lg" class="relative" @click="handleCtaClick">
             {{ cta.button_text || 'Crear mi Cuenta Gratis' }}
           </BaseButton>
         </NuxtLink>

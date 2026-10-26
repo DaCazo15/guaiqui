@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { ref } from 'vue'
+
 interface MilestoneItem {
   id: string
   year: string
@@ -8,15 +10,29 @@ interface MilestoneItem {
   isChampionship?: boolean
 }
 
-defineProps<{
+const props = defineProps<{
   milestone: MilestoneItem
   index: number
   isActive?: boolean
 }>()
+
+const cardRef = ref<HTMLElement | null>(null)
+const mousePos = ref({ x: 0, y: 0 })
+const isHovered = ref(false)
+
+const handleMouseMove = (e: MouseEvent) => {
+  if (!cardRef.value) return
+  const rect = cardRef.value.getBoundingClientRect()
+  mousePos.value = {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top,
+  }
+}
 </script>
 
 <template>
   <div
+    ref="cardRef"
     class="history-card snap-center w-[300px] sm:w-[380px] lg:w-[420px] shrink-0 bg-slate-900/85 backdrop-blur-xl border rounded-guaiqui-2xl p-6 sm:p-7 flex flex-col justify-between relative overflow-hidden transition-all duration-300 group hover:border-emerald-400/80 hover:shadow-[0_10px_35px_-10px_rgba(16,185,129,0.3)]"
     :class="[
       milestone.isChampionship
@@ -24,7 +40,20 @@ defineProps<{
         : 'border-white/15',
       isActive ? 'ring-2 ring-emerald-400/60' : '',
     ]"
+    @mousemove="handleMouseMove"
+    @mouseenter="isHovered = true"
+    @mouseleave="isHovered = false"
   >
+    <!-- 21st.dev Spotlight Glow Effect -->
+    <div
+      class="pointer-events-none absolute inset-0 z-0 transition-opacity duration-300 ease-out"
+      :style="{
+        opacity: isHovered ? 1 : 0,
+        background: `radial-gradient(circle 260px at ${mousePos.x}px ${mousePos.y}px, ${
+          milestone.isChampionship ? 'rgba(251,191,36,0.18)' : 'rgba(16,185,129,0.18)'
+        }, transparent 80%)`,
+      }"
+    />
     <!-- Marca de agua gigante con el Año en el fondo -->
     <div
       class="font-display font-black text-7xl sm:text-8xl text-white/[0.04] absolute -right-2 -bottom-2 select-none pointer-events-none group-hover:text-emerald-400/10 transition-colors"

@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed } from 'vue'
+import { ref, computed } from 'vue'
 
 export type CardVariant = 'default' | 'flat' | 'outline' | 'interactive'
 export type CardPadding = 'none' | 'sm' | 'md' | 'lg'
@@ -7,12 +7,37 @@ export type CardPadding = 'none' | 'sm' | 'md' | 'lg'
 interface Props {
   variant?: CardVariant
   padding?: CardPadding
+  spotlight?: boolean
+  spotlightColor?: string
 }
 
 const props = withDefaults(defineProps<Props>(), {
   variant: 'default',
   padding: 'md',
+  spotlight: false,
+  spotlightColor: 'rgba(16, 185, 129, 0.16)',
 })
+
+const cardRef = ref<HTMLElement | null>(null)
+const mousePos = ref({ x: 0, y: 0 })
+const isHovered = ref(false)
+
+const handleMouseMove = (e: MouseEvent) => {
+  if (!props.spotlight || !cardRef.value) return
+  const rect = cardRef.value.getBoundingClientRect()
+  mousePos.value = {
+    x: e.clientX - rect.left,
+    y: e.clientY - rect.top,
+  }
+}
+
+const handleMouseEnter = () => {
+  if (props.spotlight) isHovered.value = true
+}
+
+const handleMouseLeave = () => {
+  if (props.spotlight) isHovered.value = false
+}
 
 const variantClasses = computed(() => {
   switch (props.variant) {
@@ -45,11 +70,24 @@ const paddingClasses = computed(() => {
 
 <template>
   <div
+    ref="cardRef"
     :class="[
-      'rounded-guaiqui-lg overflow-hidden flex flex-col',
+      'rounded-guaiqui-lg overflow-hidden flex flex-col relative',
       variantClasses,
     ]"
+    @mousemove="handleMouseMove"
+    @mouseenter="handleMouseEnter"
+    @mouseleave="handleMouseLeave"
   >
+    <!-- 21st.dev Spotlight Glow Effect -->
+    <div
+      v-if="spotlight"
+      class="pointer-events-none absolute inset-0 z-0 transition-opacity duration-300 ease-out"
+      :style="{
+        opacity: isHovered ? 1 : 0,
+        background: `radial-gradient(circle 260px at ${mousePos.x}px ${mousePos.y}px, ${spotlightColor}, transparent 80%)`,
+      }"
+    />
     <div v-if="$slots.image" class="w-full">
       <slot name="image" />
     </div>

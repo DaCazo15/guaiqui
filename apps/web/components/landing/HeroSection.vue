@@ -177,8 +177,11 @@ const handleHeroHowItWorks = () => {
     <!-- Centered Hero Content without the right card -->
     <div class="max-w-4xl mx-auto relative z-10 text-center space-y-6">
       <!-- Top Badge / Distintivo -->
-      <div v-if="heroBadgeText" class="hero-badge inline-flex items-center gap-2 bg-emerald-500/15 border border-emerald-400/30 text-emerald-300 text-xs font-extrabold uppercase px-4 py-1.5 rounded-full shadow-lg">
-        <i class="bi bi-star-fill text-amber-300 text-[10px]"></i>
+      <div v-if="heroBadgeText" class="hero-badge inline-flex items-center gap-2.5 bg-emerald-950/80 border border-emerald-400/40 text-emerald-300 text-xs font-mono font-bold tracking-wider uppercase px-4 py-1.5 rounded-full shadow-[0_0_20px_rgba(16,185,129,0.25)] backdrop-blur-md">
+        <span class="relative flex h-2 w-2">
+          <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+          <span class="relative inline-flex rounded-full h-2 w-2 bg-emerald-400"></span>
+        </span>
         <span>{{ heroBadgeText }}</span>
       </div>
 
@@ -194,14 +197,16 @@ const handleHeroHowItWorks = () => {
 
       <!-- Double CTA Buttons -->
       <div class="flex flex-col sm:flex-row items-center justify-center gap-4 pt-2">
-        <NuxtLink :to="ctaPrimaryUrl" class="hero-cta w-full sm:w-auto">
-          <BaseButton variant="primary" size="lg" block class="px-8 shadow-xl shadow-emerald-950/80" @click="handleHeroRegister">
+        <NuxtLink :to="ctaPrimaryUrl" class="hero-cta w-full sm:w-auto relative group">
+          <!-- 21st.dev Shiny Border & Ambient Glow Layer -->
+          <div class="absolute -inset-0.5 bg-gradient-to-r from-emerald-400 via-emerald-200 to-amber-300 rounded-guaiqui-lg blur-xs opacity-75 group-hover:opacity-100 transition duration-300 group-hover:shadow-[0_0_25px_rgba(16,185,129,0.6)]" />
+          <BaseButton variant="primary" size="lg" block class="relative px-8 shadow-xl" @click="handleHeroRegister">
             {{ ctaPrimaryText }}
           </BaseButton>
         </NuxtLink>
 
         <NuxtLink v-if="ctaSecondaryText" :to="ctaSecondaryUrl" class="hero-cta w-full sm:w-auto">
-          <BaseButton variant="secondary" size="lg" block class="px-8 bg-white/10 hover:bg-white/20 border border-white/20 text-white shadow-lg" @click="handleHeroHowItWorks">
+          <BaseButton variant="secondary" size="lg" block class="px-8 bg-white/10 hover:bg-white/20 border border-white/20 text-white shadow-lg backdrop-blur-sm" @click="handleHeroHowItWorks">
             {{ ctaSecondaryText }}
           </BaseButton>
         </NuxtLink>
