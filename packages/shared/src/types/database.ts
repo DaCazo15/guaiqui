@@ -644,6 +644,348 @@ export interface ActiveTriviaPoll {
   }>
 }
 
+// ==========================================
+// 1. OVER / UNDER PREDICTIONS
+// ==========================================
+export type OverUnderStatus = 'draft' | 'published' | 'closed' | 'resolved' | 'cancelled'
+export type OverUnderChoice = 'over' | 'under' | 'push'
+
+export interface OverUnderPrediction {
+  id: string
+  game_id?: string | null
+  player_id?: string | null
+  title: string
+  description?: string | null
+  stat_type: string
+  line_value: number
+  reward_pearls: number
+  status: OverUnderStatus
+  starts_at: string
+  closes_at: string
+  actual_value?: number | null
+  winning_choice?: OverUnderChoice | null
+  resolved_at?: string | null
+  resolved_by?: string | null
+  created_at: string
+}
+
+export interface OverUnderVote {
+  id: string
+  prediction_id: string
+  fan_id: string
+  choice: 'over' | 'under'
+  is_winner?: boolean | null
+  pearls_awarded: number
+  created_at: string
+}
+
+export interface ActiveOverUnder {
+  id: string
+  game_id?: string | null
+  title: string
+  description?: string | null
+  stat_type: string
+  line_value: number
+  reward_pearls: number
+  status: OverUnderStatus
+  starts_at: string
+  closes_at: string
+  winning_choice?: OverUnderChoice | null
+  actual_value?: number | null
+  player?: {
+    id: string
+    name: string
+    jersey_number: number
+    photo_url?: string | null
+    position?: string | null
+  } | null
+  game?: {
+    id: string
+    opponent_name: string
+    opponent_logo_url?: string | null
+    game_date: string
+    is_home: boolean
+  } | null
+  user_vote?: {
+    id: string
+    choice: 'over' | 'under'
+    is_winner?: boolean | null
+    pearls_awarded: number
+    created_at: string
+  } | null
+  over_count: number
+  under_count: number
+}
+
+// ==========================================
+// 2. MYSTERY PLAY CHALLENGES («¿QUÉ PASÓ DESPUÉS?»)
+// ==========================================
+export type MysteryPlayStatus = 'draft' | 'published' | 'closed' | 'resolved' | 'cancelled'
+
+export interface MysteryPlayChallenge {
+  id: string
+  game_id?: string | null
+  title: string
+  description?: string | null
+  video_url?: string | null
+  cover_image_url?: string | null
+  question: string
+  option_a: string
+  option_b: string
+  option_c: string
+  option_d: string
+  correct_option: string
+  reveal_video_url?: string | null
+  reward_pearls: number
+  status: MysteryPlayStatus
+  starts_at: string
+  closes_at: string
+  resolved_at?: string | null
+  resolved_by?: string | null
+  created_at: string
+}
+
+export interface MysteryPlayVote {
+  id: string
+  challenge_id: string
+  fan_id: string
+  selected_option: string
+  is_correct: boolean
+  pearls_awarded: number
+  created_at: string
+}
+
+export interface ActiveMysteryPlay {
+  id: string
+  title: string
+  description?: string | null
+  video_url?: string | null
+  cover_image_url?: string | null
+  question: string
+  option_a: string
+  option_b: string
+  option_c: string
+  option_d: string
+  reward_pearls: number
+  status: MysteryPlayStatus
+  starts_at: string
+  closes_at: string
+  correct_option?: string | null
+  reveal_video_url?: string | null
+  game?: {
+    id: string
+    opponent_name: string
+    opponent_logo_url?: string | null
+    game_date: string
+  } | null
+  user_vote?: {
+    id: string
+    selected_option: string
+    is_correct: boolean
+    pearls_awarded: number
+    created_at: string
+  } | null
+}
+
+// ==========================================
+// 3. SCORE PREDICTIONS (MARCADOR EXACTO)
+// ==========================================
+export type ScorePredictionStatus = 'draft' | 'published' | 'closed' | 'resolved' | 'cancelled'
+
+export interface ScorePrediction {
+  id: string
+  game_id: string
+  title: string
+  description?: string | null
+  exact_reward_pearls: number
+  closest_reward_pearls: number
+  status: ScorePredictionStatus
+  starts_at: string
+  closes_at: string
+  final_guaiqueries_score?: number | null
+  final_rival_score?: number | null
+  resolved_at?: string | null
+  resolved_by?: string | null
+  created_at: string
+}
+
+export interface ScorePredictionVote {
+  id: string
+  prediction_id: string
+  fan_id: string
+  predicted_guaiqueries_score: number
+  predicted_rival_score: number
+  is_exact_match?: boolean | null
+  is_closest_match?: boolean | null
+  pearls_awarded: number
+  created_at: string
+}
+
+export interface ActiveScorePrediction {
+  id: string
+  title: string
+  description?: string | null
+  exact_reward_pearls: number
+  closest_reward_pearls: number
+  status: ScorePredictionStatus
+  starts_at: string
+  closes_at: string
+  final_guaiqueries_score?: number | null
+  final_rival_score?: number | null
+  game: {
+    id: string
+    opponent_name: string
+    opponent_logo_url?: string | null
+    game_date: string
+    is_home: boolean
+  }
+  user_vote?: {
+    id: string
+    predicted_guaiqueries_score: number
+    predicted_rival_score: number
+    is_exact_match?: boolean | null
+    is_closest_match?: boolean | null
+    pearls_awarded: number
+    created_at: string
+  } | null
+  total_participants: number
+}
+
+// ==========================================
+// 4. FLASH TRIVIA (CONTRARRELOJ 60s)
+// ==========================================
+export type FlashTriviaStatus = 'draft' | 'published' | 'closed' | 'archived'
+
+export interface FlashTriviaChallenge {
+  id: string
+  title: string
+  description?: string | null
+  time_limit_seconds: number
+  pearls_per_correct: number
+  status: FlashTriviaStatus
+  starts_at: string
+  closes_at: string
+  created_at: string
+}
+
+export interface FlashTriviaQuestion {
+  id: string
+  challenge_id: string
+  question: string
+  option_a: string
+  option_b: string
+  option_c?: string | null
+  option_d?: string | null
+  correct_option: string
+  order_index: number
+  created_at: string
+}
+
+export interface FlashTriviaAttempt {
+  id: string
+  challenge_id: string
+  fan_id: string
+  correct_count: number
+  total_answered: number
+  time_spent_seconds: number
+  pearls_awarded: number
+  created_at: string
+}
+
+export interface ActiveFlashTrivia {
+  id: string
+  title: string
+  description?: string | null
+  time_limit_seconds: number
+  pearls_per_correct: number
+  status: FlashTriviaStatus
+  starts_at: string
+  closes_at: string
+  user_attempt?: {
+    id: string
+    correct_count: number
+    total_answered: number
+    time_spent_seconds: number
+    pearls_awarded: number
+    created_at: string
+  } | null
+  questions: Array<{
+    id: string
+    question: string
+    option_a: string
+    option_b: string
+    option_c?: string | null
+    option_d?: string | null
+    order_index: number
+  }>
+}
+
+// ==========================================
+// 5. PROGRESSIVE CLUES (PISTAS PROGRESIVAS)
+// ==========================================
+export type ProgressiveClueStatus = 'draft' | 'published' | 'closed' | 'resolved' | 'cancelled'
+
+export interface ProgressiveClueChallenge {
+  id: string
+  player_id?: string | null
+  target_player_name: string
+  title: string
+  description?: string | null
+  clue_1: string
+  clue_2: string
+  clue_3: string
+  pearls_clue_1: number
+  pearls_clue_2: number
+  pearls_clue_3: number
+  reveal_photo_url?: string | null
+  status: ProgressiveClueStatus
+  starts_at: string
+  closes_at: string
+  created_at: string
+}
+
+export interface ProgressiveClueVote {
+  id: string
+  challenge_id: string
+  fan_id: string
+  selected_player_id?: string | null
+  clues_revealed_count: number
+  is_correct: boolean
+  pearls_awarded: number
+  created_at: string
+}
+
+export interface ActiveProgressiveClue {
+  id: string
+  title: string
+  description?: string | null
+  clue_1: string
+  clue_2: string
+  clue_3: string
+  pearls_clue_1: number
+  pearls_clue_2: number
+  pearls_clue_3: number
+  status: ProgressiveClueStatus
+  starts_at: string
+  closes_at: string
+  target_player_name?: string | null
+  reveal_photo_url?: string | null
+  target_player?: {
+    id: string
+    name: string
+    jersey_number: number
+    photo_url?: string | null
+    position?: string | null
+  } | null
+  user_vote?: {
+    id: string
+    clues_revealed_count: number
+    is_correct: boolean
+    pearls_awarded: number
+    created_at: string
+  } | null
+}
+
 export interface Database {
   public: {
     Tables: {
@@ -683,6 +1025,17 @@ export interface Database {
       trivia_polls: { Row: TriviaPoll; Insert: Partial<TriviaPoll>; Update: Partial<TriviaPoll>; Relationships: [] }
       trivia_poll_options: { Row: TriviaPollOption; Insert: Partial<TriviaPollOption>; Update: Partial<TriviaPollOption>; Relationships: [] }
       trivia_poll_votes: { Row: TriviaPollVote; Insert: Partial<TriviaPollVote>; Update: Partial<TriviaPollVote>; Relationships: [] }
+      over_under_predictions: { Row: OverUnderPrediction; Insert: Partial<OverUnderPrediction>; Update: Partial<OverUnderPrediction>; Relationships: [] }
+      over_under_votes: { Row: OverUnderVote; Insert: Partial<OverUnderVote>; Update: Partial<OverUnderVote>; Relationships: [] }
+      mystery_play_challenges: { Row: MysteryPlayChallenge; Insert: Partial<MysteryPlayChallenge>; Update: Partial<MysteryPlayChallenge>; Relationships: [] }
+      mystery_play_votes: { Row: MysteryPlayVote; Insert: Partial<MysteryPlayVote>; Update: Partial<MysteryPlayVote>; Relationships: [] }
+      score_predictions: { Row: ScorePrediction; Insert: Partial<ScorePrediction>; Update: Partial<ScorePrediction>; Relationships: [] }
+      score_prediction_votes: { Row: ScorePredictionVote; Insert: Partial<ScorePredictionVote>; Update: Partial<ScorePredictionVote>; Relationships: [] }
+      flash_trivia_challenges: { Row: FlashTriviaChallenge; Insert: Partial<FlashTriviaChallenge>; Update: Partial<FlashTriviaChallenge>; Relationships: [] }
+      flash_trivia_questions: { Row: FlashTriviaQuestion; Insert: Partial<FlashTriviaQuestion>; Update: Partial<FlashTriviaQuestion>; Relationships: [] }
+      flash_trivia_attempts: { Row: FlashTriviaAttempt; Insert: Partial<FlashTriviaAttempt>; Update: Partial<FlashTriviaAttempt>; Relationships: [] }
+      progressive_clue_challenges: { Row: ProgressiveClueChallenge; Insert: Partial<ProgressiveClueChallenge>; Update: Partial<ProgressiveClueChallenge>; Relationships: [] }
+      progressive_clue_votes: { Row: ProgressiveClueVote; Insert: Partial<ProgressiveClueVote>; Update: Partial<ProgressiveClueVote>; Relationships: [] }
     }
     Views: Record<string, any>
     Functions: {

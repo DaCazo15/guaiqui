@@ -2,13 +2,26 @@
 import { ref, onMounted } from 'vue'
 import { BaseCard, BaseButton, PearlAmount } from '@guaiqui/ui'
 import { formatCaracas } from '@guaiqui/shared'
-import type { ActiveWhoIsChallenge, ActiveTriviaPoll } from '@guaiqui/shared'
+import type {
+  ActiveWhoIsChallenge,
+  ActiveTriviaPoll,
+  ActiveOverUnder,
+  ActiveMysteryPlay,
+  ActiveScorePrediction,
+  ActiveFlashTrivia,
+  ActiveProgressiveClue
+} from '@guaiqui/shared'
 import { useTriviaStore } from '~/stores/trivias'
 import { useAuthStore } from '~/stores/auth'
 import TriviaPlayButton from '~/components/app/dashboard/TriviaPlayButton.vue'
 import WhoIsGameModal from '~/components/trivia/WhoIsGameModal.vue'
 import PollsListSection from '~/components/trivia/PollsListSection.vue'
 import PollVoteModal from '~/components/trivia/PollVoteModal.vue'
+import OverUnderSection from '~/components/trivia/OverUnderSection.vue'
+import MysteryPlaySection from '~/components/trivia/MysteryPlaySection.vue'
+import ScorePredictionSection from '~/components/trivia/ScorePredictionSection.vue'
+import FlashTriviaSection from '~/components/trivia/FlashTriviaSection.vue'
+import ProgressiveCluesSection from '~/components/trivia/ProgressiveCluesSection.vue'
 
 definePageMeta({
   layout: 'app',
@@ -16,52 +29,96 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Trivias & Reto «¿Quién es?» — Guaiqueríes de Margarita',
-  description: 'Participa en las trivias oficiales, adivina el jugador por su silueta o dorsal y predice resultados de partidos para ganar perlitas.',
+  title: 'Zona de Trivias & Juegos — Guaiqueríes de Margarita',
+  description: 'Participa en trivias oficiales, siluetas de «¿Quién es?», pronósticos Over/Under, jugadas misteriosas, marcador exacto, flash 60s y gana perlitas.',
 })
 
 const supabase = useSupabaseClient()
 const triviaStore = useTriviaStore()
 const authStore = useAuthStore()
 
-type MainTab = 'questions' | 'who_is' | 'polls'
+type MainTab =
+  | 'questions'
+  | 'who_is'
+  | 'polls'
+  | 'over_under'
+  | 'mystery_plays'
+  | 'score_predictions'
+  | 'flash_trivia'
+  | 'progressive_clues'
+
 const activeTab = ref<MainTab>('questions')
 
-// Retos ¿Quién es?
+const tabs = [
+  { id: 'questions' as const, label: 'Trivias Clásicas', icon: 'bi-question-diamond-fill', badge: 'Preguntas' },
+  { id: 'who_is' as const, label: '«¿Quién es?»', icon: 'bi-person-bounding-box', badge: 'Reto' },
+  { id: 'polls' as const, label: 'Encuestas', icon: 'bi-bar-chart-fill', badge: 'Partido' },
+  { id: 'over_under' as const, label: 'Mayor o Menor', icon: 'bi-arrow-down-up', badge: 'Líneas' },
+  { id: 'mystery_plays' as const, label: '¿Qué pasó después?', icon: 'bi-play-circle-fill', badge: 'Video' },
+  { id: 'score_predictions' as const, label: 'Marcador Exacto', icon: 'bi-bullseye', badge: 'El Bote' },
+  { id: 'flash_trivia' as const, label: 'Trivia Flash', icon: 'bi-stopwatch-fill', badge: '60s' },
+  { id: 'progressive_clues' as const, label: 'Pistas Progresivas', icon: 'bi-puzzle-fill', badge: 'Escalón' },
+]
+
+// State for each modality
 const whoIsChallenges = ref<ActiveWhoIsChallenge[]>([])
 const rosterPlayers = ref<any[]>([])
 const whoIsLoading = ref(false)
 const selectedWhoIsChallenge = ref<ActiveWhoIsChallenge | null>(null)
 const isWhoIsModalOpen = ref(false)
 
-// Encuestas y Predicciones
 const polls = ref<ActiveTriviaPoll[]>([])
 const pollsLoading = ref(false)
 const selectedPoll = ref<ActiveTriviaPoll | null>(null)
 const isPollModalOpen = ref(false)
 
+const overUnderList = ref<ActiveOverUnder[]>([])
+const overUnderLoading = ref(false)
+
+const mysteryPlays = ref<ActiveMysteryPlay[]>([])
+const mysteryPlaysLoading = ref(false)
+
+const scorePredictions = ref<ActiveScorePrediction[]>([])
+const scorePredictionsLoading = ref(false)
+
+const flashChallenges = ref<ActiveFlashTrivia[]>([])
+const flashLoading = ref(false)
+
+const progressiveClues = ref<ActiveProgressiveClue[]>([])
+const progressiveCluesLoading = ref(false)
+
 onMounted(async () => {
   await Promise.all([
     triviaStore.fetchTrivias(),
+    loadRosterPlayers(),
     loadWhoIsData(),
-    loadPollsData()
+    loadPollsData(),
+    loadOverUnderData(),
+    loadMysteryPlaysData(),
+    loadScorePredictionsData(),
+    loadFlashData(),
+    loadProgressiveCluesData()
   ])
 })
+
+async function loadRosterPlayers() {
+  try {
+    const { data } = await supabase
+      .from('players')
+      .select('id, name, jersey_number, photo_url, position')
+      .eq('is_active', true)
+      .order('jersey_number', { ascending: true })
+    if (data) rosterPlayers.value = data
+  } catch (err) {
+    console.error('Error cargando plantilla:', err)
+  }
+}
 
 async function loadWhoIsData() {
   whoIsLoading.value = true
   try {
-    const [cRes, pRes] = await Promise.all([
-      supabase.rpc('get_active_who_is_challenges'),
-      supabase.from('players').select('id, name, jersey_number, photo_url, position').eq('is_active', true).order('jersey_number', { ascending: true })
-    ])
-
-    if (cRes.data) {
-      whoIsChallenges.value = cRes.data
-    }
-    if (pRes.data) {
-      rosterPlayers.value = pRes.data
-    }
+    const { data } = await supabase.rpc('get_active_who_is_challenges')
+    if (data) whoIsChallenges.value = data
   } catch (err) {
     console.error('Error cargando retos ¿Quién es?:', err)
   } finally {
@@ -76,20 +133,85 @@ async function loadPollsData() {
     if (error) throw error
     polls.value = data || []
   } catch (err) {
-    console.error('Error cargando encuestas de partido:', err)
+    console.error('Error cargando encuestas:', err)
   } finally {
     pollsLoading.value = false
   }
 }
 
+async function loadOverUnderData() {
+  overUnderLoading.value = true
+  try {
+    const { data, error } = await supabase.rpc('get_active_over_under_predictions')
+    if (error) throw error
+    overUnderList.value = data || []
+  } catch (err) {
+    console.error('Error cargando Over/Under:', err)
+  } finally {
+    overUnderLoading.value = false
+  }
+}
+
+async function loadMysteryPlaysData() {
+  mysteryPlaysLoading.value = true
+  try {
+    const { data, error } = await supabase.rpc('get_active_mystery_plays')
+    if (error) throw error
+    mysteryPlays.value = data || []
+  } catch (err) {
+    console.error('Error cargando Jugadas Misteriosas:', err)
+  } finally {
+    mysteryPlaysLoading.value = false
+  }
+}
+
+async function loadScorePredictionsData() {
+  scorePredictionsLoading.value = true
+  try {
+    const { data, error } = await supabase.rpc('get_active_score_predictions')
+    if (error) throw error
+    scorePredictions.value = data || []
+  } catch (err) {
+    console.error('Error cargando Marcador Exacto:', err)
+  } finally {
+    scorePredictionsLoading.value = false
+  }
+}
+
+async function loadFlashData() {
+  flashLoading.value = true
+  try {
+    const { data, error } = await supabase.rpc('get_active_flash_trivia')
+    if (error) throw error
+    flashChallenges.value = data || []
+  } catch (err) {
+    console.error('Error cargando Trivia Flash:', err)
+  } finally {
+    flashLoading.value = false
+  }
+}
+
+async function loadProgressiveCluesData() {
+  progressiveCluesLoading.value = true
+  try {
+    const { data, error } = await supabase.rpc('get_active_progressive_clues')
+    if (error) throw error
+    progressiveClues.value = data || []
+  } catch (err) {
+    console.error('Error cargando Pistas Progresivas:', err)
+  } finally {
+    progressiveCluesLoading.value = false
+  }
+}
+
+// Handlers for voting and events
 function openPoll(poll: ActiveTriviaPoll) {
   selectedPoll.value = poll
   isPollModalOpen.value = true
 }
 
-async function onPollVoted({ pollId, optionId }: { pollId: string; optionId: string }) {
+async function onPollVoted({ pollId }: { pollId: string }) {
   await loadPollsData()
-  // Actualizar también selectedPoll si el modal sigue abierto
   if (selectedPoll.value && selectedPoll.value.id === pollId) {
     const updated = polls.value.find(p => p.id === pollId)
     if (updated) selectedPoll.value = updated
@@ -103,7 +225,6 @@ function openWhoIsChallenge(challenge: ActiveWhoIsChallenge) {
 }
 
 function onWhoIsVoted({ challengeId, result }: { challengeId: string; result: any }) {
-  // Actualizar estado local del reto
   const idx = whoIsChallenges.value.findIndex(c => c.id === challengeId)
   if (idx !== -1) {
     whoIsChallenges.value[idx] = {
@@ -117,8 +238,31 @@ function onWhoIsVoted({ challengeId, result }: { challengeId: string; result: an
       player_jersey_number: result.correct_player?.jersey_number
     }
   }
+  authStore.fetchProfile()
+}
 
-  // Refrescar balance del usuario
+async function onOverUnderVoted() {
+  await loadOverUnderData()
+  authStore.fetchProfile()
+}
+
+async function onMysteryPlayVoted() {
+  await loadMysteryPlaysData()
+  authStore.fetchProfile()
+}
+
+async function onScorePredictionVoted() {
+  await loadScorePredictionsData()
+  authStore.fetchProfile()
+}
+
+async function onFlashCompleted() {
+  await loadFlashData()
+  authStore.fetchProfile()
+}
+
+async function onProgressiveClueVoted() {
+  await loadProgressiveCluesData()
   authStore.fetchProfile()
 }
 
@@ -126,7 +270,6 @@ function getStatusBadge(trivia: any) {
   if (trivia.is_won) {
     return { label: 'Ganada', class: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' }
   }
-
   const now = new Date().getTime()
   const start = new Date(trivia.starts_at).getTime()
   const end = new Date(trivia.ends_at).getTime()
@@ -134,15 +277,12 @@ function getStatusBadge(trivia: any) {
   if (trivia.status !== 'published') {
     return { label: 'Borrador', class: 'bg-gray-500/10 text-gray-400 border-gray-500/30' }
   }
-
   if (now < start) {
     return { label: 'Próxima', class: 'bg-blue-500/10 text-blue-400 border-blue-500/30' }
   }
-
   if (now > end) {
     return { label: 'Cerrada', class: 'bg-red-500/10 text-red-400 border-red-500/30' }
   }
-
   return { label: 'Disponible', class: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' }
 }
 
@@ -155,89 +295,48 @@ function getEstimatedReward(t: any): number {
 
 <template>
   <div class="space-y-6">
+    <!-- Header Page -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div class="space-y-1">
         <h1 class="font-display text-2xl md:text-3xl font-bold text-guaiqui-text uppercase tracking-wider">
           Zona de Juegos & <span class="text-guaiqui-primary">Trivias</span>
         </h1>
         <p class="text-sm text-guaiqui-text-muted">
-          Demuestra cuánto sabes de la Tribu, adivina jugadores por silueta o dorsal y gana perlitas oficiales.
+          Compite, pon a prueba tus conocimientos sobre Guaiqueríes de Margarita y gana perlitas en cada modalidad.
         </p>
       </div>
     </div>
 
-    <!-- Pestañas Principales (Trivias Clásicas vs ¿Quién es? vs Encuestas) -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-3 p-1.5 bg-slate-100 rounded-2xl border border-guaiqui-border shadow-inner">
+    <!-- Main Tabs Bar (Responsive 8 Modalities) -->
+    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1.5 bg-slate-100 rounded-2xl border border-guaiqui-border shadow-inner">
       <button
+        v-for="t in tabs"
+        :key="t.id"
         type="button"
-        @click="activeTab = 'questions'"
+        @click="activeTab = t.id"
         :class="[
-          'px-4 py-3 rounded-xl text-left transition-all duration-200 flex items-center gap-3',
-          activeTab === 'questions'
+          'px-3 py-2.5 rounded-xl text-left transition-all duration-200 flex items-center gap-2.5',
+          activeTab === t.id
             ? 'bg-guaiqui-primary text-white shadow-md'
             : 'text-guaiqui-text-muted hover:text-guaiqui-text hover:bg-white/80'
         ]"
       >
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0" :class="activeTab === 'questions' ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-600'">
-          <i class="bi bi-question-diamond-fill"></i>
+        <div
+          class="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0"
+          :class="activeTab === t.id ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'"
+        >
+          <i :class="['bi', t.icon]"></i>
         </div>
-        <div class="min-w-0">
-          <div class="font-display font-bold text-sm tracking-wide uppercase truncate">Trivias de Preguntas</div>
-          <div class="text-[11px] truncate" :class="activeTab === 'questions' ? 'text-emerald-100' : 'text-slate-500'">
-            Cuestionarios por tiempo
+        <div class="min-w-0 flex-1">
+          <div class="font-display font-bold text-xs tracking-tight uppercase truncate">
+            {{ t.label }}
           </div>
-        </div>
-      </button>
-
-      <button
-        type="button"
-        @click="activeTab = 'who_is'"
-        :class="[
-          'px-4 py-3 rounded-xl text-left transition-all duration-200 flex items-center gap-3',
-          activeTab === 'who_is'
-            ? 'bg-emerald-950 text-white shadow-md ring-1 ring-emerald-500/50'
-            : 'text-guaiqui-text-muted hover:text-guaiqui-text hover:bg-white/80'
-        ]"
-      >
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0" :class="activeTab === 'who_is' ? 'bg-emerald-500/30 text-emerald-400' : 'bg-slate-200 text-slate-600'">
-          <i class="bi bi-person-bounding-box"></i>
-        </div>
-        <div class="min-w-0">
-          <div class="font-display font-bold text-sm tracking-wide uppercase flex items-center gap-2">
-            <span class="truncate">«¿Quién es?»</span>
-            <span class="text-[9px] px-1.5 py-0.2 rounded-full font-sans font-bold uppercase tracking-wider shrink-0" :class="activeTab === 'who_is' ? 'bg-emerald-500 text-slate-950' : 'bg-emerald-100 text-emerald-800'">
-              Reto
-            </span>
-          </div>
-          <div class="text-[11px] truncate" :class="activeTab === 'who_is' ? 'text-emerald-300' : 'text-slate-500'">
-            Siluetas y dorsales
-          </div>
-        </div>
-      </button>
-
-      <button
-        type="button"
-        @click="activeTab = 'polls'"
-        :class="[
-          'px-4 py-3 rounded-xl text-left transition-all duration-200 flex items-center gap-3',
-          activeTab === 'polls'
-            ? 'bg-gradient-to-r from-emerald-800 to-slate-900 text-white shadow-md ring-1 ring-emerald-500/50'
-            : 'text-guaiqui-text-muted hover:text-guaiqui-text hover:bg-white/80'
-        ]"
-      >
-        <div class="w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0" :class="activeTab === 'polls' ? 'bg-emerald-500/30 text-emerald-400' : 'bg-slate-200 text-slate-600'">
-          <i class="bi bi-bar-chart-fill"></i>
-        </div>
-        <div class="min-w-0">
-          <div class="font-display font-bold text-sm tracking-wide uppercase flex items-center gap-2">
-            <span class="truncate">Encuestas</span>
-            <span class="text-[9px] px-1.5 py-0.2 rounded-full font-sans font-bold uppercase tracking-wider shrink-0" :class="activeTab === 'polls' ? 'bg-amber-400 text-slate-950' : 'bg-amber-100 text-amber-800'">
-              Partidos
-            </span>
-          </div>
-          <div class="text-[11px] truncate" :class="activeTab === 'polls' ? 'text-emerald-200' : 'text-slate-500'">
-            Predicciones en vivo
-          </div>
+          <span
+            class="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold uppercase"
+            :class="activeTab === t.id ? 'bg-emerald-800 text-emerald-100' : 'bg-slate-200 text-slate-600'"
+          >
+            {{ t.badge }}
+          </span>
         </div>
       </button>
     </div>
@@ -312,7 +411,7 @@ function getEstimatedReward(t: any): number {
       </BaseCard>
     </div>
 
-    <!-- PESTAÑA 2: ¿QUIÉN ES? (RETO POKÉMON / GUAIQUERÍES) -->
+    <!-- PESTAÑA 2: «¿QUIÉN ES?» -->
     <div v-else-if="activeTab === 'who_is'" class="space-y-4">
       <div v-if="whoIsLoading" class="space-y-4">
         <BaseCard v-for="i in 2" :key="i" class="p-6 bg-slate-900 border-slate-800 animate-pulse h-40 rounded-3xl" />
@@ -324,11 +423,9 @@ function getEstimatedReward(t: any): number {
           :key="c.id"
           class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-emerald-950 via-slate-950 to-emerald-900 border-2 border-emerald-500/30 p-5 text-white shadow-xl flex flex-col justify-between gap-5 group hover:border-emerald-400/60 transition-all duration-300"
         >
-          <!-- Glow ambiental -->
           <div class="absolute -top-12 -right-12 w-40 h-40 bg-emerald-500/15 blur-2xl pointer-events-none"></div>
 
           <div>
-            <!-- Header Card -->
             <div class="flex items-center justify-between gap-2 pb-3 border-b border-emerald-500/20 text-xs">
               <span
                 class="px-2.5 py-0.5 rounded-full font-bold uppercase text-[10px] tracking-wider"
@@ -345,9 +442,7 @@ function getEstimatedReward(t: any): number {
               </span>
             </div>
 
-            <!-- Contenido Principal: Silueta o Dorsal + Título -->
             <div class="flex items-center gap-4 py-4">
-              <!-- Cuadro de la imagen misteriosa -->
               <div class="relative w-20 h-20 rounded-2xl bg-slate-950/90 border border-emerald-500/40 p-1.5 flex items-center justify-center shrink-0 overflow-hidden shadow-inner">
                 <template v-if="c.challenge_type === 'dorsal'">
                   <div class="flex flex-col items-center justify-center font-display font-black text-emerald-400 text-xl leading-none">
@@ -369,7 +464,6 @@ function getEstimatedReward(t: any): number {
                 </span>
               </div>
 
-              <!-- Título & Pista -->
               <div class="min-w-0 flex-1">
                 <h3 class="font-display font-black text-lg text-white uppercase tracking-tight leading-snug">
                   {{ c.title }}
@@ -384,7 +478,6 @@ function getEstimatedReward(t: any): number {
             </div>
           </div>
 
-          <!-- Footer Card: Botón y Estado -->
           <div class="flex items-center justify-between gap-3 pt-3 border-t border-emerald-500/20">
             <div>
               <template v-if="c.has_voted">
@@ -433,6 +526,47 @@ function getEstimatedReward(t: any): number {
       :polls="polls"
       :loading="pollsLoading"
       @select-poll="openPoll"
+    />
+
+    <!-- PESTAÑA 4: MAYOR O MENOR (OVER / UNDER) -->
+    <OverUnderSection
+      v-else-if="activeTab === 'over_under'"
+      :items="overUnderList"
+      :loading="overUnderLoading"
+      @voted="onOverUnderVoted"
+    />
+
+    <!-- PESTAÑA 5: «¿QUÉ PASÓ DESPUÉS?» -->
+    <MysteryPlaySection
+      v-else-if="activeTab === 'mystery_plays'"
+      :items="mysteryPlays"
+      :loading="mysteryPlaysLoading"
+      @voted="onMysteryPlayVoted"
+    />
+
+    <!-- PESTAÑA 6: MARCADOR EXACTO -->
+    <ScorePredictionSection
+      v-else-if="activeTab === 'score_predictions'"
+      :items="scorePredictions"
+      :loading="scorePredictionsLoading"
+      @voted="onScorePredictionVoted"
+    />
+
+    <!-- PESTAÑA 7: TRIVIA FLASH 60s -->
+    <FlashTriviaSection
+      v-else-if="activeTab === 'flash_trivia'"
+      :items="flashChallenges"
+      :loading="flashLoading"
+      @completed="onFlashCompleted"
+    />
+
+    <!-- PESTAÑA 8: PISTAS PROGRESIVAS -->
+    <ProgressiveCluesSection
+      v-else-if="activeTab === 'progressive_clues'"
+      :items="progressiveClues"
+      :roster-players="rosterPlayers"
+      :loading="progressiveCluesLoading"
+      @voted="onProgressiveClueVoted"
     />
 
     <!-- Modal Interactivo "¿Quién es?" -->

@@ -1,7 +1,19 @@
 import * as XLSX from 'xlsx'
 import { caracasInputToISO } from '@guaiqui/shared'
 
-export type BulkImportType = 'trivias' | 'players' | 'staff' | 'games' | 'products' | 'who_is' | 'polls'
+export type BulkImportType =
+  | 'trivias'
+  | 'players'
+  | 'staff'
+  | 'games'
+  | 'products'
+  | 'who_is'
+  | 'polls'
+  | 'over_under'
+  | 'mystery_plays'
+  | 'score_predictions'
+  | 'flash_trivia'
+  | 'progressive_clues'
 
 export interface BulkColumnDef {
   key: string
@@ -772,6 +784,461 @@ export const BULK_CONFIGS: Record<BulkImportType, BulkImportConfig> = {
         successCount: created,
         message: `${created} encuesta(s) de predicción creada(s) exitosamente.`
       }
+    }
+  },
+
+  // 8. MAYOR O MENOR (OVER / UNDER)
+  over_under: {
+    type: 'over_under',
+    title: 'Carga Masiva de Mayor o Menor (Over/Under)',
+    entityName: 'OverUnder',
+    templateFileName: 'plantilla_over_under_guaiqueries',
+    columns: [
+      { key: 'titulo', label: 'Título del Pronóstico', required: true, example: 'Puntos totales Guaiqueríes' },
+      { key: 'descripcion', label: 'Descripción (Opcional)', example: '¿Superará la tribu los 84.5 puntos ante Trotamundos?' },
+      { key: 'tipo_estadistica', label: 'Tipo Estadística (puntos/triples/rebotes/asistencias)', required: true, example: 'puntos' },
+      { key: 'linea_valor', label: 'Valor de la Línea (Número ej: 84.5)', required: true, example: 84.5 },
+      { key: 'dorsal_o_nombre_jugador', label: 'Dorsal o Nombre del Jugador (Opcional)', example: '8' },
+      { key: 'perlitas', label: 'Perlitas de Premio', example: 40 },
+      { key: 'fecha_inicio', label: 'Fecha Inicio (YYYY-MM-DD HH:MM)', example: '2026-05-15 12:00' },
+      { key: 'fecha_cierre', label: 'Fecha Cierre (YYYY-MM-DD HH:MM)', example: '2026-05-15 19:30' },
+      { key: 'estado', label: 'Estado (publicado/borrador)', example: 'publicado' }
+    ],
+    sampleData: [
+      {
+        titulo: 'Puntos de Guaiqueríes vs Trotamundos',
+        descripcion: 'Línea de anotación colectiva',
+        tipo_estadistica: 'puntos',
+        linea_valor: 84.5,
+        dorsal_o_nombre_jugador: '',
+        perlitas: 40,
+        fecha_inicio: '2026-05-15 12:00',
+        fecha_cierre: '2026-05-15 19:30',
+        estado: 'publicado'
+      },
+      {
+        titulo: 'Triples anotados por David Cubillán',
+        descripcion: 'Efectividad perimetral del base estelar',
+        tipo_estadistica: 'triples',
+        linea_valor: 2.5,
+        dorsal_o_nombre_jugador: '8',
+        perlitas: 50,
+        fecha_inicio: '2026-05-15 12:00',
+        fecha_cierre: '2026-05-15 19:30',
+        estado: 'publicado'
+      }
+    ],
+    validateRow: (row, index) => {
+      const errors: string[] = []
+      if (!row.titulo?.toString().trim()) {
+        errors.push(`Fila ${index + 1}: El título del pronóstico es obligatorio`)
+      }
+      const rawVal = row.linea_valor
+      if (rawVal === undefined || rawVal === null || rawVal === '' || isNaN(Number(rawVal))) {
+        errors.push(`Fila ${index + 1}: La línea debe ser un valor numérico válido (ej: 84.5)`)
+      }
+      return { valid: errors.length === 0, errors }
+    },
+    processRows: async (rows, supabase) => {
+      const { data: players } = await supabase.from('players').select('id, name, jersey_number')
+      let count = 0
+
+      for (const r of rows) {
+        let matchedPlayerId: string | null = null
+        if (r.dorsal_o_nombre_jugador && players?.length) {
+          const q = String(r.dorsal_o_nombre_jugador).trim().toLowerCase()
+          const num = Number(q)
+          const p = players.find((pl: any) => (!isNaN(num) && pl.jersey_number === num) || pl.name.toLowerCase().includes(q))
+          if (p) matchedPlayerId = p.id
+        }
+
+        const startsAt = r.fecha_inicio ? parseDateToISO(r.fecha_inicio) : new Date().toISOString()
+        const closesAt = r.fecha_cierre ? parseDateToISO(r.fecha_cierre) : new Date(Date.now() + 2 * 86400000).toISOString()
+        const isDraft = String(r.estado || '').toLowerCase().includes('borr')
+
+        const { error } = await supabase.rpc('admin_upsert_over_under', {
+          p_id: null,
+          p_game_id: null,
+          p_player_id: matchedPlayerId,
+          p_title: String(r.titulo).trim(),
+          p_description: r.descripcion ? String(r.descripcion).trim() : null,
+          p_stat_type: r.tipo_estadistica ? String(r.tipo_estadistica).trim().toLowerCase() : 'points',
+          p_line_value: Number(r.linea_valor),
+          p_reward_pearls: Number(r.perlitas) || 40,
+          p_status: isDraft ? 'draft' : 'published',
+          p_starts_at: startsAt,
+          p_closes_at: closesAt
+        })
+        if (error) throw error
+        count++
+      }
+
+      return { successCount: count, message: `${count} pronóstico(s) Over/Under importado(s) exitosamente.` }
+    }
+  },
+
+  // 9. «¿QUÉ PASÓ DESPUÉS?» (JUGADA MISTERIOSA)
+  mystery_plays: {
+    type: 'mystery_plays',
+    title: 'Carga Masiva de «¿Qué pasó después?» (Jugada Misteriosa)',
+    entityName: 'JugadasMisteriosas',
+    templateFileName: 'plantilla_jugadas_misteriosas_guaiqueries',
+    columns: [
+      { key: 'titulo', label: 'Título del Desafío', required: true, example: 'Penetración clave de Chourio vs Centauros' },
+      { key: 'pregunta', label: 'Pregunta', required: true, example: '¿Cómo culminó esta jugada en el 4to cuarto?' },
+      { key: 'video_url', label: 'URL Video de la Jugada (Opcional)', example: 'https://cdn.guaiqueries.com/videos/play1.mp4' },
+      { key: 'imagen_portada', label: 'URL Imagen de Portada (Opcional)', example: 'https://cdn.guaiqueries.com/covers/play1.jpg' },
+      { key: 'opcion_a', label: 'Opción A', required: true, example: 'Triple sobre la chicharra' },
+      { key: 'opcion_b', label: 'Opción B', required: true, example: 'Falta y vale (2+1)' },
+      { key: 'opcion_c', label: 'Opción C', required: true, example: 'Asistencia de fantasía por la espalda' },
+      { key: 'opcion_d', label: 'Opción D', required: true, example: 'Bloqueo salvaje del rival' },
+      { key: 'opcion_correcta', label: 'Opción Correcta (A, B, C o D)', required: true, example: 'B' },
+      { key: 'video_revelacion', label: 'URL Video Revelación (Opcional)', example: 'https://cdn.guaiqueries.com/videos/play1_reveal.mp4' },
+      { key: 'perlitas', label: 'Perlitas de Recompensa', example: 50 },
+      { key: 'fecha_inicio', label: 'Fecha Inicio (YYYY-MM-DD HH:MM)', example: '2026-05-10 10:00' },
+      { key: 'fecha_cierre', label: 'Fecha Cierre (YYYY-MM-DD HH:MM)', example: '2026-05-14 23:59' },
+      { key: 'estado', label: 'Estado (publicado/borrador)', example: 'publicado' }
+    ],
+    sampleData: [
+      {
+        titulo: 'Penetración clave de Chourio vs Centauros',
+        pregunta: '¿Cómo culminó esta jugada en el 4to cuarto?',
+        video_url: 'https://cdn.guaiqueries.com/videos/play1.mp4',
+        imagen_portada: 'https://cdn.guaiqueries.com/covers/play1.jpg',
+        opcion_a: 'Triple sobre la chicharra',
+        opcion_b: 'Falta y vale (2+1)',
+        opcion_c: 'Asistencia de fantasía por la espalda',
+        opcion_d: 'Bloqueo salvaje del rival',
+        opcion_correcta: 'B',
+        video_revelacion: 'https://cdn.guaiqueries.com/videos/play1_reveal.mp4',
+        perlitas: 50,
+        fecha_inicio: '2026-05-10 10:00',
+        fecha_cierre: '2026-05-14 23:59',
+        estado: 'publicado'
+      }
+    ],
+    validateRow: (row, index) => {
+      const errors: string[] = []
+      if (!row.titulo?.toString().trim()) errors.push(`Fila ${index + 1}: El título del desafío es obligatorio`)
+      if (!row.pregunta?.toString().trim()) errors.push(`Fila ${index + 1}: La pregunta es obligatoria`)
+      if (!row.opcion_a?.toString().trim()) errors.push(`Fila ${index + 1}: La opción A es obligatoria`)
+      if (!row.opcion_b?.toString().trim()) errors.push(`Fila ${index + 1}: La opción B es obligatoria`)
+      if (!row.opcion_c?.toString().trim()) errors.push(`Fila ${index + 1}: La opción C es obligatoria`)
+      if (!row.opcion_d?.toString().trim()) errors.push(`Fila ${index + 1}: La opción D es obligatoria`)
+      const opt = String(row.opcion_correcta || '').trim().toUpperCase()
+      if (!['A', 'B', 'C', 'D'].includes(opt)) {
+        errors.push(`Fila ${index + 1}: La opción correcta debe ser A, B, C o D`)
+      }
+      return { valid: errors.length === 0, errors }
+    },
+    processRows: async (rows, supabase) => {
+      let count = 0
+      for (const r of rows) {
+        const startsAt = r.fecha_inicio ? parseDateToISO(r.fecha_inicio) : new Date().toISOString()
+        const closesAt = r.fecha_cierre ? parseDateToISO(r.fecha_cierre) : new Date(Date.now() + 3 * 86400000).toISOString()
+        const isDraft = String(r.estado || '').toLowerCase().includes('borr')
+
+        const { error } = await supabase.rpc('admin_upsert_mystery_play', {
+          p_id: null,
+          p_game_id: null,
+          p_title: String(r.titulo).trim(),
+          p_description: r.descripcion ? String(r.descripcion).trim() : null,
+          p_video_url: r.video_url ? String(r.video_url).trim() : null,
+          p_cover_image_url: r.imagen_portada ? String(r.imagen_portada).trim() : null,
+          p_question: String(r.pregunta).trim(),
+          p_option_a: String(r.opcion_a).trim(),
+          p_option_b: String(r.opcion_b).trim(),
+          p_option_c: String(r.opcion_c).trim(),
+          p_option_d: String(r.opcion_d).trim(),
+          p_correct_option: String(r.opcion_correcta).trim().toUpperCase(),
+          p_reveal_video_url: r.video_revelacion ? String(r.video_revelacion).trim() : null,
+          p_reward_pearls: Number(r.perlitas) || 50,
+          p_status: isDraft ? 'draft' : 'published',
+          p_starts_at: startsAt,
+          p_closes_at: closesAt
+        })
+        if (error) throw error
+        count++
+      }
+
+      return { successCount: count, message: `${count} jugada(s) misteriosa(s) importada(s) con éxito.` }
+    }
+  },
+
+  // 10. MARCADOR EXACTO (EL GRAN BOTE)
+  score_predictions: {
+    type: 'score_predictions',
+    title: 'Carga Masiva de Adivina el Marcador',
+    entityName: 'MarcadorExacto',
+    templateFileName: 'plantilla_marcador_exacto_guaiqueries',
+    columns: [
+      { key: 'titulo', label: 'Título del Pronóstico', required: true, example: 'Adivina el Marcador: Guaiqueríes vs Marinos' },
+      { key: 'descripcion', label: 'Descripción (Opcional)', example: 'Acierta los puntos de ambos equipos y gana el bote.' },
+      { key: 'rival', label: 'Nombre del Rival (Para vincular al partido)', example: 'Marinos de Oriente' },
+      { key: 'perlitas_exacto', label: 'Perlitas por Marcador Exacto', example: 200 },
+      { key: 'perlitas_cercano', label: 'Perlitas por Marcador Cercano (<=4 pts)', example: 50 },
+      { key: 'fecha_inicio', label: 'Fecha Inicio (YYYY-MM-DD HH:MM)', example: '2026-05-18 10:00' },
+      { key: 'fecha_cierre', label: 'Fecha Cierre (YYYY-MM-DD HH:MM)', example: '2026-05-18 19:30' },
+      { key: 'estado', label: 'Estado (publicado/borrador)', example: 'publicado' }
+    ],
+    sampleData: [
+      {
+        titulo: 'Adivina el Marcador: Guaiqueríes vs Marinos de Oriente',
+        descripcion: 'Clásico oriental en La Choza',
+        rival: 'Marinos',
+        perlitas_exacto: 200,
+        perlitas_cercano: 50,
+        fecha_inicio: '2026-05-18 10:00',
+        fecha_cierre: '2026-05-18 19:30',
+        estado: 'publicado'
+      }
+    ],
+    validateRow: (row, index) => {
+      const errors: string[] = []
+      if (!row.titulo?.toString().trim()) {
+        errors.push(`Fila ${index + 1}: El título del pronóstico es obligatorio`)
+      }
+      return { valid: errors.length === 0, errors }
+    },
+    processRows: async (rows, supabase) => {
+      const { data: games } = await supabase.from('games').select('id, opponent_name, game_date').order('game_date', { ascending: true })
+      let count = 0
+
+      for (const r of rows) {
+        let matchedGameId: string | null = null
+        if (r.rival && games?.length) {
+          const q = String(r.rival).trim().toLowerCase()
+          const g = games.find((gm: any) => gm.opponent_name.toLowerCase().includes(q))
+          if (g) matchedGameId = g.id
+        }
+        if (!matchedGameId && games?.length) {
+          matchedGameId = games[0].id
+        }
+
+        if (!matchedGameId) {
+          throw new Error('No hay partidos en el calendario para vincular la predicción de marcador.')
+        }
+
+        const startsAt = r.fecha_inicio ? parseDateToISO(r.fecha_inicio) : new Date().toISOString()
+        const closesAt = r.fecha_cierre ? parseDateToISO(r.fecha_cierre) : new Date(Date.now() + 2 * 86400000).toISOString()
+        const isDraft = String(r.estado || '').toLowerCase().includes('borr')
+
+        const { error } = await supabase.rpc('admin_upsert_score_prediction', {
+          p_id: null,
+          p_game_id: matchedGameId,
+          p_title: String(r.titulo).trim(),
+          p_description: r.descripcion ? String(r.descripcion).trim() : null,
+          p_exact_reward_pearls: Number(r.perlitas_exacto) || 200,
+          p_closest_reward_pearls: Number(r.perlitas_cercano) || 50,
+          p_status: isDraft ? 'draft' : 'published',
+          p_starts_at: startsAt,
+          p_closes_at: closesAt
+        })
+        if (error) throw error
+        count++
+      }
+
+      return { successCount: count, message: `${count} predicción(es) de marcador importada(s) con éxito.` }
+    }
+  },
+
+  // 11. TRIVIA FLASH CONTRARRELOJ (60 SEGUNDOS)
+  flash_trivia: {
+    type: 'flash_trivia',
+    title: 'Carga Masiva de Trivia Flash 60s',
+    entityName: 'TriviaFlash',
+    templateFileName: 'plantilla_trivia_flash_guaiqueries',
+    columns: [
+      { key: 'desafio_titulo', label: 'Título del Desafío Flash', required: true, example: 'Desafío Flash: Historia Insular' },
+      { key: 'tiempo_segundos', label: 'Tiempo Límite (Segundos)', example: 60 },
+      { key: 'perlitas_por_acierto', label: 'Perlitas por Pregunta Acertada', example: 10 },
+      { key: 'pregunta', label: 'Pregunta', required: true, example: '¿Cuántos títulos tiene Guaiqueríes?' },
+      { key: 'opcion_a', label: 'Opción A', required: true, example: '7' },
+      { key: 'opcion_b', label: 'Opción B', required: true, example: '9' },
+      { key: 'opcion_c', label: 'Opción C (Opcional)', example: '8' },
+      { key: 'opcion_d', label: 'Opción D (Opcional)', example: '10' },
+      { key: 'opcion_correcta', label: 'Opción Correcta (A, B, C o D)', required: true, example: 'B' },
+      { key: 'fecha_cierre', label: 'Fecha Cierre (YYYY-MM-DD HH:MM)', example: '2026-05-30 23:59' },
+      { key: 'estado', label: 'Estado (publicado/borrador)', example: 'publicado' }
+    ],
+    sampleData: [
+      {
+        desafio_titulo: 'Desafío Flash: Historia Insular',
+        tiempo_segundos: 60,
+        perlitas_por_acierto: 10,
+        pregunta: '¿En qué gimnasio juega Guaiqueríes de local?',
+        opcion_a: 'Gimnasio José Joaquín Papá Carrillo',
+        opcion_b: 'Gimnasio Ciudad de La Asunción',
+        opcion_c: 'Forum de Valencia',
+        opcion_d: 'Domo José María Vargas',
+        opcion_correcta: 'B',
+        fecha_cierre: '2026-05-30 23:59',
+        estado: 'publicado'
+      },
+      {
+        desafio_titulo: 'Desafío Flash: Historia Insular',
+        tiempo_segundos: 60,
+        perlitas_por_acierto: 10,
+        pregunta: '¿Cuál es el apodo oficial del equipo?',
+        opcion_a: 'El Expreso Azul',
+        opcion_b: 'Los Acorazados',
+        opcion_c: 'La Tribu',
+        opcion_d: 'Los Toros',
+        opcion_correcta: 'C',
+        fecha_cierre: '2026-05-30 23:59',
+        estado: 'publicado'
+      }
+    ],
+    validateRow: (row, index) => {
+      const errors: string[] = []
+      if (!row.desafio_titulo?.toString().trim()) errors.push(`Fila ${index + 1}: El título del desafío flash es obligatorio`)
+      if (!row.pregunta?.toString().trim()) errors.push(`Fila ${index + 1}: La pregunta es obligatoria`)
+      if (!row.opcion_a?.toString().trim()) errors.push(`Fila ${index + 1}: La opción A es obligatoria`)
+      if (!row.opcion_b?.toString().trim()) errors.push(`Fila ${index + 1}: La opción B es obligatoria`)
+      const opt = String(row.opcion_correcta || '').trim().toUpperCase()
+      if (!['A', 'B', 'C', 'D'].includes(opt)) {
+        errors.push(`Fila ${index + 1}: La opción correcta debe ser A, B, C o D`)
+      }
+      return { valid: errors.length === 0, errors }
+    },
+    processRows: async (rows, supabase) => {
+      // Group questions by challenge title
+      const groups = new Map<string, { meta: any; questions: any[] }>()
+
+      for (const r of rows) {
+        const title = String(r.desafio_titulo).trim()
+        if (!groups.has(title)) {
+          groups.set(title, {
+            meta: {
+              title,
+              time_limit_seconds: Number(r.tiempo_segundos) || 60,
+              pearls_per_correct: Number(r.perlitas_por_acierto) || 10,
+              closes_at: r.fecha_cierre ? parseDateToISO(r.fecha_cierre) : new Date(Date.now() + 7 * 86400000).toISOString(),
+              status: String(r.estado || '').toLowerCase().includes('borr') ? 'draft' : 'published'
+            },
+            questions: []
+          })
+        }
+        groups.get(title)!.questions.push({
+          question: String(r.pregunta).trim(),
+          option_a: String(r.opcion_a).trim(),
+          option_b: String(r.opcion_b).trim(),
+          option_c: r.opcion_c ? String(r.opcion_c).trim() : null,
+          option_d: r.opcion_d ? String(r.opcion_d).trim() : null,
+          correct_option: String(r.opcion_correcta).trim().toUpperCase(),
+          order_index: groups.get(title)!.questions.length + 1
+        })
+      }
+
+      let challengeCount = 0
+      let questionCount = 0
+
+      for (const [, group] of groups) {
+        const { error } = await supabase.rpc('admin_upsert_flash_challenge', {
+          p_id: null,
+          p_title: group.meta.title,
+          p_description: 'Desafío contrarreloj de 60 segundos',
+          p_time_limit_seconds: group.meta.time_limit_seconds,
+          p_pearls_per_correct: group.meta.pearls_per_correct,
+          p_status: group.meta.status,
+          p_starts_at: new Date().toISOString(),
+          p_closes_at: group.meta.closes_at,
+          p_questions: group.questions
+        })
+        if (error) throw error
+        challengeCount++
+        questionCount += group.questions.length
+      }
+
+      return {
+        successCount: questionCount,
+        message: `${challengeCount} desafío(s) flash creado(s) con ${questionCount} preguntas en total.`
+      }
+    }
+  },
+
+  // 12. PISTAS PROGRESIVAS (EL JUGADOR MISTERIOSO)
+  progressive_clues: {
+    type: 'progressive_clues',
+    title: 'Carga Masiva de Pistas Progresivas',
+    entityName: 'PistasProgresivas',
+    templateFileName: 'plantilla_pistas_progresivas_guaiqueries',
+    columns: [
+      { key: 'titulo', label: 'Título del Desafío', required: true, example: 'Jugador Legendario #1' },
+      { key: 'dorsal_o_nombre_jugador', label: 'Dorsal o Nombre del Jugador', required: true, example: '8' },
+      { key: 'pista_1', label: 'Pista 1 (Difícil - 60 Perlitas)', required: true, example: 'Lideró la liga en asistencias en la temporada 2018.' },
+      { key: 'pista_2', label: 'Pista 2 (Media - 35 Perlitas)', required: true, example: 'Es conocido internacionalmente como "El Mago".' },
+      { key: 'pista_3', label: 'Pista 3 (Fácil - 15 Perlitas)', required: true, example: 'Viste la camiseta número 8 de Guaiqueríes.' },
+      { key: 'perlitas_pista_1', label: 'Perlitas Pista 1', example: 60 },
+      { key: 'perlitas_pista_2', label: 'Perlitas Pista 2', example: 35 },
+      { key: 'perlitas_pista_3', label: 'Perlitas Pista 3', example: 15 },
+      { key: 'foto_revelacion', label: 'URL Foto Revelación (Opcional)', example: 'https://cdn.guaiqueries.com/players/cubillan.jpg' },
+      { key: 'fecha_cierre', label: 'Fecha Cierre (YYYY-MM-DD HH:MM)', example: '2026-05-25 23:59' },
+      { key: 'estado', label: 'Estado (publicado/borrador)', example: 'publicado' }
+    ],
+    sampleData: [
+      {
+        titulo: 'Jugador Legendario #1',
+        dorsal_o_nombre_jugador: '8',
+        pista_1: 'Lideró la liga en asistencias en la temporada 2018.',
+        pista_2: 'Es conocido internacionalmente como "El Mago".',
+        pista_3: 'Viste la camiseta número 8 de Guaiqueríes.',
+        perlitas_pista_1: 60,
+        perlitas_pista_2: 35,
+        perlitas_pista_3: 15,
+        foto_revelacion: 'https://cdn.guaiqueries.com/players/cubillan.jpg',
+        fecha_cierre: '2026-05-25 23:59',
+        estado: 'publicado'
+      }
+    ],
+    validateRow: (row, index) => {
+      const errors: string[] = []
+      if (!row.titulo?.toString().trim()) errors.push(`Fila ${index + 1}: El título del desafío es obligatorio`)
+      if (!row.dorsal_o_nombre_jugador?.toString().trim()) errors.push(`Fila ${index + 1}: El dorsal o nombre del jugador es obligatorio`)
+      if (!row.pista_1?.toString().trim()) errors.push(`Fila ${index + 1}: La pista 1 es obligatoria`)
+      if (!row.pista_2?.toString().trim()) errors.push(`Fila ${index + 1}: La pista 2 es obligatoria`)
+      if (!row.pista_3?.toString().trim()) errors.push(`Fila ${index + 1}: La pista 3 es obligatoria`)
+      return { valid: errors.length === 0, errors }
+    },
+    processRows: async (rows, supabase) => {
+      const { data: players } = await supabase.from('players').select('id, name, jersey_number, photo_url')
+      let count = 0
+
+      for (const r of rows) {
+        const query = String(r.dorsal_o_nombre_jugador).trim().toLowerCase()
+        const num = Number(query)
+        const matched = players?.find((pl: any) => (!isNaN(num) && pl.jersey_number === num) || pl.name.toLowerCase().includes(query))
+
+        const playerName = matched ? matched.name : String(r.dorsal_o_nombre_jugador).trim()
+        const playerId = matched ? matched.id : null
+        const revealPhoto = r.foto_revelacion ? String(r.foto_revelacion).trim() : (matched?.photo_url || null)
+
+        const startsAt = r.fecha_inicio ? parseDateToISO(r.fecha_inicio) : new Date().toISOString()
+        const closesAt = r.fecha_cierre ? parseDateToISO(r.fecha_cierre) : new Date(Date.now() + 3 * 86400000).toISOString()
+        const isDraft = String(r.estado || '').toLowerCase().includes('borr')
+
+        const { error } = await supabase.rpc('admin_upsert_progressive_clue', {
+          p_id: null,
+          p_player_id: playerId,
+          p_target_player_name: playerName,
+          p_title: String(r.titulo).trim(),
+          p_description: 'Desafío de pistas progresivas',
+          p_clue_1: String(r.pista_1).trim(),
+          p_clue_2: String(r.pista_2).trim(),
+          p_clue_3: String(r.pista_3).trim(),
+          p_pearls_clue_1: Number(r.perlitas_pista_1) || 60,
+          p_pearls_clue_2: Number(r.perlitas_pista_2) || 35,
+          p_pearls_clue_3: Number(r.perlitas_pista_3) || 15,
+          p_reveal_photo_url: revealPhoto,
+          p_status: isDraft ? 'draft' : 'published',
+          p_starts_at: startsAt,
+          p_closes_at: closesAt
+        })
+        if (error) throw error
+        count++
+      }
+
+      return { successCount: count, message: `${count} desafío(s) de pistas progresivas importado(s) exitosamente.` }
     }
   }
 }

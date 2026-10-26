@@ -296,5 +296,82 @@ describe('Bulk Import Configuration and Validation', () => {
       expect(rpcCalls[0].args.p_options[0].label).toBe('Chourio')
     })
   })
+
+  describe('over_under config', () => {
+    it('validates required fields: titulo and linea_valor', () => {
+      const config = BULK_CONFIGS.over_under
+      expect(config.validateRow({}, 0).valid).toBe(false)
+      expect(config.validateRow({ titulo: 'Puntos' }, 0).valid).toBe(false)
+      expect(config.validateRow({ titulo: 'Puntos', linea_valor: 'invalido' }, 0).valid).toBe(false)
+      expect(config.validateRow({ titulo: 'Puntos', linea_valor: 84.5 }, 0).valid).toBe(true)
+    })
+  })
+
+  describe('mystery_plays config', () => {
+    it('validates required fields and correct option A-D', () => {
+      const config = BULK_CONFIGS.mystery_plays
+      expect(config.validateRow({}, 0).valid).toBe(false)
+      expect(config.validateRow({
+        titulo: 'Jugada 1',
+        pregunta: '¿Qué pasó?',
+        opcion_a: 'A',
+        opcion_b: 'B',
+        opcion_c: 'C',
+        opcion_d: 'D',
+        opcion_correcta: 'X'
+      }, 0).valid).toBe(false)
+      expect(config.validateRow({
+        titulo: 'Jugada 1',
+        pregunta: '¿Qué pasó?',
+        opcion_a: 'A',
+        opcion_b: 'B',
+        opcion_c: 'C',
+        opcion_d: 'D',
+        opcion_correcta: 'B'
+      }, 0).valid).toBe(true)
+    })
+  })
+
+  describe('score_predictions config', () => {
+    it('validates required titulo field', () => {
+      const config = BULK_CONFIGS.score_predictions
+      expect(config.validateRow({}, 0).valid).toBe(false)
+      expect(config.validateRow({ titulo: 'Adivina el marcador' }, 0).valid).toBe(true)
+    })
+  })
+
+  describe('flash_trivia config', () => {
+    it('validates required fields: desafio_titulo, pregunta, opciones', () => {
+      const config = BULK_CONFIGS.flash_trivia
+      expect(config.validateRow({}, 0).valid).toBe(false)
+      expect(config.validateRow({
+        desafio_titulo: 'Flash 1',
+        pregunta: '¿Pregunta?',
+        opcion_a: 'Si',
+        opcion_b: 'No',
+        opcion_correcta: 'A'
+      }, 0).valid).toBe(true)
+    })
+  })
+
+  describe('progressive_clues config', () => {
+    it('validates required fields: titulo, jugador y las 3 pistas', () => {
+      const config = BULK_CONFIGS.progressive_clues
+      expect(config.validateRow({}, 0).valid).toBe(false)
+      expect(config.validateRow({
+        titulo: 'Jugador 1',
+        dorsal_o_nombre_jugador: '8',
+        pista_1: 'Pista 1',
+        pista_2: 'Pista 2'
+      }, 0).valid).toBe(false)
+      expect(config.validateRow({
+        titulo: 'Jugador 1',
+        dorsal_o_nombre_jugador: '8',
+        pista_1: 'Pista 1',
+        pista_2: 'Pista 2',
+        pista_3: 'Pista 3'
+      }, 0).valid).toBe(true)
+    })
+  })
 })
 
