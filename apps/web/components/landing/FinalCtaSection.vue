@@ -3,7 +3,6 @@ import { ref, computed, onMounted, onUnmounted } from 'vue'
 import { BaseButton, PearlIcon } from '@guaiqui/ui'
 import { useAnalytics } from '~/composables/useAnalytics'
 import type { LandingCta, CtaPlacement } from '@guaiqui/shared'
-import gsap from 'gsap'
 
 const props = withDefaults(defineProps<{
   placement?: CtaPlacement
@@ -15,7 +14,6 @@ const { trackEvent } = useAnalytics()
 const supabase = useSupabaseClient()
 
 const containerRef = ref<HTMLElement | null>(null)
-let ctx: gsap.Context | null = null
 
 const { data: activeCta } = await useAsyncData(`landing-cta-${props.placement}`, async () => {
   try {
@@ -103,14 +101,20 @@ const handleCtaClick = () => {
   trackEvent('click_register', { source: `cta_${props.placement}`, cta_id: cta.value?.id })
 }
 
-onMounted(() => {
+import { useGSAP } from '~/composables/useGSAP'
+
+const { gsap, ScrollTrigger } = useGSAP()
+let ctx: gsap.Context | null = null
+
+const initAnimation = () => {
   if (!containerRef.value) return
+  ctx?.revert()
   ctx = gsap.context(() => {
     const mm = gsap.matchMedia()
     mm.add('(prefers-reduced-motion: no-preference)', () => {
       gsap.from('.cta-anim-child', {
         opacity: 0,
-        y: 20,
+        y: 22,
         duration: 0.7,
         stagger: 0.12,
         ease: 'power2.out',
@@ -122,6 +126,17 @@ onMounted(() => {
       })
     })
   }, containerRef.value)
+  ScrollTrigger?.refresh()
+}
+
+onMounted(async () => {
+  await nextTick()
+  initAnimation()
+})
+
+watch(() => cta.value, async () => {
+  await nextTick()
+  initAnimation()
 })
 
 onUnmounted(() => {

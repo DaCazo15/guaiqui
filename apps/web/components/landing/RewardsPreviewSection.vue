@@ -1,13 +1,50 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, onUnmounted, nextTick } from 'vue'
 import { BaseCard, BaseBadge, BaseButton, PearlAmount, Skeleton } from '@guaiqui/ui'
 import { useAnalytics } from '~/composables/useAnalytics'
+import { useGSAP } from '~/composables/useGSAP'
 
 const { trackEvent } = useAnalytics()
 const supabase = useSupabaseClient()
+const { gsap, ScrollTrigger } = useGSAP()
+
+const sectionRef = ref<HTMLElement | null>(null)
+let ctx: gsap.Context | null = null
 
 const products = ref<any[]>([])
 const loading = ref(true)
+
+const initAnimations = () => {
+  if (!sectionRef.value || products.value.length === 0) return
+  ctx?.revert()
+  ctx = gsap.context(() => {
+    const mm = gsap.matchMedia()
+    mm.add(
+      {
+        reduceMotion: '(prefers-reduced-motion: reduce)',
+        all: '(min-width: 0px)',
+      },
+      (context) => {
+        const { reduceMotion } = context.conditions as { reduceMotion: boolean }
+        if (reduceMotion) return
+
+        gsap.from('.reward-card', {
+          y: 35,
+          opacity: 0,
+          duration: 0.65,
+          stagger: 0.1,
+          ease: 'power3.out',
+          scrollTrigger: {
+            trigger: sectionRef.value,
+            start: 'top 80%',
+            toggleActions: 'play none none none',
+          },
+        })
+      }
+    )
+  }, sectionRef.value)
+  ScrollTrigger?.refresh()
+}
 
 onMounted(async () => {
   loading.value = true
@@ -23,7 +60,13 @@ onMounted(async () => {
     products.value = []
   } finally {
     loading.value = false
+    await nextTick()
+    initAnimations()
   }
+})
+
+onUnmounted(() => {
+  ctx?.revert()
 })
 
 const handleRewardClick = (name: string) => {
@@ -32,7 +75,7 @@ const handleRewardClick = (name: string) => {
 </script>
 
 <template>
-  <section id="premios" class="py-16 sm:py-24 bg-white px-4 sm:px-8 scroll-mt-20">
+  <section id="premios" ref="sectionRef" class="py-16 sm:py-24 bg-white px-4 sm:px-8 scroll-mt-20">
     <div class="max-w-6xl mx-auto space-y-12">
       <!-- Section Header -->
       <div class="flex flex-col md:flex-row md:items-end justify-between gap-4">
@@ -87,7 +130,7 @@ const handleRewardClick = (name: string) => {
           :key="item.id"
           variant="interactive"
           padding="md"
-          class="flex flex-col justify-between"
+          class="reward-card flex flex-col justify-between"
           @click="handleRewardClick(item.title)"
         >
           <template #image>

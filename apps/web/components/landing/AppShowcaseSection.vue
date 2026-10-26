@@ -5,7 +5,7 @@ import { useGSAP } from '~/composables/useGSAP'
 
 const sectionRef = ref<HTMLElement | null>(null)
 const phoneRef = ref<HTMLElement | null>(null)
-const { gsap } = useGSAP()
+const { gsap, ScrollTrigger } = useGSAP()
 let mm: gsap.MatchMedia | null = null
 
 const benefits = [
@@ -27,7 +27,8 @@ const benefits = [
   },
 ]
 
-onMounted(() => {
+onMounted(async () => {
+  await nextTick()
   if (sectionRef.value && phoneRef.value && process.client) {
     mm = gsap.matchMedia()
     mm.add(
@@ -68,6 +69,7 @@ onMounted(() => {
       },
       sectionRef.value
     )
+    ScrollTrigger?.refresh()
   }
 })
 

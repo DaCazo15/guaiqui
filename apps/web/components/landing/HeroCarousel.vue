@@ -3,7 +3,9 @@ import { ref, computed, onMounted, onUnmounted, watch } from 'vue'
 import { BaseButton, PearlIcon } from '@guaiqui/ui'
 import type { HeroCarouselSlide } from '@guaiqui/shared'
 import { useAnalytics } from '~/composables/useAnalytics'
-import gsap from 'gsap'
+import { useGSAP } from '~/composables/useGSAP'
+
+const { gsap } = useGSAP()
 
 const props = defineProps<{
   slides: HeroCarouselSlide[]
@@ -199,8 +201,11 @@ const handleKeyDown = (e: KeyboardEvent) => {
   }
 }
 
-onMounted(() => {
-  ctx = gsap.context(() => {}, slideContainer.value || undefined)
+onMounted(async () => {
+  await nextTick()
+  ctx = gsap.context(() => {
+    animateSlideTransition('fade')
+  }, slideContainer.value || undefined)
   startAutoplay()
   window.addEventListener('keydown', handleKeyDown)
 })

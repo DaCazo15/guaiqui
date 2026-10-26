@@ -14,6 +14,18 @@ import FaqSection from '~/components/landing/FaqSection.vue'
 import FinalCtaSection from '~/components/landing/FinalCtaSection.vue'
 import SiteFooter from '~/components/landing/SiteFooter.vue'
 
+import { onMounted, nextTick } from 'vue'
+import { useGSAP } from '~/composables/useGSAP'
+
+const { ScrollTrigger } = useGSAP()
+
+onMounted(async () => {
+  await nextTick()
+  setTimeout(() => {
+    ScrollTrigger?.refresh()
+  }, 250)
+})
+
 // SEO Meta
 useSeoMeta({
   title: 'Guaiqueríes de Margarita — Fan Zone Oficial & Plataforma de Fidelización',

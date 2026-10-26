@@ -65,7 +65,8 @@ const heroCarouselEnabled = computed(() => Boolean(settings.value?.hero_carousel
 
 const isCarouselActive = computed(() => heroCarouselEnabled.value && heroSlides.value.length > 0)
 
-onMounted(() => {
+onMounted(async () => {
+  await nextTick()
   // GSAP kinetic entrance for classic hero mode
   if (heroContainer.value && !isCarouselActive.value) {
     mm = gsap.matchMedia()

@@ -13,7 +13,7 @@ interface MilestoneItem {
 }
 
 const supabase = useSupabaseClient()
-const { gsap } = useGSAP()
+const { gsap, ScrollTrigger } = useGSAP()
 
 const sectionContainer = ref<HTMLElement | null>(null)
 const trackEl = ref<HTMLElement | null>(null)
@@ -100,17 +100,17 @@ onMounted(async () => {
           const container = sectionContainer.value
           if (!track || !container) return
 
-          const totalDistance = Math.max(0, track.scrollWidth - window.innerWidth + 200)
+          const getTotalDistance = () => Math.max(0, track.scrollWidth - window.innerWidth + 160)
 
           gsap.to(track, {
-            x: () => -totalDistance,
+            x: () => -getTotalDistance(),
             ease: 'none',
             scrollTrigger: {
               trigger: container,
               pin: true,
               scrub: 1,
               start: 'top top',
-              end: () => `+=${totalDistance}`,
+              end: () => `+=${getTotalDistance()}`,
               invalidateOnRefresh: true,
               onUpdate: (self) => {
                 scrollProgress.value = Math.round(self.progress * 100)
@@ -121,6 +121,7 @@ onMounted(async () => {
       },
       sectionContainer.value
     )
+    ScrollTrigger?.refresh()
   }
 })
 
