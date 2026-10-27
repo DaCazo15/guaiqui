@@ -76,7 +76,7 @@ async function loadGames() {
       .order('game_date', { ascending: false })
 
     if (error) throw error
-    games.value = data || []
+    games.value = (data as unknown as Game[]) || []
   } catch (err) {
     console.error('Error cargando partidos:', err)
     games.value = []
@@ -252,14 +252,14 @@ onBeforeUnmount(() => {
           <span class="truncate max-w-[140px] text-[11px]">{{ game.location }}</span>
           <span
             class="px-2 py-0.5 rounded-full text-[9px] font-black uppercase tracking-wider"
-            :class="game.our_score > game.opponent_score ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
+            :class="(game.our_score ?? 0) > (game.opponent_score ?? 0) ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
           >
-            {{ game.our_score > game.opponent_score ? 'Victoria' : 'Derrota' }}
+            {{ (game.our_score ?? 0) > (game.opponent_score ?? 0) ? 'Victoria' : 'Derrota' }}
           </span>
         </div>
         <div class="flex items-center justify-between text-xs">
           <span class="font-display font-bold uppercase text-guaiqui-text">Guaiqueríes</span>
-          <span class="font-display font-black text-base text-guaiqui-primary tabular-nums">{{ game.our_score }}</span>
+          <span class="font-display font-black text-base text-guaiqui-primary tabular-nums">{{ game.our_score ?? 0 }}</span>
         </div>
         <div class="flex items-center justify-between text-xs">
           <span class="font-display font-semibold uppercase text-guaiqui-text-muted truncate max-w-[120px]">{{ game.opponent }}</span>

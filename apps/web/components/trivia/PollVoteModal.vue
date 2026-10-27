@@ -58,14 +58,14 @@ const submitVote = async () => {
   errorMessage.value = null
 
   try {
-    const { data, error } = await supabase.rpc('submit_trivia_poll_vote', {
+    const { data, error } = await (supabase.rpc as any)('submit_trivia_poll_vote', {
       p_poll_id: props.poll.id,
       p_option_id: selectedOptionId.value
     })
 
     if (error) throw error
 
-    successMessage.value = data?.message || '¡Predicción registrada exitosamente!'
+    successMessage.value = (data as any)?.message || '¡Predicción registrada exitosamente!'
     emit('voted', { pollId: props.poll.id, optionId: selectedOptionId.value })
   } catch (err: any) {
     errorMessage.value = err.message || 'Error al registrar tu voto.'

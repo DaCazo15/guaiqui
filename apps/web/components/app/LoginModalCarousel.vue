@@ -43,7 +43,7 @@ onMounted(async () => {
     const { data, error } = await supabase.rpc('get_login_modal')
     if (error || !data || !Array.isArray(data) || data.length === 0) return
 
-    slides.value = data
+    slides.value = data as unknown as ModalSlide[]
     isOpen.value = true
     sessionStorage.setItem('guaiqui_login_modal_shown', 'true')
 

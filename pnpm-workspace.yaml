@@ -5,3 +5,7 @@ allowBuilds:
   core-js: true
   esbuild: true
   vue-demi: true
+
+overrides:
+  dompurify: "^3.4.17"
+

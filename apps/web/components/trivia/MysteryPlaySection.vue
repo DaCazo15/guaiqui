@@ -35,14 +35,14 @@ const submitPlayVote = async () => {
   errorMessage.value = null
 
   try {
-    const { data, error } = await supabase.rpc('submit_mystery_play_vote', {
+    const { data, error } = await (supabase.rpc as any)('submit_mystery_play_vote', {
       p_challenge_id: selectedPlay.value.id,
       p_selected_option: selectedOption.value
     })
 
     if (error) throw error
 
-    resultData.value = data
+    resultData.value = data as any
     emit('voted', {
       challengeId: selectedPlay.value.id,
       selectedOption: selectedOption.value,

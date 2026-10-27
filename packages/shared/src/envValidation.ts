@@ -2,7 +2,7 @@
  * Utility for Environment Variable Validation & Leak Detection
  */
 
-export function assertNoPrivateSecretsInPublic(publicObj: Record<string, any>): void {
+export function assertNoPrivateSecretsInPublic(publicObj: Record<string, unknown>): void {
   if (!publicObj) return
   const serialized = JSON.stringify(publicObj)
 

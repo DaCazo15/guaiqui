@@ -99,7 +99,7 @@ const finishSession = async () => {
 
   try {
     const timeSpent = (selectedChallenge.value.time_limit_seconds || 60) - timeLeft.value
-    const { data, error } = await supabase.rpc('submit_flash_trivia_session', {
+    const { data, error } = await (supabase.rpc as any)('submit_flash_trivia_session', {
       p_challenge_id: selectedChallenge.value.id,
       p_answers: answers.value,
       p_time_spent_seconds: timeSpent
@@ -107,7 +107,7 @@ const finishSession = async () => {
 
     if (error) throw error
 
-    resultData.value = data
+    resultData.value = data as any
     emit('completed', {
       challengeId: selectedChallenge.value.id,
       result: data

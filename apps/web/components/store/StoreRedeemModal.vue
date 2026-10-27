@@ -45,7 +45,7 @@ const handleConfirmRedeem = async () => {
   )
 
   if (result.success && result.data) {
-    emit('redeemed', result.data.redemption_id)
+    emit('redeemed', (result.data as any).redemption_id)
   }
 }
 </script>

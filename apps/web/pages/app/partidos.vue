@@ -31,7 +31,7 @@ onMounted(async () => {
       .order('game_date', { ascending: false })
 
     if (error) throw error
-    games.value = data || []
+    games.value = (data as unknown as Game[]) || []
   } catch (err) {
     console.error('Error fetching games:', err)
     games.value = []
@@ -208,20 +208,20 @@ const formatDate = (dateStr: string) => {
           <div class="md:col-span-2 text-center py-2">
             <div v-if="game.status === 'finished' || game.status === 'live'" class="space-y-1">
               <div class="font-display font-black text-3xl tracking-wider text-guaiqui-text flex items-center justify-center gap-3">
-                <span :class="{ 'text-guaiqui-primary': game.our_score > game.opponent_score }">
-                  {{ game.our_score }}
+                <span :class="{ 'text-guaiqui-primary': (game.our_score ?? 0) > (game.opponent_score ?? 0) }">
+                  {{ game.our_score ?? 0 }}
                 </span>
                 <span class="text-guaiqui-text-subtle text-lg">-</span>
-                <span :class="{ 'text-guaiqui-primary': game.opponent_score > game.our_score }">
-                  {{ game.opponent_score }}
+                <span :class="{ 'text-guaiqui-primary': (game.opponent_score ?? 0) > (game.our_score ?? 0) }">
+                  {{ game.opponent_score ?? 0 }}
                 </span>
               </div>
               <span
                 v-if="game.status === 'finished'"
                 class="inline-block text-[10px] font-bold px-2 py-0.5 rounded-full uppercase"
-                :class="game.our_score > game.opponent_score ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
+                :class="(game.our_score ?? 0) > (game.opponent_score ?? 0) ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'"
               >
-                {{ game.our_score > game.opponent_score ? 'Victoria' : 'Derrota' }}
+                {{ (game.our_score ?? 0) > (game.opponent_score ?? 0) ? 'Victoria' : 'Derrota' }}
               </span>
             </div>
             <div v-else class="space-y-0.5">

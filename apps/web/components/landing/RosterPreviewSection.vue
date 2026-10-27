@@ -58,7 +58,7 @@ onMounted(async () => {
       .limit(6)
 
     if (error) throw error
-    players.value = data || []
+    players.value = (data as unknown as Player[]) || []
   } catch (err) {
     console.error('Error fetching roster preview:', err)
     players.value = []

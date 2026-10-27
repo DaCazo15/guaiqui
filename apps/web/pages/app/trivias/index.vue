@@ -117,8 +117,8 @@ async function loadRosterPlayers() {
 async function loadWhoIsData() {
   whoIsLoading.value = true
   try {
-    const { data } = await supabase.rpc('get_active_who_is_challenges')
-    if (data) whoIsChallenges.value = data
+    const { data } = await (supabase.rpc as any)('get_active_who_is_challenges')
+    if (data) whoIsChallenges.value = (data as unknown as ActiveWhoIsChallenge[]) || []
   } catch (err) {
     console.error('Error cargando retos ¿Quién es?:', err)
   } finally {
@@ -129,9 +129,9 @@ async function loadWhoIsData() {
 async function loadPollsData() {
   pollsLoading.value = true
   try {
-    const { data, error } = await supabase.rpc('get_active_trivia_polls')
+    const { data, error } = await (supabase.rpc as any)('get_active_trivia_polls')
     if (error) throw error
-    polls.value = data || []
+    polls.value = (data as unknown as ActiveTriviaPoll[]) || []
   } catch (err) {
     console.error('Error cargando encuestas:', err)
   } finally {
@@ -142,9 +142,9 @@ async function loadPollsData() {
 async function loadOverUnderData() {
   overUnderLoading.value = true
   try {
-    const { data, error } = await supabase.rpc('get_active_over_under_predictions')
+    const { data, error } = await (supabase.rpc as any)('get_active_over_under_predictions')
     if (error) throw error
-    overUnderList.value = data || []
+    overUnderList.value = (data as unknown as ActiveOverUnder[]) || []
   } catch (err) {
     console.error('Error cargando Over/Under:', err)
   } finally {
@@ -155,9 +155,9 @@ async function loadOverUnderData() {
 async function loadMysteryPlaysData() {
   mysteryPlaysLoading.value = true
   try {
-    const { data, error } = await supabase.rpc('get_active_mystery_plays')
+    const { data, error } = await (supabase.rpc as any)('get_active_mystery_plays')
     if (error) throw error
-    mysteryPlays.value = data || []
+    mysteryPlays.value = (data as unknown as ActiveMysteryPlay[]) || []
   } catch (err) {
     console.error('Error cargando Jugadas Misteriosas:', err)
   } finally {
@@ -168,9 +168,9 @@ async function loadMysteryPlaysData() {
 async function loadScorePredictionsData() {
   scorePredictionsLoading.value = true
   try {
-    const { data, error } = await supabase.rpc('get_active_score_predictions')
+    const { data, error } = await (supabase.rpc as any)('get_active_score_predictions')
     if (error) throw error
-    scorePredictions.value = data || []
+    scorePredictions.value = (data as unknown as ActiveScorePrediction[]) || []
   } catch (err) {
     console.error('Error cargando Marcador Exacto:', err)
   } finally {
@@ -181,9 +181,9 @@ async function loadScorePredictionsData() {
 async function loadFlashData() {
   flashLoading.value = true
   try {
-    const { data, error } = await supabase.rpc('get_active_flash_trivia')
+    const { data, error } = await (supabase.rpc as any)('get_active_flash_trivia')
     if (error) throw error
-    flashChallenges.value = data || []
+    flashChallenges.value = (data as unknown as ActiveFlashTrivia[]) || []
   } catch (err) {
     console.error('Error cargando Trivia Flash:', err)
   } finally {
@@ -194,9 +194,9 @@ async function loadFlashData() {
 async function loadProgressiveCluesData() {
   progressiveCluesLoading.value = true
   try {
-    const { data, error } = await supabase.rpc('get_active_progressive_clues')
+    const { data, error } = await (supabase.rpc as any)('get_active_progressive_clues')
     if (error) throw error
-    progressiveClues.value = data || []
+    progressiveClues.value = (data as unknown as ActiveProgressiveClue[]) || []
   } catch (err) {
     console.error('Error cargando Pistas Progresivas:', err)
   } finally {

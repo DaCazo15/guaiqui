@@ -41,7 +41,7 @@ const submitPrediction = async () => {
   errorMessage.value = null
 
   try {
-    const { data, error } = await supabase.rpc('submit_score_prediction_vote', {
+    const { data, error } = await (supabase.rpc as any)('submit_score_prediction_vote', {
       p_prediction_id: selectedPrediction.value.id,
       p_guaiqueries_score: Number(guaiquiScore.value),
       p_rival_score: Number(rivalScore.value)
@@ -49,7 +49,7 @@ const submitPrediction = async () => {
 
     if (error) throw error
 
-    successMessage.value = data?.message || '¡Marcador registrado con éxito!'
+    successMessage.value = (data as any)?.message || '¡Marcador registrado con éxito!'
     emit('voted', {
       predictionId: selectedPrediction.value.id,
       guaiquiScore: Number(guaiquiScore.value),

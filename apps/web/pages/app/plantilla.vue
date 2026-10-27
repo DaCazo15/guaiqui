@@ -35,7 +35,7 @@ onMounted(async () => {
       .order('jersey_number', { ascending: true })
 
     if (error) throw error
-    players.value = data || []
+    players.value = (data as unknown as Player[]) || []
   } catch (err) {
     console.error('Error fetching roster:', err)
     players.value = []

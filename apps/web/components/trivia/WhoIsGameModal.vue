@@ -120,14 +120,14 @@ const executeVoteSubmission = async () => {
   errorMessage.value = null
 
   try {
-    const { data, error } = await supabase.rpc('submit_guess_player_vote', {
+    const { data, error } = await (supabase.rpc as any)('submit_guess_player_vote', {
       p_challenge_id: props.challenge.id,
       p_selected_player_id: selectedPlayerId.value
     })
 
     if (error) throw error
 
-    voteResult.value = data
+    voteResult.value = data as any
     isRevealed.value = true
     isCountingDown.value = false
 

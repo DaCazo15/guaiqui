@@ -48,7 +48,7 @@ const submitGuess = async () => {
   errorMessage.value = null
 
   try {
-    const { data, error } = await supabase.rpc('submit_progressive_clue_vote', {
+    const { data, error } = await (supabase.rpc as any)('submit_progressive_clue_vote', {
       p_challenge_id: selectedChallenge.value.id,
       p_selected_player_id: selectedPlayerId.value,
       p_clues_revealed_count: cluesRevealedCount.value
@@ -56,7 +56,7 @@ const submitGuess = async () => {
 
     if (error) throw error
 
-    resultData.value = data
+    resultData.value = data as any
     emit('voted', {
       challengeId: selectedChallenge.value.id,
       playerId: selectedPlayerId.value,

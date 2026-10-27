@@ -6,7 +6,7 @@ export type Json =
   | { [key: string]: any }
   | any[]
 
-export type UserStatus = 'active' | 'suspended'
+export type UserStatus = 'active' | 'suspended' | 'deleted'
 export type StaffRole = 'staff' | 'admin'
 export type LedgerType = 'trivia_reward' | 'redemption' | 'refund' | 'admin_adjustment' | 'bonus' | 'streak_bonus' | 'birthday_bonus' | 'ad_reward'
 export type LedgerStatus = 'confirmed' | 'held' | 'revoked'
@@ -38,6 +38,7 @@ export interface Profile {
   pearls_rules_version?: string | null
   created_at: string
   updated_at?: string | null
+  deleted_at?: string | null
 }
 
 export interface StaffMember {
@@ -168,7 +169,7 @@ export interface Player {
   position: string
   height?: string | null
   age?: number | null
-  nationality: string
+  nationality?: string | null
   bio?: string | null
   is_active: boolean
   is_star: boolean
@@ -185,8 +186,8 @@ export interface Game {
   game_date: string
   is_home: boolean
   status: GameStatus
-  our_score: number
-  opponent_score: number
+  our_score?: number | null
+  opponent_score?: number | null
   created_at: string
 }
 

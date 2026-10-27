@@ -61,12 +61,13 @@ const loadDailyProgress = async () => {
       return
     }
 
-    if (data) {
-      completedToday.value = Number(data.completed_today) || 0
-      pointsEarnedToday.value = Number(data.points_earned_today) || 0
-      currentTierReward.value = Number(data.current_tier_reward) || 5
-      blockProgress.value = Number(data.block_progress) || (completedToday.value % 10)
-      videosUntilNextBlock.value = Number(data.videos_until_next_block) || (completedToday.value >= 50 ? 0 : 10 - (completedToday.value % 10))
+    const progressData = data as any
+    if (progressData) {
+      completedToday.value = Number(progressData.completed_today) || 0
+      pointsEarnedToday.value = Number(progressData.points_earned_today) || 0
+      currentTierReward.value = Number(progressData.current_tier_reward) || 5
+      blockProgress.value = Number(progressData.block_progress) || (completedToday.value % 10)
+      videosUntilNextBlock.value = Number(progressData.videos_until_next_block) || (completedToday.value >= 50 ? 0 : 10 - (completedToday.value % 10))
     }
   } catch (err: any) {
     console.warn('Error loading daily video progress:', err)
@@ -147,19 +148,20 @@ const handleVideoCompleted = async (videoId: string) => {
     const { data, error } = await client.rpc('claim_video_points', { p_video_id: videoId })
     if (error) throw error
 
-    if (data?.success) {
-      if (data?.block_completed) {
-        successMessage.value = `¡Bloque #${data.block_number} completado! Has terminado 10 videos y sumado +${data.points_awarded} puntos a tu billetera.`
+    const claimRes = data as any
+    if (claimRes?.success) {
+      if (claimRes?.block_completed) {
+        successMessage.value = `¡Bloque #${claimRes.block_number} completado! Has terminado 10 videos y sumado +${claimRes.points_awarded} puntos a tu billetera.`
         analytics.trackEvent('sponsor_video_block_completed', {
           video_id: videoId,
-          block_number: data.block_number,
-          points: data.points_awarded,
-          completed_today: data.completed_today,
+          block_number: claimRes.block_number,
+          points: claimRes.points_awarded,
+          completed_today: claimRes.completed_today,
         })
       } 
       await loadDailyProgress()
-    } else if (data?.already_claimed) {
-      infoMessage.value = data.message || 'Ya has validado este video hoy.'
+    } else if (claimRes?.already_claimed) {
+      infoMessage.value = claimRes.message || 'Ya has validado este video hoy.'
       await loadDailyProgress()
     }
   } catch (err: any) {

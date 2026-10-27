@@ -37,7 +37,7 @@ onMounted(async () => {
       .order('jersey_number', { ascending: true })
 
     if (error) throw error
-    players.value = data || []
+    players.value = (data as unknown as PlayerRow[]) || []
   } catch (err) {
     console.error('Error fetching players from Supabase:', err)
     players.value = []

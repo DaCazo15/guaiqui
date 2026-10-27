@@ -131,7 +131,7 @@ export const useAuthStore = defineStore('auth', () => {
       ])
 
       if (profErr) throw profErr
-      let prof = initialProf
+      let prof: Profile | null = initialProf as unknown as Profile | null
 
       if (!prof) {
         // Fallback: trigger might have failed or been bypassed, ensure profile exists
@@ -142,7 +142,7 @@ export const useAuthStore = defineStore('auth', () => {
             .select('*')
             .eq('id', targetId)
             .maybeSingle()
-          prof = fallbackProf
+          prof = fallbackProf as unknown as Profile | null
         } catch {
           // ensure_profile RPC could be missing or failed gracefully
         }
@@ -164,7 +164,7 @@ export const useAuthStore = defineStore('auth', () => {
             prof.avatar_url = googlePhoto
             supabase
               .from('profiles')
-              .update({ avatar_url: googlePhoto, updated_at: new Date().toISOString() })
+              .update({ avatar_url: googlePhoto } as any)
               .eq('id', targetId)
               .then(
                 () => {},
@@ -177,7 +177,7 @@ export const useAuthStore = defineStore('auth', () => {
       profile.value = prof
 
       if (walErr) throw walErr
-      wallet.value = wal
+      wallet.value = wal as unknown as Wallet | null
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : 'Error al cargar perfil'
       console.error('Error al cargar perfil:', err)
@@ -389,7 +389,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (Object.keys(safeUpdates).length > 0) {
         const { error } = await supabase
           .from('profiles')
-          .update(safeUpdates)
+          .update(safeUpdates as any)
           .eq('id', user.value.id)
 
         if (error) throw error

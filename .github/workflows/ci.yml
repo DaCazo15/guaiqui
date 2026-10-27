@@ -34,7 +34,7 @@ jobs:
         run: node scripts/verify-no-prod-secrets.mjs
 
       - name: Audit Dependencies
-        run: pnpm audit --prod || true
+        run: node scripts/ci-audit.mjs
 
       - name: Lint
         run: pnpm lint

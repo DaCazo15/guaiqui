@@ -44,7 +44,7 @@ export const useWallet = () => {
       const { data, error: rpcError } = await supabase.rpc('wallet_summary')
       if (rpcError) throw rpcError
       if (data) {
-        summary.value = data as WalletSummary
+        summary.value = data as unknown as WalletSummary
       }
     } catch (err: any) {
       error.value = err.message || 'Error al cargar resumen de billetera'
@@ -65,17 +65,17 @@ export const useWallet = () => {
     try {
       const cursor = isLoadMore && ledgerEntries.value.length > 0
         ? ledgerEntries.value[ledgerEntries.value.length - 1].created_at
-        : null
+        : undefined
 
       const { data, error: rpcError } = await supabase.rpc('wallet_ledger', {
-        p_type: type === 'all' ? null : type,
+        p_type: type === 'all' ? undefined : type,
         p_cursor: cursor,
         p_limit: 15,
       })
 
       if (rpcError) throw rpcError
 
-      const newEntries = (data as LedgerItem[]) || []
+      const newEntries = (data as unknown as LedgerItem[]) || []
       if (newEntries.length < 15) {
         hasMore.value = false
       }

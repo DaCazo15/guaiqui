@@ -10,6 +10,7 @@ export default defineConfig({
   resolve: {
     alias: {
       '~': path.resolve(__dirname, './'),
+      '#imports': path.resolve(__dirname, './__tests__/mocks/imports.ts'),
       'vue': path.dirname(require.resolve('vue/package.json')),
       '@guaiqui/shared': path.resolve(__dirname, '../../packages/shared/src'),
       '@guaiqui/ui': path.resolve(__dirname, '../../packages/ui/src'),

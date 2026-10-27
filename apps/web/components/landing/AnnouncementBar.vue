@@ -20,9 +20,10 @@ onMounted(async () => {
       .order('starts_at', { ascending: false })
       .limit(1)
 
-    if (data && data.length > 0) {
-      announcementText.value = data[0].message
-      announcementLink.value = data[0].link_url || null
+    const items = data as any[]
+    if (items && items.length > 0) {
+      announcementText.value = items[0].message
+      announcementLink.value = items[0].link_url || null
     }
   } catch (_e) {
     announcementText.value = null

@@ -75,7 +75,7 @@ export const useTriviaStore = defineStore('trivias', () => {
     try {
       const { data, error } = await supabase.rpc('home_summary')
       if (error) throw error
-      homeSummary.value = data as HomeSummaryData
+      homeSummary.value = data as unknown as HomeSummaryData
       return data
     } catch (err: any) {
       errorMessage.value = err.message || 'Error al cargar resumen'

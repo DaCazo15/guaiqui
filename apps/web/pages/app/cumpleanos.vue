@@ -31,13 +31,14 @@ const copySuccess = ref(false)
 
 onMounted(async () => {
   try {
-    const { data, error } = await supabase.rpc('get_birthday_card')
-    if (error || !data || !data.eligible) {
+    const { data, error } = await (supabase.rpc as any)('get_birthday_card')
+    const bday = data as any
+    if (error || !bday || !bday.eligible) {
       // Redirección silenciosa a /app si no es elegible
       return navigateTo('/app')
     }
 
-    cardData.value = data
+    cardData.value = bday
     trackEvent('birthday_card_viewed')
   } catch (err) {
     console.error('Error fetching birthday card:', err)
@@ -66,17 +67,18 @@ async function handleClaimBonus() {
   claimMessage.value = null
 
   try {
-    const { data, error } = await supabase.rpc('claim_birthday_bonus')
+    const { data, error } = await (supabase.rpc as any)('claim_birthday_bonus')
     if (error) throw error
 
-    if (data?.success) {
+    const claimRes = data as any
+    if (claimRes?.success) {
       cardData.value.has_claimed_bonus = true
       claimMessage.value = `¡Felicidades! Has recibido ${cardData.value.bonus_pearls} puntos de regalo por tu cumpleaños.`
       trackEvent('birthday_bonus_claimed')
       // Refresh wallet balance
       await authStore.fetchProfile()
     } else {
-      throw new Error(data?.message || 'No se pudo reclamar el bono.')
+      throw new Error(claimRes?.message || 'No se pudo reclamar el bono.')
     }
   } catch (err: any) {
     claimError.value = err.message || 'Error al reclamar el bono de cumpleaños.'

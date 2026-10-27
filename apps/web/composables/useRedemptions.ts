@@ -100,7 +100,8 @@ export const useRedemptions = () => {
         .single()
 
       if (dbError) throw dbError
-      currentRedemption.value = data as Redemption
+      const item = data as unknown as Redemption
+      currentRedemption.value = item
 
       // Cargar historial de estados
       const { data: historyData, error: historyError } = await supabase
@@ -114,11 +115,11 @@ export const useRedemptions = () => {
       }
 
       // Si está approved o scheduled, intentar cargar QR
-      if (['approved', 'scheduled'].includes(data.status)) {
+      if (item && ['approved', 'scheduled'].includes(item.status)) {
         await fetchRedemptionQR(id)
       }
 
-      return data as Redemption
+      return item
     } catch (err: any) {
       error.value = err.message || 'Error al cargar los detalles del canje'
       return null
@@ -133,8 +134,8 @@ export const useRedemptions = () => {
         p_redemption_id: id,
       })
       if (rpcError) throw rpcError
-      qrData.value = data as QRCodeData
-      return data as QRCodeData
+      qrData.value = data as unknown as QRCodeData
+      return data as unknown as QRCodeData
     } catch (err: any) {
       qrData.value = null
       return null

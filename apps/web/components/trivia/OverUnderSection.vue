@@ -36,14 +36,14 @@ const submitVote = async () => {
   errorMessage.value = null
 
   try {
-    const { data, error } = await supabase.rpc('submit_over_under_vote', {
+    const { data, error } = await (supabase.rpc as any)('submit_over_under_vote', {
       p_prediction_id: selectedPrediction.value.id,
       p_choice: selectedChoice.value
     })
 
     if (error) throw error
 
-    successMessage.value = data?.message || '¡Pronóstico registrado exitosamente!'
+    successMessage.value = (data as any)?.message || '¡Pronóstico registrado exitosamente!'
     emit('voted', {
       predictionId: selectedPrediction.value.id,
       choice: selectedChoice.value
