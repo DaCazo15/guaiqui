@@ -2,7 +2,10 @@ import fs from 'fs';
 import path from 'path';
 
 const stepsDir = 'C:\\Users\\dcazo\\.gemini\\antigravity-ide\\brain\\211005b2-01ce-463c-87a9-8eaff6f8b421\\.system_generated\\steps';
-const outDir = 'supabase/migrations';
+const outDir = process.env.SQUASH_OUT_DIR || 'supabase/squash_draft';
+if (!fs.existsSync(outDir)) {
+  fs.mkdirSync(outDir, { recursive: true });
+}
 
 function readStepJson(stepNum) {
   const file = path.join(stepsDir, `${stepNum}`, 'output.txt');

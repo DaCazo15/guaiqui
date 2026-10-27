@@ -34,3 +34,34 @@ Dado que **las migraciones de base de datos son estrictamente hacia adelante** (
    - Acceder al Dashboard de Supabase -> Database -> Backups.
    - Para Point-in-Time Recovery (PITR), seleccionar la estampa de tiempo inmediatamente anterior al despliegue fallido.
    - Aplicar el restore a la base de datos de producción.
+
+---
+
+## Procedimiento de Consolidación de Migraciones (Squash para Lanzamiento)
+
+Para nuevos despliegues limpios o entornos de desarrollo a partir de la versión consolidada:
+
+1. **Generación del Squash**:
+   - Ejecutar el script:
+     ```bash
+     node scripts/generate_squash_all.mjs
+     ```
+   - Esto genera los 4 archivos de migración consolidados en `supabase/squash_draft/`:
+     - `20261016000001_schema_and_types.sql`: Esquema base, tablas y tipos ENUM.
+     - `20261016000002_functions_and_triggers.sql`: Funciones PL/pgSQL, triggers y validaciones.
+     - `20261016000003_rls_policies.sql`: Políticas de Row-Level Security y permisos de ejecución.
+     - `20261016000004_initial_seed.sql`: Configuración inicial, slots de anuncios y roles de sistema.
+
+2. **Validación en Entorno Local**:
+   - En una rama temporal, sustituir el contenido de `supabase/migrations/` por los 4 archivos generados.
+   - Ejecutar:
+     ```bash
+     supabase db reset
+     supabase test db
+     ```
+   - Verificar que todos los tests pgTAP pasen al 100% idénticos al historial previo.
+
+3. **ADVERTENCIA CRÍTICA PARA STAGING Y PRODUCCIÓN**:
+   - **NUNCA** sustituir las migraciones en `supabase/migrations` directamente en repositorios conectados a Staging o Producción existentes sin un respaldo completo y actualización controlada de la tabla `supabase_migrations.schema_migrations`.
+   - Las instancias existentes ya tienen registrado el historial de versiones individual. Aplicar el squash sin sincronizar la tabla de migraciones causará desincronización o fallos de migración.
+

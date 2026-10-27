@@ -47,3 +47,5 @@ supabase/.branches/
 .temp/
 repo.bundle
 repomix-output.xml
+scratch/
+
