@@ -59,8 +59,7 @@ onMounted(async () => {
       })
     }
   } catch (err) {
-    // Fallback for offline/test environment
-    emit('verify', 'test-valid-pass')
+    emit('error', err)
   }
 })
 

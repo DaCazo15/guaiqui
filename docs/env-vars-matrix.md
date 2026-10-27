@@ -6,8 +6,8 @@
 | `SUPABASE_ANON_KEY` | Clave pública cliente Supabase | (dev key) | (staging anon key) | (prod anon key) |
 | `SUPABASE_SERVICE_ROLE_KEY` | Clave secreta servidor | (dev service key) | (staging service key) | (prod service key) |
 | `SENTRY_DSN` | DSN de Monitoreo Sentry | `""` | `https://...sentry.io/staging` | `https://...sentry.io/prod` |
-| `TURNSTILE_SITE_KEY` | Key pública Cloudflare Turnstile | `1x00000000000000000000AA` | `1x00000000000000000000AA` | (real site key) |
-| `TURNSTILE_SECRET_KEY` | Secret Cloudflare Turnstile | `1x00000000000000000000AA` | `1x00000000000000000000AA` | (real secret key) |
+| `TURNSTILE_SITE_KEY` | Key pública Cloudflare Turnstile | `1x00000000000000000000AA` (solo local) | (real staging site key) | (real prod site key) |
+| `TURNSTILE_SECRET_KEY` | Secret Cloudflare Turnstile | `1x00000000000000000000AA` (solo local) | (real staging secret key) | (real prod secret key) |
 | `POSTHOG_API_KEY` | Key de analítica sin PII | `""` | `phc_staging...` | `phc_prod...` |
 | `VAPID_PUBLIC_KEY` | Clave pública Push Notifications | (dev vapid) | (staging vapid) | (prod vapid) |
 | `VAPID_PRIVATE_KEY` | Clave privada Push Notifications | (dev private) | (staging private) | (prod private) |

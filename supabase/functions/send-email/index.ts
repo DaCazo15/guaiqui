@@ -190,6 +190,13 @@ serve(async (req) => {
     const keyIndex = trackerData?.key_index || 1;
     const activeApiKey = keyIndex === 2 ? resendKey2 : resendKey1;
 
+    if (!activeApiKey) {
+      return new Response(
+        JSON.stringify({ error: "Servicio de correo no configurado (falta API Key de Resend)." }),
+        { status: 500, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
     // 2. Despachar correo vía Resend API v1
     const resendRes = await fetch("https://api.resend.com/emails", {
       method: "POST",

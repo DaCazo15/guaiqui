@@ -62,11 +62,13 @@ async function handleStartTrivia() {
     localError.value = 'Ya has ganado esta trivia previamente.'
     return
   }
-  localError.value = null
+  if (!captchaToken.value) {
+    localError.value = 'Debes completar la verificación de seguridad antes de comenzar.'
+    return
+  }
   isVerifyingCaptcha.value = true
   try {
-    const token = captchaToken.value || 'test-valid-pass'
-    await antiFraud.verifyCaptchaToken(token)
+    await antiFraud.verifyCaptchaToken(captchaToken.value)
 
     // UUID nuevo por cada intento y persistencia en attemptKey
     const key = crypto.randomUUID()

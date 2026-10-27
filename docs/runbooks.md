@@ -43,3 +43,34 @@
 2. Filtrar los casos por flag de riesgo (ej: `high_score_fast_time`, `multiple_accounts_same_ip`).
 3. Evaluar la actividad del usuario en `audit_logs`.
 4. Hacer clic en **Liberar Perlitas** (si es un caso legítimo) o **Revocar Perlitas** (si se confirma fraude). La acción genera una entrada inmutable en el libro contable.
+
+---
+
+## Runbook 6: Respuesta ante Exposición o Bypass de Captcha (Turnstile)
+1. **Detección**: Si se detecta que el endpoint `verify-captcha` aceptó tokens inválidos, mocks fuera de local o hubo degradación del servicio Cloudflare:
+2. **Auditoría Inmediata de Datos**:
+   - Consultar `captcha_passes` creados en los últimos días:
+     ```sql
+     SELECT user_id, ip_hash, used, created_at
+     FROM public.captcha_passes
+     WHERE created_at >= NOW() - INTERVAL '7 days'
+     ORDER BY created_at DESC;
+     ```
+   - Cruzar con `risk_flags` y `fraud_telemetry`:
+     ```sql
+     SELECT rf.fan_id, rf.flag, rf.severity, rf.details, rf.created_at
+     FROM public.risk_flags rf
+     WHERE rf.created_at >= NOW() - INTERVAL '7 days';
+     ```
+   - Consultar registros en `held_pearls` (entradas `ledger_entries` con `status = 'held'`):
+     ```sql
+     SELECT id, fan_id, amount, source_type, source_id, created_at
+     FROM public.ledger_entries
+     WHERE status = 'held' AND created_at >= NOW() - INTERVAL '7 days';
+     ```
+3. **Revocación de Perlitas y Contención**:
+   - Para cualquier usuario con anomalías de captcha, IPs idénticas repetidas o flags de severidad alta, invocar la RPC `admin_revoke_held_pearls(p_ledger_id, p_reason)`.
+   - Si se confirma actividad de bots masiva, suspender perfiles involucrados (`status = 'suspended'`) y reportar a soporte.
+4. **Validación de Secretos**:
+   - Rotar de inmediato `TURNSTILE_SECRET_KEY` en Cloudflare Dashboard y en Supabase Secrets.
+
