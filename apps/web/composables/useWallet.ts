@@ -1,11 +1,27 @@
 import { ref, computed } from 'vue'
 import { useSupabaseClient, useSupabaseUser } from '#imports'
 
+export interface WalletSummaryTeam {
+  team_id: string
+  team_name: string
+  team_slug: string
+  team_short_name?: string | null
+  team_logo_url: string | null
+  team_primary_color?: string | null
+  team_secondary_color?: string | null
+  balance: number
+  held_balance: number
+  is_following: boolean
+}
+
 export interface WalletSummary {
   balance: number
+  total_balance: number
   earned_month: number
   spent_month: number
   held_pearls: number
+  total_held_balance: number
+  teams: WalletSummaryTeam[]
 }
 
 export interface LedgerItem {
@@ -26,9 +42,12 @@ export const useWallet = () => {
 
   const summary = ref<WalletSummary>({
     balance: 0,
+    total_balance: 0,
     earned_month: 0,
     spent_month: 0,
     held_pearls: 0,
+    total_held_balance: 0,
+    teams: [],
   })
 
   const ledgerEntries = ref<LedgerItem[]>([])
@@ -37,14 +56,24 @@ export const useWallet = () => {
   const hasMore = ref(true)
   const error = ref<string | null>(null)
   const currentFilter = ref<string>('all')
+  const selectedTeamId = ref<string | null>(null)
 
   const fetchSummary = async () => {
     if (!user.value) return
     try {
-      const { data, error: rpcError } = await supabase.rpc('wallet_summary')
+      const { data, error: rpcError } = await supabase.rpc('get_wallet_summary')
       if (rpcError) throw rpcError
       if (data) {
-        summary.value = data as unknown as WalletSummary
+        const d = data as any
+        summary.value = {
+          balance: d.total_balance ?? d.balance ?? 0,
+          total_balance: d.total_balance ?? d.balance ?? 0,
+          earned_month: d.earned_month ?? 0,
+          spent_month: d.spent_month ?? 0,
+          held_pearls: d.total_held_balance ?? d.held_pearls ?? 0,
+          total_held_balance: d.total_held_balance ?? d.held_pearls ?? 0,
+          teams: Array.isArray(d.teams) ? d.teams : [],
+        }
       }
     } catch (err: any) {
       error.value = err.message || 'Error al cargar resumen de billetera'
@@ -69,6 +98,7 @@ export const useWallet = () => {
 
       const { data, error: rpcError } = await supabase.rpc('wallet_ledger', {
         p_type: type === 'all' ? undefined : type,
+        p_team_id: selectedTeamId.value || undefined,
         p_cursor: cursor,
         p_limit: 15,
       })
@@ -94,6 +124,11 @@ export const useWallet = () => {
     }
   }
 
+  const setTeamFilter = async (teamId: string | null) => {
+    selectedTeamId.value = teamId
+    await fetchLedger(currentFilter.value, false)
+  }
+
   const refreshWallet = async () => {
     await Promise.all([
       fetchSummary(),
@@ -109,6 +144,8 @@ export const useWallet = () => {
     hasMore: computed(() => hasMore.value),
     error: computed(() => error.value),
     currentFilter,
+    selectedTeamId,
+    setTeamFilter,
     fetchSummary,
     fetchLedger,
     refreshWallet,

@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useWallet } from '~/composables/useWallet'
 import { useAdsProgress } from '~/composables/useAdsProgress'
 import WalletSummaryCard from '~/components/wallet/WalletSummaryCard.vue'
+import WalletTeamsBreakdown from '~/components/wallet/WalletTeamsBreakdown.vue'
 import WalletLedgerList from '~/components/wallet/WalletLedgerList.vue'
 import WalletHeldInfoModal from '~/components/wallet/WalletHeldInfoModal.vue'
 
@@ -18,6 +19,8 @@ const {
   loadingMore,
   hasMore,
   currentFilter,
+  selectedTeamId,
+  setTeamFilter,
   fetchSummary,
   fetchLedger,
 } = useWallet()
@@ -27,6 +30,10 @@ const isHeldModalOpen = ref(false)
 
 const handleFilterChange = (filter: string) => {
   fetchLedger(filter, false)
+}
+
+const handleTeamSelect = (teamId: string | null) => {
+  setTeamFilter(teamId)
 }
 
 const handleLoadMore = () => {
@@ -42,8 +49,8 @@ onMounted(async () => {
 })
 
 useSeoMeta({
-  title: 'Mi Billetera de Puntos — Guaiqueríes de Margarita',
-  description: 'Consulta tu saldo disponible, movimientos de puntos e historial de canjes.',
+  title: 'Mi Billetera de Puntos — Fan Zone',
+  description: 'Consulta tu saldo total de perlitas, desglose por equipo, movimientos e historial de canjes.',
 })
 </script>
 
@@ -55,15 +62,23 @@ useSeoMeta({
         Billetera de <span class="text-guaiqui-primary">Puntos</span>
       </h1>
       <p class="text-sm text-guaiqui-text-muted">
-        Historial de transacciones y balance inmutable de fidelización de la Tribu Verde.
+        Historial de transacciones y balance inmutable de fidelización por cada equipo.
       </p>
     </div>
 
-    <!-- Summary Cards -->
+    <!-- Unified Total Summary Card -->
     <WalletSummaryCard
       :summary="summary"
       :loading="loading"
       @show-held-info="isHeldModalOpen = true"
+    />
+
+    <!-- Multi-team Breakdown Cards -->
+    <WalletTeamsBreakdown
+      :teams="summary.teams"
+      :selected-team-id="selectedTeamId"
+      :loading="loading"
+      @select-team="handleTeamSelect"
     />
 
     <!-- Banner Sumar Puntos con Anuncios (Asíncrono y Reactivo) -->

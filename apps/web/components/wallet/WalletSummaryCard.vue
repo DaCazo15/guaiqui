@@ -101,7 +101,7 @@ const emit = defineEmits<{
         <div class="space-y-2 relative z-10">
           <div class="flex items-center justify-between">
             <span class="text-xs font-bold text-guaiqui-primary uppercase tracking-wider bg-guaiqui-primary-soft px-2.5 py-1 rounded-full">
-              Saldo de Puntos
+              Saldo Total Unificado
             </span>
             <NuxtLink to="/app/canjes">
               <BaseButton variant="outline" size="sm" class="text-xs font-medium">
@@ -112,7 +112,7 @@ const emit = defineEmits<{
           </div>
 
           <div class="pt-2">
-            <p class="text-xs text-guaiqui-text-muted">Balance Disponible</p>
+            <p class="text-xs text-guaiqui-text-muted">Balance Total Disponible</p>
             <div class="mt-1 flex items-baseline">
               <PearlAmount :amount="summary.balance" size="xl" show-label animated />
             </div>

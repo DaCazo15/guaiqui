@@ -1,43 +1,82 @@
-# Procedimiento de Alta de Personal (Staff & Admin Bootstrap)
+# Procedimiento de Alta de Personal (Staff & Admin Bootstrap Multi-Equipo)
 
 ## Visión General
-Por diseño de seguridad y privacidad, **nadie se registra como personal de staff ni administrador desde la interfaz pública**. Todos los miembros del personal (`staff_members`) se dan de alta exclusivamente mediante scripts SQL o herramientas administrativas autorizadas directamente en PostgreSQL/Supabase.
+Por diseño de seguridad y privacidad, **nadie se registra como personal de staff ni administrador desde la interfaz pública**. Todos los miembros del personal (`staff_members`) se dan de alta exclusivamente mediante scripts SQL o herramientas administrativas autorizadas directamente en PostgreSQL/Supabase con el rol `service_role`.
+
+A partir de la arquitectura multi-equipo de la plataforma, existen dos niveles de administración:
+1. **Administrador de Plataforma (`is_platform_admin`)**: Supervisa toda la plataforma, administra equipos, políticas legales, configuración económica global y anuncios. Su registro en `staff_members` tiene `team_id IS NULL`, rol `'admin'` y requiere autenticación de dos factores estricta (`aal2`).
+2. **Personal de Club (`staff` / `admin`)**: Vinculado obligatoriamente a un equipo (`team_id = '<uuid_equipo>'`). Gestiona exclusivamente el contenido, inventario, canjes y métricas de su equipo.
 
 ---
 
-## Estructura de Roles de Personal (`staff_role`)
-- `staff`: Personal de atención y verificación en campo (cola de canjes, escaneo QR, incidencias, consulta básica de fanáticos e inventario).
-- `admin`: Personal con control total (todo lo de staff + administración de economía, productos, trivias, usuarios y auditoría).
+## Invariante de Seguridad (`assert_min_admins`)
+El sistema garantiza en todo momento que:
+- Exista **al menos 1 administrador de plataforma activo** (`role = 'admin'`, `active = true`, `team_id IS NULL`).
+- Exista **al menos 1 administrador de club activo por cada equipo activo** (`teams.status = 'active'`).
+
+Cualquier operación que intente desactivar, eliminar o degradar al último administrador de plataforma o de un club activo será rechazada por la base de datos con un error `23514`.
 
 ---
 
-## Procedimiento de Alta (Entornos de Producción y Staging)
+## Procedimiento para Crear el Primer Administrador de Plataforma
 
-1. **Paso 1: Registro del Usuario en Supabase Auth**
-   El usuario debe registrarse previamente con su correo corporativo mediante el flujo estándar de Supabase Auth o un invitado de Auth Admin.
+> [!IMPORTANT]
+> **No colocar credenciales ni usuarios reales en migraciones de base de datos.** Todo bootstrapping de usuarios reales debe ejecutarse manualmente vía SQL con `service_role` o la consola administrativa.
 
-2. **Paso 2: Obtener el `UUID` del usuario**
-   Consulte la tabla `auth.users` o `public.profiles`:
-   ```sql
-   SELECT id, email, display_name FROM public.profiles WHERE email = 'ejemplo.staff@guaiqueries.com';
-   ```
+### Paso 1: Registrar la cuenta en Supabase Auth
+Cree el usuario desde el panel de Supabase Auth (Authentication > Users > Add user) o mediante un script administrativo.
 
-3. **Paso 3: Asignar Rol de Staff/Admin**
-   Ejecute el siguiente bloque SQL en la consola de Supabase SQL Editor o CLI:
-   ```sql
-   INSERT INTO public.staff_members (user_id, role, active)
-   VALUES ('<UUID_DEL_USUARIO>', 'staff', true)
-   ON CONFLICT (user_id) DO UPDATE 
-   SET role = EXCLUDED.role, active = true;
-   ```
+### Paso 2: Configurar MFA (AAL2 Obligatorio)
+Los administradores de plataforma requieren autenticación TOTP de dos factores (`aal2`). Inicie sesión con la cuenta y active el factor TOTP en `/admin/login` o en la consola de Supabase.
 
-4. **Paso 4: Verificación**
-   Verifique que el usuario puede acceder al panel admin `/login` y ser redirigido a `/staff/cola`.
+### Paso 3: Asignar Rol de Plataforma vía SQL
+Ejecute el siguiente comando con permisos de `postgres` o `service_role`:
+
+```sql
+INSERT INTO public.staff_members (user_id, role, team_id, active)
+VALUES (
+    '<UUID_DE_LA_CUENTA_DE_PLATAFORMA>',
+    'admin',
+    NULL, -- NULL identifica explícitamente a un Administrador de Plataforma
+    true
+)
+ON CONFLICT (user_id) DO UPDATE 
+SET role = 'admin', team_id = NULL, active = true;
+```
 
 ---
 
-## Semillero para Desarrollo (Seed Local)
-En entorno local de desarrollo, el archivo `supabase/seed.sql` genera automáticamente usuarios con rol `staff` y `admin` para pruebas con las siguientes credenciales:
+## Procedimiento para Asignar Administradores y Staff de Club
 
-- **Staff Fanaticos**: `staff@guaiqueries.com` / `Password123!`
-- **Admin General**: `admin@guaiqueries.com` / `Password123!`
+Para dar de alta a un empleado de club (por ejemplo, Guaiqueríes de Margarita con ID `a0000000-0000-0000-0000-000000000001`):
+
+```sql
+-- Administrador de Club
+INSERT INTO public.staff_members (user_id, role, team_id, active)
+VALUES (
+    '<UUID_DE_LA_CUENTA_DE_CLUB>',
+    'admin',
+    'a0000000-0000-0000-0000-000000000001', -- UUID del equipo
+    true
+)
+ON CONFLICT (user_id) DO UPDATE 
+SET role = 'admin', team_id = EXCLUDED.team_id, active = true;
+
+-- Personal de Taquilla / Staff de Campo
+INSERT INTO public.staff_members (user_id, role, team_id, active)
+VALUES (
+    '<UUID_DE_LA_CUENTA_DE_STAFF>',
+    'staff',
+    'a0000000-0000-0000-0000-000000000001',
+    true
+)
+ON CONFLICT (user_id) DO UPDATE 
+SET role = 'staff', team_id = EXCLUDED.team_id, active = true;
+```
+
+---
+
+## Plan de Transición de Cuentas Existentes
+1. La cuenta de administración actual queda asignada como **Administrador del Equipo #1 (Guaiqueríes de Margarita)** (`team_id = 'a0000000-0000-0000-0000-000000000001'`).
+2. Se crea una cuenta independiente exclusiva para **Administración de Plataforma** (`team_id IS NULL`), cumpliendo con la separación de responsabilidades y el invariante `assert_min_admins`.
+

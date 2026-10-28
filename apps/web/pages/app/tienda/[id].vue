@@ -29,14 +29,22 @@ const productVariants = computed(() => {
   return ['Única']
 })
 
+const teamBalance = computed(() => {
+  if (!currentProduct.value) return 0
+  const teamId = currentProduct.value.team_id
+  if (!teamId) return summary.value.balance
+  const t = summary.value.teams.find((team) => team.team_id === teamId)
+  return t ? t.balance : 0
+})
+
 const isAffordable = computed(() => {
   if (!currentProduct.value) return false
-  return summary.value.balance >= currentProduct.value.cost_pearls
+  return teamBalance.value >= currentProduct.value.cost_pearls
 })
 
 const missingPearls = computed(() => {
   if (!currentProduct.value) return 0
-  return Math.max(0, currentProduct.value.cost_pearls - summary.value.balance)
+  return Math.max(0, currentProduct.value.cost_pearls - teamBalance.value)
 })
 
 const isOutOfStock = computed(() => {

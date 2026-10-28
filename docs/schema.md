@@ -6,7 +6,15 @@ Plataforma de fidelización de fanáticos para **Guaiqueríes de Margarita**.
 
 ```mermaid
 erDiagram
-    profiles ||--|| wallets : "has balance cache"
+    teams ||--o{ team_follows : "followed by"
+    teams ||--o{ wallets : "scoped currency"
+    teams ||--o{ ledger_entries : "scoped transactions"
+    teams ||--o{ products : "offers"
+    teams ||--o{ trivias : "publishes"
+    teams ||--o{ staff_members : "employed by"
+
+    profiles ||--o{ team_follows : "follows"
+    profiles ||--o{ wallets : "has balance cache per team"
     profiles ||--o{ ledger_entries : "has transactions"
     profiles ||--o{ trivia_attempts : "submits"
     profiles ||--o{ redemptions : "requests"
@@ -22,6 +30,24 @@ erDiagram
     redemptions }o--o| staff_members : "approved / delivered by"
 
     staff_members ||--o{ scan_events : "scans QR"
+
+    teams {
+        uuid id PK
+        text name
+        text slug UK
+        text short_name
+        text logo_url
+        text primary_color
+        text secondary_color
+        enum status
+        timestamptz joined_at
+    }
+
+    team_follows {
+        uuid user_id PK, FK
+        uuid team_id PK, FK
+        timestamptz created_at
+    }
 
     profiles {
         uuid id PK
@@ -39,13 +65,15 @@ erDiagram
     }
 
     wallets {
-        uuid fan_id PK
+        uuid fan_id PK, FK
+        uuid team_id PK, FK
         int balance_cache
         timestamptz updated_at
     }
 
     ledger_entries {
         uuid id PK
+        uuid team_id FK
         uuid fan_id FK
         int amount
         enum type
@@ -226,41 +254,54 @@ erDiagram
 | `game_status`       | `scheduled`, `live`, `finished`, `cancelled`                                                      |
 | `risk_severity`     | `low`, `medium`, `high`                                                                           |
 
-## Reglas Inmutables de la Economía de Perlitas
+## Reglas Inmutables de la Economía de Perlitas Multi-Equipo
 
-1. **Libro Contable Inmutable (`ledger_entries`)**:
-   - `UPDATE` y `DELETE` están bloqueados a nivel de base de datos con un disparador (`BEFORE UPDATE OR DELETE ON ledger_entries`).
-   - Todos los saldos se derivan de transacciones de suma.
-   - La tabla `wallets` mantiene un saldo en caché (`balance_cache`) que solo es alterado mediante funciones transaccionales atómicas con bloqueo de fila (`FOR UPDATE`).
-   - Índice único parcial `(source_type, source_id, type) WHERE status = 'confirmed'` previene pagos duplicados.
+1. **Perlitas Propias por Equipo y Billeteras Aisladas**:
+   - Cada equipo posee su propia moneda virtual ("perlitas"). No hay transferencia ni combinación persistida de saldos entre equipos.
+   - El saldo total del fanático es una suma puramente calculada al vuelo (`get_wallet_summary()`), nunca almacenada globalmente.
+   - La tabla `wallets` utiliza una clave primaria compuesta `(fan_id, team_id)`. Se inicializa automáticamente cuando el fanático sigue a un equipo (`follow_team`).
+   - Las perlitas de un equipo solo son canjeables por productos y experiencias de ese mismo equipo.
 
-2. **Evaluación 100% en Servidor**:
+2. **Libro Contable Inmutable (`ledger_entries`) Multi-Equipo**:
+   - `UPDATE` y `DELETE` están estrictamente bloqueados a nivel de motor PostgreSQL (`prevent_ledger_mutation()`).
+   - Cada entrada contable está vinculada a un equipo obligatorio (`team_id UUID NOT NULL REFERENCES public.teams(id)`).
+   - Para ganar perlitas de un equipo, el fanático debe seguir activamente al equipo (`team_follows`) y el equipo debe estar `active`.
+   - Si un fanático deja de seguir a un equipo, su billetera y su saldo acumulado NO se borran ni congelan: conserva el derecho a canjear premios de ese equipo.
+   - Si un equipo pasa a estado `inactive`, se bloquean nuevas ganancias y canjes, pero los saldos y el historial histórico se conservan visibles.
+
+3. **Seguimiento de Equipos (`team_follows`)**:
+   - Clave primaria `(user_id, team_id)`. Los fanáticos gestionan sus propios follows mediante las RPCs idempotentes `follow_team` y `unfollow_team` con rate limiting (30 operaciones / 60 segundos).
+   - El staff de club solo puede consultar agregados anónimos (`team_follower_count(team_id)`); no tiene visibilidad de la lista cruda de seguidores.
+
+4. **Evaluación 100% en Servidor**:
    - Las soluciones de las trivias (`trivia_options.is_correct`) nunca viajan al cliente antes de enviar las respuestas.
-   - Las funciones `start_trivia_attempt` y `submit_trivia_attempt` evalúan puntos y otorgan perlitas en una única transacción en el servidor.
-   - Detección de comportamiento sospechoso: si el tiempo de resolución es < 3 segundos, el intento se marca `suspicious`, los puntos se ponen en estado `held` y se crea un `risk_flag`.
+   - `start_trivia_attempt` y `submit_trivia_attempt` derivan el `team_id` directamente del recurso padre, verifican el seguimiento activo y otorgan perlitas a la billetera `(fan_id, team_id)` en una transacción atómica.
+   - Detección de comportamiento sospechoso: si el tiempo de resolución es < 3 segundos, los puntos se retienen en `held` y se crea un `risk_flag`.
 
-3. **Canjes Atómicos y Prevención de Doble Entrega**:
-   - La función `redeem_product` bloquea la billetera y el producto (`FOR UPDATE`), verifica saldo y stock, genera el código QR hash y descuenta perlitas y stock de forma atómica.
-   - La función `deliver_redemption` ejecuta una actualización condicional `WHERE status IN ('pending', 'approved', 'scheduled')` para impedir la entrega doble de un mismo código QR.
-   - Clave de idempotencia `(fan_id, idempotency_key)` única en `redemptions`.
-
-4. **Transacciones de Reembolso**:
-   - Cancelar o rechazar un canje inserta una entrada POSITIVA en `ledger_entries` con `type = 'refund'` y restaura el stock. Nunca borra ni modifica registros existentes.
+5. **Canjes Atómicos y Prevención de Doble Entrega**:
+   - La función `redeem_product` deriva el `team_id` del producto, bloquea la billetera correspondiente (`FOR UPDATE`) y el producto, valida existencia y saldo suficiente, genera el código hash y descuenta perlitas y stock de forma atómica.
+   - Cancelaciones y reembolsos reinsertan transacciones positivas en `ledger_entries` vinculadas al `team_id` original.
 
 ## Funciones RPC Transaccionales
 
 | Función | Descripción | Bloqueo |
 |---------|-------------|---------|
+| `follow_team(p_team_id)` | Fan sigue a un equipo activo. Idempotente, crea wallet si no existe. Con rate limiting. | — |
+| `unfollow_team(p_team_id)` | Fan deja de seguir a un equipo. Idempotente, no altera balances ni ledger. | — |
+| `search_teams(p_query, p_limit, p_offset)` | Búsqueda pública de equipos activos con conteo de seguidores y estado `is_following`. | — |
+| `get_wallet_summary()` | Resumen unificado: saldo total calculado + desglose por equipo con balances y flags. | — |
 | `start_trivia_attempt(trivia_id, idempotency_key)` | Crea intento con expiración y semilla de barajado. Idempotente. | — |
-| `submit_trivia_attempt(attempt_id, answers, idempotency_key)` | Evalúa en servidor, aplica anti-cheat, inserta ledger + wallet atómicamente. | `FOR UPDATE` en attempt |
-| `redeem_product(product_id, variant, idempotency_key)` | Verifica saldo/stock, descuenta todo atómicamente, genera código QR. | `FOR UPDATE` en wallet + product |
-| `cancel_redemption(redemption_id, reason)` | Fan cancela pendientes; staff cancela pending/approved/scheduled. Reembolsa. | `FOR UPDATE` en redemption |
-| `approve_redemption(redemption_id, note)` | Staff aprueba canje pendiente. | `FOR UPDATE` en redemption |
-| `reject_redemption(redemption_id, reason)` | Staff rechaza y reembolsa perlitas + stock. | `FOR UPDATE` en redemption |
+| `submit_trivia_attempt(attempt_id, answers, idempotency_key)` | Evalúa en servidor, valida seguimiento activo, acredita a `(fan_id, team_id)`. | `FOR UPDATE` en attempt |
+| `redeem_product(product_id, variant, idempotency_key)` | Verifica saldo en `(fan_id, team_id)` del producto, descuenta atómicamente, genera QR. | `FOR UPDATE` en wallet + product |
+| `cancel_redemption(redemption_id, reason)` | Reembolsa perlitas al wallet del equipo del canje y repone stock. | `FOR UPDATE` en redemption |
+| `claim_birthday_bonus(p_team_id)` | Otorga bono de cumpleaños una vez al año por equipo seguido y activo. | `FOR UPDATE` en wallet |
+| `approve_redemption(redemption_id, note)` | Staff del equipo aprueba canje pendiente de su equipo. | `FOR UPDATE` en redemption |
+| `reject_redemption(redemption_id, reason)` | Staff rechaza y reembolsa perlitas + stock al equipo del canje. | `FOR UPDATE` en redemption |
 | `deliver_redemption(code_hash, device)` | Entrega por escaneo QR. Previene doble entrega. | `FOR UPDATE` en redemption |
 | `report_redemption_issue(redemption_id, reason)` | Staff reporta problema con entrega. | `FOR UPDATE` en redemption |
 | `verify_redemption_code(code_hash)` | Lectura de la tarjeta del canje, sin consumir. | — |
-| `admin_adjust_pearls(fan_id, amount, reason)` | Ajuste manual con motivo obligatorio + audit_log. | `FOR UPDATE` en wallet |
+| `admin_adjust_pearls(fan_id, amount, reason, team_id)` | Ajuste manual acotado por equipo de staff (o especificado por plataforma). | `FOR UPDATE` en wallet |
+| `reconcile_wallets()` | Auditor contable: concilia `balance_cache` vs `ledger_entries` por `(fan_id, team_id)`. | — |
 
 ## RLS (Row-Level Security)
 

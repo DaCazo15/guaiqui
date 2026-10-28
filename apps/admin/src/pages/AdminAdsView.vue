@@ -6,6 +6,9 @@ import AdminVideoModal from '../components/ads/AdminVideoModal.vue'
 import { BaseButton, BaseModal } from '@guaiqui/ui'
 import { supabase } from '../lib/supabase'
 import type { SponsorVideo } from '@guaiqui/shared'
+import { useAuthStore } from '../stores/auth'
+
+const authStore = useAuthStore()
 
 const videos = ref<SponsorVideo[]>([])
 const loading = ref(true)
@@ -166,9 +169,18 @@ onMounted(() => {
           </p>
         </div>
 
-        <BaseButton variant="primary" size="md" @click="handleOpenCreate">
+        <BaseButton v-if="authStore.isPlatformAdmin" variant="primary" size="md" @click="handleOpenCreate">
           <i class="bi bi-plus-lg mr-1.5"></i> Agregar Video
         </BaseButton>
+      </div>
+
+      <!-- Banner de solo lectura para admin de club -->
+      <div v-if="!authStore.isPlatformAdmin" class="p-4 bg-amber-950/40 border border-amber-800/80 text-amber-200 rounded-xl text-sm flex items-start gap-3">
+        <i class="bi bi-info-circle-fill text-amber-400 text-lg mt-0.5 shrink-0"></i>
+        <div>
+          <p class="font-semibold">Modo Solo Lectura (Administración de Club)</p>
+          <p class="text-xs text-amber-300/90 mt-0.5">La gestión de videos comerciales y patrocinadores aplica globalmente a la plataforma y es administrada exclusivamente por la administración de la plataforma.</p>
+        </div>
       </div>
 
       <!-- Mensajes de feedback -->
@@ -212,6 +224,7 @@ onMounted(() => {
       <AdminVideoTable
         :videos="videos"
         :loading="loading"
+        :read-only="!authStore.isPlatformAdmin"
         @create="handleOpenCreate"
         @edit="handleOpenEdit"
         @delete="confirmDelete"
