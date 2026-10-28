@@ -14,7 +14,7 @@ const navItems = APP_BOTTOM_NAV_ITEMS
 
 <template>
   <nav
-    class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#0B7A3B] bg-gradient-to-r from-[#064E27] via-[#0B7A3B] to-emerald-800 border-t-2 border-[#C8102E] shadow-2xl px-2 py-2 text-white"
+    class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-b from-[#0e743a] via-[#09542a] to-[#043319] border-t-2 border-emerald-400/40 shadow-[0_-15px_40px_rgba(0,0,0,0.7)] px-3 py-2 text-white backdrop-blur-md"
     style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));"
     aria-label="Navegación principal inferior"
   >
@@ -25,20 +25,20 @@ const navItems = APP_BOTTOM_NAV_ITEMS
         :to="{ name: item.routeName }"
         :aria-label="item.name"
         :aria-current="route.name === item.routeName || route.path === item.path ? 'page' : undefined"
-        class="flex items-center justify-center min-w-[48px] min-h-[44px] p-2 rounded-xl transition-all duration-150 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        class="flex items-center justify-center min-w-[48px] min-h-[44px] p-2 rounded-2xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
         :class="[
           route.name === item.routeName || route.path === item.path
-            ? 'text-white font-black bg-black/30 ring-1 ring-white/30 shadow-inner'
-            : 'text-emerald-100/75 hover:text-white hover:bg-white/10 font-semibold',
+            ? 'bg-white text-slate-950 shadow-lg shadow-black/30 scale-105'
+            : 'text-emerald-100/75 hover:text-white hover:bg-white/10',
         ]"
       >
         <!-- Ícono personalizado para Perfil con foto circular del usuario -->
         <template v-if="item.path === '/app/perfil'">
           <div
-            class="w-[28px] h-[28px] rounded-full overflow-hidden border flex items-center justify-center shrink-0 transition-colors duration-150"
+            class="w-[28px] h-[28px] rounded-full overflow-hidden border flex items-center justify-center shrink-0 transition-colors duration-200"
             :class="[
               route.name === item.routeName || route.path === item.path
-                ? 'border-white ring-2 ring-white shadow-xs'
+                ? 'border-slate-950 ring-2 ring-slate-950 shadow-xs'
                 : 'border-white/60 opacity-90'
             ]"
           >
@@ -54,11 +54,21 @@ const navItems = APP_BOTTOM_NAV_ITEMS
             />
             <span
               v-else-if="authStore.profile?.display_name"
-              class="text-xs font-bold text-white bg-white/20 w-full h-full flex items-center justify-center leading-none"
+              class="text-xs font-bold leading-none"
+              :class="route.name === item.routeName || route.path === item.path ? 'text-slate-950' : 'text-white'"
             >
               {{ authStore.profile.display_name.charAt(0).toUpperCase() }}
             </span>
-            <i v-else :class="['bi', item.icon, 'text-sm text-white']" aria-hidden="true"></i>
+            <i
+              v-else
+              :class="[
+                'bi',
+                item.icon,
+                'text-sm',
+                route.name === item.routeName || route.path === item.path ? 'text-slate-950' : 'text-white'
+              ]"
+              aria-hidden="true"
+            ></i>
           </div>
         </template>
         <i v-else :class="['bi', item.icon, 'text-xl leading-none']" aria-hidden="true"></i>
