@@ -16,6 +16,15 @@ interface StaffMemberRow {
   is_session_active?: boolean
 }
 
+interface ScanRow {
+  staff_id: string
+  latitude: number | string | null
+  longitude: number | string | null
+  created_at: string
+}
+
+const asStaff = (r: unknown): StaffMemberRow => r as StaffMemberRow
+
 const staffList = ref<StaffMemberRow[]>([])
 const loading = ref(true)
 const actionLoading = ref(false)
@@ -80,7 +89,7 @@ const loadStaffAuditData = async () => {
         .order('created_at', { ascending: false })
 
       if (!scanErr && scansData) {
-        scansData.forEach((s: any) => {
+        (scansData as unknown as ScanRow[]).forEach((s) => {
           if (s.staff_id && !lastLocationMap.has(s.staff_id) && s.latitude && s.longitude) {
             lastLocationMap.set(s.staff_id, {
               latitude: Number(s.latitude),
@@ -101,8 +110,8 @@ const loadStaffAuditData = async () => {
       last_scan_location: lastLocationMap.get(s.user_id) || { latitude: 10.9972, longitude: -63.9113, time: s.created_at }, // Default to Gimnasio Ciudad de La Asunción
       is_session_active: s.active
     }))
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     loading.value = false
   }
@@ -141,8 +150,8 @@ const inviteStaffMember = async () => {
     showInviteModal.value = false
     inviteEmail.value = ''
     await loadStaffAuditData()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -163,8 +172,8 @@ const toggleRole = async (row: StaffMemberRow) => {
     if (error) throw error
     successMessage.value = 'Rol actualizado correctamente.'
     await loadStaffAuditData()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -186,8 +195,8 @@ const toggleActive = async (row: StaffMemberRow) => {
     if (error) throw error
     successMessage.value = `Estado actualizado a ${newActive ? 'Activo' : 'Inactivo'}.`
     await loadStaffAuditData()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -240,43 +249,43 @@ onMounted(loadStaffAuditData)
         <button @click="successMessage = null" class="text-emerald-400 hover:text-emerald-200"><i class="bi bi-x-lg"></i></button>
       </div>
 
-      <BaseTable :columns="columns" :data="(staffList as any[])" :loading="loading" empty-text="No hay personal registrado">
+      <BaseTable :columns="columns" :data="staffList" :loading="loading" empty-text="No hay personal registrado">
         <template #cell-user_id="{ row }">
           <div>
             <div class="font-semibold text-white flex items-center gap-2">
-              <span>{{ (row as StaffMemberRow).display_name }}</span>
+              <span>{{ asStaff(row).display_name }}</span>
             </div>
-            <div class="text-xs font-mono text-slate-400">{{ (row as StaffMemberRow).user_id }}</div>
+            <div class="text-xs font-mono text-slate-400">{{ asStaff(row).user_id }}</div>
           </div>
         </template>
 
         <template #cell-role="{ row }">
-          <BaseBadge :variant="(row as StaffMemberRow).role === 'admin' ? 'info' : 'soft'">
-            {{ (row as StaffMemberRow).role === 'admin' ? 'Administrador' : 'Taquilla / Staff' }}
+          <BaseBadge :variant="asStaff(row).role === 'admin' ? 'info' : 'soft'">
+            {{ asStaff(row).role === 'admin' ? 'Administrador' : 'Taquilla / Staff' }}
           </BaseBadge>
         </template>
 
         <template #cell-session="{ row }">
           <div class="flex items-center justify-center gap-1.5">
-            <span :class="['w-2.5 h-2.5 rounded-full animate-pulse', (row as StaffMemberRow).active ? 'bg-emerald-500' : 'bg-red-500']"></span>
-            <span class="text-xs font-semibold" :class="(row as StaffMemberRow).active ? 'text-emerald-400' : 'text-slate-500'">
-              {{ (row as StaffMemberRow).active ? 'En Línea / Activo' : 'Inactivo' }}
+            <span :class="['w-2.5 h-2.5 rounded-full animate-pulse', asStaff(row).active ? 'bg-emerald-500' : 'bg-red-500']"></span>
+            <span class="text-xs font-semibold" :class="asStaff(row).active ? 'text-emerald-400' : 'text-slate-500'">
+              {{ asStaff(row).active ? 'En Línea / Activo' : 'Inactivo' }}
             </span>
           </div>
         </template>
 
         <template #cell-attended_fans="{ row }">
           <span class="text-sm font-bold font-mono text-emerald-400">
-            {{ (row as StaffMemberRow).attended_fans_count || 0 }} fanáticos
+            {{ asStaff(row).attended_fans_count || 0 }} fanáticos
           </span>
         </template>
 
         <template #cell-location="{ row }">
-          <div v-if="(row as StaffMemberRow).last_scan_location" class="flex items-center gap-2">
+          <div v-if="asStaff(row).last_scan_location" class="flex items-center gap-2">
             <BaseButton
               size="sm"
               variant="outline"
-              @click="openLocationMap((row as StaffMemberRow).last_scan_location!, (row as StaffMemberRow).display_name || 'Staff')"
+              @click="openLocationMap(asStaff(row).last_scan_location!, asStaff(row).display_name || 'Staff')"
             >
               <i class="bi bi-geo-alt-fill text-red-400 mr-1"></i> Ubicar
             </BaseButton>
@@ -286,11 +295,11 @@ onMounted(loadStaffAuditData)
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-2">
-            <button @click="toggleRole(row as StaffMemberRow)" class="px-2.5 py-1 bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 rounded-lg transition-colors">
-              Cambiar a {{ (row as StaffMemberRow).role === 'admin' ? 'Staff' : 'Admin' }}
+            <button @click="toggleRole(asStaff(row))" class="px-2.5 py-1 bg-slate-900 border border-slate-800 hover:border-slate-700 text-xs font-semibold text-slate-300 rounded-lg transition-colors">
+              Cambiar a {{ asStaff(row).role === 'admin' ? 'Staff' : 'Admin' }}
             </button>
-            <button @click="toggleActive(row as StaffMemberRow)" :class="['px-2.5 py-1 border text-xs font-semibold rounded-lg transition-colors', (row as StaffMemberRow).active ? 'bg-red-950/60 border-red-800 text-red-300 hover:bg-red-900' : 'bg-emerald-950/60 border-emerald-800 text-emerald-300 hover:bg-emerald-900']">
-              {{ (row as StaffMemberRow).active ? 'Desactivar' : 'Activar' }}
+            <button @click="toggleActive(asStaff(row))" :class="['px-2.5 py-1 border text-xs font-semibold rounded-lg transition-colors', asStaff(row).active ? 'bg-red-950/60 border-red-800 text-red-300 hover:bg-red-900' : 'bg-emerald-950/60 border-emerald-800 text-emerald-300 hover:bg-emerald-900']">
+              {{ asStaff(row).active ? 'Desactivar' : 'Activar' }}
             </button>
           </div>
         </template>

@@ -60,9 +60,28 @@ const tabs = [
   { id: 'progressive_clues' as const, label: 'Pistas Progresivas', icon: 'bi-puzzle-fill', badge: 'Escalón' },
 ]
 
+interface PlayerItem {
+  id: string
+  name: string
+  jersey_number: number
+  photo_url?: string | null
+  position?: string
+}
+
+interface WhoIsResult {
+  is_correct: boolean
+  pearls_awarded: number
+  correct_player?: {
+    id: string
+    name: string
+    photo_url?: string | null
+    jersey_number: number
+  }
+}
+
 // State for each modality
 const whoIsChallenges = ref<ActiveWhoIsChallenge[]>([])
-const rosterPlayers = ref<any[]>([])
+const rosterPlayers = ref<PlayerItem[]>([])
 const whoIsLoading = ref(false)
 const selectedWhoIsChallenge = ref<ActiveWhoIsChallenge | null>(null)
 const isWhoIsModalOpen = ref(false)
@@ -101,6 +120,10 @@ onMounted(async () => {
   ])
 })
 
+async function callRpc<T>(fn: string): Promise<{ data: T | null; error: unknown }> {
+  return (supabase as unknown as { rpc: (name: string) => Promise<{ data: T | null; error: unknown }> }).rpc(fn)
+}
+
 async function loadRosterPlayers() {
   try {
     const { data } = await supabase
@@ -108,7 +131,7 @@ async function loadRosterPlayers() {
       .select('id, name, jersey_number, photo_url, position')
       .eq('is_active', true)
       .order('jersey_number', { ascending: true })
-    if (data) rosterPlayers.value = data
+    if (data) rosterPlayers.value = (data as unknown as PlayerItem[]) || []
   } catch (err) {
     console.error('Error cargando plantilla:', err)
   }
@@ -117,8 +140,8 @@ async function loadRosterPlayers() {
 async function loadWhoIsData() {
   whoIsLoading.value = true
   try {
-    const { data } = await (supabase.rpc as any)('get_active_who_is_challenges')
-    if (data) whoIsChallenges.value = (data as unknown as ActiveWhoIsChallenge[]) || []
+    const { data } = await callRpc<ActiveWhoIsChallenge[]>('get_active_who_is_challenges')
+    if (data) whoIsChallenges.value = data || []
   } catch (err) {
     console.error('Error cargando retos ¿Quién es?:', err)
   } finally {
@@ -129,9 +152,9 @@ async function loadWhoIsData() {
 async function loadPollsData() {
   pollsLoading.value = true
   try {
-    const { data, error } = await (supabase.rpc as any)('get_active_trivia_polls')
+    const { data, error } = await callRpc<ActiveTriviaPoll[]>('get_active_trivia_polls')
     if (error) throw error
-    polls.value = (data as unknown as ActiveTriviaPoll[]) || []
+    polls.value = data || []
   } catch (err) {
     console.error('Error cargando encuestas:', err)
   } finally {
@@ -142,9 +165,9 @@ async function loadPollsData() {
 async function loadOverUnderData() {
   overUnderLoading.value = true
   try {
-    const { data, error } = await (supabase.rpc as any)('get_active_over_under_predictions')
+    const { data, error } = await callRpc<ActiveOverUnder[]>('get_active_over_under_predictions')
     if (error) throw error
-    overUnderList.value = (data as unknown as ActiveOverUnder[]) || []
+    overUnderList.value = data || []
   } catch (err) {
     console.error('Error cargando Over/Under:', err)
   } finally {
@@ -155,9 +178,9 @@ async function loadOverUnderData() {
 async function loadMysteryPlaysData() {
   mysteryPlaysLoading.value = true
   try {
-    const { data, error } = await (supabase.rpc as any)('get_active_mystery_plays')
+    const { data, error } = await callRpc<ActiveMysteryPlay[]>('get_active_mystery_plays')
     if (error) throw error
-    mysteryPlays.value = (data as unknown as ActiveMysteryPlay[]) || []
+    mysteryPlays.value = data || []
   } catch (err) {
     console.error('Error cargando Jugadas Misteriosas:', err)
   } finally {
@@ -168,9 +191,9 @@ async function loadMysteryPlaysData() {
 async function loadScorePredictionsData() {
   scorePredictionsLoading.value = true
   try {
-    const { data, error } = await (supabase.rpc as any)('get_active_score_predictions')
+    const { data, error } = await callRpc<ActiveScorePrediction[]>('get_active_score_predictions')
     if (error) throw error
-    scorePredictions.value = (data as unknown as ActiveScorePrediction[]) || []
+    scorePredictions.value = data || []
   } catch (err) {
     console.error('Error cargando Marcador Exacto:', err)
   } finally {
@@ -181,9 +204,9 @@ async function loadScorePredictionsData() {
 async function loadFlashData() {
   flashLoading.value = true
   try {
-    const { data, error } = await (supabase.rpc as any)('get_active_flash_trivia')
+    const { data, error } = await callRpc<ActiveFlashTrivia[]>('get_active_flash_trivia')
     if (error) throw error
-    flashChallenges.value = (data as unknown as ActiveFlashTrivia[]) || []
+    flashChallenges.value = data || []
   } catch (err) {
     console.error('Error cargando Trivia Flash:', err)
   } finally {
@@ -194,9 +217,9 @@ async function loadFlashData() {
 async function loadProgressiveCluesData() {
   progressiveCluesLoading.value = true
   try {
-    const { data, error } = await (supabase.rpc as any)('get_active_progressive_clues')
+    const { data, error } = await callRpc<ActiveProgressiveClue[]>('get_active_progressive_clues')
     if (error) throw error
-    progressiveClues.value = (data as unknown as ActiveProgressiveClue[]) || []
+    progressiveClues.value = data || []
   } catch (err) {
     console.error('Error cargando Pistas Progresivas:', err)
   } finally {
@@ -224,7 +247,7 @@ function openWhoIsChallenge(challenge: ActiveWhoIsChallenge) {
   isWhoIsModalOpen.value = true
 }
 
-function onWhoIsVoted({ challengeId, result }: { challengeId: string; result: any }) {
+function onWhoIsVoted({ challengeId, result }: { challengeId: string; result: WhoIsResult }) {
   const idx = whoIsChallenges.value.findIndex(c => c.id === challengeId)
   if (idx !== -1) {
     whoIsChallenges.value[idx] = {
@@ -266,7 +289,7 @@ async function onProgressiveClueVoted() {
   authStore.fetchProfile()
 }
 
-function getStatusBadge(trivia: any) {
+function getStatusBadge(trivia: { is_won?: boolean; starts_at: string; ends_at: string; status: string }) {
   if (trivia.is_won) {
     return { label: 'Ganada', class: 'bg-emerald-500/10 text-emerald-600 border-emerald-500/30' }
   }
@@ -286,9 +309,10 @@ function getStatusBadge(trivia: any) {
   return { label: 'Disponible', class: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/30' }
 }
 
-function getEstimatedReward(t: any): number {
-  const perCorrect = Number(t?.reward_rules?.per_correct_pearls) || 50
-  const bonus = Number(t?.reward_rules?.perfect_score_bonus) || 100
+function getEstimatedReward(t: { reward_rules?: unknown }): number {
+  const rules = t?.reward_rules as { per_correct_pearls?: number; perfect_score_bonus?: number } | null
+  const perCorrect = Number(rules?.per_correct_pearls) || 50
+  const bonus = Number(rules?.perfect_score_bonus) || 100
   return perCorrect + bonus
 }
 </script>

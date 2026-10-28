@@ -44,6 +44,8 @@ const columns = [
   { key: 'actions', label: 'Acciones', align: 'right' as const }
 ]
 
+const asPolicy = (r: unknown): PolicyRow => r as PolicyRow
+
 const loadPolicies = async () => {
   loading.value = true
   try {
@@ -53,9 +55,9 @@ const loadPolicies = async () => {
       .order('published_at', { ascending: false })
 
     if (error) throw error
-    policies.value = data || []
-  } catch (err: any) {
-    errorMessage.value = err.message
+    policies.value = (data as PolicyRow[]) || []
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     loading.value = false
   }
@@ -98,7 +100,7 @@ const publishNewVersion = async () => {
   actionLoading.value = true
   errorMessage.value = null
   try {
-    const { data, error } = await supabase.rpc('admin_publish_policy', {
+    const { error } = await supabase.rpc('admin_publish_policy', {
       p_slug: form.value.slug,
       p_version: form.value.version,
       p_content: form.value.content_markdown
@@ -109,8 +111,8 @@ const publishNewVersion = async () => {
     successMessage.value = `Nueva versión ${form.value.version} de "${policyLabels[form.value.slug]}" publicada con éxito.`
     showPublishModal.value = false
     await loadPolicies()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -163,26 +165,26 @@ onMounted(loadPolicies)
         <h2 class="text-lg font-bold text-white mb-4">Historial de Versiones Publicadas</h2>
         <BaseTable :columns="columns" :data="policies" :loading="loading" empty-text="No hay versiones registradas">
           <template #cell-slug="{ row }">
-            <span class="font-semibold text-white">{{ policyLabels[(row as any).slug] || (row as any).slug }}</span>
+            <span class="font-semibold text-white">{{ policyLabels[asPolicy(row).slug] || asPolicy(row).slug }}</span>
           </template>
 
           <template #cell-version="{ row }">
-            <span class="font-mono text-emerald-400 font-bold text-sm">{{ (row as any).version }}</span>
+            <span class="font-mono text-emerald-400 font-bold text-sm">{{ asPolicy(row).version }}</span>
           </template>
 
           <template #cell-published_at="{ row }">
-            <span class="text-xs text-slate-400">{{ new Date((row as any).published_at).toLocaleString() }}</span>
+            <span class="text-xs text-slate-400">{{ new Date(asPolicy(row).published_at).toLocaleString() }}</span>
           </template>
 
           <template #cell-is_active="{ row }">
-            <BaseBadge :variant="(row as any).is_active ? 'success' : 'soft'">
-              {{ (row as any).is_active ? 'Vigente Actual' : 'Archivada' }}
+            <BaseBadge :variant="asPolicy(row).is_active ? 'success' : 'soft'">
+              {{ asPolicy(row).is_active ? 'Vigente Actual' : 'Archivada' }}
             </BaseBadge>
           </template>
 
           <template #cell-actions="{ row }">
             <div class="flex items-center justify-end gap-1.5">
-              <button @click="viewContent(row as any)" class="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Ver / Editar Markdown">
+              <button @click="viewContent(asPolicy(row))" class="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Ver / Editar Markdown">
                 <i class="bi bi-eye"></i>
               </button>
             </div>

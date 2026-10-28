@@ -38,6 +38,8 @@ const columns = [
   { key: 'actions', label: 'Acciones', align: 'right' as const }
 ]
 
+const asFlag = (r: unknown): RiskFlagRow => r as RiskFlagRow
+
 const loadQueue = async () => {
   loading.value = true
   errorMessage.value = null
@@ -47,9 +49,9 @@ const loadQueue = async () => {
     })
 
     if (error) throw error
-    flags.value = data || []
-  } catch (err: any) {
-    errorMessage.value = err.message
+    flags.value = (data as RiskFlagRow[]) || []
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     loading.value = false
   }
@@ -118,8 +120,8 @@ const executeAction = async () => {
 
     showActionModal.value = false
     await loadQueue()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -167,52 +169,52 @@ onMounted(loadQueue)
 
       <BaseTable :columns="columns" :data="flags" :loading="loading" empty-text="No hay alertas de riesgo registradas">
         <template #cell-display_name="{ row }">
-          <span class="font-semibold text-white">{{ (row as any).display_name }}</span>
+          <span class="font-semibold text-white">{{ asFlag(row).display_name }}</span>
         </template>
 
         <template #cell-reason="{ row }">
-          <span class="text-xs text-slate-300">{{ (row as any).reason }}</span>
+          <span class="text-xs text-slate-300">{{ asFlag(row).reason }}</span>
         </template>
 
         <template #cell-severity="{ row }">
-          <BaseBadge :variant="(row as any).severity === 'high' ? 'danger' : 'warning'">
-            {{ (row as any).severity.toUpperCase() }}
+          <BaseBadge :variant="asFlag(row).severity === 'high' ? 'danger' : 'warning'">
+            {{ asFlag(row).severity.toUpperCase() }}
           </BaseBadge>
         </template>
 
         <template #cell-held_pearls="{ row }">
           <span class="font-mono tabular-nums text-amber-400 font-bold">
-            {{ (row as any).held_pearls > 0 ? (row as any).held_pearls + ' retenidas' : '0' }}
+            {{ asFlag(row).held_pearls > 0 ? asFlag(row).held_pearls + ' retenidas' : '0' }}
           </span>
         </template>
 
         <template #cell-created_at="{ row }">
-          <span class="text-xs text-slate-400">{{ (row as any).created_at ? formatCaracas((row as any).created_at) : '' }}</span>
+          <span class="text-xs text-slate-400">{{ asFlag(row).created_at ? formatCaracas(asFlag(row).created_at) : '' }}</span>
         </template>
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-2">
             <BaseButton
-              v-if="(row as any).held_pearls > 0 && !(row as any).resolved"
+              v-if="asFlag(row).held_pearls > 0 && !asFlag(row).resolved"
               variant="primary"
               size="sm"
-              @click="openAction(row as any, 'release')"
+              @click="openAction(asFlag(row), 'release')"
             >
               Liberar
             </BaseButton>
             <BaseButton
-              v-if="(row as any).held_pearls > 0 && !(row as any).resolved"
+              v-if="asFlag(row).held_pearls > 0 && !asFlag(row).resolved"
               variant="danger"
               size="sm"
-              @click="openAction(row as any, 'revoke')"
+              @click="openAction(asFlag(row), 'revoke')"
             >
               Revocar
             </BaseButton>
             <BaseButton
-              v-if="!(row as any).resolved"
+              v-if="!asFlag(row).resolved"
               variant="secondary"
               size="sm"
-              @click="openAction(row as any, 'resolve')"
+              @click="openAction(asFlag(row), 'resolve')"
             >
               Resolver
             </BaseButton>

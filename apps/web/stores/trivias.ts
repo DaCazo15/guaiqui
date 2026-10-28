@@ -1,5 +1,19 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import type { Tables } from '@guaiqui/shared'
+
+export type TriviaRow = Tables<'trivias'> & {
+  is_won?: boolean
+}
+
+export interface TriviaResult {
+  score?: number
+  pearls_awarded?: number
+  suspicious?: boolean
+  success?: boolean
+  error?: string
+  [key: string]: unknown
+}
 
 export interface QuestionOption {
   option_id: string
@@ -63,9 +77,9 @@ export const useTriviaStore = defineStore('trivias', () => {
 
   const homeSummary = ref<HomeSummaryData | null>(null)
   const leaderboard = ref<LeaderboardItem[]>([])
-  const activeTrivias = ref<any[]>([])
+  const activeTrivias = ref<TriviaRow[]>([])
   const currentAttempt = ref<AttemptData | null>(null)
-  const currentResult = ref<any | null>(null)
+  const currentResult = ref<TriviaResult | null>(null)
   const isLoading = ref(false)
   const errorMessage = ref<string | null>(null)
 
@@ -77,8 +91,9 @@ export const useTriviaStore = defineStore('trivias', () => {
       if (error) throw error
       homeSummary.value = data as unknown as HomeSummaryData
       return data
-    } catch (err: any) {
-      errorMessage.value = err.message || 'Error al cargar resumen'
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      errorMessage.value = msg || 'Error al cargar resumen'
       return null
     } finally {
       isLoading.value = false
@@ -91,10 +106,12 @@ export const useTriviaStore = defineStore('trivias', () => {
     try {
       const { data, error } = await supabase.rpc('get_leaderboard', { p_period: period })
       if (error) throw error
-      leaderboard.value = (data as any)?.leaderboard || []
+      const res = data as { leaderboard?: LeaderboardItem[] } | null
+      leaderboard.value = res?.leaderboard || []
       return leaderboard.value
-    } catch (err: any) {
-      errorMessage.value = err.message || 'Error al cargar el ranking'
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      errorMessage.value = msg || 'Error al cargar el ranking'
       return []
     } finally {
       isLoading.value = false
@@ -119,22 +136,27 @@ export const useTriviaStore = defineStore('trivias', () => {
 
       const wonMap = new Set<string>()
       if (userAttempts && Array.isArray(userAttempts)) {
-        userAttempts.forEach((att: any) => {
+        interface UserAttempt {
+          trivia_id: string
+          submitted_at: string | null
+          pearls_awarded: number
+        }
+        ;(userAttempts as unknown as UserAttempt[]).forEach((att) => {
           if (att.submitted_at && att.pearls_awarded > 0) {
             wonMap.add(att.trivia_id)
           }
         })
       }
 
-      const formatted = (data || []).map((t: any) => ({
+      const formatted: TriviaRow[] = (data || []).map((t: Tables<'trivias'>) => ({
         ...t,
         is_won: wonMap.has(t.id),
       }))
 
       activeTrivias.value = formatted
       return formatted
-    } catch (err: any) {
-      errorMessage.value = err.message
+    } catch (err: unknown) {
+      errorMessage.value = err instanceof Error ? err.message : String(err)
       throw err
     } finally {
       isLoading.value = false
@@ -160,16 +182,22 @@ export const useTriviaStore = defineStore('trivias', () => {
         .select('trivia_id, score, pearls_awarded, submitted_at')
         .eq('trivia_id', id)
 
-      const isWon = Array.isArray(userAttempts) && userAttempts.some(
-        (att: any) => att.submitted_at && att.pearls_awarded > 0
+      interface UserAttempt {
+        trivia_id: string
+        submitted_at: string | null
+        pearls_awarded: number
+      }
+      const attemptsList = userAttempts as unknown as UserAttempt[] | null
+      const isWon = Array.isArray(attemptsList) && attemptsList.some(
+        (att) => att.submitted_at && att.pearls_awarded > 0
       )
 
-      const formatted = {
+      const formatted: TriviaRow = {
         ...data,
         is_won: isWon,
       }
 
-      const idx = activeTrivias.value.findIndex((t: any) => t.id === id)
+      const idx = activeTrivias.value.findIndex((t: TriviaRow) => t.id === id)
       if (idx !== -1) {
         activeTrivias.value[idx] = formatted
       } else {
@@ -177,9 +205,9 @@ export const useTriviaStore = defineStore('trivias', () => {
       }
 
       return formatted
-    } catch (err: any) {
-      errorMessage.value = err.message
-      return activeTrivias.value.find((t: any) => t.id === id) || null
+    } catch (err: unknown) {
+      errorMessage.value = err instanceof Error ? err.message : String(err)
+      return activeTrivias.value.find((t: TriviaRow) => t.id === id) || null
     } finally {
       isLoading.value = false
     }
@@ -196,7 +224,7 @@ export const useTriviaStore = defineStore('trivias', () => {
       })
       if (startErr) throw startErr
 
-      const res = attemptRes as any
+      const res = attemptRes as unknown as AttemptData | null
       if (!res?.questions || !Array.isArray(res.questions) || res.questions.length === 0) {
         throw new Error('No se encontraron preguntas disponibles para esta trivia.')
       }
@@ -209,8 +237,9 @@ export const useTriviaStore = defineStore('trivias', () => {
         questions: res.questions,
       }
       return currentAttempt.value
-    } catch (err: any) {
-      errorMessage.value = translateTriviaError(err.message)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      errorMessage.value = translateTriviaError(msg)
       throw new Error(errorMessage.value)
     } finally {
       isLoading.value = false
@@ -228,10 +257,11 @@ export const useTriviaStore = defineStore('trivias', () => {
       })
       if (error) throw error
 
-      currentResult.value = data
+      currentResult.value = data as Record<string, unknown>
       return data
-    } catch (err: any) {
-      errorMessage.value = translateTriviaError(err.message)
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : String(err)
+      errorMessage.value = translateTriviaError(msg)
       throw new Error(errorMessage.value)
     } finally {
       isLoading.value = false
@@ -257,7 +287,7 @@ export const useTriviaStore = defineStore('trivias', () => {
 })
 
 export function translateTriviaError(msg: string): string {
-  if (process.dev || (import.meta as any).env?.DEV) {
+  if (process.dev || import.meta.env?.DEV) {
     console.warn('[translateTriviaError raw]:', msg)
   }
   if (!msg) return 'Ocurrió un error inesperado al procesar la trivia.'

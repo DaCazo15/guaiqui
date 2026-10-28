@@ -48,6 +48,8 @@ const categoryLabels: Record<string, string> = {
   logistica: 'Staff / Logística'
 }
 
+const asMember = (r: unknown): TeamMemberRow => r as TeamMemberRow
+
 const loadMembers = async () => {
   loading.value = true
   errorMessage.value = null
@@ -58,9 +60,9 @@ const loadMembers = async () => {
       .order('order_index', { ascending: true })
 
     if (error) throw error
-    members.value = data || []
-  } catch (err: any) {
-    errorMessage.value = err.message
+    members.value = (data as TeamMemberRow[]) || []
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     loading.value = false
   }
@@ -121,8 +123,8 @@ const saveRow = async () => {
     successMessage.value = 'Miembro del equipo guardado correctamente.'
     showModal.value = false
     await loadMembers()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -136,8 +138,8 @@ const deleteRow = async (id: string) => {
     if (error) throw error
     successMessage.value = 'Miembro eliminado.'
     await loadMembers()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -182,37 +184,37 @@ onMounted(() => {
     <BaseTable :columns="columns" :data="members" :loading="loading" empty-text="No hay integrantes registrados">
       <template #cell-name="{ row }">
         <div class="flex items-center gap-3">
-          <img :src="(row as any).photo_url || 'https://placehold.co/100x100?text=Guaiqueri'" class="w-9 h-9 rounded-full object-cover bg-slate-800 border border-slate-700" />
-          <span class="font-semibold text-white">{{ (row as any).name }}</span>
+          <img :src="asMember(row).photo_url || 'https://placehold.co/100x100?text=Guaiqueri'" class="w-9 h-9 rounded-full object-cover bg-slate-800 border border-slate-700" />
+          <span class="font-semibold text-white">{{ asMember(row).name }}</span>
         </div>
       </template>
 
       <template #cell-role="{ row }">
-        <span class="text-sm text-slate-300">{{ (row as any).role }}</span>
+        <span class="text-sm text-slate-300">{{ asMember(row).role }}</span>
       </template>
 
       <template #cell-group_category="{ row }">
         <BaseBadge variant="info">
-          {{ categoryLabels[(row as any).group_category] || (row as any).group_category }}
+          {{ categoryLabels[asMember(row).group_category] || asMember(row).group_category }}
         </BaseBadge>
       </template>
 
       <template #cell-order_index="{ row }">
-        <span class="text-xs text-slate-400 font-mono">{{ (row as any).order_index }}</span>
+        <span class="text-xs text-slate-400 font-mono">{{ asMember(row).order_index }}</span>
       </template>
 
       <template #cell-is_published="{ row }">
-        <BaseBadge :variant="(row as any).is_published ? 'success' : 'soft'">
-          {{ (row as any).is_published ? 'Visible' : 'Oculto' }}
+        <BaseBadge :variant="asMember(row).is_published ? 'success' : 'soft'">
+          {{ asMember(row).is_published ? 'Visible' : 'Oculto' }}
         </BaseBadge>
       </template>
 
       <template #cell-actions="{ row }">
         <div class="flex items-center justify-end gap-1.5">
-          <button @click="editRow(row as any)" class="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
+          <button @click="editRow(asMember(row))" class="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
             <i class="bi bi-pencil"></i>
           </button>
-          <button @click="deleteRow((row as any).id)" class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-950 rounded-lg transition-colors" title="Eliminar">
+          <button @click="deleteRow(asMember(row).id)" class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-950 rounded-lg transition-colors" title="Eliminar">
             <i class="bi bi-trash"></i>
           </button>
         </div>

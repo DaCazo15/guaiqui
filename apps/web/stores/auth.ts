@@ -1,7 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
-import type { User } from '@supabase/supabase-js'
-import type { Profile, Wallet } from '@guaiqui/shared'
+import type { User, UserIdentity } from '@supabase/supabase-js'
+import type { Profile, Wallet, TablesUpdate } from '@guaiqui/shared'
 import { CURRENT_LEGAL_VERSIONS } from '@guaiqui/shared'
 import { translateAuthError } from '../utils/authErrors'
 import { clearClientAuthSession } from '../utils/sessionCleanup'
@@ -9,6 +9,15 @@ import { uploadAvatarToStorage, uploadCoverToStorage } from '../utils/profileSto
 
 export type ProfileRow = Profile
 export type WalletRow = Wallet
+
+function extractErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message
+  if (typeof err === 'object' && err !== null && 'message' in err) {
+    const msg = (err as { message: unknown }).message
+    if (typeof msg === 'string') return msg
+  }
+  return String(err)
+}
 
 export const useAuthStore = defineStore('auth', () => {
   const supabase = useSupabaseClient()
@@ -151,11 +160,13 @@ export const useAuthStore = defineStore('auth', () => {
       // Auto-populate Google OAuth profile photo if not yet set or if updated on Google
       if (prof) {
         const meta = targetUser?.user_metadata
-        let googlePhoto =
+        const googleIdentity = targetUser?.identities?.find((i: UserIdentity) => i?.provider === 'google')
+        const googleIdentityData = googleIdentity?.identity_data as Record<string, unknown> | undefined
+        const googlePhoto =
           meta?.avatar_url ||
           meta?.picture ||
-          (targetUser as any)?.identities?.find((i: any) => i?.provider === 'google')?.identity_data?.avatar_url ||
-          (targetUser as any)?.identities?.find((i: any) => i?.provider === 'google')?.identity_data?.picture
+          googleIdentityData?.avatar_url ||
+          googleIdentityData?.picture
 
         const currentAvatar = prof.avatar_url ? prof.avatar_url.trim() : ''
         if (googlePhoto && typeof googlePhoto === 'string') {
@@ -164,11 +175,11 @@ export const useAuthStore = defineStore('auth', () => {
             prof.avatar_url = googlePhoto
             supabase
               .from('profiles')
-              .update({ avatar_url: googlePhoto } as any)
+              .update({ avatar_url: googlePhoto })
               .eq('id', targetId)
               .then(
                 () => {},
-                (err: any) => console.warn('Could not auto-sync Google avatar:', err)
+                (err: unknown) => console.warn('Could not auto-sync Google avatar:', err)
               )
           }
         }
@@ -179,7 +190,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (walErr) throw walErr
       wallet.value = wal as unknown as Wallet | null
     } catch (err: unknown) {
-      const msg = err instanceof Error ? err.message : 'Error al cargar perfil'
+      const msg = extractErrorMessage(err) || 'Error al cargar perfil'
       console.error('Error al cargar perfil:', err)
       errorMessage.value = msg
     } finally {
@@ -202,8 +213,9 @@ export const useAuthStore = defineStore('auth', () => {
       }
       await fetchProfile(data.user)
       return data
-    } catch (err: any) {
-      errorMessage.value = translateAuthError(err.message)
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err)
+      errorMessage.value = translateAuthError(msg)
       throw new Error(errorMessage.value)
     } finally {
       isLoading.value = false
@@ -295,8 +307,9 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       return data
-    } catch (err: any) {
-      errorMessage.value = translateAuthError(err.message)
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err)
+      errorMessage.value = translateAuthError(msg)
       throw new Error(errorMessage.value)
     } finally {
       isLoading.value = false
@@ -326,8 +339,8 @@ export const useAuthStore = defineStore('auth', () => {
       const { error } = await supabase.rpc('accept_terms')
       if (error) throw error
       await fetchProfile()
-    } catch (err: any) {
-      errorMessage.value = err.message
+    } catch (err: unknown) {
+      errorMessage.value = extractErrorMessage(err)
       throw err
     } finally {
       isLoading.value = false
@@ -345,8 +358,8 @@ export const useAuthStore = defineStore('auth', () => {
       if (error) throw error
       await fetchProfile()
       return data
-    } catch (err: any) {
-      errorMessage.value = err.message
+    } catch (err: unknown) {
+      errorMessage.value = extractErrorMessage(err)
       throw err
     } finally {
       isLoading.value = false
@@ -379,17 +392,17 @@ export const useAuthStore = defineStore('auth', () => {
         'cover_url',
       ] as const
 
-      const safeUpdates: Record<string, any> = {}
+      const safeUpdates: TablesUpdate<'profiles'> = {}
       for (const key of allowedKeys) {
-        if (key in updates && (updates as any)[key] !== undefined) {
-          safeUpdates[key] = (updates as any)[key]
+        if (key in updates && (updates as Record<string, unknown>)[key] !== undefined) {
+          (safeUpdates as Record<string, unknown>)[key] = (updates as Record<string, unknown>)[key]
         }
       }
 
       if (Object.keys(safeUpdates).length > 0) {
         const { error } = await supabase
           .from('profiles')
-          .update(safeUpdates as any)
+          .update(safeUpdates)
           .eq('id', user.value.id)
 
         if (error) throw error
@@ -400,8 +413,8 @@ export const useAuthStore = defineStore('auth', () => {
       }
 
       await fetchProfile()
-    } catch (err: any) {
-      errorMessage.value = err.message
+    } catch (err: unknown) {
+      errorMessage.value = extractErrorMessage(err)
       throw err
     } finally {
       isLoading.value = false
@@ -421,8 +434,8 @@ export const useAuthStore = defineStore('auth', () => {
         profile.value.avatar_url = avatarUrl
       }
       return avatarUrl
-    } catch (err: any) {
-      errorMessage.value = err.message || 'Error al subir la imagen'
+    } catch (err: unknown) {
+      errorMessage.value = extractErrorMessage(err) || 'Error al subir la imagen'
       throw err
     } finally {
       isLoading.value = false
@@ -442,8 +455,8 @@ export const useAuthStore = defineStore('auth', () => {
         profile.value.cover_url = coverUrl
       }
       return coverUrl
-    } catch (err: any) {
-      errorMessage.value = err.message || 'Error al subir la foto de portada'
+    } catch (err: unknown) {
+      errorMessage.value = extractErrorMessage(err) || 'Error al subir la foto de portada'
       throw err
     } finally {
       isLoading.value = false
@@ -460,7 +473,7 @@ export const useAuthStore = defineStore('auth', () => {
       if (error) {
         console.warn('Opaque password reset response (suppressed error):', error.message)
       }
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.warn('Opaque password reset response (suppressed exception):', err)
     } finally {
       isLoading.value = false
@@ -474,8 +487,9 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const { error } = await supabase.auth.updateUser({ password: newPass })
       if (error) throw error
-    } catch (err: any) {
-      errorMessage.value = translateAuthError(err.message)
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err)
+      errorMessage.value = translateAuthError(msg)
       throw new Error(errorMessage.value)
     } finally {
       isLoading.value = false
@@ -494,8 +508,9 @@ export const useAuthStore = defineStore('auth', () => {
         },
       })
       if (error) throw error
-    } catch (err: any) {
-      errorMessage.value = translateAuthError(err.message)
+    } catch (err: unknown) {
+      const msg = extractErrorMessage(err)
+      errorMessage.value = translateAuthError(msg)
       throw new Error(errorMessage.value)
     } finally {
       isLoading.value = false
@@ -519,8 +534,8 @@ export const useAuthStore = defineStore('auth', () => {
 
       await logout()
       return data
-    } catch (err: any) {
-      errorMessage.value = err.message
+    } catch (err: unknown) {
+      errorMessage.value = extractErrorMessage(err)
       throw err
     } finally {
       isLoading.value = false

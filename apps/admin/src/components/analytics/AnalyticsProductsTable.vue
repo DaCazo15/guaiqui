@@ -21,6 +21,12 @@ const stockColumns = [
   { key: 'status', label: 'Estado Alerta', align: 'right' as const }
 ]
 
+type TopProduct = NonNullable<AnalyticsProductSummary['top_products']>[number]
+type LowStockAlert = NonNullable<AnalyticsProductSummary['low_stock_alerts']>[number]
+
+const asTop = (r: unknown): TopProduct => r as TopProduct
+const asStock = (r: unknown): LowStockAlert => r as LowStockAlert
+
 const downloadProductsCsv = () => {
   if (!props.productSummary) return
   exportToCsv('productos_mas_canjeados', props.productSummary.top_products, {
@@ -56,16 +62,16 @@ const downloadProductsCsv = () => {
         empty-text="Sin datos de productos canjeados"
       >
         <template #cell-name="{ row }">
-          <span class="font-semibold text-slate-100">{{ (row as any).name }}</span>
+          <span class="font-semibold text-slate-100">{{ asTop(row).name }}</span>
         </template>
         <template #cell-cost_pearls="{ row }">
-          <span class="font-mono tabular-nums text-amber-400 font-bold">{{ (row as any).cost_pearls }}</span>
+          <span class="font-mono tabular-nums text-amber-400 font-bold">{{ asTop(row).cost_pearls }}</span>
         </template>
         <template #cell-redemptions_count="{ row }">
-          <span class="font-mono tabular-nums text-slate-300 font-bold">{{ (row as any).redemptions_count }}</span>
+          <span class="font-mono tabular-nums text-slate-300 font-bold">{{ asTop(row).redemptions_count }}</span>
         </template>
         <template #cell-total_pearls_spent="{ row }">
-          <span class="font-mono tabular-nums text-rose-400 font-bold">{{ (row as any).total_pearls_spent.toLocaleString() }}</span>
+          <span class="font-mono tabular-nums text-rose-400 font-bold">{{ asTop(row).total_pearls_spent.toLocaleString() }}</span>
         </template>
       </BaseTable>
     </div>
@@ -87,14 +93,14 @@ const downloadProductsCsv = () => {
         empty-text="No hay alertas de stock"
       >
         <template #cell-name="{ row }">
-          <span class="font-semibold text-white">{{ (row as any).name }}</span>
+          <span class="font-semibold text-white">{{ asStock(row).name }}</span>
         </template>
         <template #cell-stock="{ row }">
-          <span class="font-mono tabular-nums font-bold text-red-400 text-sm">{{ (row as any).stock }} unidades</span>
+          <span class="font-mono tabular-nums font-bold text-red-400 text-sm">{{ asStock(row).stock }} unidades</span>
         </template>
         <template #cell-status="{ row }">
           <BaseBadge variant="danger">
-            {{ (row as any).stock === 0 ? 'Agotado' : 'Crítico' }}
+            {{ asStock(row).stock === 0 ? 'Agotado' : 'Crítico' }}
           </BaseBadge>
         </template>
       </BaseTable>

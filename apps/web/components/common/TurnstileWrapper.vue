@@ -1,13 +1,29 @@
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted } from 'vue'
 
+interface TurnstileInstance {
+  render: (
+    container: HTMLElement,
+    options: {
+      sitekey: string
+      callback: (token: string) => void
+      'error-callback': (err: unknown) => void
+    }
+  ) => string
+  remove: (widgetId: string) => void
+}
+
+interface WindowWithTurnstile extends Window {
+  turnstile?: TurnstileInstance
+}
+
 const props = defineProps<{
   siteKey?: string
 }>()
 
 const emit = defineEmits<{
   (e: 'verify', token: string): void
-  (e: 'error', err: any): void
+  (e: 'error', err: unknown): void
 }>()
 
 const container = ref<HTMLElement | null>(null)
@@ -17,7 +33,8 @@ let widgetId: string | null = null
 
 function loadTurnstileScript(): Promise<void> {
   return new Promise((resolve, reject) => {
-    if ((window as any).turnstile) {
+    const win = window as unknown as WindowWithTurnstile
+    if (win.turnstile) {
       resolve()
       return
     }
@@ -25,7 +42,7 @@ function loadTurnstileScript(): Promise<void> {
     const scriptId = 'cf-turnstile-script'
     if (document.getElementById(scriptId)) {
       const interval = setInterval(() => {
-        if ((window as any).turnstile) {
+        if (win.turnstile) {
           clearInterval(interval)
           resolve()
         }
@@ -47,26 +64,28 @@ function loadTurnstileScript(): Promise<void> {
 onMounted(async () => {
   try {
     await loadTurnstileScript()
-    if (container.value && (window as any).turnstile) {
-      widgetId = (window as any).turnstile.render(container.value, {
+    const win = window as unknown as WindowWithTurnstile
+    if (container.value && win.turnstile) {
+      widgetId = win.turnstile.render(container.value, {
         sitekey: siteKey,
         callback: (token: string) => {
           emit('verify', token)
         },
-        'error-callback': (err: any) => {
+        'error-callback': (err: unknown) => {
           emit('error', err)
         },
       })
     }
-  } catch (err) {
+  } catch (err: unknown) {
     emit('error', err)
   }
 })
 
 onUnmounted(() => {
-  if (widgetId && (window as any).turnstile) {
+  const win = window as unknown as WindowWithTurnstile
+  if (widgetId && win.turnstile) {
     try {
-      ;(window as any).turnstile.remove(widgetId)
+      win.turnstile.remove(widgetId)
     } catch (_) {}
   }
 })

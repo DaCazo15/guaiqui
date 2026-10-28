@@ -6,16 +6,28 @@ import QueueTable from '../components/queue/QueueTable.vue'
 import QueueRejectModal from '../components/queue/QueueRejectModal.vue'
 import { supabase } from '../lib/supabase'
 
-const items = ref<any[]>([])
+import type { RealtimeChannel } from '@supabase/supabase-js'
+
+export interface QueueItem {
+  id: string
+  fan_display_name?: string
+  product_name: string
+  variant?: string | null
+  cost_pearls: number
+  status: string
+  created_at: string
+}
+
+const items = ref<QueueItem[]>([])
 const isLoading = ref(true)
 const activeTab = ref('all')
 const searchQuery = ref('')
 const isRealtimeConnected = ref(false)
 
-const selectedRejectItem = ref<any | null>(null)
+const selectedRejectItem = ref<QueueItem | null>(null)
 const isRejectModalOpen = ref(false)
 
-let realtimeChannel: any = null
+let realtimeChannel: RealtimeChannel | null = null
 
 const fetchQueue = async () => {
   isLoading.value = true
@@ -34,7 +46,7 @@ const fetchQueue = async () => {
       console.error('Error fetching queue:', error)
       items.value = []
     } else {
-      items.value = data || []
+      items.value = (data as QueueItem[]) || []
     }
   } finally {
     isLoading.value = false
@@ -52,9 +64,9 @@ const setupRealtime = () => {
     })
 }
 
-const handleApprove = async (item: any) => {
+const handleApprove = async (item: QueueItem) => {
   try {
-    const { data, error } = await supabase.rpc('approve_redemption', {
+    const { error } = await supabase.rpc('approve_redemption', {
       p_redemption_id: item.id
     })
     if (error) {
@@ -62,17 +74,17 @@ const handleApprove = async (item: any) => {
     } else {
       await fetchQueue()
     }
-  } catch (err: any) {
-    alert('Error al aprobar el canje: ' + err.message)
+  } catch (err: unknown) {
+    alert('Error al aprobar el canje: ' + (err instanceof Error ? err.message : String(err)))
   }
 }
 
-const openRejectModal = (item: any) => {
+const openRejectModal = (item: QueueItem) => {
   selectedRejectItem.value = item
   isRejectModalOpen.value = true
 }
 
-const handleConfirmReject = async ({ reason, note }: { reason: string; note: string }) => {
+const handleConfirmReject = async ({ reason }: { reason: string; note: string }) => {
   if (!selectedRejectItem.value) return
   try {
     const { error } = await supabase.rpc('reject_redemption', {
@@ -87,14 +99,14 @@ const handleConfirmReject = async ({ reason, note }: { reason: string; note: str
       selectedRejectItem.value = null
       await fetchQueue()
     }
-  } catch (err: any) {
-    alert('Error al procesar rechazo: ' + err.message)
+  } catch (err: unknown) {
+    alert('Error al procesar rechazo: ' + (err instanceof Error ? err.message : String(err)))
   }
 }
 
-const handleDeliver = async (item: any) => {
+const handleDeliver = async (item: QueueItem) => {
   try {
-    const { data, error } = await supabase.rpc('deliver_redemption', {
+    const { error } = await supabase.rpc('deliver_redemption', {
       p_redemption_id: item.id,
       p_idempotency_key: `idemp_queue_${Date.now()}`,
       p_note: 'Entrega desde cola de taquilla'
@@ -105,8 +117,8 @@ const handleDeliver = async (item: any) => {
     } else {
       await fetchQueue()
     }
-  } catch (err: any) {
-    alert('Error al procesar entrega: ' + err.message)
+  } catch (err: unknown) {
+    alert('Error al procesar entrega: ' + (err instanceof Error ? err.message : String(err)))
   }
 }
 

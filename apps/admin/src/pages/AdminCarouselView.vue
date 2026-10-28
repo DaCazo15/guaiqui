@@ -55,6 +55,8 @@ const columns = [
   { key: 'actions', label: 'Acciones', align: 'right' as const }
 ]
 
+const asSlide = (r: unknown): SlideRow => r as SlideRow
+
 const loadSlides = async () => {
   loading.value = true
   try {
@@ -64,9 +66,9 @@ const loadSlides = async () => {
       .order('order_index', { ascending: true })
 
     if (error) throw error
-    slides.value = data || []
-  } catch (err: any) {
-    errorMessage.value = err.message
+    slides.value = (data as SlideRow[]) || []
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     loading.value = false
   }
@@ -126,8 +128,8 @@ const handleImageUpload = async (e: Event) => {
     const { data } = supabase.storage.from('site-media').getPublicUrl(path)
     form.value.image_url = data.publicUrl
     successMessage.value = 'Imagen del slide subida.'
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     uploadingImage.value = false
   }
@@ -168,8 +170,8 @@ const saveRow = async () => {
     successMessage.value = 'Slide guardado correctamente.'
     showEditorModal.value = false
     await loadSlides()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -183,8 +185,8 @@ const deleteRow = async (id: string) => {
     if (error) throw error
     successMessage.value = 'Slide eliminado.'
     await loadSlides()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -217,30 +219,30 @@ onMounted(loadSlides)
 
       <BaseTable :columns="columns" :data="slides" :loading="loading" empty-text="No hay slides configurados">
         <template #cell-order_index="{ row }">
-          <span class="font-mono font-bold text-emerald-400">#{{ (row as any).order_index }}</span>
+          <span class="font-mono font-bold text-emerald-400">#{{ asSlide(row).order_index }}</span>
         </template>
 
         <template #cell-title="{ row }">
-          <div class="font-semibold text-white">{{ (row as any).title }}</div>
-          <div class="text-xs text-slate-400 truncate max-w-xs">{{ (row as any).subtitle }}</div>
+          <div class="font-semibold text-white">{{ asSlide(row).title }}</div>
+          <div class="text-xs text-slate-400 truncate max-w-xs">{{ asSlide(row).subtitle }}</div>
         </template>
 
         <template #cell-tag="{ row }">
-          <span class="text-xs font-mono text-emerald-400 font-semibold">{{ (row as any).tag }}</span>
+          <span class="text-xs font-mono text-emerald-400 font-semibold">{{ asSlide(row).tag }}</span>
         </template>
 
         <template #cell-is_published="{ row }">
-          <BaseBadge :variant="(row as any).is_published ? 'success' : 'soft'">
-            {{ (row as any).is_published ? 'Publicado' : 'Borrador' }}
+          <BaseBadge :variant="asSlide(row).is_published ? 'success' : 'soft'">
+            {{ asSlide(row).is_published ? 'Publicado' : 'Borrador' }}
           </BaseBadge>
         </template>
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1.5">
-            <button @click="editRow(row as any)" class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
+            <button @click="editRow(asSlide(row))" class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
               <i class="bi bi-pencil"></i>
             </button>
-            <button @click="deleteRow((row as any).id)" class="p-1.5 text-red-400 hover:bg-red-950 rounded-lg transition-colors" title="Eliminar">
+            <button @click="deleteRow(asSlide(row).id)" class="p-1.5 text-red-400 hover:bg-red-950 rounded-lg transition-colors" title="Eliminar">
               <i class="bi bi-trash"></i>
             </button>
           </div>

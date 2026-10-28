@@ -43,6 +43,8 @@ const columns = [
   { key: 'actions', label: 'Acciones', align: 'right' as const }
 ]
 
+const asStat = (r: unknown): StatRow => r as StatRow
+
 const loadStats = async () => {
   loading.value = true
   try {
@@ -52,9 +54,9 @@ const loadStats = async () => {
       .order('order_index', { ascending: true })
 
     if (error) throw error
-    stats.value = data || []
-  } catch (err: any) {
-    errorMessage.value = err.message
+    stats.value = (data as StatRow[]) || []
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     loading.value = false
   }
@@ -118,8 +120,8 @@ const saveRow = async () => {
     successMessage.value = 'Estadística/Patrocinante guardado.'
     showModal.value = false
     await loadStats()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -133,8 +135,8 @@ const deleteRow = async (id: string) => {
     if (error) throw error
     successMessage.value = 'Registro eliminado.'
     await loadStats()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -168,40 +170,40 @@ onMounted(loadStats)
       <BaseTable :columns="columns" :data="stats" :loading="loading" empty-text="No hay cifras ni patrocinantes registrados">
         <template #cell-label="{ row }">
           <div class="flex items-center gap-3">
-            <img v-if="(row as any).logo_url" :src="(row as any).logo_url" class="w-8 h-8 rounded object-contain bg-slate-800 p-0.5 border border-slate-700" />
+            <img v-if="asStat(row).logo_url" :src="asStat(row).logo_url" class="w-8 h-8 rounded object-contain bg-slate-800 p-0.5 border border-slate-700" />
             <div>
-              <p class="font-semibold text-white">{{ (row as any).label }}</p>
-              <p v-if="(row as any).note" class="text-xs text-slate-400">{{ (row as any).note }}</p>
+              <p class="font-semibold text-white">{{ asStat(row).label }}</p>
+              <p v-if="asStat(row).note" class="text-xs text-slate-400">{{ asStat(row).note }}</p>
             </div>
           </div>
         </template>
 
         <template #cell-value="{ row }">
-          <span class="font-title font-bold text-emerald-400 text-base">{{ (row as any).value }}</span>
+          <span class="font-title font-bold text-emerald-400 text-base">{{ asStat(row).value }}</span>
         </template>
 
         <template #cell-is_sponsor="{ row }">
-          <BaseBadge :variant="(row as any).is_sponsor ? 'perlita' : 'info'">
-            {{ (row as any).is_sponsor ? 'Patrocinante' : 'Cifra Destacada' }}
+          <BaseBadge :variant="asStat(row).is_sponsor ? 'perlita' : 'info'">
+            {{ asStat(row).is_sponsor ? 'Patrocinante' : 'Cifra Destacada' }}
           </BaseBadge>
         </template>
 
         <template #cell-order_index="{ row }">
-          <span class="text-xs text-slate-400 font-mono">{{ (row as any).order_index }}</span>
+          <span class="text-xs text-slate-400 font-mono">{{ asStat(row).order_index }}</span>
         </template>
 
         <template #cell-is_published="{ row }">
-          <BaseBadge :variant="(row as any).is_published ? 'success' : 'soft'">
-            {{ (row as any).is_published ? 'Visible' : 'Oculto' }}
+          <BaseBadge :variant="asStat(row).is_published ? 'success' : 'soft'">
+            {{ asStat(row).is_published ? 'Visible' : 'Oculto' }}
           </BaseBadge>
         </template>
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1.5">
-            <button @click="editRow(row as any)" class="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
+            <button @click="editRow(asStat(row))" class="p-1.5 text-slate-300 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
               <i class="bi bi-pencil"></i>
             </button>
-            <button @click="deleteRow((row as any).id)" class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-950 rounded-lg transition-colors" title="Eliminar">
+            <button @click="deleteRow(asStat(row).id)" class="p-1.5 text-red-400 hover:text-red-300 hover:bg-red-950 rounded-lg transition-colors" title="Eliminar">
               <i class="bi bi-trash"></i>
             </button>
           </div>

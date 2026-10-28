@@ -35,6 +35,8 @@ const columns = [
   { key: 'actions', label: 'Acciones', align: 'right' as const }
 ]
 
+const asFaq = (r: unknown): FaqRow => r as FaqRow
+
 const loadFaqs = async () => {
   loading.value = true
   try {
@@ -44,9 +46,9 @@ const loadFaqs = async () => {
       .order('order_index', { ascending: true })
 
     if (error) throw error
-    faqs.value = data || []
-  } catch (err: any) {
-    errorMessage.value = err.message
+    faqs.value = (data as FaqRow[]) || []
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     loading.value = false
   }
@@ -101,8 +103,8 @@ const saveRow = async () => {
     successMessage.value = 'Pregunta frecuente guardada.'
     showModal.value = false
     await loadFaqs()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -116,8 +118,8 @@ const deleteRow = async (id: string) => {
     if (error) throw error
     successMessage.value = 'FAQ eliminada.'
     await loadFaqs()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -151,27 +153,27 @@ onMounted(loadFaqs)
       <BaseTable :columns="columns" :data="faqs" :loading="loading" empty-text="No hay preguntas frecuentes registradas">
         <template #cell-question="{ row }">
           <div>
-            <p class="font-semibold text-white">{{ (row as any).question }}</p>
-            <p class="text-xs text-slate-400 line-clamp-2 mt-0.5">{{ (row as any).answer }}</p>
+            <p class="font-semibold text-white">{{ asFaq(row).question }}</p>
+            <p class="text-xs text-slate-400 line-clamp-2 mt-0.5">{{ asFaq(row).answer }}</p>
           </div>
         </template>
 
         <template #cell-order_index="{ row }">
-          <span class="text-xs text-slate-400 font-mono">{{ (row as any).order_index }}</span>
+          <span class="text-xs text-slate-400 font-mono">{{ asFaq(row).order_index }}</span>
         </template>
 
         <template #cell-is_published="{ row }">
-          <BaseBadge :variant="(row as any).is_published ? 'success' : 'soft'">
-            {{ (row as any).is_published ? 'Publicado' : 'Borrador' }}
+          <BaseBadge :variant="asFaq(row).is_published ? 'success' : 'soft'">
+            {{ asFaq(row).is_published ? 'Publicado' : 'Borrador' }}
           </BaseBadge>
         </template>
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1.5">
-            <button @click="editRow(row as any)" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
+            <button @click="editRow(asFaq(row))" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
               <i class="bi bi-pencil"></i>
             </button>
-            <button @click="deleteRow((row as any).id)" class="p-1.5 text-red-400 hover:bg-red-950/60 rounded-lg transition-colors" title="Eliminar">
+            <button @click="deleteRow(asFaq(row).id)" class="p-1.5 text-red-400 hover:bg-red-950/60 rounded-lg transition-colors" title="Eliminar">
               <i class="bi bi-trash"></i>
             </button>
           </div>

@@ -13,13 +13,15 @@ interface ProductRow {
   category: 'physical' | 'experience' | 'raffle'
   cost_pearls: number
   stock: number
-  variants: any[]
+  variants: string[]
   active: boolean
   valid_from: string
   valid_until?: string
   images: string[]
   created_at: string
 }
+
+const asProduct = (r: unknown): ProductRow => r as ProductRow
 
 const products = ref<ProductRow[]>([])
 const loading = ref(true)
@@ -77,9 +79,9 @@ const loadProducts = async () => {
       .order('created_at', { ascending: false })
 
     if (error) throw error
-    products.value = data || []
-  } catch (err: any) {
-    errorMessage.value = err.message
+    products.value = (data as unknown as ProductRow[]) || []
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     loading.value = false
   }
@@ -141,8 +143,8 @@ const deleteProduct = async () => {
     successMessage.value = `Producto "${selectedProduct.value.name}" eliminado correctamente.`
     showDeleteModal.value = false
     await loadProducts()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -175,8 +177,8 @@ const handleImageUpload = async (event: Event) => {
 
     productForm.value.images.push(publicUrlData.publicUrl)
     successMessage.value = 'Imagen subida correctamente.'
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     uploadingImage.value = false
   }
@@ -215,8 +217,8 @@ const saveProduct = async () => {
     successMessage.value = 'Producto guardado correctamente.'
     showEditorModal.value = false
     await loadProducts()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -270,46 +272,46 @@ onMounted(loadProducts)
         <button @click="successMessage = null" class="text-emerald-400 hover:text-emerald-200"><i class="bi bi-x-lg"></i></button>
       </div>
 
-      <BaseTable :columns="columns" :data="(filteredProducts as any[])" :loading="loading" empty-text="No hay productos en el catálogo">
+      <BaseTable :columns="columns" :data="filteredProducts" :loading="loading" empty-text="No hay productos en el catálogo">
         <template #cell-name="{ row }">
           <div class="flex items-center gap-3">
             <div class="w-10 h-10 rounded-lg bg-slate-800 border border-slate-700 flex items-center justify-center overflow-hidden shrink-0">
-              <img v-if="(row as ProductRow).images && (row as ProductRow).images.length > 0" :src="(row as ProductRow).images[0]" class="w-full h-full object-cover" />
+              <img v-if="asProduct(row).images && asProduct(row).images.length > 0" :src="asProduct(row).images[0]" class="w-full h-full object-cover" />
               <i v-else class="bi bi-box-seam text-slate-500 text-lg"></i>
             </div>
             <div>
-              <div class="font-semibold text-white">{{ (row as ProductRow).name }}</div>
-              <div class="text-xs text-slate-400 truncate max-w-xs">{{ (row as ProductRow).description }}</div>
+              <div class="font-semibold text-white">{{ asProduct(row).name }}</div>
+              <div class="text-xs text-slate-400 truncate max-w-xs">{{ asProduct(row).description }}</div>
             </div>
           </div>
         </template>
 
         <template #cell-category="{ row }">
-          <span class="text-xs capitalize font-medium text-slate-300">{{ (row as ProductRow).category }}</span>
+          <span class="text-xs capitalize font-medium text-slate-300">{{ asProduct(row).category }}</span>
         </template>
 
         <template #cell-cost_pearls="{ row }">
-          <span class="text-sm font-bold font-mono text-emerald-400">{{ (row as ProductRow).cost_pearls }} perlitas</span>
+          <span class="text-sm font-bold font-mono text-emerald-400">{{ asProduct(row).cost_pearls }} perlitas</span>
         </template>
 
         <template #cell-stock="{ row }">
-          <span :class="['text-xs font-semibold px-2 py-0.5 rounded-full border font-mono', Number((row as ProductRow).stock) === 0 ? 'bg-red-950/60 text-red-300 border-red-800' : Number((row as ProductRow).stock) <= 5 ? 'bg-amber-950/60 text-amber-300 border-amber-800' : 'bg-slate-800 text-slate-300 border-slate-700']">
-            {{ (row as ProductRow).stock === 0 ? 'Agotado' : `${(row as ProductRow).stock} unid.` }}
+          <span :class="['text-xs font-semibold px-2 py-0.5 rounded-full border font-mono', Number(asProduct(row).stock) === 0 ? 'bg-red-950/60 text-red-300 border-red-800' : Number(asProduct(row).stock) <= 5 ? 'bg-amber-950/60 text-amber-300 border-amber-800' : 'bg-slate-800 text-slate-300 border-slate-700']">
+            {{ asProduct(row).stock === 0 ? 'Agotado' : `${asProduct(row).stock} unid.` }}
           </span>
         </template>
 
         <template #cell-active="{ row }">
-          <BaseBadge :variant="(row as ProductRow).active ? 'success' : 'soft'">
-            {{ (row as ProductRow).active ? 'Activo' : 'Inactivo' }}
+          <BaseBadge :variant="asProduct(row).active ? 'success' : 'soft'">
+            {{ asProduct(row).active ? 'Activo' : 'Inactivo' }}
           </BaseBadge>
         </template>
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-2">
-            <button @click="editProduct(row as ProductRow)" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Editar producto">
+            <button @click="editProduct(asProduct(row))" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Editar producto">
               <i class="bi bi-pencil"></i>
             </button>
-            <button @click="confirmDeleteProduct(row as ProductRow)" class="p-1.5 text-red-400 hover:text-red-200 hover:bg-red-950/60 rounded-lg transition-colors" title="Eliminar producto">
+            <button @click="confirmDeleteProduct(asProduct(row))" class="p-1.5 text-red-400 hover:text-red-200 hover:bg-red-950/60 rounded-lg transition-colors" title="Eliminar producto">
               <i class="bi bi-trash"></i>
             </button>
           </div>

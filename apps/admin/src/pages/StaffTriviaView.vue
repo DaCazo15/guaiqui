@@ -39,6 +39,18 @@ interface SegmentOption {
   name: string
 }
 
+function asTrivia(r: unknown): TriviaRow {
+  return r as TriviaRow
+}
+
+interface QuestionDbRow {
+  id: string
+  question_text: string
+  points: number
+  order_index: number
+  options?: { id: string; option_text: string; is_correct: boolean }[]
+}
+
 const trivias = ref<TriviaRow[]>([])
 const segments = ref<SegmentOption[]>([])
 const loading = ref(true)
@@ -93,8 +105,8 @@ const loadTriviasAndSegments = async () => {
       .order('name', { ascending: true })
 
     segments.value = segmentData || []
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     loading.value = false
   }
@@ -150,12 +162,13 @@ const editTrivia = async (t: TriviaRow) => {
     .order('order_index', { ascending: true })
 
   if (qData) {
-    triviaForm.value.questions = qData.map((q: any) => ({
+    const questionsRows = qData as unknown as QuestionDbRow[]
+    triviaForm.value.questions = questionsRows.map((q) => ({
       id: q.id,
       question_text: q.question_text,
       points: q.points,
       order_index: q.order_index,
-      options: (q.options || []).map((o: any) => ({
+      options: (q.options || []).map((o) => ({
         id: o.id,
         option_text: o.option_text,
         is_correct: o.is_correct
@@ -226,8 +239,8 @@ const saveTrivia = async () => {
     successMessage.value = 'Trivia guardada correctamente.'
     showEditorModal.value = false
     await loadTriviasAndSegments()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -241,8 +254,8 @@ const publishTrivia = async (id: string) => {
     if (error) throw error
     successMessage.value = 'Trivia publicada exitosamente.'
     await loadTriviasAndSegments()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -256,8 +269,8 @@ const duplicateTrivia = async (id: string) => {
     if (error) throw error
     successMessage.value = 'Trivia duplicada correctamente.'
     await loadTriviasAndSegments()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -279,8 +292,8 @@ const deleteTrivia = async () => {
     successMessage.value = `Trivia "${selectedTrivia.value.title}" eliminada correctamente.`
     showDeleteModal.value = false
     await loadTriviasAndSegments()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -325,40 +338,40 @@ onMounted(loadTriviasAndSegments)
 
       <BaseTable :columns="columns" :data="trivias" :loading="loading" empty-text="No hay trivias registradas">
         <template #cell-status="{ row }">
-          <BaseBadge :variant="(row as any).status === 'published' ? 'success' : (row as any).status === 'draft' ? 'warning' : 'soft'">
-            {{ (row as any).status === 'published' ? 'Publicada' : (row as any).status === 'draft' ? 'Borrador' : 'Archivada' }}
+          <BaseBadge :variant="asTrivia(row).status === 'published' ? 'success' : asTrivia(row).status === 'draft' ? 'warning' : 'soft'">
+            {{ asTrivia(row).status === 'published' ? 'Publicada' : asTrivia(row).status === 'draft' ? 'Borrador' : 'Archivada' }}
           </BaseBadge>
         </template>
 
         <template #cell-starts_at="{ row }">
-          <span class="text-xs text-slate-400">{{ (row as any).starts_at ? formatCaracas((row as any).starts_at) : '' }}</span>
+          <span class="text-xs text-slate-400">{{ asTrivia(row).starts_at ? formatCaracas(asTrivia(row).starts_at) : '' }}</span>
         </template>
 
         <template #cell-ends_at="{ row }">
-          <span class="text-xs text-slate-400">{{ (row as any).ends_at ? formatCaracas((row as any).ends_at) : '' }}</span>
+          <span class="text-xs text-slate-400">{{ asTrivia(row).ends_at ? formatCaracas(asTrivia(row).ends_at) : '' }}</span>
         </template>
 
         <template #cell-reward_rules="{ row }">
           <span class="text-xs font-mono font-bold text-emerald-400">
-            +{{ (row as any).reward_rules?.per_correct_pearls || 0 }} / preg
+            +{{ asTrivia(row).reward_rules?.per_correct_pearls || 0 }} / preg
           </span>
         </template>
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1.5">
-            <button @click="previewTrivia(row as any)" class="p-1.5 text-sky-400 hover:bg-sky-950/60 rounded-lg transition-colors" title="Vista previa">
+            <button @click="previewTrivia(asTrivia(row))" class="p-1.5 text-sky-400 hover:bg-sky-950/60 rounded-lg transition-colors" title="Vista previa">
               <i class="bi bi-eye"></i>
             </button>
-            <button @click="editTrivia(row as any)" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Editar trivia">
+            <button @click="editTrivia(asTrivia(row))" class="p-1.5 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-colors" title="Editar trivia">
               <i class="bi bi-pencil"></i>
             </button>
-            <button v-if="(row as any).status === 'draft'" @click="publishTrivia((row as any).id)" class="p-1.5 text-emerald-400 hover:bg-emerald-950/60 rounded-lg transition-colors" title="Publicar trivia">
+            <button v-if="asTrivia(row).status === 'draft'" @click="publishTrivia(asTrivia(row).id)" class="p-1.5 text-emerald-400 hover:bg-emerald-950/60 rounded-lg transition-colors" title="Publicar trivia">
               <i class="bi bi-send"></i>
             </button>
-            <button @click="duplicateTrivia((row as any).id)" class="p-1.5 text-purple-400 hover:bg-purple-950/60 rounded-lg transition-colors" title="Duplicar">
+            <button @click="duplicateTrivia(asTrivia(row).id)" class="p-1.5 text-purple-400 hover:bg-purple-950/60 rounded-lg transition-colors" title="Duplicar">
               <i class="bi bi-copy"></i>
             </button>
-            <button @click="confirmDeleteTrivia(row as any)" class="p-1.5 text-red-400 hover:bg-red-950/60 rounded-lg transition-colors" title="Eliminar trivia">
+            <button @click="confirmDeleteTrivia(asTrivia(row))" class="p-1.5 text-red-400 hover:bg-red-950/60 rounded-lg transition-colors" title="Eliminar trivia">
               <i class="bi bi-trash"></i>
             </button>
           </div>

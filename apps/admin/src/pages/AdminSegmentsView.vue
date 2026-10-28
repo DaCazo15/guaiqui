@@ -5,12 +5,20 @@ import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } fr
 import { formatCaracas } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
 
+interface SegmentMember {
+  id: string
+  display_name: string
+  municipality?: string
+}
+
 interface SegmentRow {
   id: string
   name: string
-  filters: Record<string, any>
+  filters: Record<string, unknown>
   created_at: string
 }
+
+const asSegment = (r: unknown): SegmentRow => r as SegmentRow
 
 const segments = ref<SegmentRow[]>([])
 const loading = ref(true)
@@ -23,7 +31,7 @@ const showMembersModal = ref(false)
 
 const selectedSegment = ref<SegmentRow | null>(null)
 const memberCount = ref<number | null>(null)
-const segmentMembersList = ref<any[]>([])
+const segmentMembersList = ref<SegmentMember[]>([])
 
 const segmentForm = ref({
   id: '',
@@ -52,9 +60,9 @@ const loadSegments = async () => {
       .order('created_at', { ascending: false })
 
     if (error) throw error
-    segments.value = data || []
-  } catch (err: any) {
-    errorMessage.value = err.message
+    segments.value = (data as SegmentRow[]) || []
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     loading.value = false
   }
@@ -79,7 +87,7 @@ const openNewSegment = () => {
 const previewSegmentCount = async () => {
   actionLoading.value = true
   try {
-    const filters: Record<string, any> = {}
+    const filters: Record<string, unknown> = {}
     if (segmentForm.value.municipality) filters.municipality = segmentForm.value.municipality
     if (segmentForm.value.gender) filters.gender = segmentForm.value.gender
     if (segmentForm.value.shirt_size) filters.shirt_size = segmentForm.value.shirt_size
@@ -105,8 +113,8 @@ const previewSegmentCount = async () => {
     if (countErr) throw countErr
 
     memberCount.value = count
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -121,7 +129,7 @@ const saveSegment = async () => {
   actionLoading.value = true
   errorMessage.value = null
   try {
-    const filters: Record<string, any> = {}
+    const filters: Record<string, unknown> = {}
     if (segmentForm.value.municipality) filters.municipality = segmentForm.value.municipality
     if (segmentForm.value.gender) filters.gender = segmentForm.value.gender
     if (segmentForm.value.shirt_size) filters.shirt_size = segmentForm.value.shirt_size
@@ -141,8 +149,8 @@ const saveSegment = async () => {
     successMessage.value = 'Segmento guardado correctamente.'
     showEditorModal.value = false
     await loadSegments()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -156,8 +164,8 @@ const viewMembers = async (seg: SegmentRow) => {
     const { data, error } = await supabase.rpc('segment_members', { p_segment_id: seg.id })
     if (error) throw error
     segmentMembersList.value = data?.members || []
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -184,8 +192,8 @@ const exportCSV = async (seg: SegmentRow) => {
     a.click()
 
     successMessage.value = 'Exportación CSV descargada (auditada).'
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   }
 }
 
@@ -216,25 +224,25 @@ onMounted(loadSegments)
 
       <BaseTable :columns="columns" :data="segments" :loading="loading" empty-text="No hay segmentos configurados">
         <template #cell-name="{ row }">
-          <span class="font-semibold text-white">{{ (row as any).name }}</span>
+          <span class="font-semibold text-white">{{ asSegment(row).name }}</span>
         </template>
 
         <template #cell-filters="{ row }">
           <span class="text-xs font-mono text-slate-400 truncate max-w-md block">
-            {{ JSON.stringify((row as any).filters) }}
+            {{ JSON.stringify(asSegment(row).filters) }}
           </span>
         </template>
 
         <template #cell-created_at="{ row }">
-          <span class="text-xs text-slate-400 font-mono">{{ (row as any).created_at ? formatCaracas((row as any).created_at) : '' }}</span>
+          <span class="text-xs text-slate-400 font-mono">{{ asSegment(row).created_at ? formatCaracas(asSegment(row).created_at) : '' }}</span>
         </template>
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1.5">
-            <button @click="viewMembers(row as any)" class="p-1.5 text-sky-400 hover:bg-slate-800 rounded-lg transition-colors" title="Ver Miembros">
+            <button @click="viewMembers(asSegment(row))" class="p-1.5 text-sky-400 hover:bg-slate-800 rounded-lg transition-colors" title="Ver Miembros">
               <i class="bi bi-people"></i>
             </button>
-            <button @click="exportCSV(row as any)" class="p-1.5 text-emerald-400 hover:bg-slate-800 rounded-lg transition-colors" title="Exportar CSV (sin email)">
+            <button @click="exportCSV(asSegment(row))" class="p-1.5 text-emerald-400 hover:bg-slate-800 rounded-lg transition-colors" title="Exportar CSV (sin email)">
               <i class="bi bi-download"></i>
             </button>
           </div>

@@ -38,6 +38,8 @@ const columns = [
   { key: 'actions', label: 'Acciones', align: 'right' as const }
 ]
 
+const asAnnouncement = (r: unknown): AnnouncementRow => r as AnnouncementRow
+
 const loadAnnouncements = async () => {
   loading.value = true
   try {
@@ -47,9 +49,9 @@ const loadAnnouncements = async () => {
       .order('created_at', { ascending: false })
 
     if (error) throw error
-    announcements.value = data || []
-  } catch (err: any) {
-    errorMessage.value = err.message
+    announcements.value = (data as AnnouncementRow[]) || []
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     loading.value = false
   }
@@ -107,8 +109,8 @@ const saveRow = async () => {
     successMessage.value = 'Anuncio guardado correctamente.'
     showEditorModal.value = false
     await loadAnnouncements()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -122,8 +124,8 @@ const deleteRow = async (id: string) => {
     if (error) throw error
     successMessage.value = 'Anuncio eliminado.'
     await loadAnnouncements()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -156,25 +158,25 @@ onMounted(loadAnnouncements)
 
       <BaseTable :columns="columns" :data="announcements" :loading="loading" empty-text="No hay anuncios en la cinta">
         <template #cell-message="{ row }">
-          <span class="font-semibold text-white">{{ (row as any).message }}</span>
+          <span class="font-semibold text-white">{{ asAnnouncement(row).message }}</span>
         </template>
 
         <template #cell-link_url="{ row }">
-          <span class="text-xs text-slate-400 font-mono">{{ (row as any).link_url || '-' }}</span>
+          <span class="text-xs text-slate-400 font-mono">{{ asAnnouncement(row).link_url || '-' }}</span>
         </template>
 
         <template #cell-is_published="{ row }">
-          <BaseBadge :variant="(row as any).is_published ? 'success' : 'soft'">
-            {{ (row as any).is_published ? 'Publicado' : 'Borrador' }}
+          <BaseBadge :variant="asAnnouncement(row).is_published ? 'success' : 'soft'">
+            {{ asAnnouncement(row).is_published ? 'Publicado' : 'Borrador' }}
           </BaseBadge>
         </template>
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1.5">
-            <button @click="editRow(row as any)" class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
+            <button @click="editRow(asAnnouncement(row))" class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
               <i class="bi bi-pencil"></i>
             </button>
-            <button @click="deleteRow((row as any).id)" class="p-1.5 text-red-400 hover:bg-red-950 rounded-lg transition-colors" title="Eliminar">
+            <button @click="deleteRow(asAnnouncement(row).id)" class="p-1.5 text-red-400 hover:bg-red-950 rounded-lg transition-colors" title="Eliminar">
               <i class="bi bi-trash"></i>
             </button>
           </div>

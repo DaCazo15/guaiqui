@@ -2,15 +2,17 @@
 import { RouterLink } from 'vue-router'
 import { formatCaracas } from '@guaiqui/shared'
 
+import type { QueueItem } from '../../pages/StaffQueueView.vue'
+
 defineProps<{
-  items: any[]
+  items: QueueItem[]
   isLoading: boolean
 }>()
 
 const emit = defineEmits<{
-  (e: 'approve', item: any): void
-  (e: 'reject', item: any): void
-  (e: 'deliver', item: any): void
+  (e: 'approve', item: QueueItem): void
+  (e: 'reject', item: QueueItem): void
+  (e: 'deliver', item: QueueItem): void
 }>()
 
 const getStatusBadge = (status: string) => {

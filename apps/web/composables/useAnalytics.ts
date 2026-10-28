@@ -24,6 +24,19 @@ const FORBIDDEN_PII_KEYS = new Set([
   'password',
 ])
 
+interface PostHogClient {
+  init: (key: string, options: Record<string, unknown>) => void
+  opt_out_capturing: () => void
+  identify: (userId: string) => void
+  capture: (event: string, properties?: Record<string, unknown>) => void
+}
+
+interface CustomWindow extends Window {
+  dataLayer?: unknown[]
+  gtag?: (...args: unknown[]) => void
+  [key: `ga-disable-${string}`]: boolean | undefined
+}
+
 const consentState = ref<ConsentState>({
   necessary: true,
   analytics: false,
@@ -33,7 +46,7 @@ const consentState = ref<ConsentState>({
 
 const isGA4Initialized = ref(false)
 const isPostHogInitialized = ref(false)
-let posthogInstance: any = null
+let posthogInstance: PostHogClient | null = null
 
 /**
  * Normalizes URL path to remove UUIDs, tokens, and PII before dispatching to analytics
@@ -144,7 +157,7 @@ export function useAnalytics() {
     // 2. GA4 disable flag & Consent update
     const gaId = getGA4MeasurementId()
     if (gaId) {
-      ;(window as any)[`ga-disable-${gaId}`] = true
+      ;(window as unknown as CustomWindow)[`ga-disable-${gaId}`] = true
     }
     updateGA4Consent()
 
@@ -162,21 +175,22 @@ export function useAnalytics() {
   }
 
   const updateGA4Consent = () => {
-    if (typeof window === 'undefined' || !(window as any).gtag) return
+    const win = window as unknown as CustomWindow
+    if (typeof window === 'undefined' || !win.gtag) return
     const gaId = getGA4MeasurementId()
     if (!gaId) return
 
     if (consentState.value.analytics) {
-      ;(window as any)[`ga-disable-${gaId}`] = false
-      ;(window as any).gtag('consent', 'update', {
+      win[`ga-disable-${gaId}`] = false
+      win.gtag('consent', 'update', {
         analytics_storage: 'granted',
         ad_storage: consentState.value.advertising ? 'granted' : 'denied',
         ad_user_data: consentState.value.advertising ? 'granted' : 'denied',
         ad_personalization: consentState.value.advertising ? 'granted' : 'denied',
       })
     } else {
-      ;(window as any)[`ga-disable-${gaId}`] = true
-      ;(window as any).gtag('consent', 'update', {
+      win[`ga-disable-${gaId}`] = true
+      win.gtag('consent', 'update', {
         analytics_storage: 'denied',
         ad_storage: 'denied',
         ad_user_data: 'denied',
@@ -191,13 +205,14 @@ export function useAnalytics() {
     const gaId = getGA4MeasurementId()
     if (!gaId) return
 
+    const win = window as unknown as CustomWindow
     if (!document.getElementById('ga4-script')) {
       // 1. Initialize dataLayer & Consent Mode v2 default (denied) BEFORE loading script
-      ;(window as any).dataLayer = (window as any).dataLayer || []
-      function gtag(...args: any[]) {
-        ;(window as any).dataLayer.push(args)
+      win.dataLayer = win.dataLayer || []
+      function gtag(...args: unknown[]) {
+        win.dataLayer?.push(args)
       }
-      ;(window as any).gtag = gtag
+      win.gtag = gtag
 
       gtag('consent', 'default', {
         ad_storage: 'denied',
@@ -236,7 +251,7 @@ export function useAnalytics() {
 
     try {
       const posthogModule = await import('posthog-js')
-      const posthog = posthogModule.default || posthogModule
+      const posthog = (posthogModule.default || posthogModule) as unknown as PostHogClient
 
       posthog.init(apiKey, {
         api_host: apiHost,
@@ -261,8 +276,9 @@ export function useAnalytics() {
 
     // Identify in GA4
     const gaId = getGA4MeasurementId()
-    if (isGA4Initialized.value && (window as any).gtag && gaId) {
-      ;(window as any).gtag('config', gaId, { user_id: userId })
+    const win = window as unknown as CustomWindow
+    if (isGA4Initialized.value && win.gtag && gaId) {
+      win.gtag('config', gaId, { user_id: userId })
     }
 
     // Identify in PostHog
@@ -273,9 +289,9 @@ export function useAnalytics() {
     }
   }
 
-  const sanitizeProperties = (props?: Record<string, any>): Record<string, any> => {
+  const sanitizeProperties = (props?: Record<string, unknown>): Record<string, unknown> => {
     if (!props) return {}
-    const cleanProps: Record<string, any> = {}
+    const cleanProps: Record<string, unknown> = {}
 
     let count = 0
     for (const [key, value] of Object.entries(props)) {
@@ -297,8 +313,9 @@ export function useAnalytics() {
     const normalized = normalizePath(path)
 
     const gaId = getGA4MeasurementId()
-    if (isGA4Initialized.value && (window as any).gtag && gaId) {
-      ;(window as any).gtag('event', 'page_view', { page_path: normalized })
+    const win = window as unknown as CustomWindow
+    if (isGA4Initialized.value && win.gtag && gaId) {
+      win.gtag('event', 'page_view', { page_path: normalized })
     }
 
     if (posthogInstance) {
@@ -310,7 +327,7 @@ export function useAnalytics() {
     return normalized
   }
 
-  const trackEvent = (eventName: string, properties?: Record<string, any>) => {
+  const trackEvent = (eventName: string, properties?: Record<string, unknown>) => {
     if (!consentState.value.analytics) return null
 
     // Ensure event name max 40 chars
@@ -318,9 +335,10 @@ export function useAnalytics() {
     const cleanProps = sanitizeProperties(properties)
 
     // Dispatch to GA4
-    if (isGA4Initialized.value && (window as any).gtag) {
+    const win = window as unknown as CustomWindow
+    if (isGA4Initialized.value && win.gtag) {
       try {
-        ;(window as any).gtag('event', cleanEventName, cleanProps)
+        win.gtag('event', cleanEventName, cleanProps)
       } catch (_e) {}
     }
 

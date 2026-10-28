@@ -22,6 +22,12 @@ const hardestColumns = [
   { key: 'correct_rate', label: '% Aciertos', align: 'right' as const }
 ]
 
+type PopularTrivia = NonNullable<AnalyticsTriviaSummary['popular_trivias']>[number]
+type HardestQuestion = NonNullable<AnalyticsTriviaSummary['hardest_questions']>[number]
+
+const asPopular = (r: unknown): PopularTrivia => r as PopularTrivia
+const asHardest = (r: unknown): HardestQuestion => r as HardestQuestion
+
 const downloadPopularCsv = () => {
   if (!props.triviaSummary) return
   exportToCsv('trivias_populares', props.triviaSummary.popular_trivias, {
@@ -67,17 +73,17 @@ const downloadHardestCsv = () => {
         empty-text="Sin trivias registradas en este período"
       >
         <template #cell-title="{ row }">
-          <span class="font-semibold text-slate-100">{{ (row as any).title }}</span>
+          <span class="font-semibold text-slate-100">{{ asPopular(row).title }}</span>
         </template>
         <template #cell-attempts_count="{ row }">
-          <span class="font-mono tabular-nums text-slate-300">{{ (row as any).attempts_count }}</span>
+          <span class="font-mono tabular-nums text-slate-300">{{ asPopular(row).attempts_count }}</span>
         </template>
         <template #cell-avg_score="{ row }">
-          <span class="font-mono tabular-nums text-amber-400 font-bold">{{ (row as any).avg_score }} pts</span>
+          <span class="font-mono tabular-nums text-amber-400 font-bold">{{ asPopular(row).avg_score }} pts</span>
         </template>
         <template #cell-completion_rate="{ row }">
-          <BaseBadge :variant="(row as any).completion_rate >= 80 ? 'success' : 'soft'">
-            {{ (row as any).completion_rate }}%
+          <BaseBadge :variant="asPopular(row).completion_rate >= 80 ? 'success' : 'soft'">
+            {{ asPopular(row).completion_rate }}%
           </BaseBadge>
         </template>
       </BaseTable>
@@ -105,17 +111,17 @@ const downloadHardestCsv = () => {
         empty-text="No hay datos de preguntas difíciles"
       >
         <template #cell-trivia_title="{ row }">
-          <span class="text-xs font-mono text-slate-400">{{ (row as any).trivia_title }}</span>
+          <span class="text-xs font-mono text-slate-400">{{ asHardest(row).trivia_title }}</span>
         </template>
         <template #cell-question_text="{ row }">
-          <span class="font-semibold text-slate-200">{{ (row as any).question_text }}</span>
+          <span class="font-semibold text-slate-200">{{ asHardest(row).question_text }}</span>
         </template>
         <template #cell-total_answers="{ row }">
-          <span class="font-mono tabular-nums text-slate-300">{{ (row as any).total_answers }}</span>
+          <span class="font-mono tabular-nums text-slate-300">{{ asHardest(row).total_answers }}</span>
         </template>
         <template #cell-correct_rate="{ row }">
           <BaseBadge variant="danger">
-            {{ (row as any).correct_rate }}% aciertos
+            {{ asHardest(row).correct_rate }}% aciertos
           </BaseBadge>
         </template>
       </BaseTable>

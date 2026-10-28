@@ -60,14 +60,16 @@ const announcementColumns = [
   { key: 'actions', label: 'Acciones', align: 'right' as const }
 ]
 
+const asAnnouncement = (r: unknown): AnnouncementRow => r as AnnouncementRow
+
 const loadData = async () => {
   loading.value = true
   try {
     const { data: setts } = await supabase.from('landing_settings').select('*').eq('id', 1).maybeSingle()
     if (setts) {
-      settings.value = setts
+      settings.value = setts as LandingSettings
     }
-  } catch (err: any) {
+  } catch (err: unknown) {
     console.error('Error loading hero settings:', err)
   } finally {
     loading.value = false
@@ -83,9 +85,9 @@ const loadAnnouncements = async () => {
       .order('created_at', { ascending: false })
 
     if (error) throw error
-    announcements.value = data || []
-  } catch (err: any) {
-    errorMessage.value = err.message
+    announcements.value = (data as AnnouncementRow[]) || []
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     announcementsLoading.value = false
   }
@@ -103,8 +105,8 @@ const saveSettings = async () => {
     })
     if (error) throw error
     successMessage.value = 'Configuración del Hero actualizada exitosamente.'
-  } catch (err: any) {
-    errorMessage.value = err.message || 'Error al guardar configuración.'
+  } catch (err: unknown) {
+    errorMessage.value = (err instanceof Error ? err.message : String(err)) || 'Error al guardar configuración.'
   } finally {
     actionLoading.value = false
   }
@@ -162,8 +164,8 @@ const saveAnnouncement = async () => {
     successMessage.value = 'Anuncio guardado correctamente.'
     showAnnouncementModal.value = false
     await loadAnnouncements()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -177,8 +179,8 @@ const deleteAnnouncement = async (id: string) => {
     if (error) throw error
     successMessage.value = 'Anuncio eliminado.'
     await loadAnnouncements()
-  } catch (err: any) {
-    errorMessage.value = err.message
+  } catch (err: unknown) {
+    errorMessage.value = err instanceof Error ? err.message : String(err)
   } finally {
     actionLoading.value = false
   }
@@ -225,25 +227,25 @@ onMounted(() => {
         empty-text="No hay anuncios activos en la cinta del Hero"
       >
         <template #cell-message="{ row }">
-          <span class="font-semibold text-white">{{ (row as any).message }}</span>
+          <span class="font-semibold text-white">{{ asAnnouncement(row).message }}</span>
         </template>
 
         <template #cell-link_url="{ row }">
-          <span class="text-xs text-slate-400 font-mono">{{ (row as any).link_url || '-' }}</span>
+          <span class="text-xs text-slate-400 font-mono">{{ asAnnouncement(row).link_url || '-' }}</span>
         </template>
 
         <template #cell-is_published="{ row }">
-          <BaseBadge :variant="(row as any).is_published ? 'success' : 'soft'">
-            {{ (row as any).is_published ? 'Publicado' : 'Borrador' }}
+          <BaseBadge :variant="asAnnouncement(row).is_published ? 'success' : 'soft'">
+            {{ asAnnouncement(row).is_published ? 'Publicado' : 'Borrador' }}
           </BaseBadge>
         </template>
 
         <template #cell-actions="{ row }">
           <div class="flex items-center justify-end gap-1.5">
-            <button @click="editAnnouncement(row as any)" class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
+            <button @click="editAnnouncement(asAnnouncement(row))" class="p-1.5 text-slate-300 hover:bg-slate-800 rounded-lg transition-colors" title="Editar">
               <i class="bi bi-pencil"></i>
             </button>
-            <button @click="deleteAnnouncement((row as any).id)" class="p-1.5 text-red-400 hover:bg-red-950 rounded-lg transition-colors" title="Eliminar">
+            <button @click="deleteAnnouncement(asAnnouncement(row).id)" class="p-1.5 text-red-400 hover:bg-red-950 rounded-lg transition-colors" title="Eliminar">
               <i class="bi bi-trash"></i>
             </button>
           </div>
