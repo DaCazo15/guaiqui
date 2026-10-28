@@ -18,7 +18,7 @@
 
 - [x] **Modularización de Componentes Vue**: Todos los componentes y archivos de configuración masiva descomprimidos y modularizados a < 300 líneas por archivo conforme a la regla `vue-component-modularizer`.
 - [x] **Limpieza del Repositorio**: Eliminados 52 archivos de backup de migraciones antiguas, directorios duplicados (.agent/) y archivos scratch temporales.
-- [x] **Migración Squash Preparada**: Archivo consolidado `supabase/squash_draft/20261027_consolidated_squash.sql` listo para entornos limpios.
+- [x] **Migración Squash Preparada**: Archivo consolidado archivado en `docs/architecture/squash-draft/` listo para entornos limpios de contingencia.
 - [x] **Verificación de Tipos TypeScript**: `pnpm typecheck` exitoso con 0 errores en los 4 proyectos (`@guaiqui/shared`, `@guaiqui/ui`, `@guaiqui/web`, `@guaiqui/admin`).
 - [x] **Suite de Pruebas Unitarias**: 20 archivos de prueba y 152 casos de prueba ejecutados al 100% de aprobación (`pnpm test`).
 

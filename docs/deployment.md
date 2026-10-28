@@ -42,11 +42,9 @@ Dado que **las migraciones de base de datos son estrictamente hacia adelante** (
 Para nuevos despliegues limpios o entornos de desarrollo a partir de la versión consolidada:
 
 1. **Generación del Squash**:
-   - Ejecutar el script:
-     ```bash
-     node scripts/generate_squash_all.mjs
-     ```
-   - Esto genera los 4 archivos de migración consolidados en `supabase/squash_draft/`:
+   - El script y archivos consolidados se encuentran archivados en:
+     `docs/architecture/squash-draft/`
+   - Los 4 archivos de migración de referencia son:
      - `20261016000001_schema_and_types.sql`: Esquema base, tablas y tipos ENUM.
      - `20261016000002_functions_and_triggers.sql`: Funciones PL/pgSQL, triggers y validaciones.
      - `20261016000003_rls_policies.sql`: Políticas de Row-Level Security y permisos de ejecución.
