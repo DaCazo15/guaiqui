@@ -68,11 +68,6 @@ const emit = defineEmits<{
           </div>
         </div>
 
-        <!-- Fuente de verdad inmutable (Ledger) -->
-        <div class="mt-2.5 pt-2 border-t border-guaiqui-border/60 flex items-center justify-center gap-1.5 text-[10px] text-guaiqui-text-subtle">
-          <i class="bi bi-shield-check text-guaiqui-primary text-xs"></i>
-          <span>Fuente de verdad inmutable (Ledger)</span>
-        </div>
       </BaseCard>
 
       <!-- Botones de Acción directos para teléfono -->
@@ -124,8 +119,7 @@ const emit = defineEmits<{
           </div>
         </div>
 
-        <div class="mt-4 pt-3 border-t border-guaiqui-border/60 flex items-center justify-between text-xs text-guaiqui-text-muted">
-          <span>Fuente de verdad inmutable (Ledger)</span>
+        <div class="mt-4 pt-3 border-t border-guaiqui-border/60 flex items-center justify-end text-xs text-guaiqui-text-muted">
           <NuxtLink to="/app/tienda" class="text-guaiqui-primary font-semibold hover:underline inline-flex items-center">
             Ir a la Tienda <i class="bi bi-arrow-right ml-1"></i>
           </NuxtLink>
