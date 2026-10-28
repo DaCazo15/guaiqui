@@ -27,17 +27,17 @@ onMounted(async () => {
     <BaseSkeletonLayout :dark="true" :show-sidebar="true" />
   </div>
 
-  <div v-else class="min-h-screen bg-guaiqui-surface text-guaiqui-text flex flex-col md:flex-row">
+  <div v-else class="min-h-screen bg-guaiqui-surface text-guaiqui-text flex flex-col lg:flex-row">
     <!-- Desktop Sidebar -->
     <AppSidebar />
 
     <!-- Main Content Area with safe area padding -->
     <div
-      class="flex-1 flex flex-col min-w-0 md:pb-6"
+      class="flex-1 flex flex-col min-w-0 lg:pb-6"
       style="padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));"
     >
-      <!-- Mobile Top Header: Verde Esmeralda Nocturno estilo Login -->
-      <header class="md:hidden sticky top-0 z-30 bg-gradient-to-r from-[#01170f] via-[#022c1e] to-[#01170f] border-b border-emerald-500/30 shadow-lg px-4 py-2.5 flex items-center justify-between text-white backdrop-blur-md">
+      <!-- Mobile & Tablet Top Header: Verde Esmeralda Nocturno estilo Login -->
+      <header class="lg:hidden sticky top-0 z-30 bg-gradient-to-r from-[#01170f] via-[#022c1e] to-[#01170f] border-b border-emerald-500/30 shadow-lg px-4 py-2.5 flex items-center justify-between text-white backdrop-blur-md">
         <div class="flex items-center gap-2.5">
           <!-- Mobile Menu Drawer Toggle Button -->
           <button

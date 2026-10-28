@@ -14,7 +14,7 @@ const navItems = APP_BOTTOM_NAV_ITEMS
 
 <template>
   <nav
-    class="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-b from-[#0e743a] via-[#09542a] to-[#043319] border-t-2 border-emerald-400/40 shadow-[0_-15px_40px_rgba(0,0,0,0.7)] px-3 py-2 text-white backdrop-blur-md"
+    class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-b from-[#0e743a] via-[#09542a] to-[#043319] border-t-2 border-emerald-400/40 shadow-[0_-15px_40px_rgba(0,0,0,0.7)] px-3 py-2 text-white backdrop-blur-md"
     style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));"
     aria-label="Navegación principal inferior"
   >

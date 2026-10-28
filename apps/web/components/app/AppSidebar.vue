@@ -19,7 +19,7 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <aside class="hidden md:flex flex-col w-64 bg-gradient-to-b from-[#01170f] via-[#022c1e] to-[#043e1e] border-r border-emerald-500/20 min-h-screen p-4 sticky top-0 h-screen text-white select-none shadow-2xl">
+  <aside class="hidden lg:flex flex-col w-64 bg-gradient-to-b from-[#01170f] via-[#022c1e] to-[#043e1e] border-r border-emerald-500/20 min-h-screen p-4 sticky top-0 h-screen text-white select-none shadow-2xl">
     <!-- Brand Logo -->
     <div class="flex items-center gap-2.5 px-3 py-3 mb-4 border-b border-emerald-500/20">
       <div class="w-11 h-11 rounded-2xl bg-slate-900/60 p-1.5 border border-emerald-500/30 shadow-md backdrop-blur-md flex items-center justify-center shrink-0">

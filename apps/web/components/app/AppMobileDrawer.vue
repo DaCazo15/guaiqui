@@ -73,7 +73,7 @@ async function handleLogout() {
     >
       <div
         v-if="isOpen"
-        class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs md:hidden"
+        class="fixed inset-0 z-50 bg-slate-950/70 backdrop-blur-xs lg:hidden"
         aria-hidden="true"
         @click="emit('close')"
       />
@@ -93,7 +93,7 @@ async function handleLogout() {
         role="dialog"
         aria-modal="true"
         aria-label="Menú principal de navegación"
-        class="fixed top-0 bottom-0 left-0 z-50 w-[310px] max-w-[85vw] bg-gradient-to-b from-[#01170f] via-[#022c1e] to-[#043e1e] text-white shadow-2xl flex flex-col justify-between overflow-hidden border-r border-emerald-500/20 md:hidden"
+        class="fixed top-0 bottom-0 left-0 z-50 w-[310px] max-w-[85vw] bg-gradient-to-b from-[#01170f] via-[#022c1e] to-[#043e1e] text-white shadow-2xl flex flex-col justify-between overflow-hidden border-r border-emerald-500/20 lg:hidden"
       >
         <!-- Top Section: Header & User Card -->
         <div class="p-4 border-b border-emerald-500/20 bg-slate-950/40 shrink-0">

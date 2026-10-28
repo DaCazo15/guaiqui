@@ -155,14 +155,14 @@ function handleCoverCroppedConfirmed(croppedFile: File) {
       </div>
     </div>
 
-    <!-- 2. AVATAR SUPERPUESTO & DATOS DE IDENTIDAD (ESTILO FACEBOOK) -->
+    <!-- 2. AVATAR SUPERPUESTO & DATOS DE IDENTIDAD (ESTILO MÓVIL Y TABLET CENTRADO, DESKTOP HORIZONTAL) -->
     <div class="px-5 sm:px-8 pb-5 pt-0">
-      <div class="flex flex-col sm:flex-row items-center sm:items-end justify-between gap-4 -mt-14 sm:-mt-16 md:-mt-20">
+      <div class="flex flex-col lg:flex-row items-center lg:items-end justify-between gap-4 -mt-14 sm:-mt-16 lg:-mt-20">
         <!-- Avatar Circular y Nombre -->
-        <div class="flex flex-col sm:flex-row items-center sm:items-end gap-4 text-center sm:text-left">
+        <div class="flex flex-col lg:flex-row items-center lg:items-end gap-4 text-center lg:text-left">
           <!-- Avatar con Anillo Blanco y Disparador de Cámara -->
           <div class="relative group shrink-0">
-            <div class="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 rounded-full bg-white border-4 border-white shadow-xl overflow-hidden flex items-center justify-center relative ring-2 ring-emerald-500/20">
+            <div class="w-28 h-28 sm:w-32 sm:h-32 lg:w-36 lg:h-36 rounded-full bg-white border-4 border-white shadow-xl overflow-hidden flex items-center justify-center relative ring-2 ring-emerald-500/20">
               <img
                 v-if="profile?.avatar_url && !imageLoadFailed"
                 :src="profile.avatar_url"
@@ -203,14 +203,14 @@ function handleCoverCroppedConfirmed(croppedFile: File) {
 
           <!-- Nombre y Rango del Fanático -->
           <div class="space-y-1 pb-1">
-            <div class="flex items-center justify-center sm:justify-start gap-2">
-              <h1 class="font-display font-extrabold text-2xl sm:text-3xl text-guaiqui-text uppercase tracking-wide">
+            <div class="flex items-center justify-center lg:justify-start gap-2">
+              <h1 class="font-display font-extrabold text-2xl sm:text-3xl lg:text-3xl text-guaiqui-text uppercase tracking-wide">
                 {{ profile?.display_name || 'Fanático Guaiquerí' }}
               </h1>
               <i class="bi bi-patch-check-fill text-guaiqui-primary text-xl" title="Fanático Verificado"></i>
             </div>
 
-            <div class="flex flex-wrap items-center justify-center sm:justify-start gap-2 text-xs">
+            <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs">
               <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider" :class="fanLevel.badge">
                 {{ fanLevel.name }}
               </span>
@@ -218,7 +218,7 @@ function handleCoverCroppedConfirmed(croppedFile: File) {
                 <i class="bi bi-geo-alt-fill text-guaiqui-accent"></i>
                 {{ profile?.municipality || 'Nueva Esparta' }}
               </span>
-              <span class="text-guaiqui-text-subtle text-[11px] hidden md:inline">
+              <span class="text-guaiqui-text-subtle text-[11px] inline">
                 · Miembro desde {{ joinedDate }}
               </span>
             </div>
@@ -226,16 +226,16 @@ function handleCoverCroppedConfirmed(croppedFile: File) {
         </div>
 
         <!-- 3. Píldoras Rápidas de Estadísticas del Fan -->
-        <div class="flex items-center gap-3 sm:pb-2">
+        <div class="flex items-center justify-center gap-3 lg:pb-2">
           <!-- Perlitas -->
-          <div class="px-3.5 py-1.5 rounded-guaiqui-lg bg-emerald-50 border border-emerald-200 text-center">
+          <div class="px-3.5 py-1.5 rounded-guaiqui-lg bg-emerald-50 border border-emerald-200 text-center shadow-xs">
             <div class="flex items-center justify-center gap-1 font-black">
               <PearlAmount :amount="balance" size="sm" animated />
             </div>
           </div>
 
           <!-- Racha -->
-          <div class="px-3.5 py-1.5 rounded-guaiqui-lg bg-rose-50 border border-rose-200 text-center">
+          <div class="px-3.5 py-1.5 rounded-guaiqui-lg bg-rose-50 border border-rose-200 text-center shadow-xs">
             <div class="flex items-center justify-center gap-1 font-display font-black text-sm text-guaiqui-accent">
               <i class="bi bi-fire text-amber-500"></i>
               <span>{{ streakDays }}</span>
