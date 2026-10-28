@@ -162,6 +162,7 @@ La carpeta `docs/` contiene las especificaciones técnicas, manuales y runbooks 
   - [`docs/analytics.md`](docs/analytics.md): Eventos y seguimiento de métricas anónimas.
   - [`docs/staff-bootstrap.md`](docs/staff-bootstrap.md): Instrucciones para creación de las primeras cuentas de staff.
   - [`docs/user-manuals.md`](docs/user-manuals.md): Manual de operación para personal de taquilla y tienda.
+  - [`docs/guia-gsap.md`](docs/guia-gsap.md): Guía de referencia y recetas de animación con GSAP y ScrollTrigger.
 
 ---
 

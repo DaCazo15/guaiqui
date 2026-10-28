@@ -33,17 +33,28 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close()
 
   const targetUrl = event.notification.data?.url || '/app/notificaciones'
+  const fullTargetUrl = new URL(targetUrl, self.location.origin).href
 
   event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      // 1. Buscar una ventana cuya URL ya coincida con targetUrl y enfocarla
       for (const client of clientList) {
-        if (client.url && 'focus' in client) {
-          client.navigate(targetUrl)
+        if (client.url === fullTargetUrl && 'focus' in client) {
           return client.focus()
         }
       }
-      if (clients.openWindow) {
-        return clients.openWindow(targetUrl)
+
+      // 2. Si no existe, abrir una nueva ventana
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(targetUrl)
+      }
+
+      // 3. Fallback: navegar la primera ventana abierta del origen y enfocarla
+      for (const client of clientList) {
+        if (client.url && 'navigate' in client && 'focus' in client) {
+          client.navigate(targetUrl)
+          return client.focus()
+        }
       }
     })
   )

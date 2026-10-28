@@ -7,7 +7,7 @@ const { gsap } = useGSAP()
 const bandRef = ref<HTMLElement | null>(null)
 let ctx: gsap.Context | null = null
 
-// Reactive displayed values for animated counter numbers (Receta 2 de guia-gsap.md)
+// Reactive displayed values for animated counter numbers (Receta 2 de docs/guia-gsap.md)
 const displayedStats = ref(
   teamStats.map((s) => ({
     ...s,
@@ -55,7 +55,7 @@ onMounted(async () => {
           },
         })
 
-        // 2. Receta 2 de guia-gsap.md: Cifras que suben al entrar en pantalla con snap
+        // 2. Receta 2 de docs/guia-gsap.md: Cifras que suben al entrar en pantalla con snap
         displayedStats.value.forEach((stat, idx) => {
           if (stat.numericTarget === 0) {
             stat.currentDisplay = stat.value
