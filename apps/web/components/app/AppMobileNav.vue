@@ -7,13 +7,9 @@ const route = useRoute()
 const authStore = useAuthStore()
 const avatarError = ref(false)
 
-const navItems = [
-  { name: 'Inicio', routeName: 'app', path: '/app', icon: 'bi-house-door-fill' },
-  { name: 'Trivias', routeName: 'app-trivias', path: '/app/trivias', icon: 'bi-patch-question-fill' },
-  { name: 'Billetera', routeName: 'app-billetera', path: '/app/billetera', icon: 'bi-wallet2' },
-  { name: 'Tienda', routeName: 'app-tienda', path: '/app/tienda', icon: 'bi-bag-heart-fill' },
-  { name: 'Perfil', routeName: 'app-perfil', path: '/app/perfil', icon: 'bi-person-fill' },
-]
+import { APP_BOTTOM_NAV_ITEMS } from '~/data/appNavData'
+
+const navItems = APP_BOTTOM_NAV_ITEMS
 </script>
 
 <template>

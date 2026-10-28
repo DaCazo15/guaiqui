@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import AppSidebar from '~/components/app/AppSidebar.vue'
 import AppMobileNav from '~/components/app/AppMobileNav.vue'
+import AppMobileDrawer from '~/components/app/AppMobileDrawer.vue'
 import NotificationBell from '~/components/app/NotificationBell.vue'
 import LoginModalCarousel from '~/components/app/LoginModalCarousel.vue'
 import IncompleteProfileBanner from '~/components/app/IncompleteProfileBanner.vue'
@@ -12,6 +13,7 @@ import { BaseSkeletonLayout } from '@guaiqui/ui'
 
 const authStore = useAuthStore()
 const avatarError = ref(false)
+const isDrawerOpen = ref(false)
 
 onMounted(async () => {
   if (!authStore.profile) {
@@ -37,6 +39,16 @@ onMounted(async () => {
       <!-- Mobile Top Header: Verde Guaiqueríes con detalle en rojo bandana -->
       <header class="md:hidden sticky top-0 z-30 bg-[#0B7A3B] bg-gradient-to-r from-[#064E27] via-[#0B7A3B] to-emerald-800 border-b-2 border-[#C8102E] shadow-md px-4 py-2.5 flex items-center justify-between text-white">
         <div class="flex items-center gap-2">
+          <!-- Mobile Menu Drawer Toggle Button -->
+          <button
+            type="button"
+            @click="isDrawerOpen = true"
+            aria-label="Abrir menú de navegación"
+            class="w-9 h-9 rounded-lg flex items-center justify-center text-white hover:bg-white/10 active:scale-95 transition-all cursor-pointer -ml-1 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+          >
+            <i class="bi bi-list text-2xl leading-none"></i>
+          </button>
+
           <div class="w-8 h-8 rounded-full bg-white p-0.5 shrink-0 shadow-xs border border-white/40 flex items-center justify-center">
             <img src="/logo.png" alt="Guaiqueríes Logo" width="32" height="32" class="w-full h-full object-contain" />
           </div>
@@ -92,6 +104,9 @@ onMounted(async () => {
 
     <!-- Mobile Bottom Navigation Bar -->
     <AppMobileNav />
+
+    <!-- Mobile Navigation Drawer with all 12 options -->
+    <AppMobileDrawer :is-open="isDrawerOpen" @close="isDrawerOpen = false" />
 
     <!-- Login Welcome Modal Carousel -->
     <LoginModalCarousel />
