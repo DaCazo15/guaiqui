@@ -25,8 +25,10 @@ Plataforma de fidelización para fanáticos de **Guaiqueries de Margarita**, equ
 # 1. Clonar el repo
 git clone <url> && cd guaiqui
 
-# 2. Copiar variables de entorno
+# 2. Copiar variables de entorno y configuración de MCP
 cp .env.example .env
+cp .mcp.example.json .mcp.json
+# Nota: Configurar <PROJECT_REF> en .mcp.json y mantener 'read_only=true' salvo que sea estrictamente necesario.
 
 # 3. Instalar dependencias
 pnpm install

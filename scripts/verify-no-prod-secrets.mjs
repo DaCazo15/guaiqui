@@ -35,6 +35,7 @@ console.log('[CI Verify] Scanning codebase for forbidden test tokens and testing
 const FORBIDDEN_PATTERNS = [
   { name: 'mock token "test-valid-pass"', regex: /test-valid-pass/ },
   { name: 'Cloudflare Turnstile test secret key', regex: /1x0000000000000000000000000000000AA/ },
+  { name: 'hardcoded production IP salt pattern', regex: /_guaiqui_ip_salt_prod/ },
 ];
 
 const SCAN_DIRS = ['apps', 'packages', 'supabase/functions'];
@@ -84,9 +85,30 @@ for (const dir of SCAN_DIRS) {
   scanDirectory(dir);
 }
 
+// 3. Scan .env.example files to prevent leaking production secrets or non-empty IP_SALT
+const ENV_EXAMPLE_FILES = ['.env.example', 'supabase/.env.example'];
+for (const relFile of ENV_EXAMPLE_FILES) {
+  const fullPath = path.resolve(relFile);
+  if (fs.existsSync(fullPath)) {
+    const content = fs.readFileSync(fullPath, 'utf8');
+    for (const pattern of FORBIDDEN_PATTERNS) {
+      if (pattern.regex.test(content)) {
+        console.error(`❌ SECURITY VIOLATION: Forbidden ${pattern.name} found in example env file: ${relFile}`);
+        violationsFound = true;
+      }
+    }
+    const ipSaltMatch = content.match(/^IP_SALT=(.+)$/m);
+    if (ipSaltMatch && ipSaltMatch[1].trim().length > 0) {
+      console.error(`❌ SECURITY VIOLATION: Non-empty IP_SALT found in ${relFile}. Secret salts must be empty in example files.`);
+      violationsFound = true;
+    }
+  }
+}
+
 if (violationsFound) {
   console.error('❌ Build failed: Remove forbidden test bypass tokens/secrets before merging.');
   process.exit(1);
 }
 
 console.log('✅ Validation passed: No test tokens or test secrets detected in production codebase.');
+

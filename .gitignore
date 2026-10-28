@@ -49,3 +49,5 @@ repo.bundle
 repomix-output.xml
 scratch/
 
+# MCP Configuration
+.mcp.json
