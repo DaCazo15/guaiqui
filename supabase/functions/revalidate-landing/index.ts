@@ -39,7 +39,7 @@ serve(async (req) => {
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
     const { data: staffRow, error: staffErr } = await adminClient
       .from("staff_members")
-      .select("role, active")
+      .select("role, active, team_id")
       .eq("user_id", caller.id)
       .maybeSingle();
 
@@ -50,16 +50,28 @@ serve(async (req) => {
       });
     }
 
+    const body = await req.json().catch(() => ({}));
+    const requestedTeamId = body.team_id || new URL(req.url).searchParams.get("team_id");
+
+    if (staffRow.team_id !== null && requestedTeamId && requestedTeamId !== staffRow.team_id) {
+      return new Response(
+        JSON.stringify({ error: "No tienes autorización para revalidar la landing de otro equipo" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
+    }
+
+    const effectiveTeamId = staffRow.team_id || requestedTeamId || "all";
+
     // Trigger revalidation event
     await adminClient.from("audit_log").insert({
       actor_id: caller.id,
       action: "revalidate_landing_cache",
       entity: "landing_content",
-      after: { revalidated_at: new Date().toISOString() },
+      after: { revalidated_at: new Date().toISOString(), team_id: effectiveTeamId },
     });
 
     return new Response(
-      JSON.stringify({ message: "Landing content revalidated successfully", timestamp: new Date().toISOString() }),
+      JSON.stringify({ message: "Landing content revalidated successfully", team_id: effectiveTeamId, timestamp: new Date().toISOString() }),
       { headers: { ...corsHeaders, "Content-Type": "application/json" } }
     );
   } catch (err: any) {

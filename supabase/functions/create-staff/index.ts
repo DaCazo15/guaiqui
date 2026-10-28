@@ -41,7 +41,7 @@ serve(async (req) => {
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
     const { data: staffRow, error: staffErr } = await adminClient
       .from("staff_members")
-      .select("role, active")
+      .select("role, active, team_id")
       .eq("user_id", caller.id)
       .maybeSingle();
 
@@ -52,12 +52,29 @@ serve(async (req) => {
       });
     }
 
-    const { email, role = "staff" } = await req.json();
+    const { email, role = "staff", team_id: requestedTeamId } = await req.json();
     if (!email || typeof email !== "string") {
       return new Response(JSON.stringify({ error: "Email is required" }), {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    let targetTeamId: string | null = null;
+    const isPlatformAdmin = staffRow.team_id === null;
+
+    if (!isPlatformAdmin) {
+      // Club Admin: must assign strictly to their own team
+      if (requestedTeamId && requestedTeamId !== staffRow.team_id) {
+        return new Response(
+          JSON.stringify({ error: "No tienes autorización para invitar personal a otro equipo" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
+      targetTeamId = staffRow.team_id;
+    } else {
+      // Platform Admin: can specify team_id (or null for platform admin)
+      targetTeamId = requestedTeamId || null;
     }
 
     // Invite user via admin auth API
@@ -69,12 +86,13 @@ serve(async (req) => {
       });
     }
 
-    // Insert staff_members entry
+    // Insert staff_members entry with team_id
     const { error: insertErr } = await adminClient
       .from("staff_members")
       .insert({
         user_id: newUser.user.id,
         role: role === "admin" ? "admin" : "staff",
+        team_id: targetTeamId,
         active: true,
       });
 
@@ -91,7 +109,7 @@ serve(async (req) => {
       action: "invite_staff_member",
       entity: "staff_members",
       entity_id: newUser.user.id,
-      after: { email, role },
+      after: { email, role, team_id: targetTeamId },
     });
 
     return new Response(

@@ -40,7 +40,7 @@ serve(async (req) => {
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
     const { data: staffRow } = await adminClient
       .from("staff_members")
-      .select("role, active")
+      .select("role, active, team_id")
       .eq("user_id", caller.id)
       .maybeSingle();
 
@@ -58,7 +58,7 @@ serve(async (req) => {
       const payloadBase64 = token.split(".")[1];
       const payload = JSON.parse(atob(payloadBase64));
       aal = payload.aal || "";
-    } catch (_e) {
+    } catch {
       aal = "";
     }
 
@@ -80,7 +80,7 @@ serve(async (req) => {
     // Target must be a staff or admin
     const { data: targetStaff } = await adminClient
       .from("staff_members")
-      .select("role, active")
+      .select("role, active, team_id")
       .eq("user_id", target_user_id)
       .maybeSingle();
 
@@ -89,6 +89,16 @@ serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Club Admin cannot reset MFA of platform staff or staff from another team
+    if (staffRow.team_id !== null) {
+      if (targetStaff.team_id === null || targetStaff.team_id !== staffRow.team_id) {
+        return new Response(
+          JSON.stringify({ error: "No tienes autorización para restablecer el 2FA de personal de otro equipo o de la plataforma" }),
+          { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+        );
+      }
     }
 
     // Delete target MFA factors
@@ -105,12 +115,12 @@ serve(async (req) => {
     await adminClient.from("mfa_recovery_codes").delete().eq("user_id", target_user_id);
 
     // Audit log
-    await adminClient.from("audit_logs").insert({
+    await adminClient.from("audit_log").insert({
       actor_id: caller.id,
       action: "admin_reset_mfa",
-      target_table: "staff_members",
-      target_id: target_user_id,
-      details: { message: "Admin reset MFA for staff member" },
+      entity: "staff_members",
+      entity_id: target_user_id,
+      after: { team_id: targetStaff.team_id, message: "Admin reset MFA for staff member" },
     });
 
     await adminClient.rpc("create_security_notification", {

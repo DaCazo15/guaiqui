@@ -39,7 +39,7 @@ serve(async (req) => {
     const adminClient = createClient(supabaseUrl, supabaseServiceKey);
     const { data: staffRow, error: staffErr } = await adminClient
       .from("staff_members")
-      .select("role, active")
+      .select("role, active, team_id")
       .eq("user_id", caller.id)
       .maybeSingle();
 
@@ -58,6 +58,27 @@ serve(async (req) => {
         status: 400,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Verify segment belongs to caller's team (unless platform admin)
+    const { data: segmentRow, error: segErr } = await adminClient
+      .from("segments")
+      .select("team_id")
+      .eq("id", segmentId)
+      .maybeSingle();
+
+    if (segErr || !segmentRow) {
+      return new Response(JSON.stringify({ error: "Segmento no encontrado" }), {
+        status: 404,
+        headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
+    if (staffRow.team_id !== null && segmentRow.team_id !== staffRow.team_id) {
+      return new Response(
+        JSON.stringify({ error: "No tienes autorización para exportar segmentos de otro equipo" }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Call RPC segment_members
