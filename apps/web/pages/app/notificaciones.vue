@@ -3,7 +3,6 @@ import { ref, computed, onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useNotificationsStore, type NotificationItem as NotifItemType } from '~/stores/notifications'
 import NotificationItem from '~/components/notifications/NotificationItem.vue'
-import PushPermissionCard from '~/components/settings/PushPermissionCard.vue'
 
 definePageMeta({
   layout: 'app',
@@ -42,9 +41,6 @@ const handleMarkAllRead = async () => {
 
 <template>
   <div class="space-y-6">
-    <!-- Push permission info banner -->
-    <PushPermissionCard />
-
     <!-- Page Header -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
       <div>

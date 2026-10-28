@@ -3,7 +3,6 @@ import { ref } from 'vue'
 import { BaseCheckbox, BaseSelect, BaseButton } from '@guaiqui/ui'
 import { useAuthStore } from '~/stores/auth'
 import { useNotificationsStore } from '~/stores/notifications'
-import PushPermissionCard from '~/components/settings/PushPermissionCard.vue'
 
 const authStore = useAuthStore()
 const notifStore = useNotificationsStore()
@@ -47,7 +46,6 @@ async function sendTestNotification() {
   isTestingNotif.value = true
   successMessage.value = null
   try {
-    const supabase = useSupabaseClient()
     const user = useSupabaseUser()
     if (!user.value) return
 
@@ -70,8 +68,6 @@ async function sendTestNotification() {
         Elige qué tipos de alertas deseas recibir en tu dispositivo y bandeja de entrada.
       </p>
     </div>
-
-    <PushPermissionCard />
 
     <div v-if="successMessage" class="p-3 bg-guaiqui-status-success-soft border border-guaiqui-status-success/30 rounded-guaiqui-md text-guaiqui-status-success text-xs flex items-center gap-2">
       <i class="bi bi-check-circle-fill shrink-0 text-sm"></i>
