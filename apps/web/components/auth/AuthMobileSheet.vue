@@ -73,15 +73,15 @@ function handleRegisterSubmit() {
 </script>
 
 <template>
-  <div class="relative z-10 w-full bg-gradient-to-b from-[#0e743a] via-[#09542a] to-[#043319] rounded-t-[36px] sm:rounded-t-[44px] border-t-2 border-emerald-400/40 shadow-[0_-20px_50px_rgba(0,0,0,0.7)] px-5 pt-8 pb-10 sm:px-8 sm:pt-10 sm:pb-12 text-white">
+  <div class="relative z-10 w-full bg-gradient-to-b from-[#0e743a] via-[#09542a] to-[#043319] rounded-t-[36px] sm:rounded-t-[44px] border-t-2 border-emerald-400/40 shadow-[0_-20px_50px_rgba(0,0,0,0.7)] px-5 pt-8 pb-10 sm:px-8 sm:pt-10 sm:pb-12 md:px-10 md:pt-11 md:pb-12 text-white">
     <!-- Toggle buttons (Pill style matching the mockup) -->
     <div class="space-y-3 mb-6">
-      <div class="grid grid-cols-2 gap-2 p-1.5 rounded-full bg-slate-950/40 border border-emerald-500/30 backdrop-blur-md">
+      <div class="grid grid-cols-2 gap-2 sm:gap-3 p-1.5 rounded-full bg-slate-950/40 border border-emerald-500/30 backdrop-blur-md">
         <button
           type="button"
           @click="activeTab = 'login'; localValidation = null"
           :class="[
-            'py-2.5 px-4 rounded-full text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5',
+            'py-2.5 sm:py-3 px-4 sm:px-6 rounded-full text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2',
             activeTab === 'login'
               ? 'bg-white text-slate-950 shadow-lg shadow-black/30 scale-[1.02]'
               : 'text-emerald-100 hover:text-white hover:bg-white/10'
@@ -95,7 +95,7 @@ function handleRegisterSubmit() {
           type="button"
           @click="activeTab = 'register'; localValidation = null"
           :class="[
-            'py-2.5 px-4 rounded-full text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5',
+            'py-2.5 sm:py-3 px-4 sm:px-6 rounded-full text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-300 flex items-center justify-center gap-1.5 sm:gap-2',
             activeTab === 'register'
               ? 'bg-white text-slate-950 shadow-lg shadow-black/30 scale-[1.02]'
               : 'text-emerald-100 hover:text-white hover:bg-white/10'
@@ -163,7 +163,7 @@ function handleRegisterSubmit() {
       <button
         type="submit"
         :disabled="loading"
-        class="w-full mt-2 py-3.5 px-6 rounded-full bg-white hover:bg-slate-100 active:scale-[0.99] text-slate-950 font-bold uppercase text-xs sm:text-sm tracking-wider shadow-lg shadow-black/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+        class="w-full mt-2 py-3.5 sm:py-4 px-6 rounded-full bg-white hover:bg-slate-100 active:scale-[0.99] text-slate-950 font-bold uppercase text-xs sm:text-sm tracking-wider shadow-lg shadow-black/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
       >
         <i v-if="loading" class="bi bi-arrow-repeat animate-spin text-base"></i>
         <i v-else class="bi bi-box-arrow-in-right text-emerald-700"></i>
@@ -190,7 +190,7 @@ function handleRegisterSubmit() {
         </div>
       </div>
 
-      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+      <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
         <div>
           <label class="block text-[11px] font-bold uppercase tracking-wider text-emerald-200 mb-1">
             Contraseña
@@ -245,7 +245,7 @@ function handleRegisterSubmit() {
       <button
         type="submit"
         :disabled="loading"
-        class="w-full mt-2 py-3.5 px-6 rounded-full bg-white hover:bg-slate-100 active:scale-[0.99] text-slate-950 font-bold uppercase text-xs sm:text-sm tracking-wider shadow-lg shadow-black/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
+        class="w-full mt-2 py-3.5 sm:py-4 px-6 rounded-full bg-white hover:bg-slate-100 active:scale-[0.99] text-slate-950 font-bold uppercase text-xs sm:text-sm tracking-wider shadow-lg shadow-black/25 transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-50"
       >
         <i v-if="loading" class="bi bi-arrow-repeat animate-spin text-base"></i>
         <i v-else class="bi bi-award-fill text-amber-500"></i>
@@ -266,7 +266,7 @@ function handleRegisterSubmit() {
       type="button"
       @click="emit('googleAuth')"
       :disabled="loading"
-      class="w-full py-3.5 px-6 rounded-full border-2 border-white/80 hover:border-white bg-slate-950/30 hover:bg-slate-950/50 text-white font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-3 cursor-pointer shadow-md hover:shadow-lg active:scale-[0.99] disabled:opacity-50"
+      class="w-full py-3.5 sm:py-4 px-6 rounded-full border-2 border-white/80 hover:border-white bg-slate-950/30 hover:bg-slate-950/50 text-white font-bold text-xs sm:text-sm tracking-wide transition-all duration-200 flex items-center justify-center gap-3 cursor-pointer shadow-md hover:shadow-lg active:scale-[0.99] disabled:opacity-50"
     >
       <!-- Official Google 4-color SVG logo -->
       <svg class="w-5 h-5 shrink-0" viewBox="0 0 24 24">

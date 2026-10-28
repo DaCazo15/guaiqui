@@ -60,9 +60,9 @@ async function handleGoogleAuth() {
 </script>
 
 <template>
-  <div class="min-h-screen w-full bg-[#01140c] text-white flex items-center justify-center sm:p-4 md:p-6 overflow-x-hidden">
-    <!-- Responsive Container: Full screen on mobile, device card on desktop -->
-    <div class="relative w-full min-h-screen sm:min-h-[760px] max-w-md sm:max-w-[420px] bg-gradient-to-b from-[#01170f] via-[#022c1e] to-[#043e1e] sm:rounded-[44px] sm:border sm:border-emerald-500/30 sm:shadow-[0_25px_60px_rgba(0,0,0,0.8)] flex flex-col justify-between overflow-hidden">
+  <div class="min-h-screen w-full bg-[#01140c] text-white flex items-center justify-center sm:p-6 md:p-8 overflow-x-hidden">
+    <!-- Responsive Container: Full screen on mobile, device card on desktop & tablet -->
+    <div class="relative w-full min-h-screen sm:min-h-[760px] md:min-h-[780px] sm:my-auto max-w-md sm:max-w-[480px] md:max-w-[520px] lg:max-w-[540px] bg-gradient-to-b from-[#01170f] via-[#022c1e] to-[#043e1e] sm:rounded-[44px] sm:border sm:border-emerald-500/30 sm:shadow-[0_25px_60px_rgba(0,0,0,0.8)] flex flex-col justify-between overflow-hidden">
       <!-- Turnstile Captcha Hidden / Extension Slot -->
       <AuthTurnstileWrapper />
 
