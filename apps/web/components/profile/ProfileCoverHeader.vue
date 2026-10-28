@@ -157,12 +157,12 @@ function handleCoverCroppedConfirmed(croppedFile: File) {
 
     <!-- 2. AVATAR SUPERPUESTO & DATOS DE IDENTIDAD (ESTILO MÓVIL Y TABLET CENTRADO, DESKTOP HORIZONTAL) -->
     <div class="px-5 sm:px-8 pb-5 pt-0">
-      <div class="flex flex-col lg:flex-row items-center lg:items-end justify-between gap-4 -mt-14 sm:-mt-16 lg:-mt-20">
+      <div class="flex flex-col xl:flex-row items-center xl:items-end justify-between gap-5">
         <!-- Avatar Circular y Nombre -->
-        <div class="flex flex-col lg:flex-row items-center lg:items-end gap-4 text-center lg:text-left">
+        <div class="flex flex-col xl:flex-row items-center xl:items-end gap-5 text-center xl:text-left">
           <!-- Avatar con Anillo Blanco y Disparador de Cámara -->
-          <div class="relative group shrink-0">
-            <div class="w-28 h-28 sm:w-32 sm:h-32 lg:w-36 lg:h-36 rounded-full bg-white border-4 border-white shadow-xl overflow-hidden flex items-center justify-center relative ring-2 ring-emerald-500/20">
+          <div class="relative group shrink-0 -mt-14 sm:-mt-16 md:-mt-20 xl:-mt-24 z-10">
+            <div class="w-28 h-28 sm:w-32 sm:h-32 md:w-36 md:h-36 xl:w-40 xl:h-40 rounded-full bg-white border-4 border-white shadow-xl overflow-hidden flex items-center justify-center relative ring-2 ring-emerald-500/20">
               <img
                 v-if="profile?.avatar_url && !imageLoadFailed"
                 :src="profile.avatar_url"
@@ -202,15 +202,15 @@ function handleCoverCroppedConfirmed(croppedFile: File) {
           </div>
 
           <!-- Nombre y Rango del Fanático -->
-          <div class="space-y-1 pb-1">
-            <div class="flex items-center justify-center lg:justify-start gap-2">
-              <h1 class="font-display font-extrabold text-2xl sm:text-3xl lg:text-3xl text-guaiqui-text uppercase tracking-wide">
+          <div class="space-y-1.5 pb-1 xl:pb-2">
+            <div class="flex items-center justify-center xl:justify-start gap-2">
+              <h1 class="font-display font-extrabold text-2xl sm:text-3xl xl:text-3xl text-guaiqui-text uppercase tracking-wide">
                 {{ profile?.display_name || 'Fanático Guaiquerí' }}
               </h1>
               <i class="bi bi-patch-check-fill text-guaiqui-primary text-xl" title="Fanático Verificado"></i>
             </div>
 
-            <div class="flex flex-wrap items-center justify-center lg:justify-start gap-2 text-xs">
+            <div class="flex flex-wrap items-center justify-center xl:justify-start gap-2 text-xs">
               <span class="px-2.5 py-0.5 rounded-full text-[10px] font-extrabold uppercase tracking-wider" :class="fanLevel.badge">
                 {{ fanLevel.name }}
               </span>
@@ -226,7 +226,7 @@ function handleCoverCroppedConfirmed(croppedFile: File) {
         </div>
 
         <!-- 3. Píldoras Rápidas de Estadísticas del Fan -->
-        <div class="flex items-center justify-center gap-3 lg:pb-2">
+        <div class="flex items-center justify-center gap-3 xl:pb-3">
           <!-- Perlitas -->
           <div class="px-3.5 py-1.5 rounded-guaiqui-lg bg-emerald-50 border border-emerald-200 text-center shadow-xs">
             <div class="flex items-center justify-center gap-1 font-black">
