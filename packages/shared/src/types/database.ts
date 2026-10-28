@@ -82,6 +82,7 @@ export interface Profile {
 
 export interface StaffMember {
   user_id: string
+  team_id?: string | null
   role: StaffRole
   active: boolean
   created_at: string
@@ -108,6 +109,7 @@ export interface LedgerEntry {
 
 export interface Trivia {
   id: string
+  team_id?: string
   title: string
   description?: string | null
   status: TriviaStatus
@@ -122,6 +124,7 @@ export interface Trivia {
 export interface TriviaQuestion {
   id: string
   trivia_id: string
+  team_id?: string
   question_text: string
   points: number
   order_index: number
@@ -131,12 +134,14 @@ export interface TriviaQuestion {
 export interface TriviaOption {
   id: string
   question_id: string
+  team_id?: string
   option_text: string
   is_correct?: boolean
 }
 
 export interface TriviaAttempt {
   id: string
+  team_id?: string
   fan_id: string
   trivia_id: string
   started_at: string
@@ -152,6 +157,7 @@ export interface TriviaAttempt {
 
 export interface Product {
   id: string
+  team_id?: string
   name: string
   description?: string | null
   category: ProductCategory
@@ -167,6 +173,7 @@ export interface Product {
 
 export interface Redemption {
   id: string
+  team_id?: string
   fan_id: string
   product_id: string
   variant?: string | null
@@ -184,6 +191,7 @@ export interface Redemption {
 
 export interface RedemptionHistory {
   id: string
+  team_id?: string
   redemption_id: string
   previous_status?: RedemptionStatus | null
   new_status: RedemptionStatus
@@ -194,6 +202,7 @@ export interface RedemptionHistory {
 
 export interface ScanEvent {
   id: string
+  team_id?: string
   staff_id: string
   code_hash: string
   result: ScanResult
@@ -203,6 +212,7 @@ export interface ScanEvent {
 
 export interface Player {
   id: string
+  team_id?: string
   name: string
   jersey_number: number
   position: string
@@ -219,6 +229,7 @@ export interface Player {
 
 export interface Game {
   id: string
+  team_id?: string
   opponent: string
   opponent_logo_url?: string | null
   location: string
@@ -232,6 +243,7 @@ export interface Game {
 
 export interface Segment {
   id: string
+  team_id?: string
   name: string
   filters: Json
   created_at: string
