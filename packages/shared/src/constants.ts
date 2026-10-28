@@ -49,3 +49,16 @@ export const CURRENT_LEGAL_VERSIONS = {
   privacy: '1.0',
   pearls_rules: '1.0',
 } as const
+
+// ─── Multi-tenant (Teams) ───────────────────────────────────
+export const DEFAULT_TEAM_SLUG = 'guaiqueries'
+export const DEFAULT_TEAM_ID = 'a0000000-0000-0000-0000-000000000001'
+
+/**
+ * Valida que un slug de equipo cumpla las restricciones del esquema:
+ * - Solo caracteres alfanuméricos en minúsculas y guiones
+ * - Longitud entre 2 y 50 caracteres
+ */
+export function isValidTeamSlug(slug: string): boolean {
+  return /^[a-z0-9-]+$/.test(slug) && slug.length >= 2 && slug.length <= 50
+}
