@@ -114,21 +114,19 @@ SELECT ok(
 );
 RESET ROLE;
 
--- ─── 3. Multi-Team Temporary Guards (Step 0b Item D) ─────────────────────────
+-- ─── 3. Multi-Team Scoped Functions (Paso 2 / Paso 3) ─────────────────────────
 
--- TEST 6: admin_list_fans guarded for club admin when multiple active teams exist
-SELECT throws_ok(
+-- TEST 6: admin_list_fans succeeds for club admin (scoped to followers of their club)
+SELECT lives_ok(
     $$
         SET LOCAL ROLE authenticated;
         SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated", "aal": "aal2"}';
         SELECT public.admin_list_fans();
     $$,
-    '42501',
-    NULL,
-    'TEST 6: admin_list_fans protegido con MULTI_TEAM_PENDING_STEP2 para admin de club con >1 equipo activo'
+    'TEST 6: admin_list_fans ejecuta correctamente para admin de club (acotado a seguidores)'
 );
 
--- TEST 7: admin_get_fan guarded for club admin when multiple active teams exist
+-- TEST 7: admin_get_fan rejects club admin if fan does NOT follow their club
 SELECT throws_ok(
     $$
         SET LOCAL ROLE authenticated;
@@ -136,44 +134,42 @@ SELECT throws_ok(
         SELECT public.admin_get_fan('aaaaaaaa-4444-4444-4444-444444444444');
     $$,
     '42501',
-    NULL,
-    'TEST 7: admin_get_fan protegido con MULTI_TEAM_PENDING_STEP2 para admin de club con >1 equipo activo'
+    'El fanático solicitado no sigue a tu equipo.',
+    'TEST 7: admin_get_fan rechaza acceso si el fan no sigue al equipo del admin de club'
 );
 
--- TEST 8: analytics_demographics guarded for club admin
-SELECT throws_ok(
+-- TEST 8: analytics_demographics succeeds for club admin (scoped to club followers)
+SELECT lives_ok(
     $$
         SET LOCAL ROLE authenticated;
         SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated", "aal": "aal2"}';
         SELECT public.analytics_demographics();
     $$,
-    '42501',
-    NULL,
-    'TEST 8: analytics_demographics protegido con MULTI_TEAM_PENDING_STEP2 para admin de club con >1 equipo activo'
+    'TEST 8: analytics_demographics ejecuta correctamente para admin de club'
 );
 
--- TEST 9: analytics_economy guarded for club admin
+-- TEST 9: analytics_economy rejects club admin querying another club's data
 SELECT throws_ok(
     $$
         SET LOCAL ROLE authenticated;
         SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated", "aal": "aal2"}';
-        SELECT public.analytics_economy();
+        SELECT public.analytics_economy('bb000000-0000-0000-0000-000000000002');
     $$,
     '42501',
-    NULL,
-    'TEST 9: analytics_economy protegido con MULTI_TEAM_PENDING_STEP2 para admin de club con >1 equipo activo'
+    'No tienes autorización para consultar analítica de otro equipo.',
+    'TEST 9: analytics_economy rechaza que admin de club consulte otro equipo'
 );
 
--- TEST 10: analytics_top_fans guarded for club admin
+-- TEST 10: analytics_top_fans rejects club admin querying another club's data
 SELECT throws_ok(
     $$
         SET LOCAL ROLE authenticated;
         SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated", "aal": "aal2"}';
-        SELECT public.analytics_top_fans();
+        SELECT public.analytics_top_fans(10, NULL, NULL, 'bb000000-0000-0000-0000-000000000002');
     $$,
     '42501',
-    NULL,
-    'TEST 10: analytics_top_fans protegido con MULTI_TEAM_PENDING_STEP2 para admin de club con >1 equipo activo'
+    'No tienes autorización para consultar analítica de otro equipo.',
+    'TEST 10: analytics_top_fans rechaza que admin de club consulte otro equipo'
 );
 
 -- TEST 11: Platform admin is NOT blocked by multi-team guards on admin_list_fans

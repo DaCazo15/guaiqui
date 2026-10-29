@@ -31,6 +31,18 @@ const handleItemClick = async (item: NotifItemType) => {
   }
   if (item.data && item.data.url) {
     router.push(item.data.url)
+  } else if (item.type.startsWith('redemption_') && item.data?.redemption_id) {
+    router.push(`/app/canjes/${item.data.redemption_id}`)
+  } else if (item.type.startsWith('redemption_')) {
+    router.push('/app/canjes')
+  } else if (item.type.includes('trivia') && item.team?.slug && item.data?.trivia_id) {
+    router.push(`/app/e/${item.team.slug}/trivias/${item.data.trivia_id}`)
+  } else if (item.type.includes('trivia') && item.team?.slug) {
+    router.push(`/app/e/${item.team.slug}/trivias`)
+  } else if (item.type === 'birthday') {
+    router.push('/app/cumpleanos')
+  } else if (item.team?.slug) {
+    router.push(`/app/e/${item.team.slug}`)
   }
 }
 

@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
-import { BaseCard, BaseInput, BaseButton, PearlAmount } from '@guaiqui/ui'
-import { useCatalog, type Product } from '~/composables/useCatalog'
+import { BaseButton, PearlAmount } from '@guaiqui/ui'
+import { useCatalog } from '~/composables/useCatalog'
 import { useWallet } from '~/composables/useWallet'
 import StoreProductCard from '~/components/store/StoreProductCard.vue'
 

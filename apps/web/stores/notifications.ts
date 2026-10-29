@@ -3,6 +3,7 @@ import { ref, computed } from 'vue'
 
 export interface NotificationItem {
   id: string
+  team_id?: string | null
   user_id: string
   type: string
   title: string
@@ -11,6 +12,12 @@ export interface NotificationItem {
   dedup_key: string
   read_at: string | null
   created_at: string
+  team?: {
+    id: string
+    name: string
+    slug: string
+    logo_url: string | null
+  } | null
 }
 
 export const useNotificationsStore = defineStore('notifications', () => {
@@ -37,12 +44,20 @@ export const useNotificationsStore = defineStore('notifications', () => {
     try {
       const { data, error } = await supabase
         .from('notifications')
-        .select('*')
+        .select(`
+          *,
+          team:teams (
+            id,
+            name,
+            slug,
+            logo_url
+          )
+        `)
         .eq('user_id', user.value.id)
         .order('created_at', { ascending: false })
 
       if (!error && data) {
-        notifications.value = data as NotificationItem[]
+        notifications.value = data as unknown as NotificationItem[]
       }
     } finally {
       isLoading.value = false

@@ -6,7 +6,7 @@
 -- =============================================================
 
 BEGIN;
-SELECT plan(24);
+SELECT plan(26);
 
 -- ─── Setup: Crear datos de prueba autocontenidos ───────────────
 DO $$
@@ -57,14 +57,14 @@ BEGIN
     VALUES ('aa000000-0000-0000-0000-000000000001', v_fan1_id, v_test_trivia_id, NOW() + INTERVAL '1 hour', 12345, 'setup-attempt-1')
     ON CONFLICT DO NOTHING;
 
-    INSERT INTO wallets (team_id, fan_id, balance_cache) VALUES
-        (v_team_id, v_fan1_id, 5000),
-        (v_team_id, v_fan2_id, 200)
+    INSERT INTO wallets (fan_id, team_id, balance_cache) VALUES
+        (v_fan1_id, v_team_id, 5000),
+        (v_fan2_id, v_team_id, 200)
     ON CONFLICT (fan_id, team_id) DO UPDATE SET balance_cache = EXCLUDED.balance_cache;
 
-    INSERT INTO ledger_entries (team_id, fan_id, amount, type, status, source_type, source_id, note) VALUES
-        (v_team_id, v_fan1_id, 5000, 'bonus', 'confirmed', 'test_setup', 'setup-fan1-' || v_fan1_id::text, 'Test setup'),
-        (v_team_id, v_fan2_id, 200, 'bonus', 'confirmed', 'test_setup', 'setup-fan2-' || v_fan2_id::text, 'Test setup')
+    INSERT INTO ledger_entries (fan_id, team_id, amount, type, status, source_type, source_id, note) VALUES
+        (v_fan1_id, v_team_id, 5000, 'bonus', 'confirmed', 'test_setup', 'setup-fan1-' || v_fan1_id::text, 'Test setup'),
+        (v_fan2_id, v_team_id, 200, 'bonus', 'confirmed', 'test_setup', 'setup-fan2-' || v_fan2_id::text, 'Test setup')
     ON CONFLICT DO NOTHING;
 END $$;
 
@@ -95,10 +95,10 @@ SELECT throws_ok(
 -- ─── TEST 5: Redemption idempotency_key uniqueness per fan ────
 SELECT throws_ok(
     $$ 
-      INSERT INTO redemptions (team_id, fan_id, product_id, cost_pearls, status, code_hash, idempotency_key)
+      INSERT INTO redemptions (fan_id, team_id, product_id, cost_pearls, status, code_hash, idempotency_key)
       VALUES 
-        ('a0000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'dd000000-0000-0000-0000-000000000001', 100, 'pending', 'hash_test_5a', 'test-idem-key-001'),
-        ('a0000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 100, 'pending', 'hash_test_5b', 'test-idem-key-001')
+        ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001', 'dd000000-0000-0000-0000-000000000001', 100, 'pending', 'hash_test_5a', 'test-idem-key-001'),
+        ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001', 'dd000000-0000-0000-0000-000000000001', 100, 'pending', 'hash_test_5b', 'test-idem-key-001')
     $$,
     '23505'
 );
@@ -106,10 +106,10 @@ SELECT throws_ok(
 -- ─── TEST 6: Ledger duplicate payout prevention ──────────────
 SELECT throws_ok(
     $$ 
-      INSERT INTO ledger_entries (team_id, fan_id, amount, type, status, source_type, source_id, note)
+      INSERT INTO ledger_entries (fan_id, team_id, amount, type, status, source_type, source_id, note)
       VALUES 
-        ('a0000000-0000-0000-0000-000000000001', 50, 'trivia_reward', 'confirmed', 'trivia_attempt', 'test-dup-source-001', 'First reward'),
-        ('a0000000-0000-0000-0000-000000000001', 50, 'trivia_reward', 'confirmed', 'trivia_attempt', 'test-dup-source-001', 'Duplicate attempt')
+        ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001', 50, 'trivia_reward', 'confirmed', 'trivia_attempt', 'test-dup-source-001', 'First reward'),
+        ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001', 50, 'trivia_reward', 'confirmed', 'trivia_attempt', 'test-dup-source-001', 'Duplicate attempt')
     $$,
     '23505'
 );
@@ -140,10 +140,10 @@ SELECT is(
 -- ─── TEST 10: Trivia attempt uniqueness ───────────────────────
 SELECT throws_ok(
     $$ 
-      INSERT INTO trivia_attempts (fan_id, trivia_id, expires_at, seed, idempotency_key)
+      INSERT INTO trivia_attempts (fan_id, team_id, trivia_id, expires_at, seed, idempotency_key)
       VALUES 
-        ('11111111-1111-1111-1111-111111111111', 'dd000000-0000-0000-0000-000000000002', NOW() + INTERVAL '60s', 42, 'test10-key'),
-        ('11111111-1111-1111-1111-111111111111', 'dd000000-0000-0000-0000-000000000002', NOW() + INTERVAL '60s', 99, 'test10-key')
+        ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001', 'dd000000-0000-0000-0000-000000000002', NOW() + INTERVAL '60s', 42, 'test10-key'),
+        ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001', 'dd000000-0000-0000-0000-000000000002', NOW() + INTERVAL '60s', 99, 'test10-key')
     $$,
     '23505'
 );
@@ -151,10 +151,10 @@ SELECT throws_ok(
 -- ─── TEST 11: Redemption code_hash uniqueness ─────────────────
 SELECT throws_ok(
     $$ 
-      INSERT INTO redemptions (team_id, fan_id, product_id, cost_pearls, status, code_hash, idempotency_key)
+      INSERT INTO redemptions (fan_id, team_id, product_id, cost_pearls, status, code_hash, idempotency_key)
       VALUES 
-        ('a0000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 'dd000000-0000-0000-0000-000000000001', 100, 'pending', 'shared_code_111', 't11-key1'),
-        ('a0000000-0000-0000-0000-000000000001', '22222222-2222-2222-2222-222222222222', 'dd000000-0000-0000-0000-000000000001', 100, 'pending', 'shared_code_111', 't11-key2')
+        ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001', 'dd000000-0000-0000-0000-000000000001', 100, 'pending', 'shared_code_111', 't11-key1'),
+        ('22222222-2222-2222-2222-222222222222', 'a0000000-0000-0000-0000-000000000001', 'dd000000-0000-0000-0000-000000000001', 100, 'pending', 'shared_code_111', 't11-key2')
     $$,
     '23505'
 );
@@ -313,6 +313,38 @@ SELECT throws_ok(
     '42501'
 );
 RESET ROLE;
+
+-- ─── TEST 25: Ledger/Wallet composite FK integrity ────────────
+SELECT throws_ok(
+    $$ 
+      INSERT INTO ledger_entries (fan_id, team_id, amount, type, status, source_type, source_id, note)
+      VALUES 
+        ('11111111-1111-1111-1111-111111111111', '00000000-0000-0000-0000-000000000099', 50, 'bonus', 'confirmed', 'test_fk', 'orphan-wallet-entry', 'Should fail FK');
+    $$,
+    '23503',
+    NULL,
+    'TEST 25: Inserción en ledger_entries sin wallet (fan_id, team_id) previo es rechazada por FK compuesta'
+);
+
+-- ─── TEST 26: Hold resolution team coherence trigger ──────────
+DO $$
+DECLARE
+    v_held_id UUID;
+BEGIN
+    INSERT INTO ledger_entries (fan_id, team_id, amount, type, status, source_type, source_id, note)
+    VALUES ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001', 100, 'trivia_reward', 'held', 'trivia_attempt', 'held-test-coherence', 'Held for test')
+    RETURNING id INTO v_held_id;
+
+    -- Attempt to insert hold resolution with mismatched team_id (must fail)
+    BEGIN
+        INSERT INTO ledger_hold_resolutions (ledger_id, team_id, action, note, resolved_by)
+        VALUES (v_held_id, 'bb000000-0000-0000-0000-000000000001', 'release', 'Invalid team resolution', '33333333-3333-3333-3333-333333333333');
+        RAISE EXCEPTION 'Mismatched team_id should have been rejected by trigger';
+    EXCEPTION WHEN SQLSTATE '23514' THEN
+        -- Expected
+    END;
+END $$;
+SELECT pass('TEST 26: Trigger trg_validate_hold_resolution_team rechaza resoluciones con team_id incoherente');
 
 SELECT * FROM finish();
 ROLLBACK;

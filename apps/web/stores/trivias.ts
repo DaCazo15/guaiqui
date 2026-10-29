@@ -4,6 +4,14 @@ import type { Tables } from '@guaiqui/shared'
 
 export type TriviaRow = Tables<'trivias'> & {
   is_won?: boolean
+  team?: {
+    id: string
+    name: string
+    slug: string
+    short_name?: string | null
+    logo_url: string | null
+    status: 'active' | 'inactive'
+  }
 }
 
 export interface TriviaResult {
@@ -83,11 +91,11 @@ export const useTriviaStore = defineStore('trivias', () => {
   const isLoading = ref(false)
   const errorMessage = ref<string | null>(null)
 
-  async function fetchHomeSummary() {
+  async function fetchHomeSummary(teamId?: string) {
     isLoading.value = true
     errorMessage.value = null
     try {
-      const { data, error } = await supabase.rpc('home_summary')
+      const { data, error } = await supabase.rpc('home_summary', teamId ? { p_team_id: teamId } : {})
       if (error) throw error
       homeSummary.value = data as unknown as HomeSummaryData
       return data
@@ -118,14 +126,20 @@ export const useTriviaStore = defineStore('trivias', () => {
     }
   }
 
-  async function fetchTrivias() {
+  async function fetchTrivias(teamId?: string) {
     isLoading.value = true
     errorMessage.value = null
     try {
-      const { data, error } = await supabase
+      let query = supabase
         .from('trivias')
-        .select('*')
+        .select('*, team:teams(id, name, slug, short_name, logo_url, status)')
         .order('starts_at', { ascending: false })
+
+      if (teamId) {
+        query = query.eq('team_id', teamId)
+      }
+
+      const { data, error } = await query
 
       if (error) throw error
 
@@ -148,7 +162,7 @@ export const useTriviaStore = defineStore('trivias', () => {
         })
       }
 
-      const formatted: TriviaRow[] = (data || []).map((t: Tables<'trivias'>) => ({
+      const formatted: TriviaRow[] = (data || []).map((t: any) => ({
         ...t,
         is_won: wonMap.has(t.id),
       }))
@@ -170,7 +184,7 @@ export const useTriviaStore = defineStore('trivias', () => {
     try {
       const { data, error } = await supabase
         .from('trivias')
-        .select('*')
+        .select('*, team:teams(id, name, slug, short_name, logo_url, status)')
         .eq('id', id)
         .single()
 
@@ -193,7 +207,7 @@ export const useTriviaStore = defineStore('trivias', () => {
       )
 
       const formatted: TriviaRow = {
-        ...data,
+        ...(data as any),
         is_won: isWon,
       }
 

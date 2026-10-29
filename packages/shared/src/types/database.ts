@@ -2401,6 +2401,7 @@ export type Database = {
           images: string[] | null
           name: string
           stock: number
+          team_id: string
           valid_from: string
           valid_until: string | null
           variants: Json | null
@@ -2415,6 +2416,7 @@ export type Database = {
           images?: string[] | null
           name: string
           stock?: number
+          team_id?: string
           valid_from?: string
           valid_until?: string | null
           variants?: Json | null
@@ -2429,11 +2431,20 @@ export type Database = {
           images?: string[] | null
           name?: string
           stock?: number
+          team_id?: string
           valid_from?: string
           valid_until?: string | null
           variants?: Json | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: 'products_team_id_fkey'
+            columns: ['team_id']
+            isOneToOne: false
+            referencedRelation: 'teams'
+            referencedColumns: ['id']
+          },
+        ]
       }
       profiles: {
         Row: {
@@ -2635,6 +2646,7 @@ export type Database = {
           product_id: string
           qr_key_id: string | null
           status: Database['public']['Enums']['redemption_status']
+          team_id: string
           variant: string | null
         }
         Insert: {
@@ -2653,6 +2665,7 @@ export type Database = {
           product_id: string
           qr_key_id?: string | null
           status?: Database['public']['Enums']['redemption_status']
+          team_id?: string
           variant?: string | null
         }
         Update: {
@@ -2671,6 +2684,7 @@ export type Database = {
           product_id?: string
           qr_key_id?: string | null
           status?: Database['public']['Enums']['redemption_status']
+          team_id?: string
           variant?: string | null
         }
         Relationships: [
@@ -2700,6 +2714,13 @@ export type Database = {
             columns: ['product_id']
             isOneToOne: false
             referencedRelation: 'products'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'redemptions_team_id_fkey'
+            columns: ['team_id']
+            isOneToOne: false
+            referencedRelation: 'teams'
             referencedColumns: ['id']
           },
         ]
@@ -3241,6 +3262,7 @@ export type Database = {
           starts_at: string
           status: Database['public']['Enums']['trivia_status']
           target_segment_id: string | null
+          team_id: string
           time_limit_seconds: number
           title: string
         }
@@ -3254,6 +3276,7 @@ export type Database = {
           starts_at: string
           status?: Database['public']['Enums']['trivia_status']
           target_segment_id?: string | null
+          team_id?: string
           time_limit_seconds?: number
           title: string
         }
@@ -3267,6 +3290,7 @@ export type Database = {
           starts_at?: string
           status?: Database['public']['Enums']['trivia_status']
           target_segment_id?: string | null
+          team_id?: string
           time_limit_seconds?: number
           title?: string
         }
@@ -3276,6 +3300,13 @@ export type Database = {
             columns: ['target_segment_id']
             isOneToOne: false
             referencedRelation: 'segments'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'trivias_team_id_fkey'
+            columns: ['team_id']
+            isOneToOne: false
+            referencedRelation: 'teams'
             referencedColumns: ['id']
           },
         ]
@@ -3312,6 +3343,51 @@ export type Database = {
             referencedColumns: ['id']
           },
         ]
+      }
+      teams: {
+        Row: {
+          created_at: string
+          id: string
+          joined_at: string
+          logo_url: string | null
+          name: string
+          paid_until: string | null
+          primary_color: string | null
+          secondary_color: string | null
+          short_name: string | null
+          slug: string
+          status: 'active' | 'inactive'
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          joined_at?: string
+          logo_url?: string | null
+          name: string
+          paid_until?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          short_name?: string | null
+          slug: string
+          status?: 'active' | 'inactive'
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          joined_at?: string
+          logo_url?: string | null
+          name?: string
+          paid_until?: string | null
+          primary_color?: string | null
+          secondary_color?: string | null
+          short_name?: string | null
+          slug?: string
+          status?: 'active' | 'inactive'
+          updated_at?: string
+        }
+        Relationships: []
       }
       wallets: {
         Row: {
@@ -3383,6 +3459,23 @@ export type Database = {
           fan_count: number | null
           gender: string | null
           municipality: string | null
+        }
+        Relationships: []
+      }
+      teams_public: {
+        Row: {
+          created_at: string
+          follower_count: number | null
+          id: string
+          is_following: boolean | null
+          joined_at: string
+          logo_url: string | null
+          name: string
+          primary_color: string | null
+          secondary_color: string | null
+          short_name: string | null
+          slug: string
+          status: 'active' | 'inactive'
         }
         Relationships: []
       }
@@ -3587,7 +3680,7 @@ export type Database = {
         }
         Returns: undefined
       }
-      claim_birthday_bonus: { Args: never; Returns: Json }
+      claim_birthday_bonus: { Args: { p_team_id?: string | null }; Returns: Json }
       claim_video_points: { Args: { p_video_id: string }; Returns: Json }
       clean_test_records: { Args: never; Returns: undefined }
       complete_ad_session: {
@@ -3643,19 +3736,19 @@ export type Database = {
       get_active_legal_versions: { Args: never; Returns: Json }
       get_ads_progress: { Args: never; Returns: Json }
       get_attempt_questions: { Args: { p_attempt_id: string }; Returns: Json }
-      get_birthday_card: { Args: never; Returns: Json }
+      get_birthday_card: { Args: { p_team_id?: string | null }; Returns: Json }
       get_daily_video_progress: { Args: never; Returns: Json }
       get_leaderboard: { Args: { p_period?: string }; Returns: Json }
       get_login_modal: { Args: never; Returns: Json }
       get_redemption_qr: { Args: { p_redemption_id: string }; Returns: Json }
-      get_streak_info: { Args: { p_fan_id: string }; Returns: Json }
+      get_streak_info: { Args: { p_fan_id: string; p_team_id?: string | null }; Returns: Json }
       get_wallet_summary: { Args: never; Returns: Json }
       health_check: { Args: never; Returns: Json }
       helper_generate_code_with_key: {
         Args: { p_key_id: string; p_redemption_id: string }
         Returns: string
       }
-      home_summary: { Args: never; Returns: Json }
+      home_summary: { Args: { p_team_id?: string | null }; Returns: Json }
       import_ad_report: {
         Args: { p_day: string; p_impressions: number; p_notes?: string }
         Returns: Json

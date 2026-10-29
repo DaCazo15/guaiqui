@@ -58,7 +58,7 @@ async function signUpOrSignInUser(email, password = 'Password123!') {
       user_metadata: { first_name: 'Test', last_name: 'Fan' }
     })
   });
-  const _adminUserData = await adminAuthRes.json();
+  await adminAuthRes.json();
 
   // Retry sign in
   const retryRes = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {

@@ -2,7 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from '#imports'
 import { BaseCard, BaseBadge, BaseButton, PearlAmount } from '@guaiqui/ui'
-import { useCatalog, type Product } from '~/composables/useCatalog'
+import { useCatalog } from '~/composables/useCatalog'
 import { useWallet } from '~/composables/useWallet'
 import StoreRedeemModal from '~/components/store/StoreRedeemModal.vue'
 
@@ -174,20 +174,37 @@ useSeoMeta({
 
           <div class="pt-3 border-t border-guaiqui-border/70 space-y-2 text-xs">
             <div class="flex justify-between text-guaiqui-text-muted">
-              <span>Tu saldo disponible:</span>
-              <strong class="text-guaiqui-text font-semibold">{{ summary.balance.toLocaleString('es-VE') }} puntos</strong>
+              <span>Tu saldo en {{ currentProduct?.team?.name || 'este equipo' }}:</span>
+              <strong class="text-guaiqui-text font-semibold">{{ teamBalance.toLocaleString('es-VE') }} perlitas</strong>
             </div>
 
             <div v-if="!isAffordable" class="flex justify-between text-guaiqui-accent font-semibold">
               <span>Te faltan para canjear:</span>
-              <span>{{ missingPearls.toLocaleString('es-VE') }} puntos</span>
+              <span>{{ missingPearls.toLocaleString('es-VE') }} perlitas</span>
             </div>
             <div v-else class="flex justify-between text-guaiqui-primary font-semibold">
               <span>Saldo restante estimado:</span>
-              <span>{{ (summary.balance - currentProduct.cost_pearls).toLocaleString('es-VE') }} puntos</span>
+              <span>{{ (teamBalance - currentProduct.cost_pearls).toLocaleString('es-VE') }} perlitas</span>
             </div>
           </div>
         </BaseCard>
+
+        <!-- Explicación de Saldo Entre Equipos -->
+        <div
+          v-if="!isAffordable && summary.balance >= currentProduct.cost_pearls"
+          class="p-4 rounded-guaiqui-xl bg-amber-50 border border-amber-300 text-amber-950 text-xs leading-relaxed space-y-1 shadow-xs"
+        >
+          <div class="flex items-center gap-1.5 font-bold text-amber-800 uppercase tracking-wide">
+            <i class="bi bi-info-circle-fill"></i>
+            <span>Saldo total vs. Saldo de este equipo</span>
+          </div>
+          <p>
+            Tu saldo total en la plataforma ({{ summary.balance.toLocaleString('es-VE') }} perlitas) alcanzaría para este canje, pero en <strong>{{ currentProduct?.team?.name || 'este equipo' }}</strong> solo dispones de {{ teamBalance.toLocaleString('es-VE') }} perlitas.
+          </p>
+          <p class="text-slate-600">
+            Las perlitas son independientes y no transferibles entre equipos. Juega en las trivias de este equipo para sumar las {{ missingPearls.toLocaleString('es-VE') }} perlitas restantes.
+          </p>
+        </div>
 
         <!-- Selector de Variantes (Tallas) -->
         <div v-if="productVariants.length > 1 || (productVariants.length === 1 && productVariants[0] !== 'Única')" class="space-y-2">
@@ -261,7 +278,7 @@ useSeoMeta({
       :is-open="isRedeemModalOpen"
       :product="currentProduct"
       :variant="selectedVariant"
-      :user-balance="summary.balance"
+      :user-balance="teamBalance"
       @close="isRedeemModalOpen = false"
       @redeemed="handleRedeemed"
     />

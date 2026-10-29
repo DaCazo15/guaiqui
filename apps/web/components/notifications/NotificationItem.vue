@@ -48,9 +48,24 @@ const formattedDate = computed(() => {
     <!-- Details -->
     <div class="flex-1 min-w-0">
       <div class="flex items-center justify-between gap-2">
-        <h4 class="text-sm font-bold text-guaiqui-text truncate">
-          {{ notification.title }}
-        </h4>
+        <div class="flex items-center gap-2 min-w-0">
+          <h4 class="text-sm font-bold text-guaiqui-text truncate">
+            {{ notification.title }}
+          </h4>
+          <span
+            v-if="notification.team"
+            class="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] font-semibold bg-guaiqui-surface text-guaiqui-text border border-guaiqui-border shrink-0"
+          >
+            <img
+              v-if="notification.team.logo_url"
+              :src="notification.team.logo_url"
+              :alt="notification.team.name"
+              class="w-3 h-3 rounded-full object-contain"
+            />
+            <i v-else class="bi bi-shield text-[9px] text-guaiqui-primary"></i>
+            <span class="max-w-[100px] truncate">{{ notification.team.name }}</span>
+          </span>
+        </div>
         <span class="text-[10px] text-guaiqui-text-muted shrink-0">
           {{ formattedDate }}
         </span>

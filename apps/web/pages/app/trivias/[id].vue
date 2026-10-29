@@ -360,6 +360,17 @@ async function handleFinalSubmit() {
           <div class="flex justify-center pt-1">
             <PearlAmount :amount="resultData?.pearls_awarded || 0" size="lg" animated />
           </div>
+          <div v-if="currentTriviaInfo?.team" class="flex items-center justify-center gap-1.5 pt-1">
+            <img
+              v-if="currentTriviaInfo.team.logo_url"
+              :src="currentTriviaInfo.team.logo_url"
+              :alt="currentTriviaInfo.team.name"
+              class="w-4 h-4 object-contain"
+            />
+            <span class="text-[10px] font-bold text-guaiqui-primary truncate max-w-[120px]">
+              {{ currentTriviaInfo.team.short_name || currentTriviaInfo.team.name }}
+            </span>
+          </div>
         </div>
       </div>
 

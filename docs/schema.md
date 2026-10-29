@@ -265,6 +265,8 @@ erDiagram
 2. **Libro Contable Inmutable (`ledger_entries`) Multi-Equipo**:
    - `UPDATE` y `DELETE` están estrictamente bloqueados a nivel de motor PostgreSQL (`prevent_ledger_mutation()`).
    - Cada entrada contable está vinculada a un equipo obligatorio (`team_id UUID NOT NULL REFERENCES public.teams(id)`).
+   - Integridad Referencial Compuesta (`fk_ledger_entries_wallet`): Toda inserción en `ledger_entries(fan_id, team_id)` exige una billetera previa existente en `wallets(fan_id, team_id)`.
+   - Coherencia en Retenciones (`trg_validate_hold_resolution_team`): `held_pearls` y sus resoluciones validan obligatoriamente que el `team_id` coincida con la retención original y el wallet del fanático.
    - Para ganar perlitas de un equipo, el fanático debe seguir activamente al equipo (`team_follows`) y el equipo debe estar `active`.
    - Si un fanático deja de seguir a un equipo, su billetera y su saldo acumulado NO se borran ni congelan: conserva el derecho a canjear premios de ese equipo.
    - Si un equipo pasa a estado `inactive`, se bloquean nuevas ganancias y canjes, pero los saldos y el historial histórico se conservan visibles.
@@ -273,13 +275,14 @@ erDiagram
    - Clave primaria `(user_id, team_id)`. Los fanáticos gestionan sus propios follows mediante las RPCs idempotentes `follow_team` y `unfollow_team` con rate limiting (30 operaciones / 60 segundos).
    - El staff de club solo puede consultar agregados anónimos (`team_follower_count(team_id)`); no tiene visibilidad de la lista cruda de seguidores.
 
-4. **Evaluación 100% en Servidor**:
+4. **Evaluación 100% en Servidor y Rachas por Equipo**:
    - Las soluciones de las trivias (`trivia_options.is_correct`) nunca viajan al cliente antes de enviar las respuestas.
    - `start_trivia_attempt` y `submit_trivia_attempt` derivan el `team_id` directamente del recurso padre, verifican el seguimiento activo y otorgan perlitas a la billetera `(fan_id, team_id)` en una transacción atómica.
+   - La racha de días consecutivos (`streak_days`) se calcula y almacena POR EQUIPO vía `get_streak_info(p_fan_id, p_team_id)`, evaluando actividad en huso horario de Caracas (`America/Caracas`).
    - Detección de comportamiento sospechoso: si el tiempo de resolución es < 3 segundos, los puntos se retienen en `held` y se crea un `risk_flag`.
 
 5. **Canjes Atómicos y Prevención de Doble Entrega**:
-   - La función `redeem_product` deriva el `team_id` del producto, bloquea la billetera correspondiente (`FOR UPDATE`) y el producto, valida existencia y saldo suficiente, genera el código hash y descuenta perlitas y stock de forma atómica.
+   - La función `redeem_product` deriva el `team_id` del producto, bloquea la billetera correspondiente (`FOR UPDATE`) y el producto, valida existencia y saldo suficiente en ese equipo específico, genera el código hash y descuenta perlitas y stock de forma atómica.
    - Cancelaciones y reembolsos reinsertan transacciones positivas en `ledger_entries` vinculadas al `team_id` original.
 
 ## Funciones RPC Transaccionales
@@ -290,10 +293,13 @@ erDiagram
 | `unfollow_team(p_team_id)` | Fan deja de seguir a un equipo. Idempotente, no altera balances ni ledger. | — |
 | `search_teams(p_query, p_limit, p_offset)` | Búsqueda pública de equipos activos con conteo de seguidores y estado `is_following`. | — |
 | `get_wallet_summary()` | Resumen unificado: saldo total calculado + desglose por equipo con balances y flags. | — |
+| `home_summary(p_team_id)` | Resumen del fanático acotado al equipo activo (saldo, trivia activa del día, racha). | — |
+| `get_streak_info(p_fan_id, p_team_id)` | Cálculo de racha consecutiva diaria del fanático en un equipo específico. | — |
 | `start_trivia_attempt(trivia_id, idempotency_key)` | Crea intento con expiración y semilla de barajado. Idempotente. | — |
 | `submit_trivia_attempt(attempt_id, answers, idempotency_key)` | Evalúa en servidor, valida seguimiento activo, acredita a `(fan_id, team_id)`. | `FOR UPDATE` en attempt |
 | `redeem_product(product_id, variant, idempotency_key)` | Verifica saldo en `(fan_id, team_id)` del producto, descuenta atómicamente, genera QR. | `FOR UPDATE` en wallet + product |
 | `cancel_redemption(redemption_id, reason)` | Reembolsa perlitas al wallet del equipo del canje y repone stock. | `FOR UPDATE` en redemption |
+| `get_birthday_card(p_team_id)` | Consulta tarjetas de felicitación y bonos activos de equipos seguidos. | — |
 | `claim_birthday_bonus(p_team_id)` | Otorga bono de cumpleaños una vez al año por equipo seguido y activo. | `FOR UPDATE` en wallet |
 | `approve_redemption(redemption_id, note)` | Staff del equipo aprueba canje pendiente de su equipo. | `FOR UPDATE` en redemption |
 | `reject_redemption(redemption_id, reason)` | Staff rechaza y reembolsa perlitas + stock al equipo del canje. | `FOR UPDATE` en redemption |
@@ -307,15 +313,15 @@ erDiagram
 
 | Tabla | Fan | Staff | Admin |
 |-------|-----|-------|-------|
-| `profiles` | Lee/edita solo su perfil | Lee todos | Todo |
-| `wallets` | Lee solo su billetera | Lee todas | Todo |
-| `ledger_entries` | Lee solo sus entradas | Lee todas | Todo |
-| `trivias` | Lee publicadas/archivadas | Lee todas | Todo |
-| `trivia_options` | Lee texto (sin `is_correct` vía RPC) | Lee todas | Todo |
-| `trivia_attempts` | Lee solo las suyas | Lee todas | Todo |
-| `products` | Lee activos | Edita stock | Todo |
-| `redemptions` | Lee solo los suyos | Gestiona todos | Todo |
-| `players` | Lee activos | Lee activos/inactivos | Todo |
+| `profiles` | Lee/edita solo su perfil | Lee seguidores de su equipo | Todo |
+| `wallets` | Lee solo su billetera | Lee billeteras de su equipo | Todo |
+| `ledger_entries` | Lee solo sus entradas | Lee entradas de su equipo | Todo |
+| `trivias` | Lee publicadas de equipos `active` | Lee todas de su equipo | Todo |
+| `trivia_options` | Lee texto (sin `is_correct` vía RPC) | Lee todas de su equipo | Todo |
+| `trivia_attempts` | Lee solo las suyas | Lee las de su equipo | Todo |
+| `products` | Lee activos de equipos `active` | Edita stock de su equipo | Todo |
+| `redemptions` | Lee solo los suyos | Gestiona los de su equipo | Todo |
+| `players` | Lee activos | Lee activos/inactivos de su equipo | Todo |
 | `games` | Lee todos | Lee todos | Todo |
 | `segments`, `economy_settings`, `risk_flags`, `audit_log` | — | — | Todo |
 | `scan_events` | — | Lee/crea | Todo |
@@ -340,3 +346,4 @@ Archivo: `supabase/tests/test_integrity.sql`
 | 10 | Trivia duplicada | UNIQUE `(fan_id, trivia_id, idempotency_key)` |
 | 11 | code_hash único | UNIQUE `code_hash` en `redemptions` |
 | 12 | Stock no negativo | CHECK `stock >= 0` en `products` |
+| 13 | FK compuesta Ledger-Wallet | `FOREIGN KEY (fan_id, team_id) REFERENCES wallets(fan_id, team_id)` |
