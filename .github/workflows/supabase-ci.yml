@@ -2,9 +2,9 @@ name: Supabase Database CI & Integrity Tests
 
 on:
   pull_request:
-    branches: [ main, dev ]
+    branches: [main, dev]
   push:
-    branches: [ main, dev ]
+    branches: [main, dev]
 
 jobs:
   test-database:
@@ -17,7 +17,7 @@ jobs:
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:
-          version: latest
+          version: 2.116.0
 
       - name: Start Supabase Local Stack
         run: supabase start
