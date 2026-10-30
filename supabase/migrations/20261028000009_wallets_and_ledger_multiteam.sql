@@ -1106,6 +1106,7 @@ $function$;
 -- ----------------------------------------------------------------------------
 -- 11. RPC reconcile_wallets() (Validates by fan_id and team_id)
 -- ----------------------------------------------------------------------------
+DROP FUNCTION IF EXISTS public.reconcile_wallets();
 CREATE OR REPLACE FUNCTION public.reconcile_wallets()
 RETURNS TABLE(
     fan_id UUID,

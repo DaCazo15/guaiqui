@@ -73,6 +73,7 @@ REVOKE ALL ON FUNCTION public.analytics_top_fans(INTEGER, TIMESTAMPTZ, TIMESTAMP
 GRANT EXECUTE ON FUNCTION public.analytics_top_fans(INTEGER, TIMESTAMPTZ, TIMESTAMPTZ, UUID) TO authenticated, service_role;
 
 -- analytics_demographics con parámetro opcional de equipo
+DROP FUNCTION IF EXISTS public.analytics_demographics();
 CREATE OR REPLACE FUNCTION public.analytics_demographics(
     p_team_id UUID DEFAULT NULL::UUID
 )
