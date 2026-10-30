@@ -2,7 +2,7 @@ BEGIN;
 SELECT plan(8);
 
 -- Test 1: mfa_recovery_codes table has RLS enabled
-SELECT passes(
+SELECT lives_ok(
     'SELECT count(*) FROM pg_tables WHERE tablename = ''mfa_recovery_codes'' AND rowsecurity = true',
     'mfa_recovery_codes table must have RLS active'
 );

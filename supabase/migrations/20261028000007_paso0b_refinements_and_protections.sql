@@ -621,6 +621,7 @@ AS $function$
 DECLARE
     v_fan_id UUID := auth.uid();
     v_redemption public.redemptions%ROWTYPE;
+    v_code TEXT;
 BEGIN
     IF v_fan_id IS NULL THEN
         RAISE EXCEPTION 'Authentication required.' USING ERRCODE = '42501';
@@ -634,15 +635,29 @@ BEGIN
         RAISE EXCEPTION 'Redemption not found.';
     END IF;
 
-    IF v_redemption.fan_id != v_fan_id THEN
+    IF v_redemption.fan_id != v_fan_id AND NOT public.is_staff_or_admin_check() THEN
         RAISE EXCEPTION 'Unauthorized: Can only view your own redemptions.' USING ERRCODE = '42501';
     END IF;
+
+    IF v_redemption.status NOT IN ('approved', 'scheduled') THEN
+        RAISE EXCEPTION 'QR Code is not available for redemptions in status "%". QR is only available when approved or scheduled.', v_redemption.status;
+    END IF;
+
+    IF v_redemption.expires_at IS NOT NULL AND NOW() > v_redemption.expires_at THEN
+        RAISE EXCEPTION 'Redemption has expired on %.', v_redemption.expires_at;
+    END IF;
+
+    v_code := public.generate_redemption_code(v_redemption.id);
 
     RETURN jsonb_build_object(
         'redemption_id', v_redemption.id,
         'team_id', v_redemption.team_id,
-        'status', v_redemption.status,
+        'code', v_code,
+        'redemption_code', v_code,
         'code_hash', v_redemption.code_hash,
+        'status', v_redemption.status,
+        'variant', v_redemption.variant,
+        'cost_pearls', v_redemption.cost_pearls,
         'expires_at', v_redemption.expires_at
     );
 END;
@@ -784,3 +799,10 @@ GRANT EXECUTE ON FUNCTION public.ensure_profile() TO authenticated, service_role
 
 REVOKE ALL ON FUNCTION public.purge_auth_identities(UUID) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.purge_auth_identities(UUID) TO authenticated, service_role;
+
+-- Security corrections for sensitive backend functions
+REVOKE ALL ON FUNCTION public.create_notification(UUID, notification_type, TEXT, TEXT, JSONB, TEXT) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.create_notification(UUID, notification_type, TEXT, TEXT, JSONB, TEXT) TO service_role;
+
+REVOKE ALL ON FUNCTION public.enqueue_birthday_notifications(TIMESTAMPTZ) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.enqueue_birthday_notifications(TIMESTAMPTZ) TO service_role;

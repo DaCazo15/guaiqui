@@ -281,6 +281,8 @@ $$;
 -- ----------------------------------------------------------------------------
 -- 4. RPC wallet_ledger(p_team_id, p_type, p_cursor, p_limit)
 -- ----------------------------------------------------------------------------
+DROP FUNCTION IF EXISTS public.wallet_ledger(text, timestamptz, integer);
+
 CREATE OR REPLACE FUNCTION public.wallet_ledger(
     p_team_id UUID DEFAULT NULL::UUID,
     p_type TEXT DEFAULT NULL::TEXT,
@@ -337,6 +339,21 @@ BEGIN
     ) sub;
 
     RETURN v_entries;
+END;
+$function$;
+
+CREATE OR REPLACE FUNCTION public.wallet_ledger(
+    p_type TEXT DEFAULT NULL::TEXT,
+    p_cursor TIMESTAMPTZ DEFAULT NULL::TIMESTAMPTZ,
+    p_limit INTEGER DEFAULT 20
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+STABLE SECURITY DEFINER
+SET search_path TO 'public', 'pg_temp'
+AS $function$
+BEGIN
+    RETURN public.wallet_ledger(NULL::UUID, p_type, p_cursor, p_limit);
 END;
 $function$;
 
@@ -539,10 +556,14 @@ $function$;
 -- ----------------------------------------------------------------------------
 -- 6. RPC redeem_product (Spends from product's team wallet)
 -- ----------------------------------------------------------------------------
+DROP FUNCTION IF EXISTS public.redeem_product(uuid, text, text);
+DROP FUNCTION IF EXISTS public.redeem_product(uuid, text, jsonb);
+DROP FUNCTION IF EXISTS public.redeem_product(uuid, text);
+
 CREATE OR REPLACE FUNCTION public.redeem_product(
     p_product_id UUID,
-    p_idempotency_key TEXT,
-    p_variant JSONB DEFAULT NULL::JSONB
+    p_variant TEXT,
+    p_idempotency_key TEXT
 )
 RETURNS JSONB
 LANGUAGE plpgsql
@@ -719,6 +740,20 @@ BEGIN
 END;
 $function$;
 
+CREATE OR REPLACE FUNCTION public.redeem_product(
+    p_product_id UUID,
+    p_idempotency_key TEXT
+)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'extensions', 'pg_temp'
+AS $function$
+BEGIN
+    RETURN public.redeem_product(p_product_id, NULL::TEXT, p_idempotency_key);
+END;
+$function$;
+
 -- ----------------------------------------------------------------------------
 -- 7. RPC cancel_redemption (Refunds to the product's team wallet)
 -- ----------------------------------------------------------------------------
@@ -801,7 +836,9 @@ $function$;
 -- ----------------------------------------------------------------------------
 -- 8. RPC claim_birthday_bonus(p_team_id) (Once per year and team)
 -- ----------------------------------------------------------------------------
-CREATE OR REPLACE FUNCTION public.claim_birthday_bonus(p_team_id UUID)
+DROP FUNCTION IF EXISTS public.claim_birthday_bonus();
+
+CREATE OR REPLACE FUNCTION public.claim_birthday_bonus(p_team_id UUID DEFAULT 'a0000000-0000-0000-0000-000000000001'::uuid)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -816,17 +853,14 @@ DECLARE
     v_ref_id TEXT;
     v_entry_id UUID;
     v_team_status public.team_status;
+    v_target_team_id UUID := COALESCE(p_team_id, 'a0000000-0000-0000-0000-000000000001'::uuid);
 BEGIN
     v_user_id := public.assert_active_verified_fan();
-
-    IF p_team_id IS NULL THEN
-        RAISE EXCEPTION 'El identificador del equipo es obligatorio.';
-    END IF;
 
     PERFORM public.check_rate_limit(v_user_id, 'claim_birthday_bonus', 3, 60);
 
     -- Validar que el equipo exista y esté activo
-    SELECT status INTO v_team_status FROM public.teams WHERE id = p_team_id;
+    SELECT status INTO v_team_status FROM public.teams WHERE id = v_target_team_id;
     IF NOT FOUND OR v_team_status != 'active' THEN
         RAISE EXCEPTION 'El equipo especificado no se encuentra activo.' USING ERRCODE = '42501';
     END IF;
@@ -834,7 +868,7 @@ BEGIN
     -- Validar que el fanático siga al equipo
     IF NOT EXISTS (
         SELECT 1 FROM public.team_follows
-        WHERE user_id = v_user_id AND team_id = p_team_id
+        WHERE user_id = v_user_id AND team_id = v_target_team_id
     ) THEN
         RAISE EXCEPTION 'Debes seguir al equipo para reclamar su bono de cumpleaños.' USING ERRCODE = '42501';
     END IF;
@@ -857,11 +891,11 @@ BEGIN
 
     -- Validación anual por equipo
     v_cur_year := EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'America/Caracas'))::int;
-    v_ref_id := 'birthday_bonus_' || v_user_id::text || '_' || p_team_id::text || '_' || v_cur_year::text;
+    v_ref_id := 'birthday_bonus_' || v_user_id::text || '_' || v_target_team_id::text || '_' || v_cur_year::text;
 
     IF EXISTS (
         SELECT 1 FROM public.ledger_entries
-        WHERE fan_id = v_user_id AND team_id = p_team_id AND source_type = 'birthday_bonus' AND source_id = v_ref_id
+        WHERE fan_id = v_user_id AND team_id = v_target_team_id AND source_type = 'birthday_bonus' AND source_id = v_ref_id
     ) THEN
         RETURN jsonb_build_object('success', true, 'message', 'El bono de cumpleaños ya fue reclamado para este equipo este año.', 'already_claimed', true);
     END IF;
@@ -869,19 +903,19 @@ BEGIN
     -- Inserción en el libro y wallet del equipo
     INSERT INTO public.ledger_entries (fan_id, team_id, amount, type, status, source_type, source_id, note)
     VALUES (
-        v_user_id, p_team_id, v_bonus, 'birthday_bonus', 'confirmed',
+        v_user_id, v_target_team_id, v_bonus, 'birthday_bonus', 'confirmed',
         'birthday_bonus', v_ref_id, 'Bono de Cumpleaños ' || v_cur_year::text
     )
     RETURNING id INTO v_entry_id;
 
     INSERT INTO public.wallets (fan_id, team_id, balance_cache, updated_at)
-    VALUES (v_user_id, p_team_id, v_bonus, NOW())
+    VALUES (v_user_id, v_target_team_id, v_bonus, NOW())
     ON CONFLICT (fan_id, team_id)
     DO UPDATE SET balance_cache = public.wallets.balance_cache + v_bonus, updated_at = NOW();
 
     RETURN jsonb_build_object(
         'success', true,
-        'team_id', p_team_id,
+        'team_id', v_target_team_id,
         'bonus_awarded', v_bonus,
         'entry_id', v_entry_id,
         'message', '¡Feliz Cumpleaños! Tus perlitas han sido acreditadas a tu billetera del equipo.'
@@ -1529,11 +1563,17 @@ GRANT EXECUTE ON FUNCTION public.wallet_summary() TO authenticated, service_role
 REVOKE ALL ON FUNCTION public.wallet_ledger(UUID, TEXT, TIMESTAMPTZ, INTEGER) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.wallet_ledger(UUID, TEXT, TIMESTAMPTZ, INTEGER) TO authenticated, service_role;
 
+REVOKE ALL ON FUNCTION public.wallet_ledger(TEXT, TIMESTAMPTZ, INTEGER) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.wallet_ledger(TEXT, TIMESTAMPTZ, INTEGER) TO authenticated, service_role;
+
 REVOKE ALL ON FUNCTION public.submit_trivia_attempt(UUID, JSONB) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.submit_trivia_attempt(UUID, JSONB) TO authenticated, service_role;
 
-REVOKE ALL ON FUNCTION public.redeem_product(UUID, TEXT, JSONB) FROM PUBLIC, anon;
-GRANT EXECUTE ON FUNCTION public.redeem_product(UUID, TEXT, JSONB) TO authenticated, service_role;
+REVOKE ALL ON FUNCTION public.redeem_product(UUID, TEXT, TEXT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.redeem_product(UUID, TEXT, TEXT) TO authenticated, service_role;
+
+REVOKE ALL ON FUNCTION public.redeem_product(UUID, TEXT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.redeem_product(UUID, TEXT) TO authenticated, service_role;
 
 REVOKE ALL ON FUNCTION public.cancel_redemption(UUID, TEXT) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.cancel_redemption(UUID, TEXT) TO authenticated, service_role;
@@ -1558,3 +1598,848 @@ GRANT EXECUTE ON FUNCTION public.claim_video_points(UUID) TO authenticated, serv
 
 REVOKE ALL ON FUNCTION public.analytics_economy(UUID) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.analytics_economy(UUID) TO authenticated, service_role;
+
+-- ----------------------------------------------------------------------------
+-- 13. Multi-Tenant Hardening for Extended Trivias and Predictions
+-- ----------------------------------------------------------------------------
+
+-- 13.1 submit_guess_player_vote
+CREATE OR REPLACE FUNCTION public.submit_guess_player_vote(
+    p_challenge_id UUID,
+    p_selected_player_id UUID
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'extensions', 'pg_temp'
+AS $function$
+DECLARE
+    v_fan_id UUID := auth.uid();
+    v_challenge RECORD;
+    v_target_player RECORD;
+    v_is_correct BOOLEAN;
+    v_pearls INT := 0;
+    v_vote_id UUID;
+    v_today_earned INT;
+    v_week_earned INT;
+    v_daily_cap INT := 1000;
+    v_weekly_cap INT := 5000;
+    v_rem_daily INT;
+    v_rem_weekly INT;
+    v_effective_cap INT;
+    v_today_start_caracas TIMESTAMPTZ := date_trunc('day', NOW() AT TIME ZONE 'America/Caracas') AT TIME ZONE 'America/Caracas';
+    v_week_start_caracas TIMESTAMPTZ := date_trunc('week', NOW() AT TIME ZONE 'America/Caracas') AT TIME ZONE 'America/Caracas';
+BEGIN
+    IF v_fan_id IS NULL THEN
+        RAISE EXCEPTION 'Usuario no autenticado.';
+    END IF;
+
+    PERFORM public.check_rate_limit(v_fan_id, 'submit_guess_player_vote', 5, 60);
+    PERFORM public.assert_active_verified_fan(v_fan_id);
+
+    SELECT * INTO v_challenge
+    FROM public.guess_player_challenges
+    WHERE id = p_challenge_id;
+
+    IF v_challenge.id IS NULL THEN
+        RAISE EXCEPTION 'El reto no existe.';
+    END IF;
+
+    IF v_challenge.status <> 'published' THEN
+        RAISE EXCEPTION 'Este reto no se encuentra activo.';
+    END IF;
+
+    IF now() < v_challenge.starts_at THEN
+        RAISE EXCEPTION 'Este reto aún no ha iniciado.';
+    END IF;
+
+    IF now() > v_challenge.closes_at THEN
+        RAISE EXCEPTION 'El plazo para participar en este reto ya ha cerrado.';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1 FROM public.guess_player_votes
+        WHERE challenge_id = p_challenge_id AND fan_id = v_fan_id
+    ) THEN
+        RAISE EXCEPTION 'Ya has participado en este reto.';
+    END IF;
+
+    v_is_correct := (p_selected_player_id = v_challenge.target_player_id);
+
+    IF v_is_correct AND v_challenge.reward_pearls > 0 THEN
+        SELECT daily_pearl_cap, weekly_pearl_cap
+        INTO v_daily_cap, v_weekly_cap
+        FROM public.economy_settings
+        LIMIT 1;
+
+        SELECT COALESCE(SUM(amount), 0) INTO v_today_earned
+        FROM public.ledger_entries
+        WHERE fan_id = v_fan_id
+          AND amount > 0
+          AND status IN ('confirmed', 'held')
+          AND (created_at AT TIME ZONE 'America/Caracas') >= v_today_start_caracas;
+
+        SELECT COALESCE(SUM(amount), 0) INTO v_week_earned
+        FROM public.ledger_entries
+        WHERE fan_id = v_fan_id
+          AND amount > 0
+          AND status IN ('confirmed', 'held')
+          AND (created_at AT TIME ZONE 'America/Caracas') >= v_week_start_caracas;
+
+        v_rem_daily := GREATEST(0, COALESCE(v_daily_cap, 1000) - v_today_earned);
+        v_rem_weekly := GREATEST(0, COALESCE(v_weekly_cap, 5000) - v_week_earned);
+        v_effective_cap := LEAST(v_rem_daily, v_rem_weekly);
+
+        v_pearls := LEAST(v_challenge.reward_pearls, v_effective_cap);
+    END IF;
+
+    INSERT INTO public.guess_player_votes (
+        challenge_id, team_id, fan_id, selected_player_id, is_correct, pearls_awarded
+    ) VALUES (
+        p_challenge_id, v_challenge.team_id, v_fan_id, p_selected_player_id, v_is_correct, v_pearls
+    ) RETURNING id INTO v_vote_id;
+
+    IF v_pearls > 0 THEN
+        INSERT INTO public.ledger_entries (
+            fan_id, team_id, amount, type, status, source_type, source_id, note
+        ) VALUES (
+            v_fan_id, v_challenge.team_id, v_pearls, 'trivia_reward', 'confirmed', 'guess_player', p_challenge_id::text,
+            'Premio por acertar ¿Quién es?: ' || v_challenge.title
+        );
+
+        INSERT INTO public.wallets (fan_id, team_id, balance_cache, updated_at)
+        VALUES (v_fan_id, v_challenge.team_id, v_pearls, NOW())
+        ON CONFLICT (fan_id, team_id)
+        DO UPDATE SET balance_cache = public.wallets.balance_cache + v_pearls, updated_at = NOW();
+
+        PERFORM public.calculate_and_apply_streak_bonus(v_fan_id);
+    END IF;
+
+    SELECT name, jersey_number INTO v_target_player
+    FROM public.players
+    WHERE id = v_challenge.target_player_id;
+
+    RETURN jsonb_build_object(
+        'vote_id', v_vote_id,
+        'is_correct', v_is_correct,
+        'pearls_awarded', v_pearls,
+        'target_player_name', v_target_player.name,
+        'target_player_number', v_target_player.jersey_number
+    );
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.submit_guess_player_vote(UUID, UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.submit_guess_player_vote(UUID, UUID) TO authenticated, service_role;
+
+-- 13.2 resolve_over_under_prediction
+CREATE OR REPLACE FUNCTION public.resolve_over_under_prediction(
+    p_prediction_id UUID,
+    p_actual_value NUMERIC
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'extensions', 'pg_temp'
+AS $function$
+DECLARE
+    v_admin_id UUID := auth.uid();
+    v_pred RECORD;
+    v_winning_choice over_under_choice;
+    v_vote RECORD;
+    v_winners_count INT := 0;
+    v_total_pearls INT := 0;
+    v_reward_pearls INT;
+    v_today_earned INT;
+    v_week_earned INT;
+    v_daily_cap INT := 1000;
+    v_weekly_cap INT := 5000;
+    v_rem_daily INT;
+    v_rem_weekly INT;
+    v_effective_cap INT;
+    v_pearls_to_award INT;
+    v_today_start_caracas TIMESTAMPTZ := date_trunc('day', NOW() AT TIME ZONE 'America/Caracas') AT TIME ZONE 'America/Caracas';
+    v_week_start_caracas TIMESTAMPTZ := date_trunc('week', NOW() AT TIME ZONE 'America/Caracas') AT TIME ZONE 'America/Caracas';
+BEGIN
+    SELECT * INTO v_pred FROM public.over_under_predictions WHERE id = p_prediction_id;
+    IF v_pred.id IS NULL THEN
+        RAISE EXCEPTION 'La predicción no existe.';
+    END IF;
+
+    PERFORM public.assert_team_admin(v_pred.team_id);
+
+    IF v_pred.status = 'resolved' THEN
+        RAISE EXCEPTION 'Esta predicción ya fue resuelta previamente.';
+    END IF;
+
+    IF p_actual_value > v_pred.line_value THEN
+        v_winning_choice := 'over';
+    ELSIF p_actual_value < v_pred.line_value THEN
+        v_winning_choice := 'under';
+    ELSE
+        v_winning_choice := 'push';
+    END IF;
+
+    v_reward_pearls := v_pred.reward_pearls;
+    SELECT daily_pearl_cap, weekly_pearl_cap INTO v_daily_cap, v_weekly_cap FROM public.economy_settings LIMIT 1;
+
+    UPDATE public.over_under_predictions
+    SET status = 'resolved',
+        actual_value = p_actual_value,
+        winning_choice = v_winning_choice,
+        resolved_at = now(),
+        resolved_by = v_admin_id
+    WHERE id = p_prediction_id;
+
+    UPDATE public.over_under_votes
+    SET is_winner = FALSE, pearls_awarded = 0
+    WHERE prediction_id = p_prediction_id AND choice <> v_winning_choice;
+
+    FOR v_vote IN
+        SELECT id, fan_id FROM public.over_under_votes
+        WHERE prediction_id = p_prediction_id AND choice = v_winning_choice
+    LOOP
+        v_winners_count := v_winners_count + 1;
+
+        SELECT COALESCE(SUM(amount), 0) INTO v_today_earned
+        FROM public.ledger_entries
+        WHERE fan_id = v_vote.fan_id
+          AND amount > 0
+          AND status IN ('confirmed', 'held')
+          AND (created_at AT TIME ZONE 'America/Caracas') >= v_today_start_caracas;
+
+        SELECT COALESCE(SUM(amount), 0) INTO v_week_earned
+        FROM public.ledger_entries
+        WHERE fan_id = v_vote.fan_id
+          AND amount > 0
+          AND status IN ('confirmed', 'held')
+          AND (created_at AT TIME ZONE 'America/Caracas') >= v_week_start_caracas;
+
+        v_rem_daily := GREATEST(0, COALESCE(v_daily_cap, 1000) - v_today_earned);
+        v_rem_weekly := GREATEST(0, COALESCE(v_weekly_cap, 5000) - v_week_earned);
+        v_effective_cap := LEAST(v_rem_daily, v_rem_weekly);
+        v_pearls_to_award := LEAST(v_reward_pearls, v_effective_cap);
+
+        IF v_pearls_to_award > 0 THEN
+            INSERT INTO public.ledger_entries (
+                fan_id, team_id, amount, type, status, source_type, source_id, note
+            ) VALUES (
+                v_vote.fan_id, v_pred.team_id, v_pearls_to_award, 'trivia_reward', 'confirmed', 'over_under', p_prediction_id::text,
+                'Premio por acertar Over/Under: ' || v_pred.title
+            );
+
+            INSERT INTO public.wallets (fan_id, team_id, balance_cache, updated_at)
+            VALUES (v_vote.fan_id, v_pred.team_id, v_pearls_to_award, NOW())
+            ON CONFLICT (fan_id, team_id)
+            DO UPDATE SET balance_cache = public.wallets.balance_cache + v_pearls_to_award, updated_at = NOW();
+
+            PERFORM public.calculate_and_apply_streak_bonus(v_vote.fan_id);
+        END IF;
+
+        UPDATE public.over_under_votes
+        SET is_winner = TRUE, pearls_awarded = v_pearls_to_award
+        WHERE id = v_vote.id;
+
+        v_total_pearls := v_total_pearls + v_pearls_to_award;
+    END LOOP;
+
+    RETURN jsonb_build_object(
+        'status', 'success',
+        'winning_choice', v_winning_choice,
+        'winners_count', v_winners_count,
+        'total_pearls_awarded', v_total_pearls
+    );
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.resolve_over_under_prediction(UUID, NUMERIC) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.resolve_over_under_prediction(UUID, NUMERIC) TO authenticated, service_role;
+
+-- 13.3 vote_mystery_play
+CREATE OR REPLACE FUNCTION public.vote_mystery_play(
+    p_challenge_id UUID,
+    p_selected_option TEXT
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'extensions', 'pg_temp'
+AS $function$
+DECLARE
+    v_fan_id UUID := auth.uid();
+    v_chal RECORD;
+    v_is_correct BOOLEAN;
+    v_pearls_to_award INT := 0;
+    v_daily_cap INT := 1000;
+    v_weekly_cap INT := 5000;
+    v_rem_daily INT;
+    v_rem_weekly INT;
+    v_effective_cap INT;
+    v_vote_id UUID;
+    v_today_start_caracas TIMESTAMPTZ := date_trunc('day', NOW() AT TIME ZONE 'America/Caracas') AT TIME ZONE 'America/Caracas';
+    v_week_start_caracas TIMESTAMPTZ := date_trunc('week', NOW() AT TIME ZONE 'America/Caracas') AT TIME ZONE 'America/Caracas';
+    v_today_earned INT;
+    v_week_earned INT;
+BEGIN
+    IF v_fan_id IS NULL THEN
+        RAISE EXCEPTION 'Usuario no autenticado.';
+    END IF;
+
+    PERFORM public.check_rate_limit(v_fan_id, 'submit_mystery_play_vote', 5, 60);
+    PERFORM public.assert_active_verified_fan(v_fan_id);
+
+    IF p_selected_option NOT IN ('A', 'B', 'C', 'D') THEN
+        RAISE EXCEPTION 'Opción inválida. Debe ser A, B, C o D.';
+    END IF;
+
+    SELECT * INTO v_chal FROM public.mystery_play_challenges WHERE id = p_challenge_id;
+    IF v_chal.id IS NULL THEN
+        RAISE EXCEPTION 'El desafío de jugada no existe.';
+    END IF;
+
+    IF v_chal.status <> 'published' THEN
+        RAISE EXCEPTION 'Este desafío no se encuentra activo.';
+    END IF;
+
+    IF now() < v_chal.starts_at THEN
+        RAISE EXCEPTION 'Este desafío aún no ha iniciado.';
+    END IF;
+
+    IF now() > v_chal.closes_at THEN
+        RAISE EXCEPTION 'El plazo para participar en este desafío ya ha cerrado.';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1 FROM public.mystery_play_votes
+        WHERE challenge_id = p_challenge_id AND fan_id = v_fan_id
+    ) THEN
+        RAISE EXCEPTION 'Ya has participado en esta jugada.';
+    END IF;
+
+    v_is_correct := (p_selected_option = v_chal.correct_option);
+
+    IF v_is_correct AND v_chal.reward_pearls > 0 THEN
+        SELECT daily_pearl_cap, weekly_pearl_cap INTO v_daily_cap, v_weekly_cap FROM public.economy_settings LIMIT 1;
+
+        SELECT COALESCE(SUM(amount), 0) INTO v_today_earned
+        FROM public.ledger_entries
+        WHERE fan_id = v_fan_id
+          AND amount > 0
+          AND status IN ('confirmed', 'held')
+          AND (created_at AT TIME ZONE 'America/Caracas') >= v_today_start_caracas;
+
+        SELECT COALESCE(SUM(amount), 0) INTO v_week_earned
+        FROM public.ledger_entries
+        WHERE fan_id = v_fan_id
+          AND amount > 0
+          AND status IN ('confirmed', 'held')
+          AND (created_at AT TIME ZONE 'America/Caracas') >= v_week_start_caracas;
+
+        v_rem_daily := GREATEST(0, COALESCE(v_daily_cap, 1000) - v_today_earned);
+        v_rem_weekly := GREATEST(0, COALESCE(v_weekly_cap, 5000) - v_week_earned);
+        v_effective_cap := LEAST(v_rem_daily, v_rem_weekly);
+        v_pearls_to_award := LEAST(v_chal.reward_pearls, v_effective_cap);
+
+        IF v_pearls_to_award > 0 THEN
+            INSERT INTO public.ledger_entries (
+                fan_id, team_id, amount, type, status, source_type, source_id, note
+            ) VALUES (
+                v_fan_id, v_chal.team_id, v_pearls_to_award, 'trivia_reward', 'confirmed', 'mystery_play', p_challenge_id::text,
+                'Premio Jugada Misteriosa: ' || v_chal.title
+            );
+
+            INSERT INTO public.wallets (fan_id, team_id, balance_cache, updated_at)
+            VALUES (v_fan_id, v_chal.team_id, v_pearls_to_award, NOW())
+            ON CONFLICT (fan_id, team_id)
+            DO UPDATE SET balance_cache = public.wallets.balance_cache + v_pearls_to_award, updated_at = NOW();
+
+            PERFORM public.calculate_and_apply_streak_bonus(v_fan_id);
+        END IF;
+    END IF;
+
+    INSERT INTO public.mystery_play_votes (
+        challenge_id, team_id, fan_id, selected_option, is_winner, pearls_awarded
+    ) VALUES (
+        p_challenge_id, v_chal.team_id, v_fan_id, p_selected_option, v_is_correct, v_pearls_to_award
+    ) RETURNING id INTO v_vote_id;
+
+    RETURN jsonb_build_object(
+        'vote_id', v_vote_id,
+        'is_correct', v_is_correct,
+        'pearls_awarded', v_pearls_to_award,
+        'full_video_url', v_chal.full_video_url
+    );
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.vote_mystery_play(UUID, TEXT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.vote_mystery_play(UUID, TEXT) TO authenticated, service_role;
+
+-- 13.4 resolve_score_prediction
+CREATE OR REPLACE FUNCTION public.resolve_score_prediction(
+    p_prediction_id UUID,
+    p_actual_team_score INT,
+    p_actual_opponent_score INT
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'extensions', 'pg_temp'
+AS $function$
+DECLARE
+    v_admin_id UUID := auth.uid();
+    v_pred RECORD;
+    v_vote RECORD;
+    v_winners_count INT := 0;
+    v_total_pearls INT := 0;
+    v_today_earned INT;
+    v_week_earned INT;
+    v_daily_cap INT := 1000;
+    v_weekly_cap INT := 5000;
+    v_rem_daily INT;
+    v_rem_weekly INT;
+    v_effective_cap INT;
+    v_pearls_to_award INT;
+    v_today_start_caracas TIMESTAMPTZ := date_trunc('day', NOW() AT TIME ZONE 'America/Caracas') AT TIME ZONE 'America/Caracas';
+    v_week_start_caracas TIMESTAMPTZ := date_trunc('week', NOW() AT TIME ZONE 'America/Caracas') AT TIME ZONE 'America/Caracas';
+BEGIN
+    SELECT * INTO v_pred FROM public.score_predictions WHERE id = p_prediction_id;
+    IF v_pred.id IS NULL THEN
+        RAISE EXCEPTION 'La predicción de marcador no existe.';
+    END IF;
+
+    PERFORM public.assert_team_admin(v_pred.team_id);
+
+    IF v_pred.status = 'resolved' THEN
+        RAISE EXCEPTION 'Esta predicción ya fue resuelta previamente.';
+    END IF;
+
+    SELECT daily_pearl_cap, weekly_pearl_cap INTO v_daily_cap, v_weekly_cap FROM public.economy_settings LIMIT 1;
+
+    UPDATE public.score_predictions
+    SET status = 'resolved',
+        actual_team_score = p_actual_team_score,
+        actual_opponent_score = p_actual_opponent_score,
+        resolved_at = now(),
+        resolved_by = v_admin_id
+    WHERE id = p_prediction_id;
+
+    UPDATE public.score_prediction_votes
+    SET is_exact = FALSE, pearls_awarded = 0
+    WHERE prediction_id = p_prediction_id
+      AND (predicted_team_score <> p_actual_team_score OR predicted_opponent_score <> p_actual_opponent_score);
+
+    FOR v_vote IN
+        SELECT id, fan_id FROM public.score_prediction_votes
+        WHERE prediction_id = p_prediction_id
+          AND predicted_team_score = p_actual_team_score
+          AND predicted_opponent_score = p_actual_opponent_score
+    LOOP
+        v_winners_count := v_winners_count + 1;
+
+        SELECT COALESCE(SUM(amount), 0) INTO v_today_earned
+        FROM public.ledger_entries
+        WHERE fan_id = v_vote.fan_id
+          AND amount > 0
+          AND status IN ('confirmed', 'held')
+          AND (created_at AT TIME ZONE 'America/Caracas') >= v_today_start_caracas;
+
+        SELECT COALESCE(SUM(amount), 0) INTO v_week_earned
+        FROM public.ledger_entries
+        WHERE fan_id = v_vote.fan_id
+          AND amount > 0
+          AND status IN ('confirmed', 'held')
+          AND (created_at AT TIME ZONE 'America/Caracas') >= v_week_start_caracas;
+
+        v_rem_daily := GREATEST(0, COALESCE(v_daily_cap, 1000) - v_today_earned);
+        v_rem_weekly := GREATEST(0, COALESCE(v_weekly_cap, 5000) - v_week_earned);
+        v_effective_cap := LEAST(v_rem_daily, v_rem_weekly);
+        v_pearls_to_award := LEAST(v_pred.exact_score_pearls, v_effective_cap);
+
+        IF v_pearls_to_award > 0 THEN
+            INSERT INTO public.ledger_entries (
+                fan_id, team_id, amount, type, status, source_type, source_id, note
+            ) VALUES (
+                v_vote.fan_id, v_pred.team_id, v_pearls_to_award, 'trivia_reward', 'confirmed', 'score_prediction', p_prediction_id::text,
+                'Premio Pronóstico de Marcador: ' || v_pred.title
+            );
+
+            INSERT INTO public.wallets (fan_id, team_id, balance_cache, updated_at)
+            VALUES (v_vote.fan_id, v_pred.team_id, v_pearls_to_award, NOW())
+            ON CONFLICT (fan_id, team_id)
+            DO UPDATE SET balance_cache = public.wallets.balance_cache + v_pearls_to_award, updated_at = NOW();
+
+            PERFORM public.calculate_and_apply_streak_bonus(v_vote.fan_id);
+            v_total_pearls := v_total_pearls + v_pearls_to_award;
+        END IF;
+
+        UPDATE public.score_prediction_votes
+        SET is_exact = TRUE, pearls_awarded = v_pearls_to_award
+        WHERE id = v_vote.id;
+    END LOOP;
+
+    RETURN jsonb_build_object(
+        'status', 'success',
+        'winners_count', v_winners_count,
+        'total_pearls_awarded', v_total_pearls
+    );
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.resolve_score_prediction(UUID, INT, INT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.resolve_score_prediction(UUID, INT, INT) TO authenticated, service_role;
+
+-- 13.5 submit_flash_trivia_attempt
+CREATE OR REPLACE FUNCTION public.submit_flash_trivia_attempt(
+    p_challenge_id UUID,
+    p_correct_count INT,
+    p_total_answered INT,
+    p_time_spent_seconds INT,
+    p_answers JSONB DEFAULT '[]'::jsonb
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'extensions', 'pg_temp'
+AS $function$
+DECLARE
+    v_fan_id UUID := auth.uid();
+    v_chal RECORD;
+    v_attempt_id UUID;
+    v_pearls_earned INT := 0;
+    v_daily_cap INT := 1000;
+    v_weekly_cap INT := 5000;
+    v_rem_daily INT;
+    v_rem_weekly INT;
+    v_effective_cap INT;
+    v_pearls_to_award INT := 0;
+    v_today_start_caracas TIMESTAMPTZ := date_trunc('day', NOW() AT TIME ZONE 'America/Caracas') AT TIME ZONE 'America/Caracas';
+    v_week_start_caracas TIMESTAMPTZ := date_trunc('week', NOW() AT TIME ZONE 'America/Caracas') AT TIME ZONE 'America/Caracas';
+    v_today_earned INT;
+    v_week_earned INT;
+BEGIN
+    IF v_fan_id IS NULL THEN
+        RAISE EXCEPTION 'Usuario no autenticado.';
+    END IF;
+
+    PERFORM public.check_rate_limit(v_fan_id, 'submit_flash_trivia', 5, 60);
+    PERFORM public.assert_active_verified_fan(v_fan_id);
+
+    SELECT * INTO v_chal FROM public.flash_trivia_challenges WHERE id = p_challenge_id;
+    IF v_chal.id IS NULL THEN
+        RAISE EXCEPTION 'El desafío contrarreloj no existe.';
+    END IF;
+
+    IF v_chal.status <> 'published' THEN
+        RAISE EXCEPTION 'Este desafío no se encuentra activo.';
+    END IF;
+
+    IF now() < v_chal.starts_at THEN
+        RAISE EXCEPTION 'Este desafío aún no ha iniciado.';
+    END IF;
+
+    IF now() > v_chal.closes_at THEN
+        RAISE EXCEPTION 'El plazo para participar en este desafío ya ha cerrado.';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1 FROM public.flash_trivia_attempts
+        WHERE challenge_id = p_challenge_id AND fan_id = v_fan_id
+    ) THEN
+        RAISE EXCEPTION 'Ya has participado en este contrarreloj.';
+    END IF;
+
+    IF p_correct_count > 0 AND v_chal.pearls_per_correct > 0 THEN
+        v_pearls_earned := p_correct_count * v_chal.pearls_per_correct;
+
+        SELECT daily_pearl_cap, weekly_pearl_cap INTO v_daily_cap, v_weekly_cap FROM public.economy_settings LIMIT 1;
+
+        SELECT COALESCE(SUM(amount), 0) INTO v_today_earned
+        FROM public.ledger_entries
+        WHERE fan_id = v_fan_id
+          AND amount > 0
+          AND status IN ('confirmed', 'held')
+          AND (created_at AT TIME ZONE 'America/Caracas') >= v_today_start_caracas;
+
+        SELECT COALESCE(SUM(amount), 0) INTO v_week_earned
+        FROM public.ledger_entries
+        WHERE fan_id = v_fan_id
+          AND amount > 0
+          AND status IN ('confirmed', 'held')
+          AND (created_at AT TIME ZONE 'America/Caracas') >= v_week_start_caracas;
+
+        v_rem_daily := GREATEST(0, COALESCE(v_daily_cap, 1000) - v_today_earned);
+        v_rem_weekly := GREATEST(0, COALESCE(v_weekly_cap, 5000) - v_week_earned);
+        v_effective_cap := LEAST(v_rem_daily, v_rem_weekly);
+        v_pearls_to_award := LEAST(v_pearls_earned, v_effective_cap);
+
+        IF v_pearls_to_award > 0 THEN
+            INSERT INTO public.ledger_entries (
+                fan_id, team_id, amount, type, status, source_type, source_id, note
+            ) VALUES (
+                v_fan_id, v_chal.team_id, v_pearls_to_award, 'trivia_reward', 'confirmed', 'flash_trivia', p_challenge_id::text,
+                'Sesión Flash Contrarreloj: ' || v_chal.title
+            );
+
+            INSERT INTO public.wallets (fan_id, team_id, balance_cache, updated_at)
+            VALUES (v_fan_id, v_chal.team_id, v_pearls_to_award, NOW())
+            ON CONFLICT (fan_id, team_id)
+            DO UPDATE SET balance_cache = public.wallets.balance_cache + v_pearls_to_award, updated_at = NOW();
+
+            PERFORM public.calculate_and_apply_streak_bonus(v_fan_id);
+        END IF;
+    END IF;
+
+    INSERT INTO public.flash_trivia_attempts (
+        challenge_id, team_id, fan_id, correct_count, total_answered, time_spent_seconds, pearls_awarded
+    ) VALUES (
+        p_challenge_id, v_chal.team_id, v_fan_id, p_correct_count, p_total_answered, p_time_spent_seconds, v_pearls_to_award
+    ) RETURNING id INTO v_attempt_id;
+
+    RETURN jsonb_build_object(
+        'attempt_id', v_attempt_id,
+        'correct_count', p_correct_count,
+        'pearls_awarded', v_pearls_to_award
+    );
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.submit_flash_trivia_attempt(UUID, INT, INT, INT, JSONB) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.submit_flash_trivia_attempt(UUID, INT, INT, INT, JSONB) TO authenticated, service_role;
+
+-- 13.6 vote_progressive_clue
+CREATE OR REPLACE FUNCTION public.vote_progressive_clue(
+    p_challenge_id UUID,
+    p_selected_player_id UUID,
+    p_clues_revealed_count INT
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'extensions', 'pg_temp'
+AS $function$
+DECLARE
+    v_fan_id UUID := auth.uid();
+    v_chal RECORD;
+    v_is_correct BOOLEAN;
+    v_pearls_to_award INT := 0;
+    v_reward INT := 0;
+    v_daily_cap INT := 1000;
+    v_weekly_cap INT := 5000;
+    v_rem_daily INT;
+    v_rem_weekly INT;
+    v_effective_cap INT;
+    v_vote_id UUID;
+    v_today_start_caracas TIMESTAMPTZ := date_trunc('day', NOW() AT TIME ZONE 'America/Caracas') AT TIME ZONE 'America/Caracas';
+    v_week_start_caracas TIMESTAMPTZ := date_trunc('week', NOW() AT TIME ZONE 'America/Caracas') AT TIME ZONE 'America/Caracas';
+    v_today_earned INT;
+    v_week_earned INT;
+BEGIN
+    IF v_fan_id IS NULL THEN
+        RAISE EXCEPTION 'Usuario no autenticado.';
+    END IF;
+
+    PERFORM public.check_rate_limit(v_fan_id, 'submit_progressive_clue_vote', 5, 60);
+    PERFORM public.assert_active_verified_fan(v_fan_id);
+
+    SELECT * INTO v_chal FROM public.progressive_clue_challenges WHERE id = p_challenge_id;
+    IF v_chal.id IS NULL THEN
+        RAISE EXCEPTION 'El desafío de pistas progresivas no existe.';
+    END IF;
+
+    IF v_chal.status <> 'published' THEN
+        RAISE EXCEPTION 'Este desafío no se encuentra activo.';
+    END IF;
+
+    IF now() < v_chal.starts_at THEN
+        RAISE EXCEPTION 'Este desafío aún no ha iniciado.';
+    END IF;
+
+    IF now() > v_chal.closes_at THEN
+        RAISE EXCEPTION 'El plazo para participar en este desafío ya ha cerrado.';
+    END IF;
+
+    IF EXISTS (
+        SELECT 1 FROM public.progressive_clue_votes
+        WHERE challenge_id = p_challenge_id AND fan_id = v_fan_id
+    ) THEN
+        RAISE EXCEPTION 'Ya has participado en este reto de pistas.';
+    END IF;
+
+    v_is_correct := (p_selected_player_id = v_chal.target_player_id);
+
+    IF v_is_correct THEN
+        IF p_clues_revealed_count <= 1 THEN
+            v_reward := v_chal.reward_pearls_1_clue;
+        ELSIF p_clues_revealed_count = 2 THEN
+            v_reward := v_chal.reward_pearls_2_clues;
+        ELSIF p_clues_revealed_count = 3 THEN
+            v_reward := v_chal.reward_pearls_3_clues;
+        ELSE
+            v_reward := v_chal.reward_pearls_4_clues;
+        END IF;
+
+        SELECT daily_pearl_cap, weekly_pearl_cap INTO v_daily_cap, v_weekly_cap FROM public.economy_settings LIMIT 1;
+
+        SELECT COALESCE(SUM(amount), 0) INTO v_today_earned
+        FROM public.ledger_entries
+        WHERE fan_id = v_fan_id
+          AND amount > 0
+          AND status IN ('confirmed', 'held')
+          AND (created_at AT TIME ZONE 'America/Caracas') >= v_today_start_caracas;
+
+        SELECT COALESCE(SUM(amount), 0) INTO v_week_earned
+        FROM public.ledger_entries
+        WHERE fan_id = v_fan_id
+          AND amount > 0
+          AND status IN ('confirmed', 'held')
+          AND (created_at AT TIME ZONE 'America/Caracas') >= v_week_start_caracas;
+
+        v_rem_daily := GREATEST(0, COALESCE(v_daily_cap, 1000) - v_today_earned);
+        v_rem_weekly := GREATEST(0, COALESCE(v_weekly_cap, 5000) - v_week_earned);
+        v_effective_cap := LEAST(v_rem_daily, v_rem_weekly);
+        v_pearls_to_award := LEAST(v_reward, v_effective_cap);
+
+        IF v_pearls_to_award > 0 THEN
+            INSERT INTO public.ledger_entries (
+                fan_id, team_id, amount, type, status, source_type, source_id, note
+            ) VALUES (
+                v_fan_id, v_chal.team_id, v_pearls_to_award, 'trivia_reward', 'confirmed', 'progressive_clues', p_challenge_id::text,
+                'Premio Pistas Progresivas: ' || v_chal.title
+            );
+
+            INSERT INTO public.wallets (fan_id, team_id, balance_cache, updated_at)
+            VALUES (v_fan_id, v_chal.team_id, v_pearls_to_award, NOW())
+            ON CONFLICT (fan_id, team_id)
+            DO UPDATE SET balance_cache = public.wallets.balance_cache + v_pearls_to_award, updated_at = NOW();
+
+            PERFORM public.calculate_and_apply_streak_bonus(v_fan_id);
+        END IF;
+    END IF;
+
+    INSERT INTO public.progressive_clue_votes (
+        challenge_id, team_id, fan_id, selected_player_id, clues_revealed_count, is_winner, pearls_awarded
+    ) VALUES (
+        p_challenge_id, v_chal.team_id, v_fan_id, p_selected_player_id, p_clues_revealed_count, v_is_correct, v_pearls_to_award
+    ) RETURNING id INTO v_vote_id;
+
+    RETURN jsonb_build_object(
+        'vote_id', v_vote_id,
+        'is_correct', v_is_correct,
+        'pearls_awarded', v_pearls_to_award
+    );
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.vote_progressive_clue(UUID, UUID, INT) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.vote_progressive_clue(UUID, UUID, INT) TO authenticated, service_role;
+
+-- 13.7 resolve_trivia_poll
+CREATE OR REPLACE FUNCTION public.resolve_trivia_poll(
+    p_poll_id UUID,
+    p_correct_option_id UUID
+)
+RETURNS jsonb
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path TO 'public', 'extensions', 'pg_temp'
+AS $function$
+DECLARE
+    v_admin_id UUID := auth.uid();
+    v_poll RECORD;
+    v_vote RECORD;
+    v_winners_count INT := 0;
+    v_total_pearls INT := 0;
+    v_today_earned INT;
+    v_week_earned INT;
+    v_daily_cap INT := 1000;
+    v_weekly_cap INT := 5000;
+    v_rem_daily INT;
+    v_rem_weekly INT;
+    v_effective_cap INT;
+    v_pearls_to_award INT;
+    v_today_start_caracas TIMESTAMPTZ := date_trunc('day', NOW() AT TIME ZONE 'America/Caracas') AT TIME ZONE 'America/Caracas';
+    v_week_start_caracas TIMESTAMPTZ := date_trunc('week', NOW() AT TIME ZONE 'America/Caracas') AT TIME ZONE 'America/Caracas';
+BEGIN
+    SELECT * INTO v_poll FROM public.trivia_polls WHERE id = p_poll_id;
+    IF v_poll.id IS NULL THEN
+        RAISE EXCEPTION 'La encuesta interactiva no existe.';
+    END IF;
+
+    PERFORM public.assert_team_admin(v_poll.team_id);
+
+    IF v_poll.status = 'resolved' THEN
+        RAISE EXCEPTION 'Esta encuesta ya fue resuelta previamente.';
+    END IF;
+
+    SELECT daily_pearl_cap, weekly_pearl_cap INTO v_daily_cap, v_weekly_cap FROM public.economy_settings LIMIT 1;
+
+    UPDATE public.trivia_polls
+    SET status = 'resolved',
+        correct_option_id = p_correct_option_id,
+        resolved_at = now(),
+        resolved_by = v_admin_id
+    WHERE id = p_poll_id;
+
+    UPDATE public.trivia_poll_votes
+    SET is_winner = false, pearls_awarded = 0
+    WHERE poll_id = p_poll_id AND selected_option_id <> p_correct_option_id;
+
+    FOR v_vote IN
+        SELECT id, fan_id FROM public.trivia_poll_votes
+        WHERE poll_id = p_poll_id AND selected_option_id = p_correct_option_id
+    LOOP
+        SELECT COALESCE(SUM(amount), 0) INTO v_today_earned
+        FROM public.ledger_entries
+        WHERE fan_id = v_vote.fan_id
+          AND amount > 0
+          AND status IN ('confirmed', 'held')
+          AND (created_at AT TIME ZONE 'America/Caracas') >= v_today_start_caracas;
+
+        SELECT COALESCE(SUM(amount), 0) INTO v_week_earned
+        FROM public.ledger_entries
+        WHERE fan_id = v_vote.fan_id
+          AND amount > 0
+          AND status IN ('confirmed', 'held')
+          AND (created_at AT TIME ZONE 'America/Caracas') >= v_week_start_caracas;
+
+        v_rem_daily := GREATEST(0, COALESCE(v_daily_cap, 1000) - v_today_earned);
+        v_rem_weekly := GREATEST(0, COALESCE(v_weekly_cap, 5000) - v_week_earned);
+        v_effective_cap := LEAST(v_rem_daily, v_rem_weekly);
+        v_pearls_to_award := LEAST(v_poll.reward_pearls, v_effective_cap);
+
+        IF v_pearls_to_award > 0 THEN
+            INSERT INTO public.ledger_entries (
+                fan_id, team_id, amount, type, status, source_type, source_id, note
+            ) VALUES (
+                v_vote.fan_id, v_poll.team_id, v_pearls_to_award, 'trivia_reward', 'confirmed', 'trivia_poll', p_poll_id::text,
+                'Premio por acertar encuesta: ' || v_poll.title
+            );
+
+            INSERT INTO public.wallets (fan_id, team_id, balance_cache, updated_at)
+            VALUES (v_vote.fan_id, v_poll.team_id, v_pearls_to_award, NOW())
+            ON CONFLICT (fan_id, team_id)
+            DO UPDATE SET balance_cache = public.wallets.balance_cache + v_pearls_to_award, updated_at = NOW();
+
+            PERFORM public.calculate_and_apply_streak_bonus(v_vote.fan_id);
+        END IF;
+
+        UPDATE public.trivia_poll_votes
+        SET is_winner = true,
+            pearls_awarded = v_pearls_to_award
+        WHERE id = v_vote.id;
+
+        v_winners_count := v_winners_count + 1;
+        v_total_pearls := v_total_pearls + v_pearls_to_award;
+    END LOOP;
+
+    RETURN jsonb_build_object(
+        'status', 'success',
+        'winners_count', v_winners_count,
+        'total_pearls_awarded', v_total_pearls
+    );
+END;
+$function$;
+
+REVOKE ALL ON FUNCTION public.resolve_trivia_poll(UUID, UUID) FROM PUBLIC, anon;
+GRANT EXECUTE ON FUNCTION public.resolve_trivia_poll(UUID, UUID) TO authenticated, service_role;

@@ -20,21 +20,21 @@ VALUES
 ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status;
 
 -- Users
-INSERT INTO auth.users (id, email)
+INSERT INTO auth.users (id, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, aud)
 VALUES
-    ('aaaaaaaa-1111-1111-1111-111111111111', 'platform_admin_0b@test.com'),
-    ('aaaaaaaa-2222-2222-2222-222222222222', 'staff_alpha_0b@test.com'),
-    ('aaaaaaaa-3333-3333-3333-333333333333', 'staff_beta_0b@test.com'),
-    ('aaaaaaaa-4444-4444-4444-444444444444', 'regular_fan_0b@test.com')
+    ('aaaaaaaa-1111-1111-1111-111111111111', 'platform_admin_0b@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated'),
+    ('aaaaaaaa-2222-2222-2222-222222222222', 'staff_alpha_0b@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated'),
+    ('aaaaaaaa-3333-3333-3333-333333333333', 'staff_beta_0b@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated'),
+    ('aaaaaaaa-4444-4444-4444-444444444444', 'regular_fan_0b@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO public.profiles (id, display_name, status)
+INSERT INTO public.profiles (id, display_name, status, terms_accepted_at, terms_version)
 VALUES
-    ('aaaaaaaa-1111-1111-1111-111111111111', 'Platform Admin 0b', 'active'),
-    ('aaaaaaaa-2222-2222-2222-222222222222', 'Staff Alpha 0b', 'active'),
-    ('aaaaaaaa-3333-3333-3333-333333333333', 'Staff Beta 0b', 'active'),
-    ('aaaaaaaa-4444-4444-4444-444444444444', 'Fan 0b', 'active')
-ON CONFLICT (id) DO NOTHING;
+    ('aaaaaaaa-1111-1111-1111-111111111111', 'Platform Admin 0b', 'active', NOW(), 'v1.0'),
+    ('aaaaaaaa-2222-2222-2222-222222222222', 'Staff Alpha 0b', 'active', NOW(), 'v1.0'),
+    ('aaaaaaaa-3333-3333-3333-333333333333', 'Staff Beta 0b', 'active', NOW(), 'v1.0'),
+    ('aaaaaaaa-4444-4444-4444-444444444444', 'Fan 0b', 'active', NOW(), 'v1.0')
+ON CONFLICT (id) DO UPDATE SET terms_accepted_at = NOW(), terms_version = 'v1.0';
 
 -- Staff members (Platform admin, Alpha club admin, Beta club admin)
 INSERT INTO public.staff_members (user_id, role, team_id, active)
@@ -49,6 +49,7 @@ ON CONFLICT (user_id) DO UPDATE SET role = EXCLUDED.role, team_id = EXCLUDED.tea
 -- TEST 1: Cannot deactivate the only active platform admin
 SELECT throws_ok(
     $$
+        SET CONSTRAINTS ALL IMMEDIATE;
         UPDATE public.staff_members
         SET active = false
         WHERE user_id = 'aaaaaaaa-1111-1111-1111-111111111111';
@@ -61,6 +62,7 @@ SELECT throws_ok(
 -- TEST 2: Cannot deactivate the only active team admin for active Team Alpha
 SELECT throws_ok(
     $$
+        SET CONSTRAINTS ALL IMMEDIATE;
         UPDATE public.staff_members
         SET active = false
         WHERE user_id = 'aaaaaaaa-2222-2222-2222-222222222222';
@@ -80,21 +82,21 @@ VALUES
 ON CONFLICT (id) DO NOTHING;
 
 -- TEST 3: Club admin Alpha only sees Team Alpha risk flags
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated", "aal": "aal2"}';
+
 SELECT is(
-    (
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
-        SELECT jsonb_array_length(public.admin_risk_queue(false));
-    ),
+    jsonb_array_length(public.admin_risk_queue(false)),
     1,
     'TEST 3: Admin de Team Alpha solo ve alertas de riesgo de su propio equipo'
 );
+RESET ROLE;
 
 -- TEST 4: Club admin Alpha cannot resolve Team Beta risk flag
 SELECT throws_ok(
     $$
         SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
+        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated", "aal": "aal2"}';
         SELECT public.admin_resolve_risk_flag('22222222-0000-0000-0000-000000000002', 'Nota ilegal');
     $$,
     '42501',
@@ -103,14 +105,14 @@ SELECT throws_ok(
 );
 
 -- TEST 5: Platform admin sees all risk flags (Alpha + Beta)
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-1111-1111-1111-111111111111", "role": "authenticated", "aal": "aal2"}';
+
 SELECT ok(
-    (
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-1111-1111-1111-111111111111", "role": "authenticated", "aal": "aal2"}';
-        SELECT jsonb_array_length(public.admin_risk_queue(false)) >= 2;
-    ),
+    jsonb_array_length(public.admin_risk_queue(false)) >= 2,
     'TEST 5: Admin de plataforma puede consultar la cola global de alertas de riesgo'
 );
+RESET ROLE;
 
 -- ─── 3. Multi-Team Temporary Guards (Step 0b Item D) ─────────────────────────
 
@@ -118,7 +120,7 @@ SELECT ok(
 SELECT throws_ok(
     $$
         SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
+        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated", "aal": "aal2"}';
         SELECT public.admin_list_fans();
     $$,
     '42501',
@@ -130,7 +132,7 @@ SELECT throws_ok(
 SELECT throws_ok(
     $$
         SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
+        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated", "aal": "aal2"}';
         SELECT public.admin_get_fan('aaaaaaaa-4444-4444-4444-444444444444');
     $$,
     '42501',
@@ -142,7 +144,7 @@ SELECT throws_ok(
 SELECT throws_ok(
     $$
         SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
+        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated", "aal": "aal2"}';
         SELECT public.analytics_demographics();
     $$,
     '42501',
@@ -154,7 +156,7 @@ SELECT throws_ok(
 SELECT throws_ok(
     $$
         SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
+        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated", "aal": "aal2"}';
         SELECT public.analytics_economy();
     $$,
     '42501',
@@ -166,7 +168,7 @@ SELECT throws_ok(
 SELECT throws_ok(
     $$
         SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
+        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated", "aal": "aal2"}';
         SELECT public.analytics_top_fans();
     $$,
     '42501',
@@ -190,7 +192,7 @@ SELECT lives_ok(
 SELECT throws_ok(
     $$
         SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
+        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated", "aal": "aal2"}';
         SELECT public.admin_publish_policy('terminos', 'v2.0', 'Contenido');
     $$,
     '42501',
@@ -202,7 +204,7 @@ SELECT throws_ok(
 SELECT throws_ok(
     $$
         SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
+        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated", "aal": "aal2"}';
         SELECT * FROM public.reconcile_wallets();
     $$,
     '42501',
@@ -244,7 +246,7 @@ SELECT throws_ok(
 SELECT throws_ok(
     $$
         SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
+        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated", "aal": "aal2"}';
         SELECT public.purge_auth_identities('aaaaaaaa-4444-4444-4444-444444444444');
     $$,
     '42501',

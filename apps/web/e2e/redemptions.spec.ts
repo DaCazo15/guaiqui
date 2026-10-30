@@ -96,7 +96,7 @@ async function setupTestUser() {
     })
 
     // 3. Upsert wallet
-    await fetch(`${SUPABASE_URL}/rest/v1/wallets?on_conflict=fan_id`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/wallets?on_conflict=fan_id,team_id`, {
       method: 'POST',
       headers: {
         'apikey': SERVICE_ROLE_KEY,
@@ -104,11 +104,15 @@ async function setupTestUser() {
         'Content-Type': 'application/json',
         'Prefer': 'resolution=merge-duplicates'
       },
-      body: JSON.stringify({ fan_id: userId, balance_cache: 10000 })
+      body: JSON.stringify({
+        fan_id: userId,
+        team_id: 'a0000000-0000-0000-0000-000000000001',
+        balance_cache: 10000
+      })
     })
 
     // 4. Update wallet cache directly
-    await fetch(`${SUPABASE_URL}/rest/v1/wallets?fan_id=eq.${userId}`, {
+    await fetch(`${SUPABASE_URL}/rest/v1/wallets?fan_id=eq.${userId}&team_id=eq.a0000000-0000-0000-0000-000000000001`, {
       method: 'PATCH',
       headers: {
         'apikey': SERVICE_ROLE_KEY,

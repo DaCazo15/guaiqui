@@ -16,31 +16,35 @@ DECLARE
     v_staff_inactive UUID := 'b0000000-0000-0000-0000-000000000089';
     v_prod UUID := 'e0000000-0000-0000-0000-000000000088';
 BEGIN
-    INSERT INTO auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token)
+    INSERT INTO auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_confirmed_at)
     VALUES
-        (v_fan, 'authenticated', 'authenticated', 'fan_f8@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), ''),
-        (v_staff_active, 'authenticated', 'authenticated', 'staff_act_f8@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), ''),
-        (v_staff_inactive, 'authenticated', 'authenticated', 'staff_inact_f8@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '')
-    ON CONFLICT (id) DO NOTHING;
+        (v_fan, 'authenticated', 'authenticated', 'fan_f8@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW()),
+        (v_staff_active, 'authenticated', 'authenticated', 'staff_act_f8@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW()),
+        (v_staff_inactive, 'authenticated', 'authenticated', 'staff_inact_f8@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW())
+    ON CONFLICT (id) DO UPDATE SET email_confirmed_at = NOW();
 
-    INSERT INTO profiles (id, display_name, status) VALUES
-        (v_fan, 'Fanatico Fase8', 'active'),
-        (v_staff_active, 'Staff Activo F8', 'active'),
-        (v_staff_inactive, 'Staff Inactivo F8', 'active')
-    ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name;
+    INSERT INTO profiles (id, display_name, status, terms_accepted_at, privacy_accepted_at, pearls_rules_accepted_at) VALUES
+        (v_fan, 'Fanatico Fase8', 'active', NOW(), NOW(), NOW()),
+        (v_staff_active, 'Staff Activo F8', 'active', NOW(), NOW(), NOW()),
+        (v_staff_inactive, 'Staff Inactivo F8', 'active', NOW(), NOW(), NOW())
+    ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name, status = 'active', terms_accepted_at = NOW(), privacy_accepted_at = NOW(), pearls_rules_accepted_at = NOW();
 
-    INSERT INTO staff_members (user_id, role, active) VALUES
-        (v_staff_active, 'staff', true),
-        (v_staff_inactive, 'staff', false)
-    ON CONFLICT (user_id) DO UPDATE SET active = EXCLUDED.active;
+    INSERT INTO team_follows (fan_id, team_id) VALUES
+        (v_fan, 'a0000000-0000-0000-0000-000000000001')
+    ON CONFLICT DO NOTHING;
 
-    INSERT INTO products (id, name, category, cost_pearls, stock, active)
-    VALUES (v_prod, 'Camiseta Edicion Especial F8', 'physical', 500, 20, true)
-    ON CONFLICT (id) DO UPDATE SET stock = 20, active = true;
+    INSERT INTO staff_members (user_id, team_id, role, active) VALUES
+        (v_staff_active, 'a0000000-0000-0000-0000-000000000001', 'staff', true),
+        (v_staff_inactive, 'a0000000-0000-0000-0000-000000000001', 'staff', false)
+    ON CONFLICT (user_id) DO UPDATE SET team_id = EXCLUDED.team_id, active = EXCLUDED.active;
 
-    INSERT INTO wallets (fan_id, balance_cache) VALUES
-        (v_fan, 2000)
-    ON CONFLICT (fan_id) DO UPDATE SET balance_cache = 2000;
+    INSERT INTO products (id, team_id, name, category, cost_pearls, stock, active)
+    VALUES (v_prod, 'a0000000-0000-0000-0000-000000000001', 'Camiseta Edicion Especial F8', 'physical', 500, 20, true)
+    ON CONFLICT (id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', stock = 20, active = true;
+
+    INSERT INTO wallets (fan_id, team_id, balance_cache) VALUES
+        (v_fan, 'a0000000-0000-0000-0000-000000000001', 2000)
+    ON CONFLICT (fan_id, team_id) DO UPDATE SET balance_cache = 2000;
 END $$;
 
 -- ─── TEST 1: Fan sin rol staff no puede ejecutar funciones de staff ─────────
@@ -84,9 +88,9 @@ BEGIN
     v_code := generate_redemption_code(v_red_id);
     v_hash := compute_redemption_code_hash(v_code);
 
-    INSERT INTO redemptions (id, fan_id, product_id, variant, cost_pearls, status, code_hash, idempotency_key)
-    VALUES (v_red_id, 'a0000000-0000-0000-0000-000000000088', 'e0000000-0000-0000-0000-000000000088', 'M', 500, 'approved', v_hash, 'f8_test_4_key')
-    ON CONFLICT (id) DO UPDATE SET status = 'approved', code_hash = v_hash;
+    INSERT INTO redemptions (id, team_id, fan_id, product_id, variant, cost_pearls, status, code_hash, idempotency_key)
+    VALUES (v_red_id, 'a0000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000088', 'e0000000-0000-0000-0000-000000000088', 'M', 500, 'approved', v_hash, 'f8_test_4_key')
+    ON CONFLICT (id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', status = 'approved', code_hash = v_hash;
 
     CREATE TEMP TABLE IF NOT EXISTS _test_code (code text);
     DELETE FROM _test_code;
@@ -107,8 +111,8 @@ SELECT ok(
 DO $$
 BEGIN
     RESET ROLE;
-    INSERT INTO scan_events (staff_id, code_hash, result, device)
-    SELECT 'b0000000-0000-0000-0000-000000000088', 'INVALID_HASH_' || g, 'invalid', 'Terminal Test'
+    INSERT INTO scan_events (staff_id, team_id, code_hash, result, device)
+    SELECT 'b0000000-0000-0000-0000-000000000088', 'a0000000-0000-0000-0000-000000000001', 'INVALID_HASH_' || g, 'invalid', 'Terminal Test'
     FROM generate_series(1, 10) g;
 END $$;
 
@@ -139,8 +143,8 @@ DECLARE
 BEGIN
     RESET ROLE;
     v_hash := compute_redemption_code_hash('REJECTCODE12');
-    INSERT INTO redemptions (id, fan_id, product_id, variant, cost_pearls, status, code_hash, idempotency_key)
-    VALUES (v_red_id, v_fan_id, 'e0000000-0000-0000-0000-000000000088', 'L', 500, 'pending', v_hash, 'f8_test_6_key')
+    INSERT INTO redemptions (id, team_id, fan_id, product_id, variant, cost_pearls, status, code_hash, idempotency_key)
+    VALUES (v_red_id, 'a0000000-0000-0000-0000-000000000001', v_fan_id, 'e0000000-0000-0000-0000-000000000088', 'L', 500, 'pending', v_hash, 'f8_test_6_key')
     ON CONFLICT (id) DO NOTHING;
 END $$;
 

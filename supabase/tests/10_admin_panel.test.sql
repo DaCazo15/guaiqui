@@ -2,28 +2,32 @@ BEGIN;
 SELECT plan(15);
 
 -- Setup test users
-INSERT INTO auth.users (id, email) VALUES
-  ('00000000-0000-0000-0000-000000000001', 'admin@guaiqueries.com'),
-  ('00000000-0000-0000-0000-000000000002', 'staff@guaiqueries.com'),
-  ('00000000-0000-0000-0000-000000000003', 'fan@guaiqueries.com')
-ON CONFLICT (id) DO NOTHING;
+INSERT INTO auth.users (id, email, aud, role, email_confirmed_at) VALUES
+  ('00000000-0000-0000-0000-000000000001', 'admin@guaiqueries.com', 'authenticated', 'authenticated', NOW()),
+  ('00000000-0000-0000-0000-000000000002', 'staff@guaiqueries.com', 'authenticated', 'authenticated', NOW()),
+  ('00000000-0000-0000-0000-000000000003', 'fan@guaiqueries.com', 'authenticated', 'authenticated', NOW())
+ON CONFLICT (id) DO UPDATE SET email_confirmed_at = NOW();
 
-INSERT INTO public.profiles (id, display_name, status) VALUES
-  ('00000000-0000-0000-0000-000000000001', 'Admin User', 'active'),
-  ('00000000-0000-0000-0000-000000000002', 'Staff User', 'active'),
-  ('00000000-0000-0000-0000-000000000003', 'Fan User', 'active')
-ON CONFLICT (id) DO NOTHING;
+INSERT INTO public.profiles (id, display_name, status, terms_accepted_at, privacy_accepted_at, pearls_rules_accepted_at) VALUES
+  ('00000000-0000-0000-0000-000000000001', 'Admin User', 'active', NOW(), NOW(), NOW()),
+  ('00000000-0000-0000-0000-000000000002', 'Staff User', 'active', NOW(), NOW(), NOW()),
+  ('00000000-0000-0000-0000-000000000003', 'Fan User', 'active', NOW(), NOW(), NOW())
+ON CONFLICT (id) DO UPDATE SET status = 'active', terms_accepted_at = NOW(), privacy_accepted_at = NOW(), pearls_rules_accepted_at = NOW();
 
-INSERT INTO public.staff_members (user_id, role, active) VALUES
-  ('00000000-0000-0000-0000-000000000001', 'admin', true),
-  ('00000000-0000-0000-0000-000000000002', 'staff', true)
-ON CONFLICT (user_id) DO NOTHING;
+INSERT INTO public.staff_members (user_id, team_id, role, active) VALUES
+  ('00000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'admin', true),
+  ('00000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'staff', true)
+ON CONFLICT (user_id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', role = EXCLUDED.role, active = true;
+
+INSERT INTO public.wallets (fan_id, team_id, balance_cache) VALUES
+  ('00000000-0000-0000-0000-000000000003', 'a0000000-0000-0000-0000-000000000001', 500)
+ON CONFLICT (fan_id, team_id) DO UPDATE SET balance_cache = 500;
 
 INSERT INTO public.economy_settings (daily_pearl_cap, weekly_pearl_cap) VALUES (1000, 5000);
 
 -- Test 1 & 2: Fan and Staff cannot call assert_admin()
-SET LOCAL AUTHORIZATION authenticated;
-SET LOCAL "request.jwt.claims" = '{"sub": "00000000-0000-0000-0000-000000000003"}';
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "00000000-0000-0000-0000-000000000003", "role": "authenticated"}';
 
 SELECT throws_ok(
   $$ SELECT public.assert_admin() $$,
@@ -32,7 +36,7 @@ SELECT throws_ok(
   'Fan call to assert_admin fails'
 );
 
-SET LOCAL "request.jwt.claims" = '{"sub": "00000000-0000-0000-0000-000000000002"}';
+SET LOCAL "request.jwt.claims" = '{"sub": "00000000-0000-0000-0000-000000000002", "role": "authenticated"}';
 
 SELECT throws_ok(
   $$ SELECT public.assert_admin() $$,
@@ -42,7 +46,7 @@ SELECT throws_ok(
 );
 
 -- Test 3: Admin call to assert_admin succeeds
-SET LOCAL "request.jwt.claims" = '{"sub": "00000000-0000-0000-0000-000000000001"}';
+SET LOCAL "request.jwt.claims" = '{"sub": "00000000-0000-0000-0000-000000000001", "role": "authenticated", "aal": "aal2"}';
 SELECT is(public.assert_admin(), true, 'Admin call to assert_admin succeeds');
 
 -- Test 4: audit_log rejects UPDATE and DELETE
@@ -59,9 +63,9 @@ SELECT throws_ok(
 );
 
 -- Test 5: publish_trivia rejects trivia with 0 questions
-SET LOCAL "request.jwt.claims" = '{"sub": "00000000-0000-0000-0000-000000000001"}';
-INSERT INTO public.trivias (id, title, status, starts_at, ends_at, time_limit_seconds)
-VALUES ('11111111-1111-1111-1111-111111111111', 'Trivia Vacia', 'draft', NOW(), NOW() + INTERVAL '1 day', 60);
+SET LOCAL "request.jwt.claims" = '{"sub": "00000000-0000-0000-0000-000000000001", "role": "authenticated", "aal": "aal2"}';
+INSERT INTO public.trivias (id, team_id, title, status, starts_at, ends_at, time_limit_seconds)
+VALUES ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001', 'Trivia Vacia', 'draft', NOW(), NOW() + INTERVAL '1 day', 60);
 
 SELECT throws_ok(
   $$ SELECT public.admin_publish_trivia('11111111-1111-1111-1111-111111111111'::uuid) $$,
@@ -70,8 +74,8 @@ SELECT throws_ok(
 );
 
 -- Test 6: publish_trivia rejects question without correct answer
-INSERT INTO public.trivia_questions (id, trivia_id, question_text, points)
-VALUES ('22222222-2222-2222-2222-222222222222', '11111111-1111-1111-1111-111111111111', '¿Cuál es el capital?', 50);
+INSERT INTO public.trivia_questions (id, team_id, trivia_id, question_text, points)
+VALUES ('22222222-2222-2222-2222-222222222222', 'a0000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', '¿Cuál es el capital?', 50);
 
 INSERT INTO public.trivia_options (question_id, option_text, is_correct)
 VALUES ('33333333-3333-3333-3333-333333333333', 'La Asunción', false);
@@ -104,14 +108,14 @@ SELECT throws_ok(
 );
 
 -- Test 9: Price change on product does not alter past redemptions cost_pearls
-INSERT INTO public.products (id, name, cost_pearls, stock)
-VALUES ('44444444-4444-4444-4444-444444444444', 'Camiseta Oficial', 500, 10);
+INSERT INTO public.products (id, team_id, name, cost_pearls, stock)
+VALUES ('44444444-4444-4444-4444-444444444444', 'a0000000-0000-0000-0000-000000000001', 'Camiseta Oficial', 500, 10);
 
-INSERT INTO public.redemptions (id, fan_id, product_id, cost_pearls, code_hash, idempotency_key)
-VALUES ('55555555-5555-5555-5555-555555555555', '00000000-0000-0000-0000-000000000003', '44444444-4444-4444-4444-444444444444', 500, 'hash123', 'idemp123');
+INSERT INTO public.redemptions (id, team_id, fan_id, product_id, cost_pearls, code_hash, idempotency_key)
+VALUES ('55555555-5555-5555-5555-555555555555', 'a0000000-0000-0000-0000-000000000001', '00000000-0000-0000-0000-000000000003', '44444444-4444-4444-4444-444444444444', 500, 'hash123', 'idemp123');
 
 -- Admin updates price to 800
-SELECT public.admin_upsert_product('{"id": "44444444-4444-4444-4444-444444444444", "name": "Camiseta Oficial", "cost_pearls": 800, "stock": 10}'::jsonb);
+SELECT public.admin_upsert_product('{"id": "44444444-4444-4444-4444-444444444444", "team_id": "a0000000-0000-0000-0000-000000000001", "name": "Camiseta Oficial", "cost_pearls": 800, "stock": 10}'::jsonb);
 
 -- Verify past redemption cost is still 500
 SELECT is(
@@ -122,7 +126,7 @@ SELECT is(
 
 -- Test 10: Segment filter validation rejects non-whitelisted keys
 SELECT throws_ok(
-  $$ SELECT public.admin_upsert_segment('{"name": "Bad Segment", "filters": {"invalid_field": "test"}}'::jsonb) $$,
+  $$ SELECT public.admin_upsert_segment('{"team_id": "a0000000-0000-0000-0000-000000000001", "name": "Bad Segment", "filters": {"invalid_field": "test"}}'::jsonb) $$,
   'Campo de filtro no permitido en segmentos: invalid_field',
   'Segment filter rejects disallowed key'
 );

@@ -24,27 +24,30 @@ VALUES
     ('ee000000-0000-0000-0000-000000000002', 'Team Multi Beta', 'team-multi-beta', 'active')
 ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status;
 
--- Users: Fan 1, Fan 2, Staff Alpha, Staff Beta
-INSERT INTO auth.users (id, email)
+-- Users: Fan 1, Fan 2, Staff Alpha, Staff Beta, Platform Admin
+INSERT INTO auth.users (id, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, aud)
 VALUES
-    ('e1111111-1111-1111-1111-111111111111', 'fan_wallet_1@test.com'),
-    ('e2222222-2222-2222-2222-222222222222', 'fan_wallet_2@test.com'),
-    ('e3333333-3333-3333-3333-333333333333', 'staff_wallet_alpha@test.com'),
-    ('e4444444-4444-4444-4444-444444444444', 'staff_wallet_beta@test.com')
+    ('e1111111-1111-1111-1111-111111111111', 'fan_wallet_1@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated'),
+    ('e2222222-2222-2222-2222-222222222222', 'fan_wallet_2@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated'),
+    ('e3333333-3333-3333-3333-333333333333', 'staff_wallet_alpha@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated'),
+    ('e4444444-4444-4444-4444-444444444444', 'staff_wallet_beta@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated'),
+    ('aaaaaaaa-1111-1111-1111-111111111111', 'plat_admin_w@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO public.profiles (id, display_name, status, created_at)
+INSERT INTO public.profiles (id, display_name, status, created_at, terms_accepted_at, terms_version)
 VALUES
-    ('e1111111-1111-1111-1111-111111111111', 'Fan Wallet 1', 'active', NOW() - INTERVAL '60 days'),
-    ('e2222222-2222-2222-2222-222222222222', 'Fan Wallet 2', 'active', NOW() - INTERVAL '60 days'),
-    ('e3333333-3333-3333-3333-333333333333', 'Staff Wallet Alpha', 'active', NOW() - INTERVAL '60 days'),
-    ('e4444444-4444-4444-4444-444444444444', 'Staff Wallet Beta', 'active', NOW() - INTERVAL '60 days')
-ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status;
+    ('e1111111-1111-1111-1111-111111111111', 'Fan Wallet 1', 'active', NOW() - INTERVAL '60 days', NOW(), 'v1.0'),
+    ('e2222222-2222-2222-2222-222222222222', 'Fan Wallet 2', 'active', NOW() - INTERVAL '60 days', NOW(), 'v1.0'),
+    ('e3333333-3333-3333-3333-333333333333', 'Staff Wallet Alpha', 'active', NOW() - INTERVAL '60 days', NOW(), 'v1.0'),
+    ('e4444444-4444-4444-4444-444444444444', 'Staff Wallet Beta', 'active', NOW() - INTERVAL '60 days', NOW(), 'v1.0'),
+    ('aaaaaaaa-1111-1111-1111-111111111111', 'Plat Admin W', 'active', NOW() - INTERVAL '60 days', NOW(), 'v1.0')
+ON CONFLICT (id) DO UPDATE SET status = 'active', terms_accepted_at = NOW(), terms_version = 'v1.0';
 
 INSERT INTO public.staff_members (user_id, role, team_id, active)
 VALUES
     ('e3333333-3333-3333-3333-333333333333', 'admin', 'ee000000-0000-0000-0000-000000000001', true),
-    ('e4444444-4444-4444-4444-444444444444', 'admin', 'ee000000-0000-0000-0000-000000000002', true)
+    ('e4444444-4444-4444-4444-444444444444', 'admin', 'ee000000-0000-0000-0000-000000000002', true),
+    ('aaaaaaaa-1111-1111-1111-111111111111', 'admin', NULL, true)
 ON CONFLICT (user_id) DO UPDATE SET role = EXCLUDED.role, team_id = EXCLUDED.team_id, active = true;
 
 -- Setup Products: One for Alpha (Cost 100), One for Beta (Cost 100)
@@ -83,15 +86,15 @@ SELECT throws_ok(
 );
 
 -- TEST 2: Fan 1 has 200 in Beta. Buying Camiseta Beta (cost 100) succeeds!
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "e1111111-1111-1111-1111-111111111111", "role": "authenticated"}';
+
 SELECT is(
-    (
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "e1111111-1111-1111-1111-111111111111", "role": "authenticated"}';
-        SELECT (public.redeem_product('fa000000-0000-0000-0000-000000000002', 'idem_ok_beta_1')->>'status');
-    ),
+    (public.redeem_product('fa000000-0000-0000-0000-000000000002', 'idem_ok_beta_1')->>'status'),
     'pending',
     'TEST 2: Canje exitoso debitando exclusivamente de la billetera del equipo correspondiente'
 );
+RESET ROLE;
 
 -- TEST 3: Beta wallet deducted to 100, Alpha wallet remains 50
 SELECT is(
@@ -117,15 +120,15 @@ SELECT is(
 );
 
 -- TEST 5: Can still redeem from Beta while not following
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "e1111111-1111-1111-1111-111111111111", "role": "authenticated"}';
+
 SELECT is(
-    (
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "e1111111-1111-1111-1111-111111111111", "role": "authenticated"}';
-        SELECT (public.redeem_product('fa000000-0000-0000-0000-000000000002', 'idem_ok_beta_2')->>'status');
-    ),
+    (public.redeem_product('fa000000-0000-0000-0000-000000000002', 'idem_ok_beta_2')->>'status'),
     'pending',
     'TEST 5: El fanático puede canjear su saldo restante en un equipo aunque haya dejado de seguirlo'
 );
+RESET ROLE;
 
 -- ─── 3. Inmutabilidad del Ledger ─────────────────────────────────────────────
 -- TEST 6: Trigger trg_prevent_ledger_mutation prevents UPDATE on ledger_entries
@@ -156,7 +159,7 @@ SELECT throws_ok(
 SELECT throws_ok(
     $$
         SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "e3333333-3333-3333-3333-333333333333", "role": "authenticated"}';
+        SET LOCAL "request.jwt.claims" = '{"sub": "e3333333-3333-3333-3333-333333333333", "role": "authenticated", "aal": "aal2"}';
         SELECT public.admin_adjust_pearls('e1111111-1111-1111-1111-111111111111', 50, 'Ajuste ilegal cruzado', 'ee000000-0000-0000-0000-000000000002');
     $$,
     '42501',
@@ -173,7 +176,7 @@ ON CONFLICT (id) DO NOTHING;
 SELECT throws_ok(
     $$
         SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "e3333333-3333-3333-3333-333333333333", "role": "authenticated"}';
+        SET LOCAL "request.jwt.claims" = '{"sub": "e3333333-3333-3333-3333-333333333333", "role": "authenticated", "aal": "aal2"}';
         SELECT public.admin_release_held_pearls('bbbbbbbb-0000-0000-0000-000000000002', 'Liberación no autorizada');
     $$,
     '42501',
@@ -182,39 +185,37 @@ SELECT throws_ok(
 );
 
 -- TEST 10: Staff Beta CAN release held pearls belonging to Team Beta
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "e4444444-4444-4444-4444-444444444444", "role": "authenticated", "aal": "aal2"}';
+
 SELECT is(
-    (
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "e4444444-4444-4444-4444-444444444444", "role": "authenticated"}';
-        SELECT (public.admin_release_held_pearls('bbbbbbbb-0000-0000-0000-000000000002', 'Liberación legítima')->>'status');
-    ),
+    (public.admin_release_held_pearls('bbbbbbbb-0000-0000-0000-000000000002', 'Liberación legítima')->>'status'),
     'released',
     'TEST 10: Admin de Club Beta libera exitosamente perlitas retenidas de su club'
 );
+RESET ROLE;
 
 -- ─── 5. get_wallet_summary() ─────────────────────────────────────────────────
 -- TEST 11: get_wallet_summary calculates total correctly and includes followed and non-followed teams with balance
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "e1111111-1111-1111-1111-111111111111", "role": "authenticated"}';
+
 SELECT is(
-    (
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "e1111111-1111-1111-1111-111111111111", "role": "authenticated"}';
-        SELECT (public.get_wallet_summary()->>'total_balance')::int;
-    ),
-    (
-        SELECT SUM(balance_cache)::int FROM public.wallets WHERE fan_id = 'e1111111-1111-1111-1111-111111111111'
-    ),
+    (public.get_wallet_summary()->>'total_balance')::int,
+    (SELECT SUM(balance_cache)::int FROM public.wallets WHERE fan_id = 'e1111111-1111-1111-1111-111111111111'),
     'TEST 11: get_wallet_summary calcula la suma total correcta unificada'
 );
+RESET ROLE;
 
 -- TEST 12: get_wallet_summary does not leak other users wallets
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "e2222222-2222-2222-2222-222222222222", "role": "authenticated"}';
+
 SELECT ok(
-    (
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "e2222222-2222-2222-2222-222222222222", "role": "authenticated"}';
-        SELECT (public.get_wallet_summary()->>'total_balance')::int = 0;
-    ),
+    (public.get_wallet_summary()->>'total_balance')::int = 0,
     'TEST 12: get_wallet_summary está aislado por usuario autenticado y no expone balances ajenos'
 );
+RESET ROLE;
 
 -- ─── 6. Trivia Attempt earning requirement (Must follow active team) ─────────
 -- Setup trivia for Beta
@@ -222,8 +223,8 @@ INSERT INTO public.trivias (id, team_id, title, starts_at, ends_at, status)
 VALUES ('cc000000-0000-0000-0000-000000000099', 'ee000000-0000-0000-0000-000000000002', 'Trivia Beta Test', NOW() - INTERVAL '1 hour', NOW() + INTERVAL '1 hour', 'published')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO public.trivia_attempts (id, fan_id, trivia_id, team_id, started_at)
-VALUES ('ca000000-0000-0000-0000-000000000099', 'e1111111-1111-1111-1111-111111111111', 'cc000000-0000-0000-0000-000000000099', 'ee000000-0000-0000-0000-000000000002', NOW() - INTERVAL '10 seconds')
+INSERT INTO public.trivia_attempts (id, fan_id, trivia_id, started_at, expires_at, seed, idempotency_key)
+VALUES ('ca000000-0000-0000-0000-000000000099', 'e1111111-1111-1111-1111-111111111111', 'cc000000-0000-0000-0000-000000000099', NOW() - INTERVAL '10 seconds', NOW() + INTERVAL '1 hour', 12345, 'idem_t13')
 ON CONFLICT (id) DO NOTHING;
 
 -- Fan 1 currently DOES NOT follow Beta (unfollowed above)
@@ -254,14 +255,14 @@ SELECT throws_ok(
 );
 
 -- TEST 15: reconcile_wallets verifies per (fan_id, team_id)
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-1111-1111-1111-111111111111", "role": "authenticated", "aal": "aal2"}';
+
 SELECT ok(
-    (
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-1111-1111-1111-111111111111", "role": "authenticated", "aal": "aal2"}';
-        SELECT count(*) >= 0 FROM public.reconcile_wallets();
-    ),
+    (SELECT count(*) >= 0 FROM public.reconcile_wallets()),
     'TEST 15: reconcile_wallets ejecuta la reconciliación por fan_id y team_id sin errores'
 );
+RESET ROLE;
 
 SELECT * FROM finish();
 ROLLBACK;
