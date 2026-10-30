@@ -13,6 +13,7 @@ import type {
 } from '@guaiqui/shared'
 import { useTriviaStore } from '~/stores/trivias'
 import { useAuthStore } from '~/stores/auth'
+import { useCurrentTeam } from '~/composables/useCurrentTeam'
 import TriviaPlayButton from '~/components/app/dashboard/TriviaPlayButton.vue'
 import WhoIsGameModal from '~/components/trivia/WhoIsGameModal.vue'
 import PollsListSection from '~/components/trivia/PollsListSection.vue'
@@ -36,6 +37,7 @@ useSeoMeta({
 const supabase = useSupabaseClient()
 const triviaStore = useTriviaStore()
 const authStore = useAuthStore()
+const { openPicker, fetchFollowedTeams } = useCurrentTeam()
 
 type MainTab =
   | 'questions'
@@ -107,6 +109,23 @@ const progressiveClues = ref<ActiveProgressiveClue[]>([])
 const progressiveCluesLoading = ref(false)
 
 onMounted(async () => {
+  const teams = await fetchFollowedTeams()
+  if (!teams || teams.length === 0) {
+    openPicker('trivias')
+    return
+  }
+
+  try {
+    const storedSlug = typeof window !== 'undefined' ? window.localStorage?.getItem('guaiqui_active_team_slug') : null
+    const targetTeam = teams.find(t => t.slug === storedSlug) || teams[0]
+    if (targetTeam) {
+      await navigateTo(`/app/e/${targetTeam.slug}/trivias`)
+      return
+    }
+  } catch {
+    // Non-blocking
+  }
+
   await Promise.all([
     triviaStore.fetchTrivias(),
     loadRosterPlayers(),

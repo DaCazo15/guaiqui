@@ -3,6 +3,7 @@ import { ref, computed, onMounted } from 'vue'
 import { BaseButton, PearlAmount } from '@guaiqui/ui'
 import { useCatalog } from '~/composables/useCatalog'
 import { useWallet } from '~/composables/useWallet'
+import { useCurrentTeam } from '~/composables/useCurrentTeam'
 import StoreProductCard from '~/components/store/StoreProductCard.vue'
 
 definePageMeta({
@@ -12,6 +13,7 @@ definePageMeta({
 
 const { products, loading, fetchProducts } = useCatalog()
 const { summary, fetchSummary } = useWallet()
+const { openPicker, fetchFollowedTeams } = useCurrentTeam()
 
 const selectedCategory = ref<string>('all')
 const onlyAffordable = ref<boolean>(false)
@@ -52,6 +54,23 @@ const handleSelectProduct = (product: Product) => {
 }
 
 onMounted(async () => {
+  const teams = await fetchFollowedTeams()
+  if (!teams || teams.length === 0) {
+    openPicker('tienda')
+    return
+  }
+
+  try {
+    const storedSlug = typeof window !== 'undefined' ? window.localStorage?.getItem('guaiqui_active_team_slug') : null
+    const targetTeam = teams.find(t => t.slug === storedSlug) || teams[0]
+    if (targetTeam) {
+      await navigateTo(`/app/e/${targetTeam.slug}/tienda`)
+      return
+    }
+  } catch {
+    // Non-blocking
+  }
+
   await Promise.all([
     fetchProducts(),
     fetchSummary(),
