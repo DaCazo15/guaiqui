@@ -50,29 +50,28 @@ END $$;
 
 
 -- 1. Security: Fan cannot execute admin_update_ads_settings
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "77777777-7777-7777-7777-777777777777", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "77777777-7777-7777-7777-777777777777", "role": "authenticated"}';
-        SELECT public.admin_update_ads_settings('{"ads_enabled": false}'::jsonb);
-    $$,
+    $$SELECT public.admin_update_ads_settings('{"ads_enabled": false}'::jsonb)$$,
     '42501',
     NULL,
     'TEST 1: Fan autenticado no puede ejecutar admin_update_ads_settings'
 );
-
+RESET ROLE;
 
 -- 2. Security: Fan cannot mutate ad_sessions directly via SQL
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "77777777-7777-7777-7777-777777777777", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "77777777-7777-7777-7777-777777777777", "role": "authenticated"}';
-        INSERT INTO public.ad_sessions (user_id, status, day) VALUES ('77777777-7777-7777-7777-777777777777', 'completed', CURRENT_DATE);
-    $$,
+    $$INSERT INTO public.ad_sessions (user_id, status, day) VALUES ('77777777-7777-7777-7777-777777777777', 'completed', CURRENT_DATE)$$,
     '42501',
     NULL,
     'TEST 2: Cliente autenticado no puede insertar directamente en ad_sessions'
 );
+RESET ROLE;
 
 
 -- 3. Flow: Two start_ad_session calls in a row void the first session

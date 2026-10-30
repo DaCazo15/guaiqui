@@ -51,16 +51,16 @@ SELECT is(
 RESET ROLE;
 
 -- TEST 3: Authenticated user cannot update protected columns (e.g. status)
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "f3000000-0000-0000-0000-000000000001", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-      SET LOCAL ROLE authenticated;
-      SET LOCAL "request.jwt.claims" = '{"sub": "f3000000-0000-0000-0000-000000000001", "role": "authenticated"}';
-      UPDATE public.profiles SET status = 'deleted' WHERE id = 'f3000000-0000-0000-0000-000000000001';
-    $$,
+    $$UPDATE public.profiles SET status = 'deleted' WHERE id = 'f3000000-0000-0000-0000-000000000001'$$,
     '42501',
     NULL,
     'El rol authenticated no puede actualizar columnas restringidas como status.'
 );
+RESET ROLE;
 
 SELECT * FROM finish();
 ROLLBACK;

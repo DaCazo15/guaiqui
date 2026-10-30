@@ -32,7 +32,7 @@ VALUES
     ('e3333333-3333-3333-3333-333333333333', 'staff_wallet_alpha@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated'),
     ('e4444444-4444-4444-4444-444444444444', 'staff_wallet_beta@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated'),
     ('aaaaaaaa-1111-1111-1111-111111111111', 'plat_admin_w@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated')
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET email_confirmed_at = COALESCE(auth.users.email_confirmed_at, NOW()), raw_app_meta_data = EXCLUDED.raw_app_meta_data;
 
 INSERT INTO public.profiles (id, display_name, status, created_at, terms_accepted_at, terms_version)
 VALUES
@@ -74,16 +74,15 @@ ON CONFLICT (user_id, team_id) DO NOTHING;
 
 -- ─── 1. Insufficient Pearls in specific team (even if total balance is enough) ─
 -- TEST 1: Fan 1 has 250 total pearls, but only 50 in Alpha. Trying to buy Gorra Alpha (cost 100) fails!
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "e1111111-1111-1111-1111-111111111111", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "e1111111-1111-1111-1111-111111111111", "role": "authenticated"}';
-        SELECT public.redeem_product('fa000000-0000-0000-0000-000000000001', 'idem_fail_alpha_1');
-    $$,
-    NULL,
+    $$SELECT public.redeem_product('fa000000-0000-0000-0000-000000000001', 'idem_fail_alpha_1')$$,
     'INSUFFICIENT_PERLITAS: Saldo insuficiente de perlitas de este equipo (Requerido: 100, Disponible: 50).',
     'TEST 1: Canje rechazado cuando el saldo del equipo es insuficiente aunque el total del fanático alcance'
 );
+RESET ROLE;
 
 -- TEST 2: Fan 1 has 200 in Beta. Buying Camiseta Beta (cost 100) succeeds!
 SET LOCAL ROLE authenticated;
@@ -156,16 +155,16 @@ SELECT throws_ok(
 
 -- ─── 4. Staff cross-team isolation on adjustments and held pearls ────────────
 -- TEST 8: Staff Alpha cannot adjust pearls for Team Beta
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "e3333333-3333-3333-3333-333333333333", "role": "authenticated", "aal": "aal2"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "e3333333-3333-3333-3333-333333333333", "role": "authenticated", "aal": "aal2"}';
-        SELECT public.admin_adjust_pearls('e1111111-1111-1111-1111-111111111111', 50, 'Ajuste ilegal cruzado', 'ee000000-0000-0000-0000-000000000002');
-    $$,
+    $$SELECT public.admin_adjust_pearls('e1111111-1111-1111-1111-111111111111', 50, 'Ajuste ilegal cruzado', 'ee000000-0000-0000-0000-000000000002')$$,
     '42501',
     NULL,
     'TEST 8: Admin de Club Alpha no puede ajustar saldo del equipo Beta'
 );
+RESET ROLE;
 
 -- Setup a held ledger entry for Team Beta
 INSERT INTO public.ledger_entries (id, fan_id, team_id, amount, type, status, source_type, source_id, note)
@@ -173,16 +172,16 @@ VALUES ('bbbbbbbb-0000-0000-0000-000000000002', 'e1111111-1111-1111-1111-1111111
 ON CONFLICT (id) DO NOTHING;
 
 -- TEST 9: Staff Alpha cannot release held pearls belonging to Team Beta
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "e3333333-3333-3333-3333-333333333333", "role": "authenticated", "aal": "aal2"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "e3333333-3333-3333-3333-333333333333", "role": "authenticated", "aal": "aal2"}';
-        SELECT public.admin_release_held_pearls('bbbbbbbb-0000-0000-0000-000000000002', 'Liberación no autorizada');
-    $$,
+    $$SELECT public.admin_release_held_pearls('bbbbbbbb-0000-0000-0000-000000000002', 'Liberación no autorizada')$$,
     '42501',
     NULL,
     'TEST 9: Admin de Club Alpha no puede liberar perlitas retenidas de Club Beta'
 );
+RESET ROLE;
 
 -- TEST 10: Staff Beta CAN release held pearls belonging to Team Beta
 SET LOCAL ROLE authenticated;
@@ -229,30 +228,30 @@ ON CONFLICT (id) DO NOTHING;
 
 -- Fan 1 currently DOES NOT follow Beta (unfollowed above)
 -- TEST 13: Submitting trivia for non-followed team is rejected
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "e1111111-1111-1111-1111-111111111111", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "e1111111-1111-1111-1111-111111111111", "role": "authenticated"}';
-        SELECT public.submit_trivia_attempt('ca000000-0000-0000-0000-000000000099', '{}'::jsonb);
-    $$,
+    $$SELECT public.submit_trivia_attempt('ca000000-0000-0000-0000-000000000099', '{}'::jsonb)$$,
     '42501',
     NULL,
     'TEST 13: submit_trivia_attempt exige seguir al equipo para ganar perlitas'
 );
+RESET ROLE;
 
 -- ─── 7. Birthday Bonus per team & year ───────────────────────────────────────
 -- Fan 1 follows Alpha
 -- TEST 14: Birthday bonus rejected for non-followed team Beta
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "e1111111-1111-1111-1111-111111111111", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "e1111111-1111-1111-1111-111111111111", "role": "authenticated"}';
-        SELECT public.claim_birthday_bonus('ee000000-0000-0000-0000-000000000002');
-    $$,
+    $$SELECT public.claim_birthday_bonus('ee000000-0000-0000-0000-000000000002')$$,
     '42501',
     NULL,
     'TEST 14: claim_birthday_bonus exige seguir al equipo'
 );
+RESET ROLE;
 
 -- TEST 15: reconcile_wallets verifies per (fan_id, team_id)
 SET LOCAL ROLE authenticated;

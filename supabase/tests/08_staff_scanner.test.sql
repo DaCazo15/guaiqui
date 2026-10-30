@@ -48,28 +48,28 @@ BEGIN
 END $$;
 
 -- ─── TEST 1: Fan sin rol staff no puede ejecutar funciones de staff ─────────
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "a0000000-0000-0000-0000-000000000088", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "a0000000-0000-0000-0000-000000000088", "role": "authenticated"}';
-        SELECT assert_staff();
-    $$,
+    'SELECT assert_staff()',
     'P0001',
     'Staff or Admin authorization required.',
     'TEST 1: Fan normal recibe error P0001 al intentar assert_staff()'
 );
+RESET ROLE;
 
 -- ─── TEST 2: Staff inactivo tampoco puede ejecutar funciones ────────────────
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "b0000000-0000-0000-0000-000000000089", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "b0000000-0000-0000-0000-000000000089", "role": "authenticated"}';
-        SELECT assert_staff();
-    $$,
+    'SELECT assert_staff()',
     'P0001',
     'Staff or Admin authorization required.',
     'TEST 2: Staff inactivo recibe error P0001 en assert_staff()'
 );
+RESET ROLE;
 
 -- ─── TEST 3: Staff activo tiene acceso exitoso ──────────────────────────────
 RESET ROLE;
@@ -116,16 +116,16 @@ BEGIN
     FROM generate_series(1, 10) g;
 END $$;
 
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "b0000000-0000-0000-0000-000000000088", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "b0000000-0000-0000-0000-000000000088", "role": "authenticated"}';
-        SELECT verify_redemption_code('012345678901', 'Terminal Test');
-    $$,
+    $$SELECT verify_redemption_code('012345678901', 'Terminal Test')$$,
     '42501',
     'SCANNER_LOCKED: Escáner bloqueado temporalmente por acumulación de intentos fallidos. Intente en 15 minutos.',
     'TEST 5: Freno a la fuerza bruta bloquea escáner tras 10 intentos fallidos (SCANNER_LOCKED)'
 );
+RESET ROLE;
 
 -- Limpiar scan_events para continuar
 DO $$
@@ -157,29 +157,26 @@ SELECT is(
     'rejected',
     'TEST 6: reject_redemption actualiza el canje a rejected'
 );
+RESET ROLE;
 
 -- ─── TEST 7: adjust_stock no permite stock negativo y exige motivo ─────────
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "b0000000-0000-0000-0000-000000000088", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "b0000000-0000-0000-0000-000000000088", "role": "authenticated"}';
-        SELECT adjust_stock('e0000000-0000-0000-0000-000000000088', 5, '');
-    $$,
+    $$SELECT adjust_stock('e0000000-0000-0000-0000-000000000088', 5, '')$$,
     'P0001',
     'El motivo del ajuste de inventario es obligatorio.',
     'TEST 7a: adjust_stock exige motivo obligatorio'
 );
 
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "b0000000-0000-0000-0000-000000000088", "role": "authenticated"}';
-        SELECT adjust_stock('e0000000-0000-0000-0000-000000000088', -100, 'Ajuste excesivo');
-    $$,
+    $$SELECT adjust_stock('e0000000-0000-0000-0000-000000000088', -100, 'Ajuste excesivo')$$,
     'P0001',
     NULL,
     'TEST 7b: adjust_stock rechaza stock negativo'
 );
+RESET ROLE;
 
 RESET ROLE;
 SET LOCAL ROLE authenticated;

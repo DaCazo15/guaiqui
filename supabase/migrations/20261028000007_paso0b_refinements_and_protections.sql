@@ -801,8 +801,8 @@ REVOKE ALL ON FUNCTION public.purge_auth_identities(UUID) FROM PUBLIC, anon;
 GRANT EXECUTE ON FUNCTION public.purge_auth_identities(UUID) TO authenticated, service_role;
 
 -- Security corrections for sensitive backend functions
-REVOKE ALL ON FUNCTION public.create_notification(UUID, notification_type, TEXT, TEXT, JSONB, TEXT) FROM PUBLIC, anon, authenticated;
-GRANT EXECUTE ON FUNCTION public.create_notification(UUID, notification_type, TEXT, TEXT, JSONB, TEXT) TO service_role;
+REVOKE ALL ON FUNCTION public.create_notification(UUID, TEXT, TEXT, TEXT, JSONB, TEXT) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.create_notification(UUID, TEXT, TEXT, TEXT, JSONB, TEXT) TO service_role;
 
 REVOKE ALL ON FUNCTION public.enqueue_birthday_notifications(TIMESTAMPTZ) FROM PUBLIC, anon, authenticated;
 GRANT EXECUTE ON FUNCTION public.enqueue_birthday_notifications(TIMESTAMPTZ) TO service_role;

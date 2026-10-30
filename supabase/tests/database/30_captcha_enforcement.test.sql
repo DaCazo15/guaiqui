@@ -5,11 +5,11 @@ SELECT plan(4);
 -- 1. Setup Test Fan User
 INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, aud)
 VALUES ('88888888-8888-8888-8888-888888888888', '00000000-0000-0000-0000-000000000000', 'captcha_fan@guaiqui.test', 'encrypted', NOW(), '{"provider":"email","providers":["email"]}', '{}', NOW(), NOW(), 'authenticated', 'authenticated')
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET email_confirmed_at = COALESCE(auth.users.email_confirmed_at, NOW());
 
 INSERT INTO public.profiles (id, display_name, status, created_at, terms_accepted_at, terms_version)
 VALUES ('88888888-8888-8888-8888-888888888888', 'Captcha Test Fan', 'active', NOW() - INTERVAL '30 days', NOW(), 'v1.0')
-ON CONFLICT (id) DO UPDATE SET terms_accepted_at = NOW(), terms_version = 'v1.0';
+ON CONFLICT (id) DO UPDATE SET terms_accepted_at = NOW(), terms_version = 'v1.0', status = 'active';
 
 INSERT INTO public.team_follows (user_id, team_id)
 VALUES ('88888888-8888-8888-8888-888888888888', 'a0000000-0000-0000-0000-000000000001')

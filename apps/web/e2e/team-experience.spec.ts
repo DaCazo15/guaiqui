@@ -13,7 +13,14 @@ test.describe('Multi-Team Experience E2E Tests (Fase 3)', () => {
         'sb-test-auth-token',
         JSON.stringify({
           access_token: 'fake-jwt',
-          user: { id: 'fan-test-01', email: 'fan@guaiqui.test', role: 'authenticated' },
+          user: {
+            id: 'fan-test-01',
+            email: 'fan@guaiqui.test',
+            role: 'authenticated',
+            email_confirmed_at: '2026-01-01T00:00:00Z',
+            app_metadata: { provider: 'email', aal: 'aal1' },
+            user_metadata: {},
+          },
         })
       )
     })
@@ -98,7 +105,14 @@ test.describe('Multi-Team Experience E2E Tests (Fase 3)', () => {
         'sb-test-auth-token',
         JSON.stringify({
           access_token: 'fake-jwt',
-          user: { id: 'fan-test-01', email: 'fan@guaiqui.test', role: 'authenticated' },
+          user: {
+            id: 'fan-test-01',
+            email: 'fan@guaiqui.test',
+            role: 'authenticated',
+            email_confirmed_at: '2026-01-01T00:00:00Z',
+            app_metadata: { provider: 'email', aal: 'aal1' },
+            user_metadata: {},
+          },
         })
       )
     })
@@ -140,7 +154,14 @@ test.describe('Multi-Team Experience E2E Tests (Fase 3)', () => {
         'sb-test-auth-token',
         JSON.stringify({
           access_token: 'fake-jwt',
-          user: { id: 'fan-test-01', email: 'fan@guaiqui.test', role: 'authenticated' },
+          user: {
+            id: 'fan-test-01',
+            email: 'fan@guaiqui.test',
+            role: 'authenticated',
+            email_confirmed_at: '2026-01-01T00:00:00Z',
+            app_metadata: { provider: 'email', aal: 'aal1' },
+            user_metadata: {},
+          },
         })
       )
     })
@@ -166,7 +187,14 @@ test.describe('Multi-Team Experience E2E Tests (Fase 3)', () => {
         'sb-test-auth-token',
         JSON.stringify({
           access_token: 'fake-jwt',
-          user: { id: 'fan-test-01', email: 'fan@guaiqui.test', role: 'authenticated' },
+          user: {
+            id: 'fan-test-01',
+            email: 'fan@guaiqui.test',
+            role: 'authenticated',
+            email_confirmed_at: '2026-01-01T00:00:00Z',
+            app_metadata: { provider: 'email', aal: 'aal1' },
+            user_metadata: {},
+          },
         })
       )
     })

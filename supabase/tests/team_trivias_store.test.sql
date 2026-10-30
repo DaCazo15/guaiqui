@@ -13,7 +13,7 @@
 
 BEGIN;
 
-SELECT plan(12);
+SELECT plan(15);
 
 -- Test 1: get_streak_info function exists with team_id parameter
 SELECT has_function(
@@ -123,7 +123,67 @@ BEGIN
         PERFORM ok(false, 'TEST 12: Esperaba código 23503, se obtuvo: ' || COALESCE(v_err_code, 'NULL'));
     END IF;
 END $$;
+ 
+-- Test 13: Fan home_summary with explicit team_id and confirmed email
+INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, aud)
+VALUES ('77777777-7777-7777-7777-777777777777', '00000000-0000-0000-0000-000000000000', 'fan_fase3@guaiqui.test', 'encrypted', NOW(), '{"provider":"email","providers":["email"]}', '{}', NOW(), NOW(), 'authenticated', 'authenticated')
+ON CONFLICT (id) DO UPDATE SET email_confirmed_at = COALESCE(auth.users.email_confirmed_at, NOW());
+
+INSERT INTO public.profiles (id, display_name, status, created_at, terms_accepted_at, terms_version)
+VALUES ('77777777-7777-7777-7777-777777777777', 'Fan Fase 3', 'active', NOW(), NOW(), 'v1.0')
+ON CONFLICT (id) DO UPDATE SET terms_accepted_at = NOW(), terms_version = 'v1.0', status = 'active';
+
+INSERT INTO public.team_follows (user_id, team_id)
+VALUES ('77777777-7777-7777-7777-777777777777', 'a0000000-0000-0000-0000-000000000001')
+ON CONFLICT (user_id, team_id) DO NOTHING;
+
+INSERT INTO public.wallets (fan_id, team_id, balance_cache)
+VALUES ('77777777-7777-7777-7777-777777777777', 'a0000000-0000-0000-0000-000000000001', 500)
+ON CONFLICT (fan_id, team_id) DO UPDATE SET balance_cache = 500;
+
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "77777777-7777-7777-7777-777777777777", "role": "authenticated", "aal": "aal1"}';
+
+SELECT is(
+    (public.home_summary('a0000000-0000-0000-0000-000000000001'::uuid)->>'balance')::int,
+    500,
+    'TEST 13: home_summary retorna balance del equipo con fan activo'
+);
+RESET ROLE;
+
+-- Test 14: get_streak_info with explicit team_id
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "77777777-7777-7777-7777-777777777777", "role": "authenticated", "aal": "aal1"}';
+
+SELECT ok(
+    public.get_streak_info('77777777-7777-7777-7777-777777777777'::uuid, 'a0000000-0000-0000-0000-000000000001'::uuid) IS NOT NULL,
+    'TEST 14: get_streak_info retorna racha válida para fan y equipo'
+);
+RESET ROLE;
+
+-- Test 15: Admin RPC with claims aal2
+INSERT INTO auth.users (id, instance_id, email, encrypted_password, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, aud)
+VALUES ('77777777-7777-7777-7777-777777777778', '00000000-0000-0000-0000-000000000000', 'admin_fase3@guaiqui.test', 'encrypted', NOW(), '{"provider":"email","providers":["email"]}', '{}', NOW(), NOW(), 'authenticated', 'authenticated')
+ON CONFLICT (id) DO UPDATE SET email_confirmed_at = COALESCE(auth.users.email_confirmed_at, NOW());
+
+INSERT INTO public.profiles (id, display_name, status, created_at, terms_accepted_at, terms_version)
+VALUES ('77777777-7777-7777-7777-777777777778', 'Admin Fase 3', 'active', NOW(), NOW(), 'v1.0')
+ON CONFLICT (id) DO UPDATE SET terms_accepted_at = NOW(), terms_version = 'v1.0', status = 'active';
+
+INSERT INTO public.staff (user_id, team_id, role, is_active)
+VALUES ('77777777-7777-7777-7777-777777777778', 'a0000000-0000-0000-0000-000000000001', 'admin', true)
+ON CONFLICT (user_id, team_id) DO UPDATE SET is_active = true, role = 'admin';
+
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "77777777-7777-7777-7777-777777777778", "role": "authenticated", "aal": "aal2"}';
+
+SELECT lives_ok(
+    'SELECT public.admin_list_fans()',
+    'TEST 15: Admin con claims aal2 puede ejecutar admin_list_fans sin error'
+);
+RESET ROLE;
 
 SELECT * FROM finish();
 
 ROLLBACK;
+

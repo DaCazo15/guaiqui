@@ -50,15 +50,14 @@ SELECT ok(
 RESET ROLE;
 
 -- TEST 4: Anon cannot call accept_terms
+SET LOCAL ROLE anon;
 SELECT throws_ok(
-    $$
-      SET LOCAL ROLE anon;
-      SELECT public.accept_terms();
-    $$,
+    $$SELECT public.accept_terms()$$,
     '42501',
     NULL,
     'Rol anon no puede ejecutar la función accept_terms().'
 );
+RESET ROLE;
 
 SELECT * FROM finish();
 ROLLBACK;

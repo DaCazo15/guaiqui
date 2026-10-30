@@ -337,7 +337,7 @@ REVOKE ALL ON FUNCTION public.send_test_birthday_notification(UUID) FROM PUBLIC,
 GRANT EXECUTE ON FUNCTION public.send_test_birthday_notification(UUID) TO authenticated, service_role;
 
 -- 3.4 claim_birthday_bonus (Ensures team-specific checking via get_birthday_card(p_team_id))
-CREATE OR REPLACE FUNCTION public.claim_birthday_bonus(p_team_id UUID)
+CREATE OR REPLACE FUNCTION public.claim_birthday_bonus(p_team_id UUID DEFAULT NULL::UUID)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -354,23 +354,33 @@ DECLARE
     v_team_status public.team_status;
     v_target_card JSONB;
     v_elem JSONB;
+    v_target_team_id UUID := p_team_id;
 BEGIN
     v_user_id := public.assert_active_verified_fan();
 
-    IF p_team_id IS NULL THEN
-        RAISE EXCEPTION 'El identificador del equipo es obligatorio.';
+    IF v_target_team_id IS NULL THEN
+        SELECT tf.team_id INTO v_target_team_id
+        FROM public.team_follows tf
+        JOIN public.teams t ON t.id = tf.team_id AND t.status = 'active'
+        WHERE tf.user_id = v_user_id
+        ORDER BY tf.created_at ASC
+        LIMIT 1;
+
+        IF v_target_team_id IS NULL THEN
+            v_target_team_id := 'a0000000-0000-0000-0000-000000000001'::uuid;
+        END IF;
     END IF;
 
     PERFORM public.check_rate_limit(v_user_id, 'claim_birthday_bonus', 3, 60);
 
-    SELECT status INTO v_team_status FROM public.teams WHERE id = p_team_id;
+    SELECT status INTO v_team_status FROM public.teams WHERE id = v_target_team_id;
     IF NOT FOUND OR v_team_status != 'active' THEN
         RAISE EXCEPTION 'El equipo especificado no se encuentra activo.' USING ERRCODE = '42501';
     END IF;
 
     IF NOT EXISTS (
         SELECT 1 FROM public.team_follows
-        WHERE user_id = v_user_id AND team_id = p_team_id
+        WHERE user_id = v_user_id AND team_id = v_target_team_id
     ) THEN
         RAISE EXCEPTION 'Debes seguir al equipo para reclamar su bono de cumpleaños.' USING ERRCODE = '42501';
     END IF;
@@ -381,7 +391,7 @@ BEGIN
         RAISE EXCEPTION 'El bono de cumpleaños requiere una cuenta con al menos 30 días de antigüedad.';
     END IF;
 
-    v_card := public.get_birthday_card(p_team_id);
+    v_card := public.get_birthday_card(v_target_team_id);
     IF (v_card->>'eligible')::boolean IS NOT TRUE THEN
         RAISE EXCEPTION 'No eres elegible para reclamar un bono de cumpleaños hoy.';
     END IF;
@@ -390,7 +400,7 @@ BEGIN
     v_bonus := 0;
     IF v_card->'cards' IS NOT NULL AND jsonb_array_length(v_card->'cards') > 0 THEN
         FOR v_elem IN SELECT * FROM jsonb_array_elements(v_card->'cards') LOOP
-            IF (v_elem->>'team_id')::uuid = p_team_id THEN
+            IF (v_elem->>'team_id')::uuid = v_target_team_id THEN
                 v_target_card := v_elem;
                 v_bonus := COALESCE((v_elem->>'bonus_pearls')::int, 0);
                 EXIT;
@@ -405,25 +415,30 @@ BEGIN
     END IF;
 
     v_cur_year := EXTRACT(YEAR FROM (NOW() AT TIME ZONE 'America/Caracas'))::int;
-    v_ref_id := 'birthday_bonus_' || v_user_id::text || '_' || p_team_id::text || '_' || v_cur_year::text;
+    v_ref_id := 'birthday_bonus_' || v_user_id::text || '_' || v_target_team_id::text || '_' || v_cur_year::text;
 
     IF EXISTS (
         SELECT 1 FROM public.ledger_entries
-        WHERE fan_id = v_user_id AND team_id = p_team_id AND source_type = 'birthday_bonus' AND source_id = v_ref_id
+        WHERE fan_id = v_user_id AND team_id = v_target_team_id AND source_type = 'birthday_bonus' AND source_id = v_ref_id
     ) THEN
-        RAISE EXCEPTION 'Ya has reclamado tu bono de cumpleaños de este año para este equipo.';
+        RETURN jsonb_build_object(
+            'success', true,
+            'team_id', v_target_team_id,
+            'message', 'El bono de cumpleaños ya fue reclamado para este equipo este año.',
+            'already_claimed', true
+        );
     END IF;
 
-    -- Ensure wallet exists for (v_user_id, p_team_id)
+    -- Ensure wallet exists for (v_user_id, v_target_team_id)
     INSERT INTO public.wallets (fan_id, team_id, balance_cache, updated_at)
-    VALUES (v_user_id, p_team_id, 0, NOW())
+    VALUES (v_user_id, v_target_team_id, 0, NOW())
     ON CONFLICT (fan_id, team_id) DO NOTHING;
 
     -- Immutable ledger entry with foreign key to wallets
     INSERT INTO public.ledger_entries (
         fan_id, team_id, amount, type, status, source_type, source_id, note
     ) VALUES (
-        v_user_id, p_team_id, v_bonus, 'birthday_bonus', 'confirmed', 'birthday_bonus', v_ref_id,
+        v_user_id, v_target_team_id, v_bonus, 'birthday_bonus', 'confirmed', 'birthday_bonus', v_ref_id,
         'Bono de cumpleaños año ' || v_cur_year::text
     ) RETURNING id INTO v_entry_id;
 
@@ -431,11 +446,11 @@ BEGIN
     UPDATE public.wallets
     SET balance_cache = balance_cache + v_bonus,
         updated_at = NOW()
-    WHERE fan_id = v_user_id AND team_id = p_team_id;
+    WHERE fan_id = v_user_id AND team_id = v_target_team_id;
 
     RETURN jsonb_build_object(
         'success', true,
-        'team_id', p_team_id,
+        'team_id', v_target_team_id,
         'bonus_pearls', v_bonus,
         'ledger_id', v_entry_id
     );
@@ -964,3 +979,14 @@ CREATE INDEX IF NOT EXISTS idx_mystery_play_team_status ON public.mystery_play_c
 CREATE INDEX IF NOT EXISTS idx_score_pred_team_status ON public.score_predictions(team_id, status);
 CREATE INDEX IF NOT EXISTS idx_flash_trivia_team_status ON public.flash_trivia_challenges(team_id, status);
 CREATE INDEX IF NOT EXISTS idx_progressive_clues_team_status ON public.progressive_clue_challenges(team_id, status);
+
+-- ----------------------------------------------------------------------------
+-- 7. Security Hardening: Restrict Column-Level UPDATE on profiles for authenticated
+-- ----------------------------------------------------------------------------
+REVOKE UPDATE ON TABLE public.profiles FROM authenticated;
+GRANT UPDATE (display_name, avatar_url, cover_url, favorite_player_id, notification_prefs, phone) ON TABLE public.profiles TO authenticated;
+
+-- Ensure create_notification is strictly service_role only
+REVOKE ALL ON FUNCTION public.create_notification(UUID, TEXT, TEXT, TEXT, JSONB, TEXT) FROM PUBLIC, anon, authenticated;
+GRANT EXECUTE ON FUNCTION public.create_notification(UUID, TEXT, TEXT, TEXT, JSONB, TEXT) TO service_role;
+

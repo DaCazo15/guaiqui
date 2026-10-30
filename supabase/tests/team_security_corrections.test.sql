@@ -24,19 +24,19 @@ VALUES
 ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status;
 
 -- Users
-INSERT INTO auth.users (id, email)
+INSERT INTO auth.users (id, email, email_confirmed_at, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, role, aud)
 VALUES
-    ('aaaaaaaa-1111-1111-1111-111111111111', 'platform_admin@test.com'),
-    ('aaaaaaaa-2222-2222-2222-222222222222', 'staff_alpha@test.com'),
-    ('aaaaaaaa-3333-3333-3333-333333333333', 'staff_beta@test.com')
-ON CONFLICT (id) DO NOTHING;
+    ('aaaaaaaa-1111-1111-1111-111111111111', 'platform_admin@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated'),
+    ('aaaaaaaa-2222-2222-2222-222222222222', 'staff_alpha@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated'),
+    ('aaaaaaaa-3333-3333-3333-333333333333', 'staff_beta@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated')
+ON CONFLICT (id) DO UPDATE SET email_confirmed_at = COALESCE(auth.users.email_confirmed_at, NOW()), raw_app_meta_data = EXCLUDED.raw_app_meta_data;
 
-INSERT INTO public.profiles (id, display_name, status)
+INSERT INTO public.profiles (id, display_name, status, terms_accepted_at, terms_version)
 VALUES
-    ('aaaaaaaa-1111-1111-1111-111111111111', 'Platform Admin', 'active'),
-    ('aaaaaaaa-2222-2222-2222-222222222222', 'Staff Alpha', 'active'),
-    ('aaaaaaaa-3333-3333-3333-333333333333', 'Staff Beta', 'active')
-ON CONFLICT (id) DO NOTHING;
+    ('aaaaaaaa-1111-1111-1111-111111111111', 'Platform Admin', 'active', NOW(), 'v1.0'),
+    ('aaaaaaaa-2222-2222-2222-222222222222', 'Staff Alpha', 'active', NOW(), 'v1.0'),
+    ('aaaaaaaa-3333-3333-3333-333333333333', 'Staff Beta', 'active', NOW(), 'v1.0')
+ON CONFLICT (id) DO UPDATE SET terms_accepted_at = NOW(), terms_version = 'v1.0';
 
 -- Staff members
 INSERT INTO public.staff_members (user_id, role, team_id, active)
@@ -75,16 +75,16 @@ SELECT ok(
 );
 
 -- ─── TEST 5: assert_platform_admin fails without AAL2 ─────────────────────────
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-1111-1111-1111-111111111111", "role": "authenticated", "aal": "aal1"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-1111-1111-1111-111111111111", "role": "authenticated", "aal": "aal1"}';
-        SELECT public.assert_platform_admin();
-    $$,
+    $$SELECT public.assert_platform_admin()$$,
     '42501',
     NULL,
     'TEST 5: assert_platform_admin deniega acceso a admin de plataforma si el token carece de aal2'
 );
+RESET ROLE;
 
 -- ─── TEST 6: Inactive team blocks staff operations via is_team_staff ─────────
 SELECT ok(
@@ -124,28 +124,28 @@ SELECT is(
 );
 
 -- ─── TEST 10: Club admin cannot modify platform admin active status ───────────
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
-        SELECT public.admin_toggle_staff_active('aaaaaaaa-1111-1111-1111-111111111111', false);
-    $$,
+    $$SELECT public.admin_toggle_staff_active('aaaaaaaa-1111-1111-1111-111111111111', false)$$,
     '42501',
     NULL,
     'TEST 10: Admin de club no puede modificar el estado activo de un admin de plataforma'
 );
+RESET ROLE;
 
 -- ─── TEST 11: Club admin cannot modify staff role of another team ─────────────
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
-        SELECT public.admin_update_staff_role('aaaaaaaa-3333-3333-3333-333333333333', 'staff');
-    $$,
+    $$SELECT public.admin_update_staff_role('aaaaaaaa-3333-3333-3333-333333333333', 'staff')$$,
     '42501',
     NULL,
     'TEST 11: Admin de club no puede alterar el rol de personal de otro equipo'
 );
+RESET ROLE;
 
 -- ─── TEST 12: Cross-team redemption approval is blocked ───────────────────────
 INSERT INTO public.products (id, team_id, name, cost_pearls, stock, active)
@@ -156,60 +156,60 @@ INSERT INTO public.redemptions (id, team_id, fan_id, product_id, cost_pearls, st
 VALUES ('ff000000-0000-0000-0000-000000000001', 'bb000000-0000-0000-0000-000000000002', 'aaaaaaaa-1111-1111-1111-111111111111', 'ee000000-0000-0000-0000-000000000001', 100, 'pending', 'hash_beta_redemption', 'idem_beta_1')
 ON CONFLICT (id) DO NOTHING;
 
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
-        SELECT public.approve_redemption('ff000000-0000-0000-0000-000000000001');
-    $$,
+    $$SELECT public.approve_redemption('ff000000-0000-0000-0000-000000000001')$$,
     '42501',
     NULL,
     'TEST 12: Staff de Team Alpha no puede aprobar un canje perteneciente a Team Beta'
 );
+RESET ROLE;
 
 -- ─── TEST 13: Cross-team segment inspection is blocked ────────────────────────
 INSERT INTO public.segments (id, team_id, name, filters)
 VALUES ('ff000000-0000-0000-0000-000000000002', 'bb000000-0000-0000-0000-000000000002', 'Segmento Beta', '{}'::jsonb)
 ON CONFLICT (id) DO NOTHING;
 
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
-        SELECT public.segment_count('ff000000-0000-0000-0000-000000000002');
-    $$,
+    $$SELECT public.segment_count('ff000000-0000-0000-0000-000000000002')$$,
     '42501',
     NULL,
     'TEST 13: Staff de Team Alpha no puede consultar el conteo de un segmento de Team Beta'
 );
+RESET ROLE;
 
 -- ─── TEST 14: Regular club admin cannot suspend fans globally ─────────────────
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
-        SELECT public.admin_suspend_fan('aaaaaaaa-3333-3333-3333-333333333333', 'Motivo de prueba');
-    $$,
+    $$SELECT public.admin_suspend_fan('aaaaaaaa-3333-3333-3333-333333333333', 'Motivo de prueba')$$,
     '42501',
     NULL,
     'TEST 14: Admin de club no puede suspender fans (reservado exclusivamente a plataforma)'
 );
+RESET ROLE;
 
 -- ─── TEST 15: Cross-team trivia publishing is blocked ─────────────────────────
 INSERT INTO public.trivias (id, team_id, title, starts_at, ends_at, status)
 VALUES ('cc000000-0000-0000-0000-000000000003', 'bb000000-0000-0000-0000-000000000002', 'Trivia Beta', NOW(), NOW() + INTERVAL '1 day', 'draft')
 ON CONFLICT (id) DO NOTHING;
 
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "aaaaaaaa-2222-2222-2222-222222222222", "role": "authenticated"}';
-        SELECT public.admin_publish_trivia('cc000000-0000-0000-0000-000000000003');
-    $$,
+    $$SELECT public.admin_publish_trivia('cc000000-0000-0000-0000-000000000003')$$,
     '42501',
     NULL,
     'TEST 15: Staff de Team Alpha no puede publicar trivias de Team Beta'
 );
+RESET ROLE;
 
 SELECT * FROM finish();
 ROLLBACK;

@@ -27,7 +27,7 @@ VALUES
     ('d1111111-1111-1111-1111-111111111111', 'fan_follow_1@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated'),
     ('d2222222-2222-2222-2222-222222222222', 'fan_follow_2@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated'),
     ('d3333333-3333-3333-3333-333333333333', 'staff_follow@test.com', NOW(), '{"provider":"email"}', '{}', NOW(), NOW(), 'authenticated', 'authenticated')
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET email_confirmed_at = COALESCE(auth.users.email_confirmed_at, NOW()), raw_app_meta_data = EXCLUDED.raw_app_meta_data;
 
 INSERT INTO public.profiles (id, display_name, status, terms_accepted_at, terms_version)
 VALUES
@@ -89,16 +89,16 @@ SELECT is(
 );
 
 -- TEST 5: Cannot follow inactive team
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "d1111111-1111-1111-1111-111111111111", "role": "authenticated"}';
+
 SELECT throws_ok(
-    $$
-        SET LOCAL ROLE authenticated;
-        SET LOCAL "request.jwt.claims" = '{"sub": "d1111111-1111-1111-1111-111111111111", "role": "authenticated"}';
-        SELECT public.follow_team('dd000000-0000-0000-0000-000000000002');
-    $$,
+    $$SELECT public.follow_team('dd000000-0000-0000-0000-000000000002')$$,
     '42501',
     NULL,
     'TEST 5: follow_team rechaza seguir a un equipo con status inactive'
 );
+RESET ROLE;
 
 -- ─── 3. Unfollow Team (RPC) ──────────────────────────────────────────────────
 -- TEST 6: Unfollow active team succeeds

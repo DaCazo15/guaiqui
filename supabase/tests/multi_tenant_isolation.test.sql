@@ -110,11 +110,10 @@ SELECT has_column('public', 'trivias', 'team_id', 'TEST 10: trivias tiene column
 SELECT has_column('public', 'games', 'team_id', 'TEST 11: games tiene columna team_id');
 
 -- Test 12: assert_team_staff throws error when 2FA is missing
+SET LOCAL "request.jwt.claims" = '{"sub": "55555555-5555-5555-5555-555555555555", "role": "authenticated", "aal": "aal1"}';
+
 SELECT throws_ok(
-    $$
-      SET LOCAL "request.jwt.claims" = '{"sub": "55555555-5555-5555-5555-555555555555", "role": "authenticated", "aal": "aal1"}';
-      SELECT public.assert_team_staff('a0000000-0000-0000-0000-000000000001');
-    $$,
+    $$SELECT public.assert_team_staff('a0000000-0000-0000-0000-000000000001')$$,
     '42501',
     'Verificación en dos pasos (2FA) requerida para personal.',
     'TEST 12: assert_team_staff exige aal2 (2FA)'

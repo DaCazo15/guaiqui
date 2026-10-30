@@ -11,7 +11,7 @@ VALUES
   ('33333333-3333-3333-3333-333333333333', '00000000-0000-0000-0000-000000000000', 'new_fan@guaiqui.test', 'encrypted', NOW() - INTERVAL '5 days', '{"provider":"email","providers":["email"]}', '{}', NOW() - INTERVAL '5 days', NOW(), 'authenticated', 'authenticated'),
   ('44444444-4444-4444-4444-444444444444', '00000000-0000-0000-0000-000000000000', 'suspended_fan@guaiqui.test', 'encrypted', NOW() - INTERVAL '60 days', '{"provider":"email","providers":["email"]}', '{}', NOW() - INTERVAL '60 days', NOW(), 'authenticated', 'authenticated'),
   ('55555555-5555-5555-5555-555555555555', '00000000-0000-0000-0000-000000000000', 'optout_fan@guaiqui.test', 'encrypted', NOW() - INTERVAL '60 days', '{"provider":"email","providers":["email"]}', '{}', NOW() - INTERVAL '60 days', NOW(), 'authenticated', 'authenticated')
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET email_confirmed_at = COALESCE(auth.users.email_confirmed_at, EXCLUDED.email_confirmed_at);
 
 INSERT INTO public.profiles (id, display_name, status, birth_date, notification_prefs, created_at, terms_accepted_at, terms_version)
 VALUES

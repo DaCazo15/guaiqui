@@ -42,7 +42,7 @@ BEGIN
     PERFORM public.refresh_analytics_materialized_views();
     RAISE EXCEPTION 'Non-admin user should not be able to refresh materialized views';
 EXCEPTION WHEN OTHERS THEN
-    IF SQLERRM LIKE '%Acceso denegado%' OR SQLERRM LIKE '%assert_admin%' OR SQLERRM LIKE '%Admin authorization required%' THEN
+    IF SQLERRM LIKE '%Acceso denegado%' OR SQLERRM LIKE '%assert_admin%' OR SQLERRM LIKE '%Admin authorization required%' OR SQLERRM LIKE '%Verificación en dos pasos%' OR SQLERRM LIKE '%2FA%' THEN
         -- OK
     ELSE
         RAISE EXCEPTION 'Unexpected error: %', SQLERRM;

@@ -188,11 +188,9 @@ SELECT ok(
 );
 
 -- ─── TEST 16: Security Audit — purge_auth_identities permissions
+SET LOCAL ROLE anon;
 SELECT throws_ok(
-    $$ 
-      SET LOCAL ROLE anon;
-      SELECT public.purge_auth_identities('11111111-1111-1111-1111-111111111111');
-    $$,
+    $$SELECT public.purge_auth_identities('11111111-1111-1111-1111-111111111111')$$,
     '42501'
 );
 RESET ROLE;
@@ -264,12 +262,11 @@ SELECT is_empty(
 );
 
 -- ─── TEST 20: Security Audit — Fan execution denial on staff/admin functions
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated", "aal": "aal2"}';
+
 SELECT throws_ok(
-    $$ 
-      SET LOCAL ROLE authenticated;
-      SET LOCAL "request.jwt.claims" = '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated", "aal": "aal2"}';
-      SELECT public.verify_redemption_code('hash_test');
-    $$,
+    $$SELECT public.verify_redemption_code('hash_test')$$,
     '42501',
     'Staff or Admin authorization required.',
     'TEST 20: Un fan autenticado sin rol de staff/admin no puede ejecutar verify_redemption_code'
@@ -305,11 +302,9 @@ SELECT ok(
 );
 
 -- ─── TEST 24: Security Audit — Anon denial on get_leaderboard ──
+SET LOCAL ROLE anon;
 SELECT throws_ok(
-    $$ 
-      SET LOCAL ROLE anon;
-      SELECT public.get_leaderboard('monthly');
-    $$,
+    $$SELECT public.get_leaderboard('monthly')$$,
     '42501'
 );
 RESET ROLE;
