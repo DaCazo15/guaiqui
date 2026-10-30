@@ -3,6 +3,9 @@ import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable, BaseSelect } from '@guaiqui/ui'
 import { supabase } from '../lib/supabase'
+import { useAuthStore } from '../stores/auth'
+
+const authStore = useAuthStore()
 
 interface FanRow {
   id: string
@@ -20,6 +23,7 @@ const loading = ref(true)
 const actionLoading = ref(false)
 const errorMessage = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
+const pendingStep2Notice = ref(false)
 
 // Filters
 const filterMunicipality = ref('')
@@ -69,7 +73,11 @@ const loadFans = async () => {
     if (error) throw error
     fans.value = data?.fans || []
   } catch (err: any) {
-    errorMessage.value = err.message
+    if (err.message?.includes('MULTI_TEAM_PENDING_STEP2')) {
+      pendingStep2Notice.value = true
+    } else {
+      errorMessage.value = err.message
+    }
   } finally {
     loading.value = false
   }
@@ -199,6 +207,14 @@ onMounted(loadFans)
         </div>
       </BaseCard>
 
+      <div v-if="pendingStep2Notice" class="p-4 bg-amber-950/40 border border-amber-800/80 text-amber-200 rounded-xl text-sm flex items-start gap-3">
+        <i class="bi bi-info-circle-fill text-amber-400 text-lg mt-0.5 shrink-0"></i>
+        <div>
+          <p class="font-semibold">Transición Multi-Equipo en Curso</p>
+          <p class="text-xs text-amber-300/90 mt-0.5">El directorio de fanáticos estará disponible para administradores de club una vez implementada la asignación por seguidores del club en el Paso 2.</p>
+        </div>
+      </div>
+
       <div v-if="errorMessage" class="p-4 bg-red-950/60 border border-red-800 text-red-200 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
         <button @click="errorMessage = null" class="text-red-400 hover:text-red-200"><i class="bi bi-x-lg"></i></button>
@@ -239,12 +255,14 @@ onMounted(loadFans)
             <button @click="openAdjustModal(row as FanRow)" class="p-1.5 text-emerald-400 hover:bg-emerald-950/60 rounded-lg transition-colors" title="Ajustar Perlitas">
               <i class="bi bi-coin"></i>
             </button>
-            <button v-if="(row as FanRow).status === 'active'" @click="openSuspendModal(row as FanRow, 'suspended')" class="p-1.5 text-red-400 hover:bg-red-950/60 rounded-lg transition-colors" title="Suspender">
-              <i class="bi bi-person-x"></i>
-            </button>
-            <button v-else @click="openSuspendModal(row as FanRow, 'active')" class="p-1.5 text-emerald-400 hover:bg-emerald-950/60 rounded-lg transition-colors" title="Reactivar">
-              <i class="bi bi-person-check"></i>
-            </button>
+            <template v-if="authStore.isPlatformAdmin">
+              <button v-if="(row as FanRow).status === 'active'" @click="openSuspendModal(row as FanRow, 'suspended')" class="p-1.5 text-red-400 hover:bg-red-950/60 rounded-lg transition-colors" title="Suspender">
+                <i class="bi bi-person-x"></i>
+              </button>
+              <button v-else @click="openSuspendModal(row as FanRow, 'active')" class="p-1.5 text-emerald-400 hover:bg-emerald-950/60 rounded-lg transition-colors" title="Reactivar">
+                <i class="bi bi-person-check"></i>
+              </button>
+            </template>
           </div>
         </template>
       </BaseTable>

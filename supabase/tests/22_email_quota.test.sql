@@ -38,12 +38,12 @@ DECLARE
     v_res JSONB;
 BEGIN
     UPDATE public.email_usage_tracker
-    SET total_sent = 2999
+    SET total_sent = 3000
     WHERE period_yyyy_mm = v_period;
 
     v_res := public.register_email_send_attempt();
 
-    IF (v_res->>'key_index')::int = 2 AND (v_res->>'total_sent')::int = 3000 THEN
+    IF (v_res->>'key_index')::int = 2 AND (v_res->>'total_sent')::int = 3001 THEN
         -- OK
     ELSE
         RAISE EXCEPTION 'TEST 2 failed: %', v_res;

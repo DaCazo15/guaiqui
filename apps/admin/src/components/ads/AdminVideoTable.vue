@@ -2,10 +2,13 @@
 import { BaseBadge, BaseButton } from '@guaiqui/ui'
 import { getGoogleDriveEmbedUrl, type SponsorVideo } from '@guaiqui/shared'
 
-defineProps<{
+withDefaults(defineProps<{
   videos: SponsorVideo[]
   loading: boolean
-}>()
+  readOnly?: boolean
+}>(), {
+  readOnly: false
+})
 
 const emit = defineEmits<{
   (e: 'create'): void
@@ -44,7 +47,7 @@ const emit = defineEmits<{
             <th class="p-4">Duración & Recompensa</th>
             <th class="p-4">Botón de Redirección</th>
             <th class="p-4 text-center">Estado</th>
-            <th class="p-4 text-right">Acciones</th>
+            <th v-if="!readOnly" class="p-4 text-right">Acciones</th>
           </tr>
         </thead>
         <tbody class="divide-y divide-slate-800/60">
@@ -120,7 +123,16 @@ const emit = defineEmits<{
 
             <!-- Estado -->
             <td class="p-4 text-center">
+              <span
+                v-if="readOnly"
+                class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold border"
+                :class="video.is_active ? 'bg-emerald-950/80 text-emerald-300 border-emerald-800' : 'bg-slate-800 text-slate-400 border-slate-700'"
+              >
+                <i :class="video.is_active ? 'bi bi-check-circle-fill text-emerald-400' : 'bi bi-pause-circle-fill text-slate-400'"></i>
+                <span>{{ video.is_active ? 'Activo' : 'Pausado' }}</span>
+              </span>
               <button
+                v-else
                 type="button"
                 class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-bold cursor-pointer transition-colors border"
                 :class="video.is_active ? 'bg-emerald-950/80 text-emerald-300 border-emerald-800 hover:bg-emerald-900/80' : 'bg-slate-800 text-slate-400 border-slate-700 hover:bg-slate-700'"
@@ -133,7 +145,7 @@ const emit = defineEmits<{
             </td>
 
             <!-- Acciones -->
-            <td class="p-4 text-right">
+            <td v-if="!readOnly" class="p-4 text-right">
               <div class="flex items-center justify-end gap-1.5">
                 <button
                   type="button"

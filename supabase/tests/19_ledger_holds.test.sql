@@ -19,28 +19,28 @@ DECLARE
     v_held1 UUID := 'd9900000-0000-0000-0000-000000000001';
     v_held2 UUID := 'd9900000-0000-0000-0000-000000000002';
 BEGIN
-    INSERT INTO auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token)
+    INSERT INTO auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_confirmed_at)
     VALUES
-        (v_fan, 'authenticated', 'authenticated', 'fan_hold@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), ''),
-        (v_admin, 'authenticated', 'authenticated', 'admin_hold@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '')
-    ON CONFLICT (id) DO NOTHING;
+        (v_fan, 'authenticated', 'authenticated', 'fan_hold@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW()),
+        (v_admin, 'authenticated', 'authenticated', 'admin_hold@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW())
+    ON CONFLICT (id) DO UPDATE SET email_confirmed_at = NOW();
 
-    INSERT INTO profiles (id, display_name, status) VALUES
-        (v_fan, 'Fan Hold', 'active'),
-        (v_admin, 'Admin Hold', 'active')
-    ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name;
+    INSERT INTO profiles (id, display_name, status, terms_accepted_at, privacy_accepted_at, pearls_rules_accepted_at) VALUES
+        (v_fan, 'Fan Hold', 'active', NOW(), NOW(), NOW()),
+        (v_admin, 'Admin Hold', 'active', NOW(), NOW(), NOW())
+    ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name, terms_accepted_at = NOW(), privacy_accepted_at = NOW(), pearls_rules_accepted_at = NOW();
 
-    INSERT INTO staff_members (user_id, role, active)
-    VALUES (v_admin, 'admin', true)
-    ON CONFLICT (user_id) DO NOTHING;
+    INSERT INTO staff_members (user_id, team_id, role, active)
+    VALUES (v_admin, 'a0000000-0000-0000-0000-000000000001', 'admin', true)
+    ON CONFLICT (user_id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', role = 'admin', active = true;
 
-    INSERT INTO wallets (fan_id, balance_cache) VALUES
-        (v_fan, 0)
-    ON CONFLICT (fan_id) DO UPDATE SET balance_cache = EXCLUDED.balance_cache;
+    INSERT INTO wallets (fan_id, team_id, balance_cache) VALUES
+        (v_fan, 'a0000000-0000-0000-0000-000000000001', 0)
+    ON CONFLICT (fan_id, team_id) DO UPDATE SET balance_cache = EXCLUDED.balance_cache;
 
-    INSERT INTO ledger_entries (id, fan_id, amount, type, status, source_type, source_id, note) VALUES
-        (v_held1, v_fan, 300, 'trivia_reward', 'held', 'trivia_attempt', 'att-1', 'Premio retenido por velocidad implausible 1'),
-        (v_held2, v_fan, 500, 'trivia_reward', 'held', 'trivia_attempt', 'att-2', 'Premio retenido por velocidad implausible 2')
+    INSERT INTO ledger_entries (id, fan_id, team_id, amount, type, status, source_type, source_id, note) VALUES
+        (v_held1, v_fan, 'a0000000-0000-0000-0000-000000000001', 300, 'trivia_reward', 'held', 'trivia_attempt', 'att-1', 'Premio retenido por velocidad implausible 1'),
+        (v_held2, v_fan, 'a0000000-0000-0000-0000-000000000001', 500, 'trivia_reward', 'held', 'trivia_attempt', 'att-2', 'Premio retenido por velocidad implausible 2')
     ON CONFLICT (id) DO NOTHING;
 END $$;
 
@@ -85,11 +85,11 @@ DECLARE
     v_reconcile_count INT;
 BEGIN
     SET LOCAL ROLE authenticated;
-    SET LOCAL "request.jwt.claims" = '{"sub": "c9900000-0000-0000-0000-000000000001", "role": "authenticated"}';
+    SET LOCAL "request.jwt.claims" = '{"sub": "c9900000-0000-0000-0000-000000000001", "role": "authenticated", "aal": "aal2"}';
 
     v_res := public.admin_release_held_pearls('d9900000-0000-0000-0000-000000000001'::uuid, 'Verificado por auditoría de video');
 
-    SELECT balance_cache INTO v_bal FROM wallets WHERE fan_id = 'a9900000-0000-0000-0000-000000000001';
+    SELECT balance_cache INTO v_bal FROM wallets WHERE fan_id = 'a9900000-0000-0000-0000-000000000001' AND team_id = 'a0000000-0000-0000-0000-000000000001';
     SELECT COUNT(*) INTO v_reconcile_count FROM public.reconcile_wallets() WHERE fan_id = 'a9900000-0000-0000-0000-000000000001';
 
     IF v_res->>'status' = 'released' AND v_bal = 300 AND v_reconcile_count = 0 THEN
@@ -108,7 +108,7 @@ DECLARE
     v_res JSONB;
 BEGIN
     SET LOCAL ROLE authenticated;
-    SET LOCAL "request.jwt.claims" = '{"sub": "c9900000-0000-0000-0000-000000000001", "role": "authenticated"}';
+    SET LOCAL "request.jwt.claims" = '{"sub": "c9900000-0000-0000-0000-000000000001", "role": "authenticated", "aal": "aal2"}';
 
     v_res := public.admin_release_held_pearls('d9900000-0000-0000-0000-000000000001'::uuid, 'Intento redundante');
     RAISE EXCEPTION 'Second release should have failed';
@@ -130,11 +130,11 @@ DECLARE
     v_bal INT;
 BEGIN
     SET LOCAL ROLE authenticated;
-    SET LOCAL "request.jwt.claims" = '{"sub": "c9900000-0000-0000-0000-000000000001", "role": "authenticated"}';
+    SET LOCAL "request.jwt.claims" = '{"sub": "c9900000-0000-0000-0000-000000000001", "role": "authenticated", "aal": "aal2"}';
 
     v_res := public.admin_revoke_held_pearls('d9900000-0000-0000-0000-000000000002'::uuid, 'Fraude confirmado en auditoría');
 
-    SELECT balance_cache INTO v_bal FROM wallets WHERE fan_id = 'a9900000-0000-0000-0000-000000000001';
+    SELECT balance_cache INTO v_bal FROM wallets WHERE fan_id = 'a9900000-0000-0000-0000-000000000001' AND team_id = 'a0000000-0000-0000-0000-000000000001';
 
     IF v_res->>'status' = 'revoked' AND v_bal = 300 THEN
         -- OK balance remained 300 from previous release

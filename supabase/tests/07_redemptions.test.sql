@@ -16,36 +16,43 @@ DECLARE
     v_staff UUID := 'b0000000-0000-0000-0000-000000000001';
     v_prod UUID := 'e0000000-0000-0000-0000-000000000001';
 BEGIN
-    INSERT INTO auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token)
+    INSERT INTO auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_confirmed_at)
     VALUES
-        (v_fan1, 'authenticated', 'authenticated', 'fan1_fase7@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW(), ''),
-        (v_fan2, 'authenticated', 'authenticated', 'fan2_fase7@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW(), ''),
-        (v_staff, 'authenticated', 'authenticated', 'staff_fase7@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW(), '')
-    ON CONFLICT (id) DO NOTHING;
+        (v_fan1, 'authenticated', 'authenticated', 'fan1_fase7@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW()),
+        (v_fan2, 'authenticated', 'authenticated', 'fan2_fase7@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW()),
+        (v_staff, 'authenticated', 'authenticated', 'staff_fase7@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email","providers":["email"]}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW())
+    ON CONFLICT (id) DO UPDATE SET email_confirmed_at = NOW();
 
-    INSERT INTO profiles (id, display_name, status) VALUES
-        (v_fan1, 'Fan 1 Fase 7', 'active'),
-        (v_fan2, 'Fan 2 Fase 7', 'active'),
-        (v_staff, 'Staff Fase 7', 'active')
-    ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name;
+    INSERT INTO profiles (id, display_name, status, terms_accepted_at, privacy_accepted_at, pearls_rules_accepted_at) VALUES
+        (v_fan1, 'Fan 1 Fase 7', 'active', NOW(), NOW(), NOW()),
+        (v_fan2, 'Fan 2 Fase 7', 'active', NOW(), NOW(), NOW()),
+        (v_staff, 'Staff Fase 7', 'active', NOW(), NOW(), NOW())
+    ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name, status = 'active', terms_accepted_at = NOW(), privacy_accepted_at = NOW(), pearls_rules_accepted_at = NOW();
 
-    INSERT INTO staff_members (user_id, role, active)
-    VALUES (v_staff, 'staff', true)
-    ON CONFLICT (user_id) DO NOTHING;
-
-    INSERT INTO products (id, name, category, cost_pearls, stock, active)
-    VALUES (v_prod, 'Gorra Edición Especial Test', 'physical', 1000, 10, true)
-    ON CONFLICT (id) DO UPDATE SET cost_pearls = 1000, stock = 10, active = true;
-
-    INSERT INTO wallets (fan_id, balance_cache) VALUES
-        (v_fan1, 5000),
-        (v_fan2, 500)
-    ON CONFLICT (fan_id) DO UPDATE SET balance_cache = EXCLUDED.balance_cache;
-
-    INSERT INTO ledger_entries (fan_id, amount, type, status, source_type, source_id, note) VALUES
-        (v_fan1, 5000, 'bonus', 'confirmed', 'test_f7', 'f7_init_fan1', 'Saldo inicial'),
-        (v_fan2, 500, 'bonus', 'confirmed', 'test_f7', 'f7_init_fan2', 'Saldo inicial')
+    INSERT INTO team_follows (user_id, team_id) VALUES
+        (v_fan1, 'a0000000-0000-0000-0000-000000000001'),
+        (v_fan2, 'a0000000-0000-0000-0000-000000000001')
     ON CONFLICT DO NOTHING;
+
+    INSERT INTO staff_members (user_id, team_id, role, active)
+    VALUES (v_staff, 'a0000000-0000-0000-0000-000000000001', 'staff', true)
+    ON CONFLICT (user_id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', role = 'staff', active = true;
+
+    INSERT INTO products (id, team_id, name, category, cost_pearls, stock, active)
+    VALUES (v_prod, 'a0000000-0000-0000-0000-000000000001', 'Gorra Edición Especial Test', 'physical', 1000, 10, true)
+    ON CONFLICT (id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', cost_pearls = 1000, stock = 10, active = true;
+
+    INSERT INTO wallets (fan_id, team_id, balance_cache) VALUES
+        (v_fan1, 'a0000000-0000-0000-0000-000000000001', 5000),
+        (v_fan2, 'a0000000-0000-0000-0000-000000000001', 500)
+    ON CONFLICT (fan_id, team_id) DO UPDATE SET balance_cache = EXCLUDED.balance_cache;
+
+    INSERT INTO ledger_entries (fan_id, team_id, amount, type, status, source_type, source_id, note) VALUES
+        (v_fan1, 'a0000000-0000-0000-0000-000000000001', 5000, 'bonus', 'confirmed', 'test_f7', 'f7_init_fan1', 'Saldo inicial'),
+        (v_fan2, 'a0000000-0000-0000-0000-000000000001', 500, 'bonus', 'confirmed', 'test_f7', 'f7_init_fan2', 'Saldo inicial')
+    ON CONFLICT DO NOTHING;
+
+    UPDATE risk_settings SET value = '5000'::jsonb WHERE key = 'high_value_product_pearls';
 END $$;
 
 -- ─── TEST 1: Idempotency en redeem_product (misma key no cobra 2 veces) ──

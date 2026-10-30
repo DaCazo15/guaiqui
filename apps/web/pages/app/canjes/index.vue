@@ -10,6 +10,17 @@ definePageMeta({
 
 const { redemptions, loading, fetchMyRedemptions } = useRedemptions()
 const statusFilter = ref<string>('all')
+const teamFilter = ref<string>('all')
+
+const availableTeams = computed(() => {
+  const map = new Map<string, { id: string; name: string; slug: string; logo_url: string | null }>()
+  for (const r of redemptions.value) {
+    if (r.team) {
+      map.set(r.team.id, r.team)
+    }
+  }
+  return Array.from(map.values())
+})
 
 const getStatusConfig = (status: Redemption['status']) => {
   switch (status) {
@@ -96,17 +107,21 @@ const formatDate = (dateStr: string) => {
 }
 
 const filteredRedemptions = computed(() => {
-  if (statusFilter.value === 'all') return redemptions.value
+  let list = redemptions.value
+  if (teamFilter.value !== 'all') {
+    list = list.filter((r) => r.team?.id === teamFilter.value || r.team_id === teamFilter.value)
+  }
+  if (statusFilter.value === 'all') return list
   if (statusFilter.value === 'active') {
-    return redemptions.value.filter((r) => ['pending', 'approved', 'scheduled'].includes(r.status))
+    return list.filter((r) => ['pending', 'approved', 'scheduled'].includes(r.status))
   }
   if (statusFilter.value === 'completed') {
-    return redemptions.value.filter((r) => ['delivered', 'completed'].includes(r.status))
+    return list.filter((r) => ['delivered', 'completed'].includes(r.status))
   }
   if (statusFilter.value === 'cancelled') {
-    return redemptions.value.filter((r) => ['cancelled', 'rejected', 'expired'].includes(r.status))
+    return list.filter((r) => ['cancelled', 'rejected', 'expired'].includes(r.status))
   }
-  return redemptions.value
+  return list
 })
 
 onMounted(async () => {
@@ -138,6 +153,44 @@ useSeoMeta({
           Ir a la Tienda
         </BaseButton>
       </NuxtLink>
+    </div>
+
+    <!-- Filtros de Equipo (si hay canjes de varios equipos) -->
+    <div v-if="availableTeams.length > 1" class="flex items-center gap-2 overflow-x-auto pb-1">
+      <span class="text-xs font-bold text-guaiqui-text-muted uppercase tracking-wider shrink-0">Equipo:</span>
+      <button
+        type="button"
+        :class="[
+          'px-3 py-1 text-xs font-semibold rounded-full border transition-all cursor-pointer shrink-0',
+          teamFilter === 'all'
+            ? 'bg-guaiqui-primary text-white border-guaiqui-primary shadow-xs'
+            : 'bg-white text-guaiqui-text-muted border-guaiqui-border hover:text-guaiqui-text',
+        ]"
+        @click="teamFilter = 'all'"
+      >
+        Todos los Equipos
+      </button>
+      <button
+        v-for="team in availableTeams"
+        :key="team.id"
+        type="button"
+        :class="[
+          'px-3 py-1 text-xs font-semibold rounded-full border transition-all cursor-pointer flex items-center gap-1.5 shrink-0',
+          teamFilter === team.id
+            ? 'bg-guaiqui-primary text-white border-guaiqui-primary shadow-xs'
+            : 'bg-white text-guaiqui-text-muted border-guaiqui-border hover:text-guaiqui-text',
+        ]"
+        @click="teamFilter = team.id"
+      >
+        <img
+          v-if="team.logo_url"
+          :src="team.logo_url"
+          :alt="team.name"
+          class="w-3.5 h-3.5 rounded-full object-contain"
+        />
+        <i v-else class="bi bi-shield text-[10px]"></i>
+        <span>{{ team.name }}</span>
+      </button>
     </div>
 
     <!-- Filtros de Estado -->
@@ -204,6 +257,18 @@ useSeoMeta({
             <!-- Left: Product & Status -->
             <div class="space-y-2">
               <div class="flex items-center gap-2 flex-wrap">
+                <!-- Team Badge -->
+                <div v-if="redemption.team" class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold bg-guaiqui-surface text-guaiqui-text border border-guaiqui-border">
+                  <img
+                    v-if="redemption.team.logo_url"
+                    :src="redemption.team.logo_url"
+                    :alt="redemption.team.name"
+                    class="w-3.5 h-3.5 rounded-full object-contain"
+                  />
+                  <i v-else class="bi bi-shield text-guaiqui-primary text-xs"></i>
+                  <span>{{ redemption.team.name }}</span>
+                </div>
+
                 <span :class="['inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider', getStatusConfig(redemption.status).textClass, 'bg-guaiqui-surface border border-guaiqui-border']">
                   <i :class="['bi', getStatusConfig(redemption.status).icon]"></i>
                   {{ getStatusConfig(redemption.status).label }}

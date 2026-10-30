@@ -9,26 +9,30 @@ SELECT plan(4);
 DO $$
 DECLARE
     v_fan UUID := 'f2800000-0000-0000-0000-000000000001';
-    v_trivia UUID := 't2800000-0000-0000-0000-000000000001';
-    v_q UUID := 'q2800000-0000-0000-0000-000000000001';
-    v_opt1 UUID := 'o2800000-0000-0000-0000-000000000001';
-    v_opt2 UUID := 'o2800000-0000-0000-0000-000000000002';
+    v_trivia UUID := 'b2800000-0000-0000-0000-000000000001';
+    v_q UUID := 'c2800000-0000-0000-0000-000000000001';
+    v_opt1 UUID := 'd2800000-0000-0000-0000-000000000001';
+    v_opt2 UUID := 'd2800000-0000-0000-0000-000000000002';
 BEGIN
-    INSERT INTO auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token)
+    INSERT INTO auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_confirmed_at)
     VALUES
-        (v_fan, 'authenticated', 'authenticated', 'fan_reuse_test@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '')
-    ON CONFLICT (id) DO NOTHING;
+        (v_fan, 'authenticated', 'authenticated', 'fan_reuse_test@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW())
+    ON CONFLICT (id) DO UPDATE SET email_confirmed_at = NOW();
 
-    INSERT INTO profiles (id, display_name, status) VALUES
-        (v_fan, 'Fan Reuse Test', 'active')
-    ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name;
+    INSERT INTO profiles (id, display_name, status, terms_accepted_at, privacy_accepted_at, pearls_rules_accepted_at) VALUES
+        (v_fan, 'Fan Reuse Test', 'active', NOW(), NOW(), NOW())
+    ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name, terms_accepted_at = NOW(), privacy_accepted_at = NOW(), pearls_rules_accepted_at = NOW();
 
-    INSERT INTO trivias (id, title, description, status, starts_at, ends_at, time_limit_seconds, max_attempts)
-    VALUES (v_trivia, 'Trivia Reuse Suite', 'Test trivia', 'published', NOW() - interval '1 hour', NOW() + interval '1 day', 60, 5)
-    ON CONFLICT (id) DO UPDATE SET status = 'published', starts_at = NOW() - interval '1 hour', ends_at = NOW() + interval '1 day';
+    INSERT INTO team_follows (user_id, team_id) VALUES
+        (v_fan, 'a0000000-0000-0000-0000-000000000001')
+    ON CONFLICT DO NOTHING;
 
-    INSERT INTO trivia_questions (id, trivia_id, question_text, points, order_index)
-    VALUES (v_q, v_trivia, '¿Pregunta de prueba?', 50, 0)
+    INSERT INTO trivias (id, team_id, title, description, status, starts_at, ends_at, time_limit_seconds, max_attempts)
+    VALUES (v_trivia, 'a0000000-0000-0000-0000-000000000001', 'Trivia Reuse Suite', 'Test trivia', 'published', NOW() - interval '1 hour', NOW() + interval '1 day', 60, 5)
+    ON CONFLICT (id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', status = 'published', starts_at = NOW() - interval '1 hour', ends_at = NOW() + interval '1 day';
+
+    INSERT INTO trivia_questions (id, team_id, trivia_id, question_text, points, order_index)
+    VALUES (v_q, 'a0000000-0000-0000-0000-000000000001', v_trivia, '¿Pregunta de prueba?', 50, 0)
     ON CONFLICT (id) DO NOTHING;
 
     INSERT INTO trivia_options (id, question_id, option_text, is_correct)
@@ -43,7 +47,7 @@ END $$;
 DO $$
 DECLARE
     v_fan UUID := 'f2800000-0000-0000-0000-000000000001';
-    v_trivia UUID := 't2800000-0000-0000-0000-000000000001';
+    v_trivia UUID := 'b2800000-0000-0000-0000-000000000001';
     v_res JSONB;
 BEGIN
     -- Crear captcha pass vigente
@@ -76,7 +80,7 @@ SELECT pass('TEST 1: Reintento con intento vigente devuelve preguntas con reused
 DO $$
 DECLARE
     v_fan UUID := 'f2800000-0000-0000-0000-000000000001';
-    v_trivia UUID := 't2800000-0000-0000-0000-000000000001';
+    v_trivia UUID := 'b2800000-0000-0000-0000-000000000001';
     v_err TEXT;
 BEGIN
     -- Forzar expiración del intento creado
@@ -108,7 +112,7 @@ SELECT pass('TEST 2: Reintento con intento vencido lanza ATTEMPT_EXPIRED');
 DO $$
 DECLARE
     v_fan UUID := 'f2800000-0000-0000-0000-000000000001';
-    v_trivia UUID := 't2800000-0000-0000-0000-000000000001';
+    v_trivia UUID := 'b2800000-0000-0000-0000-000000000001';
     v_err TEXT;
 BEGIN
     -- Marcar intento como enviado
@@ -140,7 +144,7 @@ SELECT pass('TEST 3: Reintento con intento enviado lanza TRIVIA_ALREADY_PLAYED')
 DO $$
 DECLARE
     v_fan UUID := 'f2800000-0000-0000-0000-000000000001';
-    v_trivia UUID := 't2800000-0000-0000-0000-000000000001';
+    v_trivia UUID := 'b2800000-0000-0000-0000-000000000001';
     v_res JSONB;
 BEGIN
     INSERT INTO captcha_passes (user_id, ip_hash, used, expires_at)

@@ -268,7 +268,7 @@ describe('Bulk Import Configuration and Validation', () => {
 
     it('processes rows correctly calling admin_upsert_trivia_poll RPC', async () => {
       const config = BULK_CONFIGS.polls
-      let rpcCalls: any[] = []
+      const rpcCalls: any[] = []
 
       const mockSupabase = {
         rpc: async (fn: string, args: any) => {

@@ -7,6 +7,7 @@ import AppMobileDrawer from '~/components/app/AppMobileDrawer.vue'
 import NotificationBell from '~/components/app/NotificationBell.vue'
 import LoginModalCarousel from '~/components/app/LoginModalCarousel.vue'
 import IncompleteProfileBanner from '~/components/app/IncompleteProfileBanner.vue'
+import TeamPickerModal from '~/components/team/TeamPickerModal.vue'
 import { formatPerlitas } from '@guaiqui/shared'
 import { PearlIcon } from '@guaiqui/ui'
 import { BaseSkeletonLayout } from '@guaiqui/ui'
@@ -114,6 +115,9 @@ onMounted(async () => {
 
     <!-- Mobile Navigation Drawer with all 12 options -->
     <AppMobileDrawer :is-open="isDrawerOpen" @close="isDrawerOpen = false" />
+
+    <!-- Team Selection Modal for Trivias / Tienda -->
+    <TeamPickerModal />
 
     <!-- Login Welcome Modal Carousel -->
     <LoginModalCarousel />

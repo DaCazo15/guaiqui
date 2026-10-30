@@ -10,7 +10,7 @@ async function runLoadTest() {
   console.log('🚀 Iniciando Prueba de Carga Concurrente (100 peticiones en paralelo)...');
   const startTime = Date.now();
 
-  const requests = Array.from({ length: 100 }, (_, i) => {
+  const requests = Array.from({ length: 100 }, () => {
     return fetch(`${SUPABASE_URL}/rest/v1/rpc/health_check`, {
       method: 'POST',
       headers: {

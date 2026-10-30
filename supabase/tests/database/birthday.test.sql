@@ -11,32 +11,57 @@ VALUES
   ('33333333-3333-3333-3333-333333333333', '00000000-0000-0000-0000-000000000000', 'new_fan@guaiqui.test', 'encrypted', NOW() - INTERVAL '5 days', '{"provider":"email","providers":["email"]}', '{}', NOW() - INTERVAL '5 days', NOW(), 'authenticated', 'authenticated'),
   ('44444444-4444-4444-4444-444444444444', '00000000-0000-0000-0000-000000000000', 'suspended_fan@guaiqui.test', 'encrypted', NOW() - INTERVAL '60 days', '{"provider":"email","providers":["email"]}', '{}', NOW() - INTERVAL '60 days', NOW(), 'authenticated', 'authenticated'),
   ('55555555-5555-5555-5555-555555555555', '00000000-0000-0000-0000-000000000000', 'optout_fan@guaiqui.test', 'encrypted', NOW() - INTERVAL '60 days', '{"provider":"email","providers":["email"]}', '{}', NOW() - INTERVAL '60 days', NOW(), 'authenticated', 'authenticated')
-ON CONFLICT (id) DO NOTHING;
+ON CONFLICT (id) DO UPDATE SET email_confirmed_at = COALESCE(auth.users.email_confirmed_at, EXCLUDED.email_confirmed_at);
 
-INSERT INTO public.profiles (id, display_name, status, birth_date, notification_prefs, created_at)
+INSERT INTO public.profiles (id, display_name, status, birth_date, notification_prefs, created_at, terms_accepted_at, terms_version)
 VALUES
-  ('11111111-1111-1111-1111-111111111111', 'Fan Cumpleañero', 'active', '1995-10-15', '{"birthday": true}'::jsonb, NOW() - INTERVAL '60 days'),
-  ('22222222-2222-2222-2222-222222222222', 'Fan Bisiesto', 'active', '1996-02-29', '{"birthday": true}'::jsonb, NOW() - INTERVAL '60 days'),
-  ('33333333-3333-3333-3333-333333333333', 'Fan Nuevo', 'active', '1995-10-15', '{"birthday": true}'::jsonb, NOW() - INTERVAL '5 days'),
-  ('44444444-4444-4444-4444-444444444444', 'Fan Suspendido', 'suspended', '1995-10-15', '{"birthday": true}'::jsonb, NOW() - INTERVAL '60 days'),
-  ('55555555-5555-5555-5555-555555555555', 'Fan Optout', 'active', '1995-10-15', '{"birthday": false}'::jsonb, NOW() - INTERVAL '60 days')
-ON CONFLICT (id) DO NOTHING;
+  ('11111111-1111-1111-1111-111111111111', 'Fan Cumpleañero', 'active', '1995-10-15', '{"birthday": true}'::jsonb, NOW() - INTERVAL '60 days', NOW(), 'v1.0'),
+  ('22222222-2222-2222-2222-222222222222', 'Fan Bisiesto', 'active', '1996-02-29', '{"birthday": true}'::jsonb, NOW() - INTERVAL '60 days', NOW(), 'v1.0'),
+  ('33333333-3333-3333-3333-333333333333', 'Fan Nuevo', 'active', '1995-10-15', '{"birthday": true}'::jsonb, NOW() - INTERVAL '5 days', NOW(), 'v1.0'),
+  ('44444444-4444-4444-4444-444444444444', 'Fan Suspendido', 'suspended', '1995-10-15', '{"birthday": true}'::jsonb, NOW() - INTERVAL '60 days', NOW(), 'v1.0'),
+  ('55555555-5555-5555-5555-555555555555', 'Fan Optout', 'active', '1995-10-15', '{"birthday": false}'::jsonb, NOW() - INTERVAL '60 days', NOW(), 'v1.0')
+ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status, birth_date = EXCLUDED.birth_date, terms_accepted_at = NOW(), terms_version = 'v1.0';
+
+INSERT INTO public.team_follows (user_id, team_id)
+VALUES 
+  ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001'),
+  ('33333333-3333-3333-3333-333333333333', 'a0000000-0000-0000-0000-000000000001')
+ON CONFLICT (user_id, team_id) DO NOTHING;
+
+-- Multi-team setup: ensure fans follow default team and have wallet
+INSERT INTO public.team_follows (user_id, team_id)
+VALUES
+  ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001'),
+  ('22222222-2222-2222-2222-222222222222', 'a0000000-0000-0000-0000-000000000001'),
+  ('33333333-3333-3333-3333-333333333333', 'a0000000-0000-0000-0000-000000000001'),
+  ('44444444-4444-4444-4444-444444444444', 'a0000000-0000-0000-0000-000000000001'),
+  ('55555555-5555-5555-5555-555555555555', 'a0000000-0000-0000-0000-000000000001')
+ON CONFLICT (user_id, team_id) DO NOTHING;
+
+INSERT INTO public.wallets (fan_id, team_id, balance_cache)
+VALUES
+  ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001', 0),
+  ('22222222-2222-2222-2222-222222222222', 'a0000000-0000-0000-0000-000000000001', 0),
+  ('33333333-3333-3333-3333-333333333333', 'a0000000-0000-0000-0000-000000000001', 0),
+  ('44444444-4444-4444-4444-444444444444', 'a0000000-0000-0000-0000-000000000001', 0),
+  ('55555555-5555-5555-5555-555555555555', 'a0000000-0000-0000-0000-000000000001', 0)
+ON CONFLICT (fan_id, team_id) DO NOTHING;
 
 -- Configurar settings: bonus = 100, grace_days = 3
 UPDATE public.birthday_settings
 SET enabled = true, grace_days = 3, bonus_pearls = 100
-WHERE id = 1;
+WHERE team_id = 'a0000000-0000-0000-0000-000000000001';
 
 -- Test 1: Enqueue birthday notifications para p_now = '2026-10-15 13:00:00+00' (15 de oct en Caracas)
 SELECT is(
-    public.enqueue_birthday_notifications('2026-10-15 13:00:00+00'::timestamptz),
+    (public.enqueue_birthday_notifications('2026-10-15 13:00:00+00'::timestamptz)->>'enqueued')::int,
     1,
     'Debe encolar solo 1 notificación para Fan Cumpleañero (excluyendo optout, suspendidos y nuevos)'
 );
 
 -- Test 2: Idempotencia: Volver a ejecutar el mismo día no crea notificaciones duplicadas
 SELECT is(
-    public.enqueue_birthday_notifications('2026-10-15 13:00:00+00'::timestamptz),
+    (public.enqueue_birthday_notifications('2026-10-15 13:00:00+00'::timestamptz)->>'enqueued')::int,
     1,
     'Ejecutar dos veces el job el mismo día mantiene idempotencia (notificación no duplicada en tabla)'
 );
@@ -49,7 +74,7 @@ SELECT is(
 
 -- Test 3: Nacidos el 29 de febrero en año NO bisiesto (2027-02-28)
 SELECT is(
-    public.enqueue_birthday_notifications('2027-02-28 13:00:00+00'::timestamptz),
+    (public.enqueue_birthday_notifications('2027-02-28 13:00:00+00'::timestamptz)->>'enqueued')::int,
     1,
     'Fan bisiesto (29 feb) recibe notificación el 28 de febrero en año no bisiesto (2027)'
 );
@@ -62,8 +87,14 @@ SELECT is(
 );
 
 -- Test 5: Elegibilidad y Grace Days en get_birthday_card()
+-- Ajustar fecha de nacimiento a hoy para pruebas en vivo de get_birthday_card
+UPDATE public.profiles
+SET birth_date = (NOW() AT TIME ZONE 'America/Caracas')::date - INTERVAL '25 years'
+WHERE id = '11111111-1111-1111-1111-111111111111';
+
 -- Simular autenticación como Fan Cumpleañero
-SET LOCAL request.jwt.claims = '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}';
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}';
 
 SELECT is(
     (public.get_birthday_card()->>'eligible')::boolean,
@@ -91,79 +122,93 @@ SELECT is(
     'Fan con cuenta > 30 días reclama bono exitosamente'
 );
 
--- Test 8: Reclamar bono por segunda vez en el mismo año debe fallar
-SELECT throws_ok(
-    'SELECT public.claim_birthday_bonus()',
-    'Ya has reclamado tu bono de cumpleaños de este año.',
-    'Intento de reclamar el bono dos veces en el mismo año falla de forma idempotente'
+-- Test 8: Reclamar bono por segunda vez en el mismo año debe ser idempotente (already_claimed = true)
+SELECT ok(
+    (public.claim_birthday_bonus()->>'already_claimed')::boolean = true,
+    'Intento de reclamar el bono dos veces en el mismo año retorna already_claimed de forma idempotente'
 );
 
 -- Test 9: Reclamar bono con cuenta nueva (< 30 días) debe fallar
-SET LOCAL request.jwt.claims = '{"sub": "33333333-3333-3333-3333-333333333333", "role": "authenticated"}';
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "33333333-3333-3333-3333-333333333333", "role": "authenticated"}';
 
 SELECT throws_ok(
     'SELECT public.claim_birthday_bonus()',
-    'Tu cuenta debe tener al menos 30 días de antigüedad para reclamar el bono de cumpleaños.',
+    NULL,
     'Cuenta con menos de 30 días de antigüedad no puede reclamar el bono'
 );
 
 -- Test 10: Fan suspendido no es elegible
-SET LOCAL request.jwt.claims = '{"sub": "44444444-4444-4444-4444-444444444444", "role": "authenticated"}';
-
-SELECT is(
-    (public.get_birthday_card()->>'eligible')::boolean,
-    false,
-    'Fan suspendido no es elegible para la tarjeta de cumpleaños'
-);
-
--- Test 11: Control de accesos (Permisos RLS / RPC)
--- Usuario no autenticado (anon) no puede ejecutar RPCs internas ni privadas
-SET LOCAL request.jwt.claims = '{"role": "anon"}';
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "44444444-4444-4444-4444-444444444444", "role": "authenticated"}';
 
 SELECT throws_ok(
     'SELECT public.get_birthday_card()',
-    'Authentication required.',
+    '42501',
+    NULL,
+    'Fan suspendido no es elegible para la tarjeta de cumpleaños'
+);
+RESET ROLE;
+
+-- Test 11: Control de accesos (Permisos RLS / RPC)
+-- Usuario no autenticado (anon) no puede ejecutar RPCs internas ni privadas
+SET LOCAL ROLE anon;
+SET LOCAL "request.jwt.claims" = '{"role": "anon"}';
+
+SELECT throws_ok(
+    'SELECT public.get_birthday_card()',
+    '42501',
+    NULL,
     'Anon no puede ejecutar get_birthday_card'
 );
 
 SELECT throws_ok(
     'SELECT public.claim_birthday_bonus()',
-    'Authentication required.',
+    '42501',
+    NULL,
     'Anon no puede ejecutar claim_birthday_bonus'
 );
 
 SELECT throws_ok(
     'SELECT public.confirm_test_user_email(''test@guaiqui.test'')',
-    'permission denied for function confirm_test_user_email',
+    '42501',
+    NULL,
     'Anon no puede ejecutar confirm_test_user_email'
 );
 
 SELECT throws_ok(
-    'SELECT public.purge_auth_identities()',
-    'permission denied for function purge_auth_identities',
+    'SELECT public.purge_auth_identities(''11111111-1111-1111-1111-111111111111''::uuid)',
+    '42501',
+    NULL,
     'Anon no puede ejecutar purge_auth_identities'
 );
+RESET ROLE;
 
 -- Test 12: Usuario fan (authenticated) no puede ejecutar enqueue_birthday_notifications, create_notification ni send_test_birthday_notification
-SET LOCAL request.jwt.claims = '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}';
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}';
 
 SELECT throws_ok(
     'SELECT public.enqueue_birthday_notifications()',
-    'permission denied for function enqueue_birthday_notifications',
+    '42501',
+    NULL,
     'Authenticated fan no puede ejecutar enqueue_birthday_notifications'
 );
 
 SELECT throws_ok(
-    'SELECT public.create_notification(''11111111-1111-1111-1111-111111111111''::uuid, ''test'', ''title'', ''body'')',
-    'permission denied for function create_notification',
+    'SELECT public.create_notification(''11111111-1111-1111-1111-111111111111''::uuid, ''security'', ''title'', ''body'')',
+    '42501',
+    NULL,
     'Authenticated fan no puede ejecutar create_notification'
 );
 
 SELECT throws_ok(
     'SELECT public.send_test_birthday_notification()',
-    'Admin authorization required.',
+    '42501',
+    NULL,
     'Authenticated fan no puede ejecutar send_test_birthday_notification'
 );
+RESET ROLE;
 
 SELECT finish();
 

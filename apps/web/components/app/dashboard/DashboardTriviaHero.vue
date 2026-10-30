@@ -2,9 +2,11 @@
 import { computed } from 'vue'
 import { BaseCard, BaseBadge, PearlAmount } from '@guaiqui/ui'
 import { useTriviaStore } from '~/stores/trivias'
+import { useCurrentTeam } from '~/composables/useCurrentTeam'
 import TriviaPlayButton from './TriviaPlayButton.vue'
 
 const triviaStore = useTriviaStore()
+const { activeTeam } = useCurrentTeam()
 
 const activeTrivia = computed(() => triviaStore.homeSummary?.active_trivia)
 
@@ -69,7 +71,7 @@ const estimatedReward = computed(() => {
                 <i class="bi bi-check-circle-fill text-emerald-600 text-sm"></i>
                 Completada
               </span>
-              <NuxtLink to="/app/trivias">
+              <NuxtLink :to="activeTeam ? `/app/e/${activeTeam.slug}/trivias` : '/app/trivias'">
                 <button class="px-4 py-2 rounded-guaiqui-lg bg-guaiqui-surface hover:bg-gray-200 text-guaiqui-text font-bold text-xs uppercase tracking-wider border border-guaiqui-border transition-colors">
                   Historial
                 </button>
@@ -85,6 +87,7 @@ const estimatedReward = computed(() => {
               </span>
               <TriviaPlayButton
                 :trivia-id="activeTrivia.id"
+                :team-slug="activeTeam?.slug"
                 label="Jugar Trivia Ahora"
               />
             </div>
@@ -106,7 +109,7 @@ const estimatedReward = computed(() => {
           Los árbitros están afinando las preguntas. Vuelve en unas horas para sumar más puntos a tu cuenta.
         </p>
       </div>
-      <NuxtLink to="/app/trivias">
+      <NuxtLink :to="activeTeam ? `/app/e/${activeTeam.slug}/trivias` : '/app/trivias'">
         <button class="mt-2 px-4 py-2 rounded-guaiqui-md bg-guaiqui-primary-soft hover:bg-emerald-100 text-guaiqui-primary text-xs font-bold uppercase tracking-wider transition-colors">
           Explorar Trivias Anteriores
         </button>

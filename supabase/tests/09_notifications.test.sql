@@ -17,16 +17,16 @@ BEGIN
         ('00000000-0000-0000-0000-000000000000', v_u2, 'authenticated', 'authenticated', 'notif_u2@guaiqui.test', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW())
     ON CONFLICT (id) DO NOTHING;
 
-    INSERT INTO profiles (id, display_name, status, notification_prefs)
+    INSERT INTO profiles (id, display_name, status, notification_prefs, terms_accepted_at, privacy_accepted_at, pearls_rules_accepted_at)
     VALUES
-        (v_u1, 'Notif User 1', 'active', '{"redemptions": true, "trivias_matches": true, "news": true, "push": true, "email": true}'::jsonb),
-        (v_u2, 'Notif User 2', 'active', '{"redemptions": true, "trivias_matches": false, "news": false, "push": true, "email": true}'::jsonb)
-    ON CONFLICT (id) DO UPDATE SET notification_prefs = EXCLUDED.notification_prefs;
+        (v_u1, 'Notif User 1', 'active', '{"redemptions": true, "trivias_matches": true, "news": true, "push": true, "email": true}'::jsonb, NOW(), NOW(), NOW()),
+        (v_u2, 'Notif User 2', 'active', '{"redemptions": true, "trivias_matches": false, "news": false, "push": true, "email": true}'::jsonb, NOW(), NOW(), NOW())
+    ON CONFLICT (id) DO UPDATE SET notification_prefs = EXCLUDED.notification_prefs, terms_accepted_at = NOW(), privacy_accepted_at = NOW(), pearls_rules_accepted_at = NOW();
 END $$;
 
 -- 1. Intentar llamar create_notification como authenticated debe fallar (REVOKE ALL)
 SET LOCAL ROLE authenticated;
-SET LOCAL "request.jwt.claim.sub" TO '44444444-4444-4444-4444-444444444444';
+SET LOCAL "request.jwt.claims" = '{"sub": "44444444-4444-4444-4444-444444444444", "role": "authenticated"}';
 
 SELECT throws_ok(
     $$ SELECT public.create_notification('44444444-4444-4444-4444-444444444444', 'team_news', 'Prueba', 'Cuerpo', '{}'::jsonb, 'test_key_1') $$,
@@ -47,9 +47,10 @@ SELECT throws_ok(
 
 -- Restablecer rol a postgres para probar create_notification internal
 RESET ROLE;
+RESET "request.jwt.claims";
 
 -- 4. Inserción de notificación transaccional con create_notification
-SELECT isnt_null(
+SELECT ok(
     public.create_notification(
         '44444444-4444-4444-4444-444444444444',
         'redemption_approved',
@@ -57,12 +58,12 @@ SELECT isnt_null(
         'Tu QR está listo',
         '{"redemption_id":"11111111-1111-1111-1111-111111111111"}'::jsonb,
         'dedup_tx_1'
-    ),
+    ) IS NOT NULL,
     'Notificación transaccional debe retornar UUID'
 );
 
 -- 5. Idempotencia por dedup_key (segunda llamada retorna NULL)
-SELECT is_null(
+SELECT ok(
     public.create_notification(
         '44444444-4444-4444-4444-444444444444',
         'redemption_approved',
@@ -70,12 +71,12 @@ SELECT is_null(
         'Tu QR está listo',
         '{}'::jsonb,
         'dedup_tx_1'
-    ),
+    ) IS NULL,
     'Notificación con dedup_key existente debe ser ignorada'
 );
 
 -- 6. Respeto de preferencias del usuario: User 2 tiene trivias_matches = false
-SELECT is_null(
+SELECT ok(
     public.create_notification(
         '55555555-5555-5555-5555-555555555555',
         'new_trivia',
@@ -83,12 +84,12 @@ SELECT is_null(
         'Participa ya',
         '{}'::jsonb,
         'dedup_u2_trivia_1'
-    ),
+    ) IS NULL,
     'Notificación no transaccional desactivada debe retornar NULL'
 );
 
 -- 7. Transaccional para User 2 sí debe ingresar aun si desactivó no transaccionales
-SELECT isnt_null(
+SELECT ok(
     public.create_notification(
         '55555555-5555-5555-5555-555555555555',
         'redemption_delivered',
@@ -96,12 +97,12 @@ SELECT isnt_null(
         'Entregado',
         '{}'::jsonb,
         'dedup_u2_tx_1'
-    ),
+    ) IS NOT NULL,
     'Notificación transaccional debe crearse independientemente de la preferencia'
 );
 
 -- 8. Tope de 1 notificación no transaccional al día por usuario
-SELECT isnt_null(
+SELECT ok(
     public.create_notification(
         '44444444-4444-4444-4444-444444444444',
         'new_trivia',
@@ -109,11 +110,11 @@ SELECT isnt_null(
         'Trivia 1',
         '{}'::jsonb,
         'dedup_u1_nontx_1'
-    ),
+    ) IS NOT NULL,
     'Primera no transaccional del día debe crearse'
 );
 
-SELECT is_null(
+SELECT ok(
     public.create_notification(
         '44444444-4444-4444-4444-444444444444',
         'team_news',
@@ -121,13 +122,13 @@ SELECT is_null(
         'Novedad 2',
         '{}'::jsonb,
         'dedup_u1_nontx_2'
-    ),
+    ) IS NULL,
     'Segunda no transaccional del mismo día debe ser rechazada por tope diario'
 );
 
 -- 9. Aislamiento RLS de lectura: User 1 no puede leer notificaciones de User 2
 SET LOCAL ROLE authenticated;
-SET LOCAL "request.jwt.claim.sub" TO '44444444-4444-4444-4444-444444444444';
+SET LOCAL "request.jwt.claims" = '{"sub": "44444444-4444-4444-4444-444444444444", "role": "authenticated"}';
 
 SELECT is(
     (SELECT COUNT(*)::int FROM notifications WHERE user_id = '55555555-5555-5555-5555-555555555555'),
@@ -142,10 +143,11 @@ SELECT lives_ok(
 );
 
 RESET ROLE;
+RESET "request.jwt.claims";
 
 -- 11. Verificar que push_subscriptions fue actualizado para u1 y no es accesible directo
 SET LOCAL ROLE authenticated;
-SET LOCAL "request.jwt.claim.sub" TO '55555555-5555-5555-5555-555555555555';
+SET LOCAL "request.jwt.claims" = '{"sub": "55555555-5555-5555-5555-555555555555", "role": "authenticated"}';
 
 SELECT throws_ok(
     $$ SELECT * FROM push_subscriptions $$,
@@ -159,14 +161,16 @@ SELECT lives_ok(
 );
 
 RESET ROLE;
-SELECT is_null(
-    (SELECT disabled_at FROM push_subscriptions WHERE endpoint = 'https://push.example.com/sub/u1'),
+RESET "request.jwt.claims";
+
+SELECT ok(
+    (SELECT disabled_at FROM push_subscriptions WHERE endpoint = 'https://push.example.com/sub/u1') IS NULL,
     'La suscripción de User 1 permanece activa'
 );
 
 -- 13. Desregistrar la propia suscripción como User 1
 SET LOCAL ROLE authenticated;
-SET LOCAL "request.jwt.claim.sub" TO '44444444-4444-4444-4444-444444444444';
+SET LOCAL "request.jwt.claims" = '{"sub": "44444444-4444-4444-4444-444444444444", "role": "authenticated"}';
 
 SELECT lives_ok(
     $$ SELECT public.unregister_push_subscription('https://push.example.com/sub/u1') $$,
@@ -174,8 +178,10 @@ SELECT lives_ok(
 );
 
 RESET ROLE;
-SELECT isnt_null(
-    (SELECT disabled_at FROM push_subscriptions WHERE endpoint = 'https://push.example.com/sub/u1'),
+RESET "request.jwt.claims";
+
+SELECT ok(
+    (SELECT disabled_at FROM push_subscriptions WHERE endpoint = 'https://push.example.com/sub/u1') IS NOT NULL,
     'Suscripción de User 1 fue deshabilitada'
 );
 

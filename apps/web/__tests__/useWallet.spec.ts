@@ -23,9 +23,12 @@ describe('useWallet composable', () => {
     const { summary, ledgerEntries, loading, error } = useWallet()
     expect(summary.value).toEqual({
       balance: 0,
+      total_balance: 0,
       earned_month: 0,
       spent_month: 0,
       held_pearls: 0,
+      total_held_balance: 0,
+      teams: [],
     })
     expect(ledgerEntries.value).toEqual([])
     expect(loading.value).toBe(false)
@@ -33,19 +36,37 @@ describe('useWallet composable', () => {
   })
 
   it('fetchSummary loads wallet summary correctly from RPC', async () => {
-    const expectedSummary = {
-      balance: 150,
+    const mockRpcData = {
+      total_balance: 150,
+      total_held_balance: 10,
       earned_month: 200,
       spent_month: 50,
-      held_pearls: 10,
+      teams: [
+        {
+          team_id: 'team-1',
+          team_name: 'Guaiqueríes',
+          team_slug: 'guaiqueries',
+          balance: 150,
+          held_balance: 10,
+          is_following: true,
+        },
+      ],
     }
-    mockRpc.mockResolvedValueOnce({ data: expectedSummary, error: null })
+    mockRpc.mockResolvedValueOnce({ data: mockRpcData, error: null })
 
     const { summary, fetchSummary, error } = useWallet()
     await fetchSummary()
 
-    expect(mockRpc).toHaveBeenCalledWith('wallet_summary')
-    expect(summary.value).toEqual(expectedSummary)
+    expect(mockRpc).toHaveBeenCalledWith('get_wallet_summary')
+    expect(summary.value).toEqual({
+      balance: 150,
+      total_balance: 150,
+      earned_month: 200,
+      spent_month: 50,
+      held_pearls: 10,
+      total_held_balance: 10,
+      teams: mockRpcData.teams,
+    })
     expect(error.value).toBeNull()
   })
 
@@ -86,6 +107,7 @@ describe('useWallet composable', () => {
 
     expect(mockRpc).toHaveBeenCalledWith('wallet_ledger', {
       p_type: undefined,
+      p_team_id: undefined,
       p_cursor: undefined,
       p_limit: 15,
     })

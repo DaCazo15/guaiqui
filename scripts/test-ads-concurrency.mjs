@@ -35,7 +35,7 @@ async function runAdsConcurrencyTest() {
   const testUserId = '55555555-5555-5555-5555-555555555555'
 
   // SQL helper via service_role rest
-  const setupRes = await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
+  await fetch(`${SUPABASE_URL}/rest/v1/profiles`, {
     method: 'POST',
     headers: {
       'apikey': SERVICE_ROLE_KEY,
@@ -50,8 +50,23 @@ async function runAdsConcurrencyTest() {
     })
   })
 
+  // Ensure team_follows exists
+  await fetch(`${SUPABASE_URL}/rest/v1/team_follows`, {
+    method: 'POST',
+    headers: {
+      'apikey': SERVICE_ROLE_KEY,
+      'Authorization': `Bearer ${SERVICE_ROLE_KEY}`,
+      'Content-Type': 'application/json',
+      'Prefer': 'resolution=merge-duplicates'
+    },
+    body: JSON.stringify({
+      user_id: testUserId,
+      team_id: 'a0000000-0000-0000-0000-000000000001'
+    })
+  })
+
   // Ensure wallet exists
-  await fetch(`${SUPABASE_URL}/rest/v1/wallets`, {
+  await fetch(`${SUPABASE_URL}/rest/v1/wallets?on_conflict=fan_id,team_id`, {
     method: 'POST',
     headers: {
       'apikey': SERVICE_ROLE_KEY,
@@ -61,6 +76,7 @@ async function runAdsConcurrencyTest() {
     },
     body: JSON.stringify({
       fan_id: testUserId,
+      team_id: 'a0000000-0000-0000-0000-000000000001',
       balance_cache: 0
     })
   })
