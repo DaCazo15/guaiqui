@@ -92,7 +92,7 @@ export const useCurrentTeam = () => {
     loading.value = true
     error.value = null
     try {
-      let targetSlug = slug || (route.params.slug as string) || safeGetStoredSlug() || 'guaiqueries'
+      const targetSlug = slug || (route.params.slug as string) || safeGetStoredSlug() || 'guaiqueries'
 
       // Fetch team public details
       const { data: teamData, error: teamError } = await supabase
@@ -117,7 +117,7 @@ export const useCurrentTeam = () => {
       // Check follow status & balance for this fan
       let isFollowing = false
       let teamBalance = 0
-      let teamHeld = 0
+      const teamHeld = 0
 
       if (user.value) {
         const { data: followData } = await supabase

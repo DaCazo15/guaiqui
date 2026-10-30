@@ -4,7 +4,7 @@ import { ref } from 'vue'
 
 const mockUser = ref<{ id: string } | null>({ id: 'fan-test-uuid' })
 const mockSelect = vi.fn()
-const mockFrom = vi.fn(() => ({
+const mockFrom = vi.fn((_table: string): any => ({
   select: mockSelect,
 }))
 

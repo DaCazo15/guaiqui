@@ -109,9 +109,9 @@ DECLARE
 BEGIN
     BEGIN
         INSERT INTO public.ledger_entries (
-            id, fan_id, team_id, amount, type, status, description, created_at
+            id, fan_id, team_id, amount, type, status, source_type, source_id, note, created_at
         ) VALUES (
-            gen_random_uuid(), v_fan_id, v_team_id, 100, 'trivia_reward', 'confirmed', 'Test Reward', NOW()
+            gen_random_uuid(), v_fan_id, v_team_id, 100, 'trivia_reward', 'confirmed', 'trivia_attempt', 'test-fk-attempt', 'Test Reward', NOW()
         );
     EXCEPTION WHEN OTHERS THEN
         GET STACKED DIAGNOSTICS v_err_code = RETURNED_SQLSTATE;

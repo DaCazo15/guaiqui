@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useSupabaseClient, useSeoMeta } from '#imports'
 import { formatPerlitas } from '@guaiqui/shared'

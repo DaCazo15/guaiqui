@@ -13,7 +13,7 @@ VALUES
     (tests.get_supabase_uid('antifraud_fan_u1'), 'Fan Antifraud', 'active', NOW(), NOW(), NOW())
 ON CONFLICT (id) DO UPDATE SET terms_accepted_at = NOW(), privacy_accepted_at = NOW(), pearls_rules_accepted_at = NOW();
 
-INSERT INTO public.team_follows (fan_id, team_id)
+INSERT INTO public.team_follows (user_id, team_id)
 VALUES (tests.get_supabase_uid('antifraud_fan_u1'), 'a0000000-0000-0000-0000-000000000001')
 ON CONFLICT DO NOTHING;
 
