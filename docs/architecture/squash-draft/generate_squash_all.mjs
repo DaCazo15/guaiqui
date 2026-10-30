@@ -3,7 +3,7 @@ import path from 'path'
 
 const stepsDir =
   'C:\\Users\\dcazo\\.gemini\\antigravity-ide\\brain\\211005b2-01ce-463c-87a9-8eaff6f8b421\\.system_generated\\steps'
-const outDir = process.env.SQUASH_OUT_DIR || 'supabase/squash_draft'
+const outDir = process.env.SQUASH_OUT_DIR || 'docs/architecture/squash-draft'
 if (!fs.existsSync(outDir)) {
   fs.mkdirSync(outDir, { recursive: true })
 }
@@ -659,6 +659,7 @@ for (const tbl of seedTables) {
       .map((k) => {
         const v = r[k]
         if (v === null) return 'NULL'
+        if (tbl === 'risk_settings' && k === 'value') return `'${v}'::jsonb`
         if (typeof v === 'boolean' || typeof v === 'number') return v
         if (typeof v === 'object') return `'${JSON.stringify(v).replace(/'/g, "''")}'::jsonb`
         return `'${String(v).replace(/'/g, "''")}'`
