@@ -2,7 +2,7 @@ BEGIN;
 SELECT plan(8);
 
 -- Test 1: birthday_settings table exists and is initialized
-SELECT passes(
+SELECT lives_ok(
     'SELECT count(*) FROM public.birthday_settings WHERE id = 1',
     'birthday_settings singleton row must exist'
 );
@@ -36,7 +36,7 @@ SELECT throws_ok(
 );
 
 -- Test 6: Verify ledger_type includes birthday_bonus
-SELECT passes(
+SELECT lives_ok(
     $$ SELECT 1 FROM pg_enum WHERE enumlabel = 'birthday_bonus' $$,
     'ledger_type enum includes birthday_bonus'
 );
@@ -48,7 +48,7 @@ SELECT lives_ok(
 );
 
 -- Test 8: birthday_settings policy allows public read
-SELECT passes(
+SELECT lives_ok(
     $$ SELECT count(*) FROM public.birthday_settings $$,
     'birthday_settings permits select'
 );

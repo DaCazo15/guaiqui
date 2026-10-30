@@ -2,28 +2,28 @@ BEGIN;
 SELECT plan(10);
 
 -- Setup users
-INSERT INTO auth.users (id, email) VALUES
-  ('00000000-0000-0000-0000-000000000001', 'admin9b@guaiqueries.com'),
-  ('00000000-0000-0000-0000-000000000002', 'staff9b@guaiqueries.com')
-ON CONFLICT (id) DO NOTHING;
+INSERT INTO auth.users (id, email, aud, role, email_confirmed_at) VALUES
+  ('00000000-0000-0000-0000-000000000001', 'admin9b@guaiqueries.com', 'authenticated', 'authenticated', NOW()),
+  ('00000000-0000-0000-0000-000000000002', 'staff9b@guaiqueries.com', 'authenticated', 'authenticated', NOW())
+ON CONFLICT (id) DO UPDATE SET email_confirmed_at = NOW();
 
-INSERT INTO public.profiles (id, display_name, status, terms_version, terms_accepted_at) VALUES
-  ('00000000-0000-0000-0000-000000000001', 'Admin 9B', 'active', 'v1.0', NOW()),
-  ('00000000-0000-0000-0000-000000000002', 'Staff 9B', 'active', 'v1.0', NOW())
-ON CONFLICT (id) DO NOTHING;
+INSERT INTO public.profiles (id, display_name, status, terms_version, terms_accepted_at, privacy_accepted_at, pearls_rules_accepted_at) VALUES
+  ('00000000-0000-0000-0000-000000000001', 'Admin 9B', 'active', 'v1.0', NOW(), NOW(), NOW()),
+  ('00000000-0000-0000-0000-000000000002', 'Staff 9B', 'active', 'v1.0', NOW(), NOW(), NOW())
+ON CONFLICT (id) DO UPDATE SET terms_accepted_at = NOW(), privacy_accepted_at = NOW(), pearls_rules_accepted_at = NOW();
 
-INSERT INTO public.staff_members (user_id, role, active) VALUES
-  ('00000000-0000-0000-0000-000000000001', 'admin', true),
-  ('00000000-0000-0000-0000-000000000002', 'staff', true)
-ON CONFLICT (user_id) DO NOTHING;
+INSERT INTO public.staff_members (user_id, team_id, role, active) VALUES
+  ('00000000-0000-0000-0000-000000000001', 'a0000000-0000-0000-0000-000000000001', 'admin', true),
+  ('00000000-0000-0000-0000-000000000002', 'a0000000-0000-0000-0000-000000000001', 'staff', true)
+ON CONFLICT (user_id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', role = EXCLUDED.role, active = true;
 
 -- Seed content (1 published, 1 unpublished)
-INSERT INTO public.site_announcements (id, message, is_published) VALUES
-  ('a1111111-1111-1111-1111-111111111111', 'Anuncio Publico', true),
-  ('a2222222-2222-2222-2222-222222222222', 'Borrador Oculto', false);
+INSERT INTO public.site_announcements (id, team_id, message, is_published) VALUES
+  ('a1111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001', 'Anuncio Publico', true),
+  ('a2222222-2222-2222-2222-222222222222', 'a0000000-0000-0000-0000-000000000001', 'Borrador Oculto', false);
 
 -- Test 1 & 2: Anon reads only published announcements
-SET LOCAL AUTHORIZATION anon;
+SET LOCAL ROLE anon;
 SELECT is(
   (SELECT COUNT(*) FROM public.site_announcements),
   1::bigint,
@@ -38,8 +38,8 @@ SELECT throws_ok(
 );
 
 -- Test 3 & 4: Staff cannot insert into site_announcements or publish policies
-SET LOCAL AUTHORIZATION authenticated;
-SET LOCAL "request.jwt.claims" = '{"sub": "00000000-0000-0000-0000-000000000002"}';
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "00000000-0000-0000-0000-000000000002", "role": "authenticated"}';
 
 SELECT throws_ok(
   $$ INSERT INTO public.site_announcements (message) VALUES ('Staff Message') $$,
@@ -56,7 +56,7 @@ SELECT throws_ok(
 );
 
 -- Test 5 & 6: Admin can publish policy and new version replaces active version
-SET LOCAL "request.jwt.claims" = '{"sub": "00000000-0000-0000-0000-000000000001"}';
+SET LOCAL "request.jwt.claims" = '{"sub": "00000000-0000-0000-0000-000000000001", "role": "authenticated", "aal": "aal2"}';
 
 SELECT lives_ok(
   $$ SELECT public.admin_publish_policy('terminos', 'v2.0', 'Términos v2.0 actualizados') $$,
@@ -91,7 +91,7 @@ SELECT is(
 
 -- Test 9: Admin can insert into site_team_members
 SELECT lives_ok(
-  $$ INSERT INTO public.site_team_members (name, role, group_category) VALUES ('Carlos Perez', 'DT', 'tecnico') $$,
+  $$ INSERT INTO public.site_team_members (team_id, name, role, group_category) VALUES ('a0000000-0000-0000-0000-000000000001', 'Carlos Perez', 'DT', 'tecnico') $$,
   'Admin can insert into site_team_members'
 );
 

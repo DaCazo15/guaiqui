@@ -11,19 +11,19 @@ ON CONFLICT DO NOTHING;
 
 -- Seed for risk_settings
 INSERT INTO public.risk_settings (id, key, value, updated_at, description)
-VALUES ('789f7b52-1177-4588-9e77-7ffd00f8bc79', 'timing_implausible_seconds', 3, '2026-10-11T19:00:41.188267+00:00', 'Umbral mínimo de tiempo de trivia (segundos)')
+VALUES ('789f7b52-1177-4588-9e77-7ffd00f8bc79', 'timing_implausible_seconds', '3'::jsonb, '2026-10-11T19:00:41.188267+00:00', 'Umbral mínimo de tiempo de trivia (segundos)')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO public.risk_settings (id, key, value, updated_at, description)
-VALUES ('b9a09682-2091-47b6-aeb4-067aba88580b', 'high_value_product_pearls', 3000, '2026-10-11T19:00:41.188267+00:00', 'Umbral de costo para exigir fricción proporcional')
+VALUES ('b9a09682-2091-47b6-aeb4-067aba88580b', 'high_value_product_pearls', '3000'::jsonb, '2026-10-11T19:00:41.188267+00:00', 'Umbral de costo para exigir fricción proporcional')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO public.risk_settings (id, key, value, updated_at, description)
-VALUES ('5ecb3d7e-45ce-4510-bbed-85dde6a8aae5', 'min_account_age_days', 7, '2026-10-11T19:00:41.188267+00:00', 'Antigüedad mínima de cuenta para canjes de alto valor')
+VALUES ('5ecb3d7e-45ce-4510-bbed-85dde6a8aae5', 'min_account_age_days', '7'::jsonb, '2026-10-11T19:00:41.188267+00:00', 'Antigüedad mínima de cuenta para canjes de alto valor')
 ON CONFLICT DO NOTHING;
 
 INSERT INTO public.risk_settings (id, key, value, updated_at, description)
-VALUES ('b63acadb-06b2-4829-8e66-b01a9dcb512f', 'min_trivias_completed', 3, '2026-10-11T19:00:41.188267+00:00', 'Mínimo de trivias para canjes de alto valor')
+VALUES ('b63acadb-06b2-4829-8e66-b01a9dcb512f', 'min_trivias_completed', '3'::jsonb, '2026-10-11T19:00:41.188267+00:00', 'Mínimo de trivias para canjes de alto valor')
 ON CONFLICT DO NOTHING;
 
 -- Seed for birthday_settings

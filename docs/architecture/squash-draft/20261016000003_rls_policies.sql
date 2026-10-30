@@ -58,7 +58,12 @@ ALTER TABLE public.ad_daily_progress ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ad_reconciliation ENABLE ROW LEVEL SECURITY;
 
 -- Enable RLS on storage.objects
-ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;
+DO $$
+BEGIN
+  IF NOT (SELECT relrowsecurity FROM pg_class WHERE oid = 'storage.objects'::regclass) THEN
+    EXECUTE 'ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY';
+  END IF;
+END $$;
 
 -- ----------------------------------------------------------------------------
 -- Policies for public.ad_reconciliation

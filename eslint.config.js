@@ -28,7 +28,17 @@ export default [
   eslintConfigPrettier,
   {
     rules: {
+      'no-undef': 'off',
+      'no-empty': ['error', { allowEmptyCatch: true }],
       '@typescript-eslint/no-explicit-any': 'warn',
+      '@typescript-eslint/no-unused-vars': [
+        'warn',
+        {
+          argsIgnorePattern: '^_',
+          varsIgnorePattern: '^_',
+          caughtErrorsIgnorePattern: '^_',
+        },
+      ],
     },
   },
   {
@@ -40,6 +50,13 @@ export default [
     },
     rules: {
       'vue/multi-word-component-names': 'off',
+      'vue/no-mutating-props': 'warn',
+      'vue/no-unused-vars': [
+        'warn',
+        {
+          ignorePattern: '^_',
+        },
+      ],
     },
   },
   {

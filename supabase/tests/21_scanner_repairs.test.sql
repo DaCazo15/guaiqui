@@ -13,28 +13,28 @@ DECLARE
     v_prod UUID := 'e2100000-0000-0000-0000-000000000001';
     v_red_sched UUID := 'd2100000-0000-0000-0000-000000000001';
 BEGIN
-    INSERT INTO auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token)
+    INSERT INTO auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_confirmed_at)
     VALUES
-        (v_fan, 'authenticated', 'authenticated', 'fan_staff_rep@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), ''),
-        (v_staff, 'authenticated', 'authenticated', 'staff_staff_rep@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '')
-    ON CONFLICT (id) DO NOTHING;
+        (v_fan, 'authenticated', 'authenticated', 'fan_staff_rep@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW()),
+        (v_staff, 'authenticated', 'authenticated', 'staff_staff_rep@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW())
+    ON CONFLICT (id) DO UPDATE SET email_confirmed_at = NOW();
 
-    INSERT INTO profiles (id, display_name, status) VALUES
-        (v_fan, 'Fan Staff Rep', 'active'),
-        (v_staff, 'Staff Staff Rep', 'active')
-    ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name;
+    INSERT INTO profiles (id, display_name, status, terms_accepted_at, privacy_accepted_at, pearls_rules_accepted_at) VALUES
+        (v_fan, 'Fan Staff Rep', 'active', NOW(), NOW(), NOW()),
+        (v_staff, 'Staff Staff Rep', 'active', NOW(), NOW(), NOW())
+    ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name, terms_accepted_at = NOW(), privacy_accepted_at = NOW(), pearls_rules_accepted_at = NOW();
 
-    INSERT INTO staff_members (user_id, role, active)
-    VALUES (v_staff, 'staff', true)
-    ON CONFLICT (user_id) DO NOTHING;
+    INSERT INTO staff_members (user_id, team_id, role, active)
+    VALUES (v_staff, 'a0000000-0000-0000-0000-000000000001', 'staff', true)
+    ON CONFLICT (user_id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', role = 'staff', active = true;
 
-    INSERT INTO products (id, name, category, cost_pearls, stock, active)
-    VALUES (v_prod, 'Experiencia Encuentro con Jugadores', 'experience', 1500, 5, true)
-    ON CONFLICT (id) DO UPDATE SET cost_pearls = 1500, stock = 5, active = true;
+    INSERT INTO products (id, team_id, name, category, cost_pearls, stock, active)
+    VALUES (v_prod, 'a0000000-0000-0000-0000-000000000001', 'Experiencia Encuentro con Jugadores', 'experience', 1500, 5, true)
+    ON CONFLICT (id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', cost_pearls = 1500, stock = 5, active = true;
 
-    INSERT INTO redemptions (id, fan_id, product_id, variant, cost_pearls, status, code_hash, idempotency_key)
-    VALUES (v_red_sched, v_fan, v_prod, 'VIP', 1500, 'scheduled', compute_redemption_code_hash('SCHED123TEST'), 'idemp-sched-01')
-    ON CONFLICT (id) DO NOTHING;
+    INSERT INTO redemptions (id, team_id, fan_id, product_id, variant, cost_pearls, status, code_hash, idempotency_key)
+    VALUES (v_red_sched, 'a0000000-0000-0000-0000-000000000001', v_fan, v_prod, 'VIP', 1500, 'scheduled', compute_redemption_code_hash('SCHED123TEST'), 'idemp-sched-01')
+    ON CONFLICT (id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', status = 'scheduled';
 END $$;
 
 
@@ -67,6 +67,7 @@ BEGIN
     SET LOCAL "request.jwt.claims" = '{"sub": "b2100000-0000-0000-0000-000000000001", "role": "authenticated"}';
 
     v_res := public.staff_upsert_product(jsonb_build_object(
+        'team_id', 'a0000000-0000-0000-0000-000000000001',
         'name', 'Balón Oficial Autografiado Staff',
         'category', 'physical',
         'cost_pearls', 2000,
@@ -93,6 +94,7 @@ BEGIN
     SET LOCAL "request.jwt.claims" = '{"sub": "b2100000-0000-0000-0000-000000000001", "role": "authenticated"}';
 
     v_res := public.staff_upsert_trivia(jsonb_build_object(
+        'team_id', 'a0000000-0000-0000-0000-000000000001',
         'title', 'Trivia de Prueba Staff',
         'description', 'Prueba de creación por staff',
         'starts_at', NOW()::text,

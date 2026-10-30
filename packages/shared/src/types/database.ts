@@ -54,6 +54,14 @@ export interface TeamPublic {
   secondary_color?: string | null
   status: TeamStatus
   joined_at: string
+  follower_count?: number
+  is_following?: boolean
+}
+
+export interface TeamFollow {
+  user_id: string
+  team_id: string
+  created_at: string
 }
 
 export interface Profile {
@@ -90,12 +98,37 @@ export interface StaffMember {
 
 export interface Wallet {
   fan_id: string
+  team_id: string
   balance_cache: number
   updated_at: string
 }
 
+export interface WalletSummaryTeam {
+  team_id: string
+  team_name: string
+  team_slug: string
+  team_short_name?: string | null
+  team_logo_url: string | null
+  team_primary_color?: string | null
+  team_secondary_color?: string | null
+  balance: number
+  held_balance: number
+  is_following: boolean
+}
+
+export interface WalletSummary {
+  balance: number
+  total_balance: number
+  earned_month: number
+  spent_month: number
+  held_pearls: number
+  total_held_balance: number
+  teams: WalletSummaryTeam[]
+}
+
 export interface LedgerEntry {
   id: string
+  team_id: string
   fan_id: string
   amount: number
   type: LedgerType
@@ -2031,6 +2064,7 @@ export type Database = {
           source_id: string
           source_type: string
           status: Database['public']['Enums']['ledger_status']
+          team_id: string
           type: Database['public']['Enums']['ledger_type']
         }
         Insert: {
@@ -2043,6 +2077,7 @@ export type Database = {
           source_id: string
           source_type: string
           status?: Database['public']['Enums']['ledger_status']
+          team_id: string
           type: Database['public']['Enums']['ledger_type']
         }
         Update: {
@@ -2055,6 +2090,7 @@ export type Database = {
           source_id?: string
           source_type?: string
           status?: Database['public']['Enums']['ledger_status']
+          team_id?: string
           type?: Database['public']['Enums']['ledger_type']
         }
         Relationships: [
@@ -2063,6 +2099,13 @@ export type Database = {
             columns: ['fan_id']
             isOneToOne: false
             referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'ledger_entries_team_id_fkey'
+            columns: ['team_id']
+            isOneToOne: false
+            referencedRelation: 'teams'
             referencedColumns: ['id']
           },
         ]
@@ -3237,28 +3280,71 @@ export type Database = {
           },
         ]
       }
+      team_follows: {
+        Row: {
+          created_at: string
+          team_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          team_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          team_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: 'team_follows_team_id_fkey'
+            columns: ['team_id']
+            isOneToOne: false
+            referencedRelation: 'teams'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'team_follows_user_id_fkey'
+            columns: ['user_id']
+            isOneToOne: false
+            referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+        ]
+      }
       wallets: {
         Row: {
           balance_cache: number
           fan_id: string
+          team_id: string
           updated_at: string
         }
         Insert: {
           balance_cache?: number
           fan_id: string
+          team_id: string
           updated_at?: string
         }
         Update: {
           balance_cache?: number
           fan_id?: string
+          team_id?: string
           updated_at?: string
         }
         Relationships: [
           {
             foreignKeyName: 'wallets_fan_id_fkey'
             columns: ['fan_id']
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: 'profiles'
+            referencedColumns: ['id']
+          },
+          {
+            foreignKeyName: 'wallets_team_id_fkey'
+            columns: ['team_id']
+            isOneToOne: false
+            referencedRelation: 'teams'
             referencedColumns: ['id']
           },
         ]
@@ -3549,6 +3635,7 @@ export type Database = {
         Returns: Json
       }
       ensure_profile: { Args: never; Returns: Json }
+      follow_team: { Args: { p_team_id: string }; Returns: Json }
       generate_redemption_code: {
         Args: { p_redemption_id: string }
         Returns: string
@@ -3562,6 +3649,7 @@ export type Database = {
       get_login_modal: { Args: never; Returns: Json }
       get_redemption_qr: { Args: { p_redemption_id: string }; Returns: Json }
       get_streak_info: { Args: { p_fan_id: string }; Returns: Json }
+      get_wallet_summary: { Args: never; Returns: Json }
       health_check: { Args: never; Returns: Json }
       helper_generate_code_with_key: {
         Args: { p_key_id: string; p_redemption_id: string }
@@ -3630,6 +3718,18 @@ export type Database = {
         Args: { p_num_fans?: number; p_num_ledger?: number }
         Returns: Json
       }
+      search_teams: {
+        Args: {
+          p_limit?: number
+          p_offset?: number
+          p_query?: string
+        }
+        Returns: Json
+      }
+      team_follower_count: {
+        Args: { p_team_id: string }
+        Returns: number
+      }
       segment_count: { Args: { p_segment_id: string }; Returns: number }
       segment_members: {
         Args: { p_cursor?: string; p_limit?: number; p_segment_id: string }
@@ -3688,6 +3788,7 @@ export type Database = {
         }
         Returns: Json
       }
+      unfollow_team: { Args: { p_team_id: string }; Returns: Json }
       unregister_push_subscription: {
         Args: { p_endpoint: string }
         Returns: Json

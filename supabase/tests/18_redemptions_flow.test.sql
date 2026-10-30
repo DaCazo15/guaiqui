@@ -16,35 +16,39 @@ DECLARE
     v_admin UUID := 'c7700000-0000-0000-0000-000000000001';
     v_prod UUID := 'e7700000-0000-0000-0000-000000000001';
 BEGIN
-    INSERT INTO auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token)
+    INSERT INTO auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_confirmed_at)
     VALUES
-        (v_fan, 'authenticated', 'authenticated', 'fan_flow@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), ''),
-        (v_staff, 'authenticated', 'authenticated', 'staff_flow@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), ''),
-        (v_admin, 'authenticated', 'authenticated', 'admin_flow@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '')
-    ON CONFLICT (id) DO NOTHING;
+        (v_fan, 'authenticated', 'authenticated', 'fan_flow@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW()),
+        (v_staff, 'authenticated', 'authenticated', 'staff_flow@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW()),
+        (v_admin, 'authenticated', 'authenticated', 'admin_flow@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW())
+    ON CONFLICT (id) DO UPDATE SET email_confirmed_at = NOW();
 
-    INSERT INTO profiles (id, display_name, status) VALUES
-        (v_fan, 'Fan Flow', 'active'),
-        (v_staff, 'Staff Flow', 'active'),
-        (v_admin, 'Admin Flow', 'active')
-    ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name;
+    INSERT INTO profiles (id, display_name, status, terms_accepted_at, privacy_accepted_at, pearls_rules_accepted_at) VALUES
+        (v_fan, 'Fan Flow', 'active', NOW(), NOW(), NOW()),
+        (v_staff, 'Staff Flow', 'active', NOW(), NOW(), NOW()),
+        (v_admin, 'Admin Flow', 'active', NOW(), NOW(), NOW())
+    ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name, terms_accepted_at = NOW(), privacy_accepted_at = NOW(), pearls_rules_accepted_at = NOW();
 
-    INSERT INTO staff_members (user_id, role, active)
+    INSERT INTO team_follows (fan_id, team_id) VALUES
+        (v_fan, 'a0000000-0000-0000-0000-000000000001')
+    ON CONFLICT DO NOTHING;
+
+    INSERT INTO staff_members (user_id, team_id, role, active)
     VALUES 
-        (v_staff, 'staff', true),
-        (v_admin, 'admin', true)
-    ON CONFLICT (user_id) DO NOTHING;
+        (v_staff, 'a0000000-0000-0000-0000-000000000001', 'staff', true),
+        (v_admin, 'a0000000-0000-0000-0000-000000000001', 'admin', true)
+    ON CONFLICT (user_id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', role = EXCLUDED.role, active = true;
 
-    INSERT INTO products (id, name, category, cost_pearls, stock, active)
-    VALUES (v_prod, 'Camiseta Autografiada Flow', 'physical', 500, 10, true)
-    ON CONFLICT (id) DO UPDATE SET cost_pearls = 500, stock = 10, active = true;
+    INSERT INTO products (id, team_id, name, category, cost_pearls, stock, active)
+    VALUES (v_prod, 'a0000000-0000-0000-0000-000000000001', 'Camiseta Autografiada Flow', 'physical', 500, 10, true)
+    ON CONFLICT (id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', cost_pearls = 500, stock = 10, active = true;
 
-    INSERT INTO wallets (fan_id, balance_cache) VALUES
-        (v_fan, 2000)
-    ON CONFLICT (fan_id) DO UPDATE SET balance_cache = EXCLUDED.balance_cache;
+    INSERT INTO wallets (fan_id, team_id, balance_cache) VALUES
+        (v_fan, 'a0000000-0000-0000-0000-000000000001', 2000)
+    ON CONFLICT (fan_id, team_id) DO UPDATE SET balance_cache = EXCLUDED.balance_cache;
 
-    INSERT INTO ledger_entries (fan_id, amount, type, status, source_type, source_id, note) VALUES
-        (v_fan, 2000, 'bonus', 'confirmed', 'test_flow', 'init_fan_flow', 'Saldo inicial')
+    INSERT INTO ledger_entries (fan_id, team_id, amount, type, status, source_type, source_id, note) VALUES
+        (v_fan, 'a0000000-0000-0000-0000-000000000001', 2000, 'bonus', 'confirmed', 'test_flow', 'init_fan_flow', 'Saldo inicial')
     ON CONFLICT DO NOTHING;
 END $$;
 
@@ -76,7 +80,7 @@ DECLARE
     v_res JSONB;
 BEGIN
     SET LOCAL ROLE authenticated;
-    SET LOCAL "request.jwt.claims" = '{"sub": "c7700000-0000-0000-0000-000000000001", "role": "authenticated"}';
+    SET LOCAL "request.jwt.claims" = '{"sub": "c7700000-0000-0000-0000-000000000001", "role": "authenticated", "aal": "aal2"}';
 
     SELECT id INTO v_red_id FROM redemptions WHERE fan_id = 'a7700000-0000-0000-0000-000000000001' AND idempotency_key = 'key-flow-test-01';
     
@@ -105,7 +109,7 @@ BEGIN
     SELECT id INTO v_red_id FROM redemptions WHERE fan_id = 'a7700000-0000-0000-0000-000000000001' AND idempotency_key = 'key-flow-test-01';
 
     v_qr_res := public.get_redemption_qr(v_red_id);
-    v_code := v_qr_res->>'redemption_code';
+    v_code := COALESCE(v_qr_res->>'code', v_qr_res->>'redemption_code');
 
     IF v_code IS NOT NULL AND length(v_code) = 12 THEN
         -- OK
@@ -130,13 +134,13 @@ BEGIN
     SET LOCAL "request.jwt.claims" = '{"sub": "a7700000-0000-0000-0000-000000000001", "role": "authenticated"}';
     SELECT id INTO v_red_id FROM redemptions WHERE fan_id = 'a7700000-0000-0000-0000-000000000001' AND idempotency_key = 'key-flow-test-01';
     v_qr_res := public.get_redemption_qr(v_red_id);
-    v_code := v_qr_res->>'redemption_code';
+    v_code := COALESCE(v_qr_res->>'code', v_qr_res->>'redemption_code');
 
     -- Staff verifica el código
     SET LOCAL "request.jwt.claims" = '{"sub": "b7700000-0000-0000-0000-000000000001", "role": "authenticated"}';
     v_verify_res := public.verify_redemption_code(v_code);
 
-    IF v_verify_res->>'valid' = 'true' AND v_verify_res->>'redemption_id' = v_red_id::text THEN
+    IF (v_verify_res->>'result' = 'OK_APPROVED' OR v_verify_res->>'valid' = 'true') AND v_verify_res->>'redemption_id' = v_red_id::text THEN
         -- OK
     ELSE
         RAISE EXCEPTION 'verify_redemption_code failed: %', v_verify_res;

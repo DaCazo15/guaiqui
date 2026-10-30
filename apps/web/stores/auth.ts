@@ -134,9 +134,9 @@ export const useAuthStore = defineStore('auth', () => {
       isLoading.value = true
       errorMessage.value = null
 
-      const [{ data: initialProf, error: profErr }, { data: wal, error: walErr }] = await Promise.all([
+      const [{ data: initialProf, error: profErr }, { data: walList }] = await Promise.all([
         supabase.from('profiles').select('*').eq('id', targetId).maybeSingle(),
-        supabase.from('wallets').select('*').eq('fan_id', targetId).maybeSingle(),
+        supabase.from('wallets').select('*').eq('fan_id', targetId),
       ])
 
       if (profErr) throw profErr
@@ -187,8 +187,22 @@ export const useAuthStore = defineStore('auth', () => {
 
       profile.value = prof
 
-      if (walErr) throw walErr
-      wallet.value = wal as unknown as Wallet | null
+      if (walList && walList.length > 0) {
+        const totalBalance = walList.reduce((acc: number, w: any) => acc + (Number(w.balance_cache) || 0), 0)
+        wallet.value = {
+          fan_id: targetId,
+          team_id: (walList[0] as any).team_id || '',
+          balance_cache: totalBalance,
+          updated_at: (walList[0] as any).updated_at || new Date().toISOString(),
+        }
+      } else {
+        wallet.value = {
+          fan_id: targetId,
+          team_id: '',
+          balance_cache: 0,
+          updated_at: new Date().toISOString(),
+        }
+      }
     } catch (err: unknown) {
       const msg = extractErrorMessage(err) || 'Error al cargar perfil'
       console.error('Error al cargar perfil:', err)

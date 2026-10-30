@@ -12,24 +12,24 @@ DECLARE
     v_staff UUID := 'b1000000-0000-0000-0000-000000000001';
     v_admin UUID := 'c1000000-0000-0000-0000-000000000001';
 BEGIN
-    INSERT INTO auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token)
+    INSERT INTO auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_confirmed_at)
     VALUES
-        (v_fan, 'authenticated', 'authenticated', 'fan_analytics@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), ''),
-        (v_staff, 'authenticated', 'authenticated', 'staff_analytics@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), ''),
-        (v_admin, 'authenticated', 'authenticated', 'admin_analytics@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '')
-    ON CONFLICT (id) DO NOTHING;
+        (v_fan, 'authenticated', 'authenticated', 'fan_analytics@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW()),
+        (v_staff, 'authenticated', 'authenticated', 'staff_analytics@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW()),
+        (v_admin, 'authenticated', 'authenticated', 'admin_analytics@test.com', crypt('Test123!', gen_salt('bf')), '{"provider":"email"}'::jsonb, '{}'::jsonb, NOW(), NOW(), '', NOW())
+    ON CONFLICT (id) DO UPDATE SET email_confirmed_at = NOW();
 
-    INSERT INTO profiles (id, display_name, status) VALUES
-        (v_fan, 'Fan Analytics', 'active'),
-        (v_staff, 'Staff Analytics', 'active'),
-        (v_admin, 'Admin Analytics', 'active')
-    ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name;
+    INSERT INTO profiles (id, display_name, status, terms_accepted_at, privacy_accepted_at, pearls_rules_accepted_at) VALUES
+        (v_fan, 'Fan Analytics', 'active', NOW(), NOW(), NOW()),
+        (v_staff, 'Staff Analytics', 'active', NOW(), NOW(), NOW()),
+        (v_admin, 'Admin Analytics', 'active', NOW(), NOW(), NOW())
+    ON CONFLICT (id) DO UPDATE SET display_name = EXCLUDED.display_name, terms_accepted_at = NOW(), privacy_accepted_at = NOW(), pearls_rules_accepted_at = NOW();
 
-    INSERT INTO staff_members (user_id, role, active)
+    INSERT INTO staff_members (user_id, team_id, role, active)
     VALUES 
-        (v_staff, 'staff', true),
-        (v_admin, 'admin', true)
-    ON CONFLICT (user_id) DO NOTHING;
+        (v_staff, 'a0000000-0000-0000-0000-000000000001', 'staff', true),
+        (v_admin, 'a0000000-0000-0000-0000-000000000001', 'admin', true)
+    ON CONFLICT (user_id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', role = EXCLUDED.role, active = true;
 END $$;
 
 
@@ -42,7 +42,7 @@ BEGIN
     PERFORM public.refresh_analytics_materialized_views();
     RAISE EXCEPTION 'Non-admin user should not be able to refresh materialized views';
 EXCEPTION WHEN OTHERS THEN
-    IF SQLERRM LIKE '%Acceso denegado%' OR SQLERRM LIKE '%assert_admin%' THEN
+    IF SQLERRM LIKE '%Acceso denegado%' OR SQLERRM LIKE '%assert_admin%' OR SQLERRM LIKE '%Admin authorization required%' THEN
         -- OK
     ELSE
         RAISE EXCEPTION 'Unexpected error: %', SQLERRM;
@@ -63,7 +63,7 @@ DECLARE
     v_funnel JSONB;
 BEGIN
     SET LOCAL ROLE authenticated;
-    SET LOCAL "request.jwt.claims" = '{"sub": "c1000000-0000-0000-0000-000000000001", "role": "authenticated"}';
+    SET LOCAL "request.jwt.claims" = '{"sub": "c1000000-0000-0000-0000-000000000001", "role": "authenticated", "aal": "aal2"}';
 
     v_funnel := public.analytics_funnel();
 

@@ -6,6 +6,7 @@ import { supabase } from '../lib/supabase'
 export interface StaffProfile {
   user_id: string
   role: 'staff' | 'admin'
+  team_id?: string | null
   active: boolean
   display_name?: string
   avatar_url?: string
@@ -25,6 +26,9 @@ export const useAuthStore = defineStore('auth', () => {
 
   const isAuthenticated = computed(() => !!user.value && !!staffMember.value && staffMember.value.active)
   const isAdmin = computed(() => isAuthenticated.value && staffMember.value?.role === 'admin')
+  const isPlatformAdmin = computed(() => isAdmin.value && staffMember.value?.team_id === null)
+  const isTeamAdmin = computed(() => isAdmin.value && staffMember.value?.team_id != null)
+  const staffTeamId = computed(() => staffMember.value?.team_id ?? null)
 
   const resetIdleTimer = () => {
     lastActivityTime.value = Date.now()
@@ -69,7 +73,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const { data: staff, error: staffErr } = await supabase
         .from('staff_members')
-        .select('user_id, role, active')
+        .select('user_id, role, team_id, active')
         .eq('user_id', uid)
         .single()
 
@@ -193,6 +197,9 @@ export const useAuthStore = defineStore('auth', () => {
     authError,
     isAuthenticated,
     isAdmin,
+    isPlatformAdmin,
+    isTeamAdmin,
+    staffTeamId,
     checkAuth,
     signIn,
     signOut,

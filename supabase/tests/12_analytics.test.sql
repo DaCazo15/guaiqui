@@ -6,28 +6,28 @@ SELECT tests.create_supabase_user('analytics_admin_u1', 'admin_f10@guaiqui.test'
 SELECT tests.create_supabase_user('analytics_staff_u1', 'staff_f10@guaiqui.test');
 SELECT tests.create_supabase_user('analytics_fan_u1', 'fan_f10@guaiqui.test');
 
-INSERT INTO public.profiles (id, display_name, municipality, gender, birth_date, status)
+INSERT INTO public.profiles (id, display_name, municipality, gender, birth_date, status, terms_accepted_at, privacy_accepted_at, pearls_rules_accepted_at)
 VALUES
-    (tests.get_supabase_uid('analytics_admin_u1'), 'Admin Analytics', 'Mariño', 'Masculino', '1990-01-01', 'active'),
-    (tests.get_supabase_uid('analytics_staff_u1'), 'Staff Analytics', 'Maneiro', 'Femenino', '1995-05-05', 'active'),
-    (tests.get_supabase_uid('analytics_fan_u1'), 'Fan Analytics Golden', 'Mariño', 'Masculino', '2000-10-10', 'active')
-ON CONFLICT (id) DO NOTHING;
+    (tests.get_supabase_uid('analytics_admin_u1'), 'Admin Analytics', 'Mariño', 'Masculino', '1990-01-01', 'active', NOW(), NOW(), NOW()),
+    (tests.get_supabase_uid('analytics_staff_u1'), 'Staff Analytics', 'Maneiro', 'Femenino', '1995-05-05', 'active', NOW(), NOW(), NOW()),
+    (tests.get_supabase_uid('analytics_fan_u1'), 'Fan Analytics Golden', 'Mariño', 'Masculino', '2000-10-10', 'active', NOW(), NOW(), NOW())
+ON CONFLICT (id) DO UPDATE SET terms_accepted_at = NOW(), privacy_accepted_at = NOW(), pearls_rules_accepted_at = NOW();
 
-INSERT INTO public.staff_members (user_id, role, active)
+INSERT INTO public.staff_members (user_id, team_id, role, active)
 VALUES
-    (tests.get_supabase_uid('analytics_admin_u1'), 'admin', true),
-    (tests.get_supabase_uid('analytics_staff_u1'), 'staff', true)
-ON CONFLICT (user_id) DO NOTHING;
+    (tests.get_supabase_uid('analytics_admin_u1'), 'a0000000-0000-0000-0000-000000000001', 'admin', true),
+    (tests.get_supabase_uid('analytics_staff_u1'), 'a0000000-0000-0000-0000-000000000001', 'staff', true)
+ON CONFLICT (user_id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', role = EXCLUDED.role, active = true;
 
-INSERT INTO public.wallets (fan_id, balance_cache)
-VALUES (tests.get_supabase_uid('analytics_fan_u1'), 300)
-ON CONFLICT (fan_id) DO UPDATE SET balance_cache = 300;
+INSERT INTO public.wallets (fan_id, team_id, balance_cache)
+VALUES (tests.get_supabase_uid('analytics_fan_u1'), 'a0000000-0000-0000-0000-000000000001', 300)
+ON CONFLICT (fan_id, team_id) DO UPDATE SET balance_cache = 300;
 
 -- Insert Golden Dataset Ledger Entries (300 net)
-INSERT INTO public.ledger_entries (id, fan_id, amount, type, status, source_type, source_id)
+INSERT INTO public.ledger_entries (id, fan_id, team_id, amount, type, status, source_type, source_id)
 VALUES
-    (gen_random_uuid(), tests.get_supabase_uid('analytics_fan_u1'), 500, 'trivia_reward', 'confirmed', 'golden_test', 'g1'),
-    (gen_random_uuid(), tests.get_supabase_uid('analytics_fan_u1'), -200, 'redemption', 'confirmed', 'golden_test', 'g2')
+    (gen_random_uuid(), tests.get_supabase_uid('analytics_fan_u1'), 'a0000000-0000-0000-0000-000000000001', 500, 'trivia_reward', 'confirmed', 'golden_test', 'g1'),
+    (gen_random_uuid(), tests.get_supabase_uid('analytics_fan_u1'), 'a0000000-0000-0000-0000-000000000001', -200, 'redemption', 'confirmed', 'golden_test', 'g2')
 ON CONFLICT DO NOTHING;
 
 -- 2. Access Control Tests
@@ -70,11 +70,16 @@ SELECT is(
 );
 
 -- 5. Timezone Caracas Test: Event at 23:30 Caracas time is grouped under local date
-INSERT INTO public.trivia_attempts (id, fan_id, trivia_id, started_at, submitted_at, score, pearls_awarded, idempotency_key, expires_at)
+INSERT INTO public.trivias (id, team_id, title, status, starts_at, ends_at, time_limit_seconds)
+VALUES ('77777777-7777-7777-7777-777777777777', 'a0000000-0000-0000-0000-000000000001', 'Trivia Caracas', 'published', NOW() - INTERVAL '1 day', NOW() + INTERVAL '1 day', 60)
+ON CONFLICT (id) DO NOTHING;
+
+INSERT INTO public.trivia_attempts (id, fan_id, team_id, trivia_id, started_at, submitted_at, score, pearls_awarded, idempotency_key, expires_at)
 VALUES (
     gen_random_uuid(),
     tests.get_supabase_uid('analytics_fan_u1'),
-    gen_random_uuid(),
+    'a0000000-0000-0000-0000-000000000001',
+    '77777777-7777-7777-7777-777777777777',
     '2026-10-09 23:30:00-04'::TIMESTAMPTZ,
     '2026-10-09 23:35:00-04'::TIMESTAMPTZ,
     100,

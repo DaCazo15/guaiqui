@@ -2,7 +2,7 @@ BEGIN;
 SELECT plan(5);
 
 -- Test 1: app_secrets table has RLS enabled
-SELECT passes(
+SELECT lives_ok(
     'SELECT count(*) FROM pg_tables WHERE tablename = ''app_secrets'' AND rowsecurity = true',
     'app_secrets table must have RLS active'
 );

@@ -1507,7 +1507,7 @@ $function$;
 -- ----------------------------------------------------------------------------
 
 -- 5.1 admin_delete_guess_player_challenge
-CREATE OR REPLACE FUNCTION public.admin_delete_guess_player_challenge(p_challenge_id UUID)
+CREATE OR REPLACE FUNCTION public.admin_delete_guess_player_challenge(p_id UUID)
 RETURNS JSONB
 LANGUAGE plpgsql
 SECURITY DEFINER
@@ -1517,19 +1517,19 @@ DECLARE
     v_admin_id UUID := auth.uid();
     v_team_id UUID;
 BEGIN
-    SELECT team_id INTO v_team_id FROM public.guess_player_challenges WHERE id = p_challenge_id;
+    SELECT team_id INTO v_team_id FROM public.guess_player_challenges WHERE id = p_id;
     IF NOT FOUND THEN
         RAISE EXCEPTION 'Desafío no encontrado.';
     END IF;
 
     PERFORM public.assert_team_admin(v_team_id);
 
-    DELETE FROM public.guess_player_challenges WHERE id = p_challenge_id;
+    DELETE FROM public.guess_player_challenges WHERE id = p_id;
 
     INSERT INTO public.audit_log (actor_id, action, entity, entity_id, after)
-    VALUES (v_admin_id, 'delete_guess_player_challenge', 'guess_player_challenges', p_challenge_id::text, jsonb_build_object('team_id', v_team_id));
+    VALUES (v_admin_id, 'delete_guess_player_challenge', 'guess_player_challenges', p_id::text, jsonb_build_object('team_id', v_team_id));
 
-    RETURN jsonb_build_object('id', p_challenge_id, 'status', 'deleted');
+    RETURN jsonb_build_object('id', p_id, 'status', 'deleted');
 END;
 $function$;
 
@@ -2250,7 +2250,7 @@ $function$;
 -- 7.5 import_ad_report (Platform Admin Only)
 CREATE OR REPLACE FUNCTION public.import_ad_report(
     p_day DATE,
-    p_google_rewarded_impressions INTEGER,
+    p_impressions INTEGER,
     p_notes TEXT DEFAULT NULL::TEXT
 )
 RETURNS JSONB
@@ -2260,39 +2260,65 @@ SET search_path TO 'public', 'extensions', 'pg_temp'
 AS $function$
 DECLARE
     v_admin_id UUID := auth.uid();
-    v_db_completed INT;
-    v_diff INT;
-    v_discrepancy_pct NUMERIC;
+    v_completed_count INT := 0;
+    v_ratio NUMERIC := 0;
+    v_alert_created BOOLEAN := false;
 BEGIN
     PERFORM public.assert_platform_admin();
 
-    SELECT COUNT(*) INTO v_db_completed
-    FROM public.ad_sessions
-    WHERE day = p_day AND status = 'completed';
-
-    v_diff := abs(COALESCE(p_google_rewarded_impressions, 0) - v_db_completed);
-    IF COALESCE(p_google_rewarded_impressions, 0) > 0 THEN
-        v_discrepancy_pct := round((v_diff::NUMERIC / p_google_rewarded_impressions::NUMERIC) * 100, 2);
-    ELSE
-        v_discrepancy_pct := 0;
+    IF p_impressions < 0 THEN
+        RAISE EXCEPTION 'El número de impresiones no puede ser negativo.';
     END IF;
 
-    INSERT INTO public.ad_reconciliation (
-        day, google_rewarded_impressions, db_completed_sessions,
-        discrepancy_pct, imported_by, notes
-    ) VALUES (
-        p_day, p_google_rewarded_impressions, v_db_completed,
-        v_discrepancy_pct, v_admin_id, p_notes
-    )
+    INSERT INTO public.ad_reconciliation (day, google_rewarded_impressions, imported_by, imported_at, notes)
+    VALUES (p_day, p_impressions, v_admin_id, NOW(), p_notes)
     ON CONFLICT (day) DO UPDATE
     SET google_rewarded_impressions = EXCLUDED.google_rewarded_impressions,
-        db_completed_sessions = EXCLUDED.db_completed_sessions,
-        discrepancy_pct = EXCLUDED.discrepancy_pct,
         imported_by = EXCLUDED.imported_by,
         imported_at = NOW(),
         notes = EXCLUDED.notes;
 
-    RETURN jsonb_build_object('status', 'success', 'day', p_day);
+    -- Count total completed ad sessions in DB for this day
+    SELECT COUNT(*) INTO v_completed_count
+    FROM public.ad_sessions
+    WHERE day = p_day AND status = 'completed';
+
+    -- Ratio calculation (our DB completions / Google reported impressions)
+    IF p_impressions > 0 THEN
+        v_ratio := round((v_completed_count::NUMERIC / p_impressions::NUMERIC), 2);
+    ELSIF v_completed_count > 0 THEN
+        v_ratio := 99.9; -- Infinity alert threshold
+    END IF;
+
+    -- If ratio exceeds 1.2 threshold, flag system alert
+    IF v_ratio > 1.2 THEN
+        INSERT INTO public.system_alerts (
+            type, title, message, severity, entity_id
+        ) VALUES (
+            'ad_discrepancy',
+            'Discrepancia detectada en anuncios recompensados (' || p_day::text || ')',
+            'Las sesiones completadas en DB (' || v_completed_count || ') superan las impresiones de Google GAM (' || p_impressions || ') por una proporción de ' || v_ratio || ' (límite: 1.2). Posible intento de manipulación del cliente.',
+            'high',
+            p_day::text
+        );
+        v_alert_created := true;
+    END IF;
+
+    -- Audit log entry
+    INSERT INTO public.audit_log (actor_id, action, entity, entity_id, before, after)
+    VALUES (
+        v_admin_id, 'import_ad_report', 'ad_reconciliation', p_day::text,
+        NULL, jsonb_build_object('impressions', p_impressions, 'completed_db', v_completed_count, 'ratio', v_ratio, 'alert_created', v_alert_created)
+    );
+
+    RETURN jsonb_build_object(
+        'success', true,
+        'day', p_day,
+        'google_impressions', p_impressions,
+        'db_completed', v_completed_count,
+        'ratio', v_ratio,
+        'alert_flagged', v_alert_created
+    );
 END;
 $function$;
 

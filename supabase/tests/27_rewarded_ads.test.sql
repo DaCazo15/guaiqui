@@ -16,23 +16,23 @@ BEGIN
         (v_admin_id, 'authenticated', 'authenticated', 'admin_ad_test@guaiqui.test', NOW(), NOW() - INTERVAL '30 days')
     ON CONFLICT (id) DO NOTHING;
 
-    INSERT INTO public.profiles (id, display_name, status, created_at)
+    INSERT INTO public.profiles (id, display_name, status, created_at, terms_accepted_at, privacy_accepted_at, pearls_rules_accepted_at)
     VALUES
-        (v_fan_id, 'Fan Ad Tester', 'active', NOW() - INTERVAL '10 days'),
-        (v_admin_id, 'Admin Ad Tester', 'active', NOW() - INTERVAL '30 days')
-    ON CONFLICT (id) DO UPDATE SET status = 'active', created_at = EXCLUDED.created_at;
+        (v_fan_id, 'Fan Ad Tester', 'active', NOW() - INTERVAL '10 days', NOW(), NOW(), NOW()),
+        (v_admin_id, 'Admin Ad Tester', 'active', NOW() - INTERVAL '30 days', NOW(), NOW(), NOW())
+    ON CONFLICT (id) DO UPDATE SET status = 'active', created_at = EXCLUDED.created_at, terms_accepted_at = NOW(), privacy_accepted_at = NOW(), pearls_rules_accepted_at = NOW();
 
-    INSERT INTO public.staff_members (user_id, role, active)
-    VALUES (v_admin_id, 'admin', true)
-    ON CONFLICT (user_id) DO NOTHING;
+    INSERT INTO public.staff_members (user_id, team_id, role, active)
+    VALUES (v_admin_id, 'a0000000-0000-0000-0000-000000000001', 'admin', true)
+    ON CONFLICT (user_id) DO UPDATE SET team_id = 'a0000000-0000-0000-0000-000000000001', role = 'admin', active = true;
 
-    INSERT INTO public.wallets (fan_id, balance_cache)
-    VALUES (v_fan_id, 0)
-    ON CONFLICT (fan_id) DO UPDATE SET balance_cache = 0;
+    INSERT INTO public.wallets (fan_id, team_id, balance_cache)
+    VALUES (v_fan_id, 'a0000000-0000-0000-0000-000000000001', 0)
+    ON CONFLICT (fan_id, team_id) DO UPDATE SET balance_cache = 0;
 
     -- Add completed trivia attempt for fan
-    INSERT INTO public.trivia_attempts (id, fan_id, trivia_id, started_at, submitted_at, score, pearls_awarded, idempotency_key, expires_at)
-    VALUES (gen_random_uuid(), v_fan_id, gen_random_uuid(), NOW() - INTERVAL '1 hour', NOW() - INTERVAL '50 minutes', 100, 50, 'test_setup_key', NOW() + INTERVAL '1 hour')
+    INSERT INTO public.trivia_attempts (id, fan_id, team_id, trivia_id, started_at, submitted_at, score, pearls_awarded, idempotency_key, expires_at)
+    VALUES (gen_random_uuid(), v_fan_id, 'a0000000-0000-0000-0000-000000000001', gen_random_uuid(), NOW() - INTERVAL '1 hour', NOW() - INTERVAL '50 minutes', 100, 50, 'test_setup_key', NOW() + INTERVAL '1 hour')
     ON CONFLICT DO NOTHING;
 
     -- Captcha pass for initial session
@@ -274,14 +274,14 @@ BEGIN
     VALUES (v_risk_fan, 'authenticated', 'authenticated', 'risk_fan_ad@guaiqui.test', NOW(), NOW() - INTERVAL '20 days')
     ON CONFLICT DO NOTHING;
 
-    INSERT INTO public.profiles (id, display_name, status, created_at)
-    VALUES (v_risk_fan, 'Risk Fan Tester', 'active', NOW() - INTERVAL '20 days')
-    ON CONFLICT DO NOTHING;
+    INSERT INTO public.profiles (id, display_name, status, created_at, terms_accepted_at, privacy_accepted_at, pearls_rules_accepted_at)
+    VALUES (v_risk_fan, 'Risk Fan Tester', 'active', NOW() - INTERVAL '20 days', NOW(), NOW(), NOW())
+    ON CONFLICT (id) DO UPDATE SET terms_accepted_at = NOW(), privacy_accepted_at = NOW(), pearls_rules_accepted_at = NOW();
 
-    INSERT INTO public.wallets (fan_id, balance_cache) VALUES (v_risk_fan, 0) ON CONFLICT DO NOTHING;
+    INSERT INTO public.wallets (fan_id, team_id, balance_cache) VALUES (v_risk_fan, 'a0000000-0000-0000-0000-000000000001', 0) ON CONFLICT (fan_id, team_id) DO NOTHING;
 
-    INSERT INTO public.trivia_attempts (id, fan_id, trivia_id, started_at, submitted_at, score, pearls_awarded, idempotency_key, expires_at)
-    VALUES (gen_random_uuid(), v_risk_fan, gen_random_uuid(), NOW() - INTERVAL '1 hour', NOW() - INTERVAL '50 minutes', 100, 50, 'risk_setup_key', NOW() + INTERVAL '1 hour')
+    INSERT INTO public.trivia_attempts (id, fan_id, team_id, trivia_id, started_at, submitted_at, score, pearls_awarded, idempotency_key, expires_at)
+    VALUES (gen_random_uuid(), v_risk_fan, 'a0000000-0000-0000-0000-000000000001', gen_random_uuid(), NOW() - INTERVAL '1 hour', NOW() - INTERVAL '50 minutes', 100, 50, 'risk_setup_key', NOW() + INTERVAL '1 hour')
     ON CONFLICT DO NOTHING;
 
     INSERT INTO public.risk_flags (fan_id, reason, severity, resolved)
@@ -301,7 +301,7 @@ BEGIN
         v_comp := public.complete_ad_session(v_sid, 'risk_comp_' || i);
     END LOOP;
 
-    SELECT balance_cache INTO v_bal FROM public.wallets WHERE fan_id = v_risk_fan;
+    SELECT balance_cache INTO v_bal FROM public.wallets WHERE fan_id = v_risk_fan AND team_id = 'a0000000-0000-0000-0000-000000000001';
 
     IF v_bal != 0 THEN
         RAISE EXCEPTION 'Las perlitas de un usuario con riesgo alto no deberían incrementar el saldo del wallet, obtenido: %', v_bal;
@@ -317,7 +317,7 @@ DECLARE
     v_res JSONB;
 BEGIN
     SET LOCAL ROLE authenticated;
-    SET LOCAL "request.jwt.claims" = '{"sub": "88888888-8888-8888-8888-888888888888", "role": "authenticated"}';
+    SET LOCAL "request.jwt.claims" = '{"sub": "88888888-8888-8888-8888-888888888888", "role": "authenticated", "aal": "aal2"}';
 
     -- 20 DB completed sessions exist for today, if Google reports 10 impressions (ratio = 2.0 > 1.2), alert is flagged
     v_res := public.import_ad_report((NOW() AT TIME ZONE 'America/Caracas')::date, 10, 'Test report discrepancy');
@@ -336,7 +336,7 @@ DECLARE
     v_res JSONB;
 BEGIN
     SET LOCAL ROLE authenticated;
-    SET LOCAL "request.jwt.claims" = '{"sub": "88888888-8888-8888-8888-888888888888", "role": "authenticated"}';
+    SET LOCAL "request.jwt.claims" = '{"sub": "88888888-8888-8888-8888-888888888888", "role": "authenticated", "aal": "aal2"}';
 
     v_res := public.analytics_ads(NOW() - INTERVAL '1 day', NOW() + INTERVAL '1 day');
 

@@ -51,7 +51,7 @@ async function runAdsConcurrencyTest() {
   })
 
   // Ensure wallet exists
-  await fetch(`${SUPABASE_URL}/rest/v1/wallets`, {
+  await fetch(`${SUPABASE_URL}/rest/v1/wallets?on_conflict=fan_id,team_id`, {
     method: 'POST',
     headers: {
       'apikey': SERVICE_ROLE_KEY,
@@ -61,6 +61,7 @@ async function runAdsConcurrencyTest() {
     },
     body: JSON.stringify({
       fan_id: testUserId,
+      team_id: 'a0000000-0000-0000-0000-000000000001',
       balance_cache: 0
     })
   })

@@ -1,33 +1,34 @@
-import fs from 'fs';
-import path from 'path';
+import fs from 'fs'
+import path from 'path'
 
-const stepsDir = 'C:\\Users\\dcazo\\.gemini\\antigravity-ide\\brain\\211005b2-01ce-463c-87a9-8eaff6f8b421\\.system_generated\\steps';
-const outDir = process.env.SQUASH_OUT_DIR || 'supabase/squash_draft';
+const stepsDir =
+  'C:\\Users\\dcazo\\.gemini\\antigravity-ide\\brain\\211005b2-01ce-463c-87a9-8eaff6f8b421\\.system_generated\\steps'
+const outDir = process.env.SQUASH_OUT_DIR || 'docs/architecture/squash-draft'
 if (!fs.existsSync(outDir)) {
-  fs.mkdirSync(outDir, { recursive: true });
+  fs.mkdirSync(outDir, { recursive: true })
 }
 
 function readStepJson(stepNum) {
-  const file = path.join(stepsDir, `${stepNum}`, 'output.txt');
-  const raw = fs.readFileSync(file, 'utf8');
-  const parsed = JSON.parse(raw);
-  const startIdx = parsed.result.indexOf('>\n[');
-  const endIdx = parsed.result.lastIndexOf(']\n<');
+  const file = path.join(stepsDir, `${stepNum}`, 'output.txt')
+  const raw = fs.readFileSync(file, 'utf8')
+  const parsed = JSON.parse(raw)
+  const startIdx = parsed.result.indexOf('>\n[')
+  const endIdx = parsed.result.lastIndexOf(']\n<')
   if (startIdx === -1 || endIdx === -1) {
-    throw new Error(`Could not locate JSON array in step ${stepNum}`);
+    throw new Error(`Could not locate JSON array in step ${stepNum}`)
   }
-  return JSON.parse(parsed.result.substring(startIdx + 2, endIdx + 1));
+  return JSON.parse(parsed.result.substring(startIdx + 2, endIdx + 1))
 }
 
-const columns = readStepJson(438);
-const constraints = readStepJson(440);
-const functions = readStepJson(444);
-const policies = readStepJson(450);
-const indexes = readStepJson(476);
-const acls = readStepJson(482);
-const seedRows = readStepJson(496);
+const columns = readStepJson(438)
+const constraints = readStepJson(440)
+const functions = readStepJson(444)
+const policies = readStepJson(450)
+const indexes = readStepJson(476)
+const acls = readStepJson(482)
+const seedRows = readStepJson(496)
 
-console.log('Building Migration 1: Schema and Types...');
+console.log('Building Migration 1: Schema and Types...')
 let sql1 = `-- ============================================================================
 -- Migration: 20261016000001_schema_and_types.sql
 -- Description: Consolidated base database schema, extensions, enums, tables,
@@ -50,15 +51,15 @@ CREATE TYPE scan_result AS ENUM ('success', 'invalid', 'already_delivered', 'exp
 CREATE TYPE game_status AS ENUM ('scheduled', 'live', 'finished', 'cancelled');
 CREATE TYPE risk_severity AS ENUM ('low', 'medium', 'high');
 
-`;
+`
 
 // Map columns by table
-const tablesMap = new Map();
+const tablesMap = new Map()
 for (const col of columns) {
   if (!tablesMap.has(col.table_name)) {
-    tablesMap.set(col.table_name, []);
+    tablesMap.set(col.table_name, [])
   }
-  tablesMap.get(col.table_name).push(col);
+  tablesMap.get(col.table_name).push(col)
 }
 
 // Table creation order
@@ -111,77 +112,82 @@ const tableOrder = [
   'ad_reward_tiers',
   'ad_sessions',
   'ad_daily_progress',
-  'ad_reconciliation'
-];
+  'ad_reconciliation',
+]
 
 // Helper to format PostgreSQL types
 function mapColType(col) {
-  if (col.udt_name === 'timestamptz') return 'TIMESTAMPTZ';
-  if (col.udt_name === 'timestamp') return 'TIMESTAMP';
-  if (col.udt_name === 'date') return 'DATE';
-  if (col.udt_name === 'uuid') return 'UUID';
-  if (col.udt_name === 'int4') return 'INT';
-  if (col.udt_name === 'int8') return 'BIGINT';
-  if (col.udt_name === 'bool') return 'BOOLEAN';
-  if (col.udt_name === 'text') return 'TEXT';
-  if (col.udt_name === 'jsonb') return 'JSONB';
-  if (col.udt_name === '_text') return 'TEXT[]';
-  if (col.data_type === 'USER-DEFINED') return col.udt_name;
-  return col.data_type.toUpperCase();
+  if (col.udt_name === 'timestamptz') return 'TIMESTAMPTZ'
+  if (col.udt_name === 'timestamp') return 'TIMESTAMP'
+  if (col.udt_name === 'date') return 'DATE'
+  if (col.udt_name === 'uuid') return 'UUID'
+  if (col.udt_name === 'int4') return 'INT'
+  if (col.udt_name === 'int8') return 'BIGINT'
+  if (col.udt_name === 'bool') return 'BOOLEAN'
+  if (col.udt_name === 'text') return 'TEXT'
+  if (col.udt_name === 'jsonb') return 'JSONB'
+  if (col.udt_name === '_text') return 'TEXT[]'
+  if (col.data_type === 'USER-DEFINED') return col.udt_name
+  return col.data_type.toUpperCase()
 }
 
 // Add table definitions
-sql1 += `-- ============================================================================\n-- TABLES DEFINITION\n-- ============================================================================\n\n`;
+sql1 += `-- ============================================================================\n-- TABLES DEFINITION\n-- ============================================================================\n\n`
 
 for (const tbl of tableOrder) {
-  const cols = tablesMap.get(tbl);
-  if (!cols) continue;
+  const cols = tablesMap.get(tbl)
+  if (!cols) continue
 
-  sql1 += `CREATE TABLE public.${tbl} (\n`;
-  const lines = [];
+  sql1 += `CREATE TABLE public.${tbl} (\n`
+  const lines = []
 
   for (const c of cols) {
-    let line = `    ${c.column_name} ${mapColType(c)}`;
+    let line = `    ${c.column_name} ${mapColType(c)}`
     if (c.column_default !== null) {
-      line += ` DEFAULT ${c.column_default}`;
+      line += ` DEFAULT ${c.column_default}`
     }
     if (c.is_nullable === 'NO') {
-      line += ` NOT NULL`;
+      line += ` NOT NULL`
     }
-    lines.push(line);
+    lines.push(line)
   }
 
   // Get primary key
-  const pk = constraints.find(cn => cn.table_name === tbl && cn.constraint_type === 'p');
+  const pk = constraints.find((cn) => cn.table_name === tbl && cn.constraint_type === 'p')
   if (pk) {
-    lines.push(`    CONSTRAINT ${pk.constraint_name} ${pk.constraint_definition}`);
+    lines.push(`    CONSTRAINT ${pk.constraint_name} ${pk.constraint_definition}`)
   }
 
   // Get unique constraints (excluding PK)
-  const uqs = constraints.filter(cn => cn.table_name === tbl && cn.constraint_type === 'u');
+  const uqs = constraints.filter((cn) => cn.table_name === tbl && cn.constraint_type === 'u')
   for (const u of uqs) {
-    lines.push(`    CONSTRAINT ${u.constraint_name} ${u.constraint_definition}`);
+    lines.push(`    CONSTRAINT ${u.constraint_name} ${u.constraint_definition}`)
   }
 
   // Get check constraints (excluding NOT NULL checks)
-  const cks = constraints.filter(cn => cn.table_name === tbl && cn.constraint_type === 'c' && !cn.constraint_name.endsWith('_not_null'));
+  const cks = constraints.filter(
+    (cn) =>
+      cn.table_name === tbl &&
+      cn.constraint_type === 'c' &&
+      !cn.constraint_name.endsWith('_not_null'),
+  )
   for (const ck of cks) {
-    lines.push(`    CONSTRAINT ${ck.constraint_name} ${ck.constraint_definition}`);
+    lines.push(`    CONSTRAINT ${ck.constraint_name} ${ck.constraint_definition}`)
   }
 
-  sql1 += lines.join(',\n') + '\n);\n\n';
+  sql1 += lines.join(',\n') + '\n);\n\n'
 }
 
 // Add foreign key constraints
-sql1 += `-- ============================================================================\n-- FOREIGN KEYS\n-- ============================================================================\n\n`;
-const fks = constraints.filter(cn => cn.constraint_type === 'f');
+sql1 += `-- ============================================================================\n-- FOREIGN KEYS\n-- ============================================================================\n\n`
+const fks = constraints.filter((cn) => cn.constraint_type === 'f')
 for (const fk of fks) {
-  sql1 += `ALTER TABLE public.${fk.table_name} ADD CONSTRAINT ${fk.constraint_name} ${fk.constraint_definition};\n`;
+  sql1 += `ALTER TABLE public.${fk.table_name} ADD CONSTRAINT ${fk.constraint_name} ${fk.constraint_definition};\n`
 }
-sql1 += '\n';
+sql1 += '\n'
 
 // Materialized Views
-sql1 += `-- ============================================================================\n-- MATERIALIZED VIEWS\n-- ============================================================================\n\n`;
+sql1 += `-- ============================================================================\n-- MATERIALIZED VIEWS\n-- ============================================================================\n\n`
 
 sql1 += `CREATE MATERIALIZED VIEW public.mv_daily_fan_activity AS
 SELECT ((started_at AT TIME ZONE 'America/Caracas'::text))::date AS activity_date,
@@ -191,7 +197,7 @@ SELECT ((started_at AT TIME ZONE 'America/Caracas'::text))::date AS activity_dat
 FROM public.trivia_attempts ta
 WHERE (submitted_at IS NOT NULL)
 GROUP BY (((started_at AT TIME ZONE 'America/Caracas'::text))::date), fan_id
-WITH DATA;\n\n`;
+WITH DATA;\n\n`
 
 sql1 += `CREATE MATERIALIZED VIEW public.mv_demographics AS
 SELECT COALESCE(NULLIF(TRIM(BOTH FROM municipality), ''::text), 'Sin especificar'::text) AS municipality,
@@ -216,7 +222,7 @@ GROUP BY COALESCE(NULLIF(TRIM(BOTH FROM municipality), ''::text), 'Sin especific
         WHEN (EXTRACT(year FROM age((CURRENT_DATE)::timestamp with time zone, (birth_date)::timestamp with time zone)) >= (45)::numeric) THEN '45+'::text
         ELSE 'Menor de 18'::text
     END
-WITH DATA;\n\n`;
+WITH DATA;\n\n`
 
 sql1 += `CREATE MATERIALIZED VIEW public.mv_daily_economy_stats AS
 SELECT ((created_at AT TIME ZONE 'America/Caracas'::text))::date AS entry_date,
@@ -239,20 +245,24 @@ SELECT ((created_at AT TIME ZONE 'America/Caracas'::text))::date AS entry_date,
         END), (0)::bigint) AS pearls_held
 FROM public.ledger_entries le
 GROUP BY (((created_at AT TIME ZONE 'America/Caracas'::text))::date)
-WITH DATA;\n\n`;
+WITH DATA;\n\n`
 
 // Add secondary indexes (ignore PK and unique constraints which pg_indexes already has, or filter them)
-sql1 += `-- ============================================================================\n-- INDEXES\n-- ============================================================================\n\n`;
-const pkAndUqNames = new Set(constraints.filter(c => c.constraint_type === 'p' || c.constraint_type === 'u').map(c => c.constraint_name));
+sql1 += `-- ============================================================================\n-- INDEXES\n-- ============================================================================\n\n`
+const pkAndUqNames = new Set(
+  constraints
+    .filter((c) => c.constraint_type === 'p' || c.constraint_type === 'u')
+    .map((c) => c.constraint_name),
+)
 
 for (const idx of indexes) {
-  if (pkAndUqNames.has(idx.indexname)) continue;
-  sql1 += `${idx.indexdef};\n`;
+  if (pkAndUqNames.has(idx.indexname)) continue
+  sql1 += `${idx.indexdef};\n`
 }
-sql1 += '\n';
+sql1 += '\n'
 
 // Storage buckets
-sql1 += `-- ============================================================================\n-- STORAGE BUCKETS\n-- ============================================================================\n\n`;
+sql1 += `-- ============================================================================\n-- STORAGE BUCKETS\n-- ============================================================================\n\n`
 sql1 += `INSERT INTO storage.buckets (id, name, public, file_size_limit, allowed_mime_types)
 VALUES 
     ('product-images', 'product-images', true, 5242880, ARRAY['image/jpeg', 'image/png', 'image/webp']::text[]),
@@ -263,16 +273,15 @@ ON CONFLICT (id) DO UPDATE SET
     file_size_limit = EXCLUDED.file_size_limit,
     allowed_mime_types = EXCLUDED.allowed_mime_types;
 
-`;
+`
 
-fs.writeFileSync(path.join(outDir, '20261016000001_schema_and_types.sql'), sql1);
-console.log('Created 20261016000001_schema_and_types.sql');
-
+fs.writeFileSync(path.join(outDir, '20261016000001_schema_and_types.sql'), sql1)
+console.log('Created 20261016000001_schema_and_types.sql')
 
 // ============================================================================
 // Migration 2: Functions and Triggers
 // ============================================================================
-console.log('Building Migration 2: Functions and Triggers...');
+console.log('Building Migration 2: Functions and Triggers...')
 let sql2 = `-- ============================================================================
 -- Migration: 20261016000002_functions_and_triggers.sql
 -- Description: Consolidated functions, triggers, and RPCs for Guaiqueríes Platform.
@@ -280,21 +289,28 @@ let sql2 = `-- =================================================================
 --              and permission grants.
 -- ============================================================================
 
-`;
+`
 
 // Sort functions so core auth helpers come first
-const coreHelpers = ['is_admin', 'is_staff_or_admin', 'is_admin_check', 'assert_admin', 'assert_staff', 'assert_active_verified_fan'];
+const coreHelpers = [
+  'is_admin',
+  'is_staff_or_admin',
+  'is_admin_check',
+  'assert_admin',
+  'assert_staff',
+  'assert_active_verified_fan',
+]
 const sortedFuncs = [...functions].sort((a, b) => {
-  const aIdx = coreHelpers.indexOf(a.function_name);
-  const bIdx = coreHelpers.indexOf(b.function_name);
-  if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx;
-  if (aIdx !== -1) return -1;
-  if (bIdx !== -1) return 1;
-  return a.function_name.localeCompare(b.function_name);
-});
+  const aIdx = coreHelpers.indexOf(a.function_name)
+  const bIdx = coreHelpers.indexOf(b.function_name)
+  if (aIdx !== -1 && bIdx !== -1) return aIdx - bIdx
+  if (aIdx !== -1) return -1
+  if (bIdx !== -1) return 1
+  return a.function_name.localeCompare(b.function_name)
+})
 
 for (const fn of sortedFuncs) {
-  let def = fn.definition.trim();
+  let def = fn.definition.trim()
 
   // Ensure helper functions have STABLE and fixed search_path
   if (fn.function_name === 'is_admin' && fn.identity_arguments === 'user_id uuid') {
@@ -315,7 +331,7 @@ BEGIN
           AND active = true
     );
 END;
-$function$`;
+$function$`
   } else if (fn.function_name === 'is_staff_or_admin' && fn.identity_arguments === 'user_id uuid') {
     def = `CREATE OR REPLACE FUNCTION public.is_staff_or_admin(user_id uuid)
  RETURNS boolean
@@ -333,7 +349,7 @@ BEGIN
           AND active = true
     );
 END;
-$function$`;
+$function$`
   } else if (fn.function_name === 'is_admin_check' && fn.identity_arguments === '') {
     def = `CREATE OR REPLACE FUNCTION public.is_admin_check()
  RETURNS boolean
@@ -344,7 +360,7 @@ AS $function$
 BEGIN
     RETURN public.is_admin(auth.uid());
 END;
-$function$`;
+$function$`
   } else if (fn.function_name === 'prevent_ledger_mutation') {
     def = `CREATE OR REPLACE FUNCTION public.prevent_ledger_mutation()
  RETURNS trigger
@@ -354,7 +370,7 @@ AS $function$
 BEGIN
     RAISE EXCEPTION 'Financial Ledger entries are immutable. UPDATE and DELETE operations are forbidden.';
 END;
-$function$`;
+$function$`
   } else if (fn.function_name === 'prevent_audit_log_mutation') {
     def = `CREATE OR REPLACE FUNCTION public.prevent_audit_log_mutation()
  RETURNS trigger
@@ -364,7 +380,7 @@ AS $function$
 BEGIN
     RAISE EXCEPTION 'Audit Log entries are immutable. UPDATE and DELETE operations are forbidden.';
 END;
-$function$`;
+$function$`
   } else if (fn.function_name === 'parse_instagram_shortcode') {
     def = `CREATE OR REPLACE FUNCTION public.parse_instagram_shortcode(p_url text)
  RETURNS text
@@ -389,59 +405,58 @@ BEGIN
     END IF;
     RETURN NULL;
 END;
-$function$`;
+$function$`
   }
 
-  sql2 += def + ';\n\n';
+  sql2 += def + ';\n\n'
 }
 
 // Add Triggers
-sql2 += `-- ============================================================================\n-- TRIGGERS\n-- ============================================================================\n\n`;
+sql2 += `-- ============================================================================\n-- TRIGGERS\n-- ============================================================================\n\n`
 sql2 += `CREATE TRIGGER trg_prevent_ledger_mutation
     BEFORE DELETE OR UPDATE ON public.ledger_entries
-    FOR EACH ROW EXECUTE FUNCTION prevent_ledger_mutation();\n\n`;
+    FOR EACH ROW EXECUTE FUNCTION prevent_ledger_mutation();\n\n`
 
 sql2 += `CREATE TRIGGER trg_prevent_audit_log_mutation
     BEFORE DELETE OR UPDATE ON public.audit_log
-    FOR EACH ROW EXECUTE FUNCTION prevent_audit_log_mutation();\n\n`;
+    FOR EACH ROW EXECUTE FUNCTION prevent_audit_log_mutation();\n\n`
 
 sql2 += `CREATE TRIGGER trg_check_max_5_published_login_modal_slides
     BEFORE INSERT OR UPDATE ON public.login_modal_slides
-    FOR EACH ROW EXECUTE FUNCTION check_max_5_published_login_modal_slides();\n\n`;
+    FOR EACH ROW EXECUTE FUNCTION check_max_5_published_login_modal_slides();\n\n`
 
 sql2 += `CREATE CONSTRAINT TRIGGER trg_assert_min_admins
     AFTER DELETE OR UPDATE ON public.staff_members
     DEFERRABLE INITIALLY DEFERRED
-    FOR EACH ROW EXECUTE FUNCTION assert_min_admins();\n\n`;
+    FOR EACH ROW EXECUTE FUNCTION assert_min_admins();\n\n`
 
 // Revoke and Grant Permissions
-sql2 += `-- ============================================================================\n-- FUNCTION PERMISSIONS (REVOKE PUBLIC, GRANT EXPLICIT ROLES)\n-- ============================================================================\n\n`;
-sql2 += `REVOKE ALL ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC, anon;\n\n`;
+sql2 += `-- ============================================================================\n-- FUNCTION PERMISSIONS (REVOKE PUBLIC, GRANT EXPLICIT ROLES)\n-- ============================================================================\n\n`
+sql2 += `REVOKE ALL ON ALL FUNCTIONS IN SCHEMA public FROM PUBLIC, anon;\n\n`
 
 // Grant based on ACLs
 for (const a of acls) {
-  const aclStr = a.proacl || '';
-  const funcSig = `${a.proname}(${a.args})`;
+  const aclStr = a.proacl || ''
+  const funcSig = `${a.proname}(${a.args})`
 
-  const grants = [];
-  if (aclStr.includes('authenticated=X')) grants.push('authenticated');
-  if (aclStr.includes('service_role=X')) grants.push('service_role');
-  if (aclStr.includes('anon=X')) grants.push('anon');
+  const grants = []
+  if (aclStr.includes('authenticated=X')) grants.push('authenticated')
+  if (aclStr.includes('service_role=X')) grants.push('service_role')
+  if (aclStr.includes('anon=X')) grants.push('anon')
 
   if (grants.length > 0) {
-    sql2 += `GRANT EXECUTE ON FUNCTION public.${funcSig} TO ${grants.join(', ')};\n`;
+    sql2 += `GRANT EXECUTE ON FUNCTION public.${funcSig} TO ${grants.join(', ')};\n`
   }
 }
-sql2 += '\n';
+sql2 += '\n'
 
-fs.writeFileSync(path.join(outDir, '20261016000002_functions_and_triggers.sql'), sql2);
-console.log('Created 20261016000002_functions_and_triggers.sql');
-
+fs.writeFileSync(path.join(outDir, '20261016000002_functions_and_triggers.sql'), sql2)
+console.log('Created 20261016000002_functions_and_triggers.sql')
 
 // ============================================================================
 // Migration 3: RLS Policies
 // ============================================================================
-console.log('Building Migration 3: RLS Policies...');
+console.log('Building Migration 3: RLS Policies...')
 let sql3 = `-- ============================================================================
 -- Migration: 20261016000003_rls_policies.sql
 -- Description: Consolidated, hardened Row Level Security (RLS) policies for all
@@ -450,53 +465,53 @@ let sql3 = `-- =================================================================
 --              symmetric WITH CHECK on mutations.
 -- ============================================================================
 
-`;
+`
 
 // Enable RLS on all 49 tables
-sql3 += `-- Enable RLS on all public tables\n`;
+sql3 += `-- Enable RLS on all public tables\n`
 for (const tbl of tableOrder) {
-  sql3 += `ALTER TABLE public.${tbl} ENABLE ROW LEVEL SECURITY;\n`;
+  sql3 += `ALTER TABLE public.${tbl} ENABLE ROW LEVEL SECURITY;\n`
 }
-sql3 += '\n';
+sql3 += '\n'
 
 // Storage objects RLS
-sql3 += `-- Enable RLS on storage.objects\n`;
-sql3 += `ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY;\n\n`;
+sql3 += `-- Enable RLS on storage.objects\n`
+sql3 += `DO $$\nBEGIN\n  IF NOT (SELECT relrowsecurity FROM pg_class WHERE oid = 'storage.objects'::regclass) THEN\n    EXECUTE 'ALTER TABLE storage.objects ENABLE ROW LEVEL SECURITY';\n  END IF;\nEND $$;\n\n`
 
 // Group policies by table
-const policiesByTable = new Map();
+const policiesByTable = new Map()
 for (const p of policies) {
-  const key = `${p.schemaname}.${p.tablename}`;
+  const key = `${p.schemaname}.${p.tablename}`
   if (!policiesByTable.has(key)) {
-    policiesByTable.set(key, []);
+    policiesByTable.set(key, [])
   }
-  policiesByTable.get(key).push(p);
+  policiesByTable.get(key).push(p)
 }
 
 // Special consolidated policies for trivia_options, system_alerts, and storage
 for (const [tblKey, pList] of policiesByTable.entries()) {
-  sql3 += `-- ----------------------------------------------------------------------------\n-- Policies for ${tblKey}\n-- ----------------------------------------------------------------------------\n`;
+  sql3 += `-- ----------------------------------------------------------------------------\n-- Policies for ${tblKey}\n-- ----------------------------------------------------------------------------\n`
 
   if (tblKey === 'public.trivia_options') {
     // Consolidated secure policy from migration 51
     sql3 += `CREATE POLICY "Trivia Options Staff Manage" ON public.trivia_options
     FOR ALL TO authenticated
     USING (public.is_staff_or_admin((SELECT auth.uid())))
-    WITH CHECK (public.is_staff_or_admin((SELECT auth.uid())));\n\n`;
-    continue;
+    WITH CHECK (public.is_staff_or_admin((SELECT auth.uid())));\n\n`
+    continue
   }
 
   if (tblKey === 'public.system_alerts') {
     // Fixed boolean policies from migration 51
     sql3 += `CREATE POLICY system_alerts_admin_select ON public.system_alerts
     FOR SELECT TO authenticated
-    USING (public.is_admin((SELECT auth.uid())));\n\n`;
+    USING (public.is_admin((SELECT auth.uid())));\n\n`
 
     sql3 += `CREATE POLICY system_alerts_admin_update ON public.system_alerts
     FOR UPDATE TO authenticated
     USING (public.is_admin((SELECT auth.uid())))
-    WITH CHECK (public.is_admin((SELECT auth.uid())));\n\n`;
-    continue;
+    WITH CHECK (public.is_admin((SELECT auth.uid())));\n\n`
+    continue
   }
 
   if (tblKey === 'storage.objects') {
@@ -562,86 +577,100 @@ CREATE POLICY "Avatars User Delete" ON storage.objects
     USING (
         bucket_id = 'avatars' AND
         (storage.foldername(name))[1] = (SELECT auth.uid())::text
-    );\n\n`;
-    continue;
+    );\n\n`
+    continue
   }
 
   // General policies: ensure clean InitPlan optimization
   for (const pol of pList) {
-    let qual = pol.qual;
-    let withCheck = pol.with_check;
+    let qual = pol.qual
+    let withCheck = pol.with_check
 
     // Optimize auth.uid() -> (SELECT auth.uid()) if not already wrapped
     if (qual && qual.includes('auth.uid()') && !qual.includes('(SELECT auth.uid())')) {
-      qual = qual.replace(/auth\.uid\(\)/g, '(SELECT auth.uid())');
+      qual = qual.replace(/auth\.uid\(\)/g, '(SELECT auth.uid())')
     }
-    if (withCheck && withCheck.includes('auth.uid()') && !withCheck.includes('(SELECT auth.uid())')) {
-      withCheck = withCheck.replace(/auth\.uid\(\)/g, '(SELECT auth.uid())');
+    if (
+      withCheck &&
+      withCheck.includes('auth.uid()') &&
+      !withCheck.includes('(SELECT auth.uid())')
+    ) {
+      withCheck = withCheck.replace(/auth\.uid\(\)/g, '(SELECT auth.uid())')
     }
 
     // Role format
-    let roles = 'public';
+    let roles = 'public'
     if (pol.roles && pol.roles !== '{public}') {
-      roles = pol.roles.replace(/[{}]/g, '');
+      roles = pol.roles.replace(/[{}]/g, '')
     }
 
     // Admin CMS tables optimization from migration 51
     if (pol.policyname.endsWith('Admin All') && roles === 'public') {
-      roles = 'authenticated';
+      roles = 'authenticated'
     }
 
-    sql3 += `CREATE POLICY "${pol.policyname}" ON ${tblKey}\n    FOR ${pol.cmd} TO ${roles}\n`;
+    sql3 += `CREATE POLICY "${pol.policyname}" ON ${tblKey}\n    FOR ${pol.cmd} TO ${roles}\n`
     if (qual) {
-      sql3 += `    USING (${qual})\n`;
+      sql3 += `    USING (${qual})\n`
     }
     if (withCheck) {
-      sql3 += `    WITH CHECK (${withCheck})\n`;
+      sql3 += `    WITH CHECK (${withCheck})\n`
     }
-    sql3 += `;\n\n`;
+    sql3 += `;\n\n`
   }
 }
 
-sql3 += `NOTIFY pgrst, 'reload schema';\n`;
+sql3 += `NOTIFY pgrst, 'reload schema';\n`
 
-fs.writeFileSync(path.join(outDir, '20261016000003_rls_policies.sql'), sql3);
-console.log('Created 20261016000003_rls_policies.sql');
-
+fs.writeFileSync(path.join(outDir, '20261016000003_rls_policies.sql'), sql3)
+console.log('Created 20261016000003_rls_policies.sql')
 
 // ============================================================================
 // Migration 4: Initial Seed Data
 // ============================================================================
-console.log('Building Migration 4: Initial Seed...');
+console.log('Building Migration 4: Initial Seed...')
 let sql4 = `-- ============================================================================
 -- Migration: 20261016000004_initial_seed.sql
 -- Description: Baseline system configuration seed data (Economy, Risk,
 --              Landing settings, Birthday, Policies, Standings, Ad Tiers).
 -- ============================================================================
 
-`;
+`
 
-const seedTables = ['economy_settings', 'risk_settings', 'birthday_settings', 'landing_settings', 'ad_reward_tiers', 'policy_documents', 'standings'];
+const seedTables = [
+  'economy_settings',
+  'risk_settings',
+  'birthday_settings',
+  'landing_settings',
+  'ad_reward_tiers',
+  'policy_documents',
+  'standings',
+]
 
 for (const tbl of seedTables) {
-  const rows = seedRows.filter(r => r.tbl === tbl).map(r => r.row_data);
-  if (rows.length === 0) continue;
+  const rows = seedRows.filter((r) => r.tbl === tbl).map((r) => r.row_data)
+  if (rows.length === 0) continue
 
-  sql4 += `-- Seed for ${tbl}\n`;
+  sql4 += `-- Seed for ${tbl}\n`
   for (const r of rows) {
-    const keys = Object.keys(r);
-    const colsList = keys.join(', ');
-    const valuesList = keys.map(k => {
-      const v = r[k];
-      if (v === null) return 'NULL';
-      if (typeof v === 'boolean' || typeof v === 'number') return v;
-      if (typeof v === 'object') return `'${JSON.stringify(v).replace(/'/g, "''")}'::jsonb`;
-      return `'${String(v).replace(/'/g, "''")}'`;
-    }).join(', ');
+    const keys = Object.keys(r)
+    const colsList = keys.join(', ')
+    const valuesList = keys
+      .map((k) => {
+        const v = r[k]
+        if (v === null) return 'NULL'
+        if (tbl === 'risk_settings' && k === 'value') return `'${v}'::jsonb`
+        if (typeof v === 'boolean' || typeof v === 'number') return v
+        if (typeof v === 'object') return `'${JSON.stringify(v).replace(/'/g, "''")}'::jsonb`
+        return `'${String(v).replace(/'/g, "''")}'`
+      })
+      .join(', ')
 
-    sql4 += `INSERT INTO public.${tbl} (${colsList})\nVALUES (${valuesList})\nON CONFLICT DO NOTHING;\n\n`;
+    sql4 += `INSERT INTO public.${tbl} (${colsList})\nVALUES (${valuesList})\nON CONFLICT DO NOTHING;\n\n`
   }
 }
 
-fs.writeFileSync(path.join(outDir, '20261016000004_initial_seed.sql'), sql4);
-console.log('Created 20261016000004_initial_seed.sql');
+fs.writeFileSync(path.join(outDir, '20261016000004_initial_seed.sql'), sql4)
+console.log('Created 20261016000004_initial_seed.sql')
 
-console.log('All 4 squashed migrations built successfully!');
+console.log('All 4 squashed migrations built successfully!')

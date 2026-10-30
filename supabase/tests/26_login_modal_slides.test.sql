@@ -2,7 +2,7 @@ BEGIN;
 SELECT plan(7);
 
 -- Test 1: login_modal_slides table exists and has RLS enabled
-SELECT passes(
+SELECT lives_ok(
     'SELECT count(*) FROM pg_tables WHERE tablename = ''login_modal_slides'' AND rowsecurity = true',
     'login_modal_slides table must have RLS active'
 );
@@ -44,7 +44,7 @@ SELECT throws_ok(
 );
 
 -- Test 7: RLS policy allows public select on login_modal_slides
-SELECT passes(
+SELECT lives_ok(
     $$ SELECT count(*) FROM public.login_modal_slides WHERE status = 'published' $$,
     'login_modal_slides permits select for published'
 );

@@ -3,6 +3,7 @@ import { useSupabaseClient } from '#imports'
 
 export interface Product {
   id: string
+  team_id?: string
   name: string
   description: string | null
   category: 'physical' | 'experience' | 'raffle'
