@@ -82,3 +82,34 @@ flowchart TD
    - El slug del equipo activo se almacena en `localStorage` (`guaiqui_active_team_slug`) estrictamente como conveniencia UX dentro de bloques `try/catch`. El backend **nunca** asume este valor y deriva el `team_id` directamente del recurso (trivia o producto) consultado o jugado.
 4. **Tratamiento de Equipos Inactivos**:
    - Si un equipo pasa a estado `inactive`, el Hub y sus subrutas muestran un banner preventivo que bloquea la participación en trivias y canjes nuevos, preservando intactos la visibilidad del historial y los saldos.
+
+---
+
+## Arquitectura del Panel de Plataforma (Fase 4)
+
+```mermaid
+flowchart TD
+    StaffLogin["Login en apps/admin"] --> CheckRole{"¿Rol y Alcance?"}
+    CheckRole -- "team_id IS NULL<br/>(Platform Admin)" --> PlatformMaster["Panel Master de Plataforma<br/>(Gestión de Clubes, Pagos, Analítica Global)"]
+    CheckRole -- "team_id NOT NULL<br/>(Club Staff / Admin)" --> CheckStatus{"¿Status del Club?"}
+    
+    CheckStatus -- "active" --> ClubAdmin["Panel de Club Específico<br/>(Taquilla, Trivias, Premios del Club)"]
+    CheckStatus -- "inactive" --> InactiveScreen["/equipo-inactivo<br/>(Pantalla de Bloqueo Operativo)"]
+    
+    PlatformMaster --> HeaderSelector["Selector de Club en Cabecera<br/>(Inyecta selectedTeamId en llamadas)"]
+    PlatformMaster --> TeamLifecycle["Ciclo de Vida de Franquicia<br/>(Alta compensable, Cobros, Desactivación)"]
+```
+
+### Componentes Clave de la Plataforma:
+1. **Diferenciación de Roles (`staff_members`)**:
+   - **Administrador de Plataforma (`team_id IS NULL`)**: Visión global, sin club fijo, acceso a gestión de franquicias, eventos de cobro (`team_billing_events`), configuración del sistema (`platform_settings`) y analítica cross-team.
+   - **Personal de Club (`team_id NOT NULL`)**: Confinado rígidamente a su equipo por RLS y triggers de integridad. No visualiza el selector de equipos ni rutas `/admin/plataforma/*`.
+2. **Selector de Contexto para Plataforma**:
+   - La cabecera expone un selector de club que actualiza `authStore.selectedTeamId` y alimenta `authStore.activeTeamId`. Esto permite al administrador de plataforma operar en cualquier club sin violar los triggers y políticas que exigen `team_id`.
+3. **Ciclo de Vida de Facturación y Desactivación Automática**:
+   - Cada equipo posee un campo `paid_until`.
+   - `job_send_team_billing_reminders()` genera avisos in-app y entradas en `email_outbox` 7 días y 1 día antes del vencimiento.
+   - Si transcurren los días de gracia (`billing_grace_days` en `platform_settings`, por defecto 3 días), `job_deactivate_expired_teams()` transiciona automáticamente el equipo a `status = 'inactive'`, notifica a sus administradores y asienta la auditoría.
+4. **Alta Compensable (`create-team`)**:
+   - La creación de franquicias se ejecuta en la Edge Function `create-team` exigiendo AAL2 (2FA). Si el alta del directivo inicial o la asignación de roles falla, se compensa eliminando la franquicia creada para evitar estados huérfanos.
+

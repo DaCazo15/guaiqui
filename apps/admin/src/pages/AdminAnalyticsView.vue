@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseInput } from '@guaiqui/ui'
 import { supabase } from '../lib/supabase'
@@ -80,7 +80,7 @@ const loadAnalytics = async () => {
 
   const sIso = startDate.value ? new Date(`${startDate.value}T00:00:00`).toISOString() : null
   const eIso = endDate.value ? new Date(`${endDate.value}T23:59:59`).toISOString() : null
-  const teamIdParam = authStore.staffTeamId || undefined
+  const teamIdParam = authStore.activeTeamId || undefined
 
   try {
     const [
@@ -122,6 +122,10 @@ const loadAnalytics = async () => {
     loading.value = false
   }
 }
+
+watch(() => authStore.activeTeamId, () => {
+  loadAnalytics()
+})
 
 onMounted(() => {
   applyPreset('30d')

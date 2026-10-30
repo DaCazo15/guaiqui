@@ -54,6 +54,26 @@ const handleSignOut = async () => {
           </span>
         </div>
       </div>
+
+      <!-- Platform Admin: Team Selector -->
+      <div v-if="authStore.isPlatformAdmin && authStore.availableTeams.length > 0" class="flex items-center gap-2 pl-2 sm:pl-3 border-l border-slate-800">
+        <label for="platform-team-select" class="text-xs font-semibold text-emerald-400 hidden xl:inline-flex items-center gap-1">
+          <i class="bi bi-shield-shaded"></i> Club activo:
+        </label>
+        <div class="relative">
+          <select
+            id="platform-team-select"
+            :value="authStore.selectedTeamId"
+            @change="e => authStore.setSelectedTeamId((e.target as HTMLSelectElement).value)"
+            class="bg-slate-800/90 hover:bg-slate-850 text-slate-200 text-xs font-semibold rounded-lg pl-2.5 pr-7 py-1.5 border border-slate-700 hover:border-emerald-600 focus:outline-none focus:ring-2 focus:ring-emerald-500 appearance-none cursor-pointer transition-all shadow-inner max-w-[200px] sm:max-w-[260px] truncate"
+          >
+            <option v-for="team in authStore.availableTeams" :key="team.id" :value="team.id">
+              {{ team.name }} {{ team.status === 'inactive' ? '(Inactivo)' : '' }}
+            </option>
+          </select>
+          <i class="bi bi-chevron-down absolute right-2.5 top-1/2 -translate-y-1/2 text-slate-400 pointer-events-none text-[10px]"></i>
+        </div>
+      </div>
     </div>
 
     <!-- Actions & User Profile -->

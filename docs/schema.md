@@ -36,11 +36,45 @@ erDiagram
         text name
         text slug UK
         text short_name
+        text sport
         text logo_url
         text primary_color
         text secondary_color
         enum status
         timestamptz joined_at
+        timestamptz paid_until
+    }
+
+    team_billing_events {
+        uuid id PK
+        uuid team_id FK
+        text event_type
+        numeric amount
+        text currency
+        int period_months
+        timestamptz period_start
+        timestamptz period_end
+        text note
+        uuid registered_by FK
+        timestamptz created_at
+    }
+
+    platform_settings {
+        text key PK
+        jsonb value
+        timestamptz updated_at
+    }
+
+    email_outbox {
+        uuid id PK
+        text recipient_email
+        text subject
+        text body_html
+        jsonb metadata
+        text status
+        text error
+        timestamptz sent_at
+        timestamptz created_at
     }
 
     team_follows {
@@ -307,6 +341,13 @@ erDiagram
 | `report_redemption_issue(redemption_id, reason)` | Staff reporta problema con entrega. | `FOR UPDATE` en redemption |
 | `verify_redemption_code(code_hash)` | Lectura de la tarjeta del canje, sin consumir. | — |
 | `admin_adjust_pearls(fan_id, amount, reason, team_id)` | Ajuste manual acotado por equipo de staff (o especificado por plataforma). | `FOR UPDATE` en wallet |
+| `admin_record_team_payment(team_id, event_type, amount, months, note)` | Extiende suscripción de equipo, registra evento contable inmutable y auditoría. | `FOR UPDATE` en teams |
+| `admin_toggle_team_status(team_id, status, reason)` | Activación o desactivación manual de franquicia con motivo en auditoría. | — |
+| `admin_update_team(team_id, name, short_name, sport, colors, logo)` | Actualiza metadatos del club (plataforma o club admin de ese equipo). | — |
+| `admin_list_teams(search, status, billing_status, limit, offset)` | Consulta maestra de equipos para panel plataforma con estatus y contadores. | — |
+| `admin_get_platform_analytics()` | Resumen analítico cross-team, balance de emisión/canje y tendencias 30d. | — |
+| `job_deactivate_expired_teams()` | Job diario pg_cron que pasa a `inactive` equipos vencidos tras días de gracia. | — |
+| `job_send_team_billing_reminders()` | Job diario que encola advertencias a directivos 7 días y 1 día antes del vencimiento. | — |
 | `reconcile_wallets()` | Auditor contable: concilia `balance_cache` vs `ledger_entries` por `(fan_id, team_id)`. | — |
 
 ## RLS (Row-Level Security)
@@ -316,6 +357,9 @@ erDiagram
 | `profiles` | Lee/edita solo su perfil | Lee seguidores de su equipo | Todo |
 | `wallets` | Lee solo su billetera | Lee billeteras de su equipo | Todo |
 | `ledger_entries` | Lee solo sus entradas | Lee entradas de su equipo | Todo |
+| `team_billing_events` | — | Lee los de su club | Plataforma lee/crea (inmutable) |
+| `platform_settings` | — | — | Solo Plataforma |
+| `email_outbox` | — | — | Solo Plataforma / service_role |
 | `trivias` | Lee publicadas de equipos `active` | Lee todas de su equipo | Todo |
 | `trivia_options` | Lee texto (sin `is_correct` vía RPC) | Lee todas de su equipo | Todo |
 | `trivia_attempts` | Lee solo las suyas | Lee las de su equipo | Todo |

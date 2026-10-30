@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { ref, onMounted, nextTick, watch } from 'vue'
 import { RouterLink, useRoute } from 'vue-router'
+import { useAuthStore } from '../../stores/auth'
 
 defineProps<{
   isOpen: boolean
@@ -11,7 +12,13 @@ const emit = defineEmits<{
 }>()
 
 const route = useRoute()
+const authStore = useAuthStore()
 const navRef = ref<HTMLElement | null>(null)
+
+const platformAdminNavItems = [
+  { name: 'platform-teams', path: '/admin/plataforma/equipos', label: 'Gestión de Clubes', icon: 'bi-shield-shaded' },
+  { name: 'platform-analytics', path: '/admin/plataforma/analitica', label: 'Analítica Global', icon: 'bi-globe2' }
+]
 
 const platformNavItems = [
   { name: 'admin-dashboard', path: '/admin/dashboard', label: 'Dashboard', icon: 'bi-speedometer2' },
@@ -99,6 +106,28 @@ watch(() => route.path, () => {
         @scroll="handleNavScroll"
         class="flex-1 p-3.5 space-y-6 overflow-y-auto"
       >
+        <!-- Section 0: Platform Master Administration (Only Platform Admin) -->
+        <div v-if="authStore.isPlatformAdmin" class="space-y-1 pb-3 border-b border-slate-800">
+          <div class="px-3 py-1.5 text-[11px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1.5 font-mono">
+            <i class="bi bi-gear-wide-connected text-amber-400"></i> Plataforma Master
+          </div>
+          <RouterLink
+            v-for="item in platformAdminNavItems"
+            :key="item.name"
+            :to="{ name: item.name }"
+            @click="emit('close')"
+            :class="[
+              'flex items-center gap-3 px-3 py-2 rounded-xl font-medium text-xs sm:text-sm transition-all duration-150',
+              isActive(item.path)
+                ? 'bg-amber-950/70 text-amber-300 font-semibold border-l-4 border-amber-500 shadow-inner'
+                : 'text-slate-400 hover:bg-slate-800/80 hover:text-slate-200'
+            ]"
+          >
+            <i :class="['bi', item.icon, 'text-base', isActive(item.path) ? 'text-amber-400' : 'text-slate-500']"></i>
+            <span>{{ item.label }}</span>
+          </RouterLink>
+        </div>
+
         <!-- Section 1: Platform & Operations -->
         <div class="space-y-1">
           <div class="px-3 py-1.5 text-[11px] font-bold text-slate-400 uppercase tracking-wider">
