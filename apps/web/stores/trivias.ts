@@ -119,7 +119,8 @@ export const useTriviaStore = defineStore('trivias', () => {
 
   async function fetchLeaderboard(
     period: 'all_time' | 'monthly' | 'weekly' = 'all_time',
-    teamId?: string | null
+    teamId?: string | null,
+    friendsOnly = false
   ) {
     isLoading.value = true
     errorMessage.value = null
@@ -127,12 +128,15 @@ export const useTriviaStore = defineStore('trivias', () => {
       const { data, error } = await supabase.rpc('get_leaderboard', {
         p_period: period,
         p_team_id: teamId || null,
+        p_friends_only: friendsOnly,
       })
       if (error) throw error
       const res = data as {
         leaderboard?: LeaderboardItem[]
         my_rank?: UserRankInfo | null
         team?: any | null
+        friends_only?: boolean
+        friends_count?: number
       } | null
       leaderboard.value = res?.leaderboard || []
       myRank.value = res?.my_rank || null

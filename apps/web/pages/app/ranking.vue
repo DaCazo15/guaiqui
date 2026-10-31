@@ -20,6 +20,7 @@ useSeoMeta({
 const triviaStore = useTriviaStore()
 const currentPeriod = ref<'all_time' | 'monthly' | 'weekly'>('all_time')
 const selectedTeamId = ref<string | null>(null)
+const friendsOnly = ref(false)
 
 const tabs = [
   { id: 'all_time', label: 'Ranking General' },
@@ -28,17 +29,22 @@ const tabs = [
 ]
 
 onMounted(async () => {
-  await triviaStore.fetchLeaderboard(currentPeriod.value, selectedTeamId.value)
+  await triviaStore.fetchLeaderboard(currentPeriod.value, selectedTeamId.value, friendsOnly.value)
 })
 
 async function handleTabChange(tabId: string) {
   currentPeriod.value = tabId as 'all_time' | 'monthly' | 'weekly'
-  await triviaStore.fetchLeaderboard(currentPeriod.value, selectedTeamId.value)
+  await triviaStore.fetchLeaderboard(currentPeriod.value, selectedTeamId.value, friendsOnly.value)
 }
 
 async function handleTeamSelect(teamId: string | null) {
   selectedTeamId.value = teamId
-  await triviaStore.fetchLeaderboard(currentPeriod.value, selectedTeamId.value)
+  await triviaStore.fetchLeaderboard(currentPeriod.value, selectedTeamId.value, friendsOnly.value)
+}
+
+async function toggleFriendsOnly() {
+  friendsOnly.value = !friendsOnly.value
+  await triviaStore.fetchLeaderboard(currentPeriod.value, selectedTeamId.value, friendsOnly.value)
 }
 
 const restOfLeaderboard = computed(() => {
@@ -64,12 +70,25 @@ const restOfLeaderboard = computed(() => {
       @select="handleTeamSelect"
     />
 
-    <!-- Tabs de Período -->
-    <BaseTabs
-      :tabs="tabs"
-      :model-value="currentPeriod"
-      @update:model-value="handleTabChange"
-    />
+    <!-- Tabs de Período y Switch Solo Amigos -->
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+      <BaseTabs
+        :tabs="tabs"
+        :model-value="currentPeriod"
+        class="flex-1"
+        @update:model-value="handleTabChange"
+      />
+
+      <button
+        type="button"
+        class="px-3.5 py-2 rounded-guaiqui-lg text-xs font-bold uppercase tracking-wider transition-all flex items-center justify-center gap-2 cursor-pointer shrink-0 border"
+        :class="friendsOnly ? 'bg-emerald-600 text-white border-emerald-600 shadow-guaiqui-xs' : 'bg-white text-guaiqui-text border-guaiqui-border hover:bg-slate-50'"
+        @click="toggleFriendsOnly"
+      >
+        <i :class="friendsOnly ? 'bi bi-people-fill' : 'bi bi-people'"></i>
+        <span>{{ friendsOnly ? 'Solo Amigos (Activo)' : 'Filtrar por Amigos' }}</span>
+      </button>
+    </div>
 
     <!-- Tarjeta de Posición del Usuario Actual -->
     <LeaderboardUserRankCard
@@ -89,14 +108,29 @@ const restOfLeaderboard = computed(() => {
       class="bg-white border-guaiqui-border rounded-guaiqui-xl p-10 text-center text-guaiqui-text-muted space-y-3 shadow-guaiqui-sm max-w-xl mx-auto"
     >
       <div class="w-16 h-16 rounded-full bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center text-3xl mx-auto">
-        <i class="bi bi-trophy" aria-hidden="true"></i>
+        <i :class="friendsOnly ? 'bi bi-people' : 'bi bi-trophy'" aria-hidden="true"></i>
       </div>
       <h2 class="font-display font-bold text-xl text-guaiqui-text uppercase">
-        Tabla en Preparación
+        {{ friendsOnly ? 'Sin Amigos en la Tabla' : 'Tabla en Preparación' }}
       </h2>
       <p class="text-sm">
-        No hay datos registrados en la tabla para este período o equipo aún. ¡Responde trivias oficiales y sé el primero en sumar puntos!
+        <span v-if="friendsOnly">
+          Ninguno de tus amigos tiene puntos registrados en este período o equipo. ¡Invita o agrega a tus amigos para competir en este ranking!
+        </span>
+        <span v-else>
+          No hay datos registrados en la tabla para este período o equipo aún. ¡Responde trivias oficiales y sé el primero en sumar puntos!
+        </span>
       </p>
+      <div v-if="friendsOnly" class="pt-2">
+        <NuxtLink to="/app/amigos">
+          <button
+            type="button"
+            class="px-4 py-2 bg-guaiqui-primary text-white text-xs font-bold uppercase tracking-wider rounded-guaiqui-md hover:bg-guaiqui-primary-dark transition-colors cursor-pointer"
+          >
+            Ir a Mis Amigos
+          </button>
+        </NuxtLink>
+      </div>
     </BaseCard>
 
     <!-- Contenido del Ranking -->
