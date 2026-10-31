@@ -49,7 +49,14 @@ export interface LeaderboardItem {
   display_name: string
   avatar_url: string | null
   pearls_earned: number
+  tier_name?: string
   is_current_user: boolean
+}
+
+export interface UserRankInfo {
+  rank: number
+  pearls_earned: number
+  tier_name: string
 }
 
 export interface HomeSummaryData {
@@ -85,6 +92,8 @@ export const useTriviaStore = defineStore('trivias', () => {
 
   const homeSummary = ref<HomeSummaryData | null>(null)
   const leaderboard = ref<LeaderboardItem[]>([])
+  const myRank = ref<UserRankInfo | null>(null)
+  const currentLeaderboardTeam = ref<any | null>(null)
   const activeTrivias = ref<TriviaRow[]>([])
   const currentAttempt = ref<AttemptData | null>(null)
   const currentResult = ref<TriviaResult | null>(null)
@@ -108,14 +117,26 @@ export const useTriviaStore = defineStore('trivias', () => {
     }
   }
 
-  async function fetchLeaderboard(period: 'all_time' | 'monthly' | 'weekly' = 'all_time') {
+  async function fetchLeaderboard(
+    period: 'all_time' | 'monthly' | 'weekly' = 'all_time',
+    teamId?: string | null
+  ) {
     isLoading.value = true
     errorMessage.value = null
     try {
-      const { data, error } = await supabase.rpc('get_leaderboard', { p_period: period })
+      const { data, error } = await supabase.rpc('get_leaderboard', {
+        p_period: period,
+        p_team_id: teamId || null,
+      })
       if (error) throw error
-      const res = data as { leaderboard?: LeaderboardItem[] } | null
+      const res = data as {
+        leaderboard?: LeaderboardItem[]
+        my_rank?: UserRankInfo | null
+        team?: any | null
+      } | null
       leaderboard.value = res?.leaderboard || []
+      myRank.value = res?.my_rank || null
+      currentLeaderboardTeam.value = res?.team || null
       return leaderboard.value
     } catch (err: unknown) {
       const msg = err instanceof Error ? err.message : String(err)
@@ -285,6 +306,8 @@ export const useTriviaStore = defineStore('trivias', () => {
   return {
     homeSummary,
     leaderboard,
+    myRank,
+    currentLeaderboardTeam,
     activeTrivias,
     currentAttempt,
     currentResult,

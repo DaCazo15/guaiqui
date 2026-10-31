@@ -2,9 +2,12 @@
 import { ref, onMounted } from 'vue'
 import { useWallet } from '~/composables/useWallet'
 import { useAdsProgress } from '~/composables/useAdsProgress'
+import { useReferrals } from '~/composables/useReferrals'
 import WalletSummaryCard from '~/components/wallet/WalletSummaryCard.vue'
 import DashboardPendingGrantsCard from '~/components/app/dashboard/DashboardPendingGrantsCard.vue'
 import WalletTeamsBreakdown from '~/components/wallet/WalletTeamsBreakdown.vue'
+import WalletReferrerCard from '~/components/wallet/WalletReferrerCard.vue'
+import WalletMyReferralsCard from '~/components/wallet/WalletMyReferralsCard.vue'
 import WalletLedgerList from '~/components/wallet/WalletLedgerList.vue'
 import WalletHeldInfoModal from '~/components/wallet/WalletHeldInfoModal.vue'
 
@@ -27,6 +30,7 @@ const {
 } = useWallet()
 
 const adsProgress = useAdsProgress()
+const { fetchReferralSummary } = useReferrals()
 const isHeldModalOpen = ref(false)
 
 const handleFilterChange = (filter: string) => {
@@ -46,12 +50,13 @@ onMounted(async () => {
     fetchSummary(),
     fetchLedger('all', false),
     adsProgress.fetchProgress(),
+    fetchReferralSummary(),
   ])
 })
 
 useSeoMeta({
   title: 'Mi Billetera de Puntos — Fan Zone',
-  description: 'Consulta tu saldo total de perlitas, desglose por equipo, movimientos e historial de canjes.',
+  description: 'Consulta tu saldo total de perlitas, desglose por equipo, movimientos, referidos e historial de canjes.',
 })
 </script>
 
@@ -63,7 +68,7 @@ useSeoMeta({
         Billetera de <span class="text-guaiqui-primary">Puntos</span>
       </h1>
       <p class="text-sm text-guaiqui-text-muted">
-        Historial de transacciones y balance inmutable de fidelización por cada equipo.
+        Historial de transacciones, balance inmutable de fidelización y red de referidos.
       </p>
     </div>
 
@@ -84,6 +89,12 @@ useSeoMeta({
       :loading="loading"
       @select-team="handleTeamSelect"
     />
+
+    <!-- Sección: ¿Quién te refirió? (Vincular referente si no tiene) -->
+    <WalletReferrerCard />
+
+    <!-- Sección: Mis Referidos (Código, amigos y puntos obtenidos) -->
+    <WalletMyReferralsCard />
 
     <!-- Banner Sumar Puntos con Anuncios (Asíncrono y Reactivo) -->
     <div

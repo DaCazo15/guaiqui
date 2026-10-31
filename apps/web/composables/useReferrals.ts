@@ -9,12 +9,21 @@ export interface ReferralUserItem {
   created_at: string
 }
 
+export interface ReferredByInfo {
+  has_referrer: boolean
+  referrer_id?: string
+  referrer_name?: string
+  referrer_avatar?: string | null
+  referred_at?: string
+}
+
 export interface ReferralSummary {
   code: string
   total_referred: number
   qualified_count: number
   points_earned: number
   referrals: ReferralUserItem[]
+  referred_by?: ReferredByInfo
 }
 
 export const useReferrals = () => {
@@ -27,9 +36,13 @@ export const useReferrals = () => {
     qualified_count: 0,
     points_earned: 0,
     referrals: [],
+    referred_by: { has_referrer: false },
   })
   const loading = ref(false)
+  const claiming = ref(false)
   const error = ref<string | null>(null)
+  const claimError = ref<string | null>(null)
+  const claimSuccess = ref<string | null>(null)
   const copied = ref(false)
 
   const referralLink = computed(() => {
@@ -56,12 +69,64 @@ export const useReferrals = () => {
           qualified_count: d.qualified_count ?? 0,
           points_earned: d.points_earned ?? 0,
           referrals: Array.isArray(d.referrals) ? d.referrals : [],
+          referred_by: d.referred_by || { has_referrer: false },
         }
       }
     } catch (err: any) {
       error.value = err.message || 'Error al cargar resumen de referidos'
     } finally {
       loading.value = false
+    }
+  }
+
+  const claimReferralCode = async (code: string) => {
+    if (!user.value) return { success: false, message: 'Inicia sesión para vincular un código' }
+    if (!code || !code.trim()) {
+      claimError.value = 'Ingresa un código de referido válido'
+      return { success: false, message: claimError.value }
+    }
+
+    claiming.value = true
+    claimError.value = null
+    claimSuccess.value = null
+
+    try {
+      const { data, error: rpcError } = await supabase.rpc('claim_referral_code', {
+        p_code: code.trim().toUpperCase()
+      })
+
+      if (rpcError) throw rpcError
+
+      const res = data as any
+      claimSuccess.value = res?.message || '¡Código vinculado con éxito!'
+
+      // Actualizar estado local inmediatamente
+      if (res?.referrer_name) {
+        summary.value.referred_by = {
+          has_referrer: true,
+          referrer_id: res.referrer_id,
+          referrer_name: res.referrer_name,
+          referred_at: new Date().toISOString()
+        }
+      }
+
+      // Re-consultar para asegurar consistencia
+      await fetchReferralSummary()
+
+      return { success: true, message: claimSuccess.value, referrer_name: res?.referrer_name }
+    } catch (err: any) {
+      let msg = err.message || 'Error al vincular código de referido'
+      if (msg.includes('No puedes utilizar tu propio código')) {
+        msg = 'No puedes utilizar tu propio código de referido'
+      } else if (msg.includes('código de referido no existe')) {
+        msg = 'El código ingresado no existe o no es válido'
+      } else if (msg.includes('Ya tienes un referente')) {
+        msg = 'Ya tienes un referente vinculado a tu cuenta'
+      }
+      claimError.value = msg
+      return { success: false, message: msg }
+    } finally {
+      claiming.value = false
     }
   }
 
@@ -113,11 +178,16 @@ export const useReferrals = () => {
 
   return {
     summary: computed(() => summary.value),
+    referredBy: computed(() => summary.value.referred_by || { has_referrer: false }),
     referralLink,
     loading: computed(() => loading.value),
+    claiming: computed(() => claiming.value),
     error: computed(() => error.value),
+    claimError: computed(() => claimError.value),
+    claimSuccess: computed(() => claimSuccess.value),
     copied: computed(() => copied.value),
     fetchReferralSummary,
+    claimReferralCode,
     copyLink,
     copyCode,
   }

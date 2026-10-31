@@ -1,9 +1,13 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue'
-import { BaseCard, BaseButton } from '@guaiqui/ui'
+import { ref, computed, onMounted } from 'vue'
+import { BaseCard } from '@guaiqui/ui'
 import { useAuthStore } from '~/stores/auth'
 import { useTriviaStore } from '~/stores/trivias'
+import { useFanProfile } from '~/composables/useFanProfile'
 import ProfileCoverHeader from '~/components/profile/ProfileCoverHeader.vue'
+import ProfileFanLevelCard from '~/components/profile/ProfileFanLevelCard.vue'
+import ProfileBadgesGrid from '~/components/profile/ProfileBadgesGrid.vue'
+import ProfileTeamsLoyalty from '~/components/profile/ProfileTeamsLoyalty.vue'
 import ProfileFormFields from '~/components/profile/ProfileFormFields.vue'
 
 definePageMeta({
@@ -12,25 +16,29 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Mi Perfil — Guaiqueríes de Margarita',
-  description: 'Gestiona tu perfil oficial de fanático de Guaiqueríes de Margarita, personaliza tu avatar y foto de portada.',
+  title: 'Mi Perfil — Fan Zone Oficial',
+  description: 'Gestiona tu perfil de fanático, insignias oficiales, nivel de lealtad y equipos seguidos.',
 })
 
 const authStore = useAuthStore()
 const triviaStore = useTriviaStore()
+const fanProfile = useFanProfile()
 
 const avatarUploading = ref(false)
 const coverUploading = ref(false)
 const localError = ref<string | null>(null)
 const successMessage = ref<string | null>(null)
-const showBirthdayPrompt = ref(true)
 
 const currentBalance = computed(() => {
   return triviaStore.homeSummary?.balance ?? authStore.wallet?.balance_cache ?? 0
 })
 
 const streakDays = computed(() => {
-  return triviaStore.homeSummary?.streak?.streak_days || 0
+  return triviaStore.homeSummary?.streak?.streak_days || fanProfile.stats.value.streak_days || 0
+})
+
+onMounted(async () => {
+  await fanProfile.fetchProfileEnriched()
 })
 
 async function handleAvatarUpload(file: File) {
@@ -39,6 +47,7 @@ async function handleAvatarUpload(file: File) {
   successMessage.value = null
   try {
     await authStore.uploadAvatar(file)
+    await fanProfile.fetchProfileEnriched()
     successMessage.value = '¡Foto de perfil actualizada con éxito!'
   } catch (err: any) {
     localError.value = err.message
@@ -53,6 +62,7 @@ async function handleCoverUpload(file: File) {
   successMessage.value = null
   try {
     await authStore.uploadCover(file)
+    await fanProfile.fetchProfileEnriched()
     successMessage.value = '¡Foto de portada actualizada con éxito!'
   } catch (err: any) {
     localError.value = err.message
@@ -66,6 +76,7 @@ async function handleCoverUpdate(coverUrl: string) {
   successMessage.value = null
   try {
     await authStore.updateProfile({ cover_url: coverUrl } as any)
+    await fanProfile.fetchProfileEnriched()
     successMessage.value = '¡Foto de portada actualizada!'
   } catch (err: any) {
     localError.value = err.message
@@ -77,6 +88,7 @@ async function handleSaveProfile(updates: any) {
   successMessage.value = null
   try {
     await authStore.updateProfile(updates)
+    await fanProfile.fetchProfileEnriched()
     successMessage.value = '¡Perfil actualizado con éxito!'
   } catch (err: any) {
     localError.value = err.message
@@ -86,7 +98,7 @@ async function handleSaveProfile(updates: any) {
 
 <template>
   <div class="space-y-6">
-    <!-- 1. HEADER ESTILO FACEBOOK: FOTO DE PORTADA Y AVATAR SUPERPUESTO -->
+    <!-- 1. Header con foto de portada y avatar superpuesto -->
     <ProfileCoverHeader
       :profile="authStore.profile"
       :balance="currentBalance"
@@ -98,7 +110,7 @@ async function handleSaveProfile(updates: any) {
       @update-cover="handleCoverUpdate"
     />
 
-    <!-- Mensajes Globales de Éxito o Error -->
+    <!-- Mensajes de Estado -->
     <div
       v-if="successMessage"
       class="p-3.5 bg-emerald-50 border border-emerald-300 rounded-guaiqui-xl text-emerald-800 text-sm flex items-center justify-between shadow-xs animate-in fade-in"
@@ -125,45 +137,34 @@ async function handleSaveProfile(updates: any) {
       </button>
     </div>
 
-    <!-- Aviso Discreto de Cumpleaños para saludo del equipo -->
-    <div
-      v-if="!authStore.profile?.birth_date && showBirthdayPrompt"
-      class="p-4 bg-emerald-50 border border-emerald-200 rounded-guaiqui-xl flex items-center justify-between gap-4 shadow-guaiqui-sm text-guaiqui-text"
-    >
-      <div class="flex items-center gap-3">
-        <div class="w-10 h-10 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center shrink-0 font-bold text-xl">
-          <i class="bi bi-gift-fill"></i>
-        </div>
-        <div>
-          <p class="text-sm font-semibold text-guaiqui-text">Añade tu cumpleaños para recibir un saludo del equipo</p>
-          <p class="text-xs text-guaiqui-text-muted">Los Guaiqueríes de Margarita te enviarán una felicitación especial el día de tu cumpleaños.</p>
-        </div>
-      </div>
-      <button
-        @click="showBirthdayPrompt = false"
-        class="text-slate-400 hover:text-slate-600 p-1.5 rounded-lg hover:bg-emerald-100/50 transition-colors"
-        title="Ignorar aviso"
-        aria-label="Ignorar aviso de cumpleaños"
-      >
-        <i class="bi bi-x-lg text-sm"></i>
-      </button>
-    </div>
+    <!-- 2. Nivel de Fanático y Progreso de Lealtad (XP) -->
+    <ProfileFanLevelCard
+      :level="fanProfile.level.value"
+      :stats="fanProfile.stats.value"
+    />
 
-    <!-- 2. TARJETA PRINCIPAL DE DATOS Y PREFERENCIAS DEL FANÁTICO -->
-    <BaseCard class="bg-white border-guaiqui-border p-5 sm:p-6 rounded-guaiqui-2xl space-y-6 shadow-guaiqui-sm">
-      <!-- Encabezado de la Tarjeta con Enlace a la Plantilla Oficial -->
-      <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-4 mb-2 border-b border-guaiqui-border">
-        <div>
-          <h2 class="font-display font-extrabold text-xl text-guaiqui-text uppercase tracking-wide">
-            Información del Fanático
-          </h2>
-          <p class="text-xs text-guaiqui-text-muted">
-            Actualiza tus preferencias para personalizar tu experiencia en la plataforma.
-          </p>
-        </div>
+    <!-- 3. Insignias y Logros Reales del Fanático -->
+    <ProfileBadgesGrid
+      :badges="fanProfile.badges.value"
+      :unlocked-count="fanProfile.unlockedBadgesCount.value"
+    />
+
+    <!-- 4. Equipos que Sigue y Saldo por Club -->
+    <ProfileTeamsLoyalty
+      :teams="fanProfile.teamsFollowed.value"
+    />
+
+    <!-- 5. Formulario de Datos y Preferencias -->
+    <BaseCard class="bg-white border border-guaiqui-border p-5 sm:p-6 rounded-guaiqui-2xl space-y-4 shadow-guaiqui-sm">
+      <div class="pb-3 border-b border-guaiqui-border">
+        <h2 class="font-display font-extrabold text-xl text-guaiqui-text uppercase tracking-wide">
+          Información del Fanático
+        </h2>
+        <p class="text-xs text-guaiqui-text-muted">
+          Actualiza tus datos y preferencias para personalizar tu experiencia.
+        </p>
       </div>
 
-      <!-- Formulario de Campos de Perfil -->
       <ProfileFormFields
         :profile="authStore.profile"
         :loading="authStore.isLoading"
