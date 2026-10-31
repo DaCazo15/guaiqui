@@ -30,7 +30,9 @@ export default defineNuxtConfig({
         '/equipo-de-trabajo',
         '/como-funciona',
         '/faq',
-        '/contacto'
+        '/contacto',
+        '/equipo/*',
+        '/equipos/*'
       ],
     },
   },

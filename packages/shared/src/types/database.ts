@@ -33,10 +33,20 @@ export interface Team {
   id: string
   name: string
   slug: string
+  subdomain?: string | null
   short_name?: string | null
   logo_url?: string | null
+  cover_url?: string | null
   primary_color?: string | null
   secondary_color?: string | null
+  sport?: string
+  arena_name?: string | null
+  city?: string | null
+  bio?: string | null
+  founded_year?: number | null
+  championships_summary?: string | null
+  social_links?: Record<string, string>
+  landing_config?: Record<string, any>
   status: TeamStatus
   joined_at: string
   paid_until?: string | null
@@ -48,14 +58,122 @@ export interface TeamPublic {
   id: string
   name: string
   slug: string
+  subdomain?: string | null
   short_name?: string | null
   logo_url?: string | null
+  cover_url?: string | null
   primary_color?: string | null
   secondary_color?: string | null
+  sport?: string
+  arena_name?: string | null
+  city?: string | null
+  bio?: string | null
+  founded_year?: number | null
+  championships_summary?: string | null
+  social_links?: Record<string, string>
+  landing_config?: Record<string, any>
   status: TeamStatus
   joined_at: string
   follower_count?: number
   is_following?: boolean
+}
+
+export interface TeamLandingProfile {
+  id: string
+  name: string
+  slug: string
+  subdomain: string
+  short_name?: string | null
+  logo_url?: string | null
+  cover_url?: string | null
+  primary_color?: string | null
+  secondary_color?: string | null
+  sport: string
+  arena_name?: string | null
+  city?: string | null
+  bio?: string | null
+  founded_year?: number | null
+  championships_summary?: string | null
+  social_links?: Record<string, string>
+  landing_config?: {
+    hero_tagline?: string
+    hero_cta_text?: string
+    show_roster?: boolean
+    show_trivias?: boolean
+    show_store?: boolean
+    show_history?: boolean
+    show_faqs?: boolean
+    [key: string]: any
+  }
+  status: TeamStatus
+  joined_at: string
+}
+
+export interface TeamLandingData {
+  found: boolean
+  error?: string
+  team?: TeamLandingProfile
+  announcement?: {
+    id: string
+    message: string
+    starts_at?: string | null
+    expires_at?: string | null
+    created_at: string
+  } | null
+  hero_slides?: Array<{
+    id: string
+    title: string
+    subtitle?: string | null
+    image_url: string
+    cta_text?: string | null
+    cta_link?: string | null
+    sort_order: number
+  }>
+  roster_preview?: Array<{
+    id: string
+    first_name: string
+    last_name: string
+    display_name?: string | null
+    jersey_number: number
+    position: string
+    photo_url?: string | null
+    height_cm?: number | null
+    birth_date?: string | null
+    is_captain?: boolean
+  }>
+  trivias_preview?: Array<{
+    id: string
+    title: string
+    description?: string | null
+    category?: string | null
+    reward_pearls: number
+    time_limit_seconds?: number | null
+    available_from?: string | null
+    available_until?: string | null
+  }>
+  products_preview?: Array<{
+    id: string
+    name: string
+    description?: string | null
+    category?: string | null
+    price_pearls: number
+    image_url?: string | null
+    stock: number
+  }>
+  milestones?: Array<{
+    id: string
+    year: number
+    title: string
+    description: string
+    image_url?: string | null
+  }>
+  faqs?: Array<{
+    id: string
+    question: string
+    answer: string
+    category?: string | null
+    sort_order: number
+  }>
 }
 
 export interface TeamFollow {
