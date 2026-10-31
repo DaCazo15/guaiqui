@@ -53,8 +53,8 @@ SELECT is(
 -- Test 4: Subsequent high-value/first-session attempts without a new pass are rejected
 -- In the same transaction, if user tries an action needing an unused pass, it fails
 SELECT throws_ok(
-    $$
-    DO $$
+    $sql$
+    DO $body$
     DECLARE
         v_uid uuid := '88888888-8888-8888-8888-888888888888';
         v_pass_id uuid;
@@ -66,8 +66,8 @@ SELECT throws_ok(
         IF v_pass_id IS NULL THEN
             RAISE EXCEPTION 'CAPTCHA_REQUIRED' USING ERRCODE = 'P0001';
         END IF;
-    END $$;
-    $$,
+    END $body$;
+    $sql$,
     'CAPTCHA_REQUIRED',
     'Consumed captcha pass cannot be reused for second security check'
 );

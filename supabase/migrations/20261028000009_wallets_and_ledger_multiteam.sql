@@ -704,7 +704,7 @@ BEGIN
     INSERT INTO public.ledger_entries (
         fan_id, team_id, amount, type, status, source_type, source_id, note
     ) VALUES (
-        v_fan_id, v_team_id, -v_product.cost_pearls, 'product_redemption', 'confirmed', 'redemption', v_redemption_id::text,
+        v_fan_id, v_team_id, -v_product.cost_pearls, 'redemption', 'confirmed', 'redemption', v_redemption_id::text,
         'Canje de producto: ' || v_product.name
     );
 
@@ -1745,7 +1745,7 @@ AS $function$
 DECLARE
     v_admin_id UUID := auth.uid();
     v_pred RECORD;
-    v_winning_choice over_under_choice;
+    v_winning_choice TEXT;
     v_vote RECORD;
     v_winners_count INT := 0;
     v_total_pearls INT := 0;

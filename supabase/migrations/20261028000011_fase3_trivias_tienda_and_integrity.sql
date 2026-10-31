@@ -984,7 +984,7 @@ CREATE INDEX IF NOT EXISTS idx_progressive_clues_team_status ON public.progressi
 -- 7. Security Hardening: Restrict Column-Level UPDATE on profiles for authenticated
 -- ----------------------------------------------------------------------------
 REVOKE UPDATE ON TABLE public.profiles FROM authenticated;
-GRANT UPDATE (display_name, avatar_url, cover_url, favorite_player_id, notification_prefs, phone) ON TABLE public.profiles TO authenticated;
+GRANT UPDATE (display_name, avatar_url, cover_url, municipality, gender, favorite_player_id, shirt_size, referral_source, notification_prefs) ON TABLE public.profiles TO authenticated;
 
 -- Ensure create_notification is strictly service_role only
 REVOKE ALL ON FUNCTION public.create_notification(UUID, TEXT, TEXT, TEXT, JSONB, TEXT) FROM PUBLIC, anon, authenticated;

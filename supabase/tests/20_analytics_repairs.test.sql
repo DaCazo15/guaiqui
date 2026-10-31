@@ -37,12 +37,12 @@ END $$;
 DO $$
 BEGIN
     SET LOCAL ROLE authenticated;
-    SET LOCAL "request.jwt.claims" = '{"sub": "a1000000-0000-0000-0000-000000000001", "role": "authenticated"}';
+    SET LOCAL "request.jwt.claims" = '{"sub": "a1000000-0000-0000-0000-000000000001", "role": "authenticated", "aal": "aal2"}';
 
     PERFORM public.refresh_analytics_materialized_views();
     RAISE EXCEPTION 'Non-admin user should not be able to refresh materialized views';
 EXCEPTION WHEN OTHERS THEN
-    IF SQLERRM LIKE '%Acceso denegado%' OR SQLERRM LIKE '%assert_admin%' OR SQLERRM LIKE '%Admin authorization required%' OR SQLERRM LIKE '%Verificación en dos pasos%' OR SQLERRM LIKE '%2FA%' THEN
+    IF SQLERRM LIKE '%Acceso denegado%' OR SQLERRM LIKE '%assert_admin%' OR SQLERRM LIKE '%Admin authorization required%' THEN
         -- OK
     ELSE
         RAISE EXCEPTION 'Unexpected error: %', SQLERRM;

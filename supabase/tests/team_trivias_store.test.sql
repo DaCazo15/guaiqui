@@ -23,12 +23,12 @@ SELECT has_function(
     'TEST 1: public.get_streak_info(uuid, uuid) debe existir'
 );
 
--- Test 2: home_summary function exists with team_id parameter
+-- Test 2: home_summary function exists without arguments
 SELECT has_function(
     'public',
     'home_summary',
-    ARRAY['uuid'],
-    'TEST 2: public.home_summary(uuid) debe existir'
+    ARRAY[]::text[],
+    'TEST 2: public.home_summary() debe existir'
 );
 
 -- Test 3: Composite FK on ledger_entries to wallets exists
@@ -145,7 +145,7 @@ SET LOCAL ROLE authenticated;
 SET LOCAL "request.jwt.claims" = '{"sub": "77777777-7777-7777-7777-777777777777", "role": "authenticated", "aal": "aal1"}';
 
 SELECT is(
-    (public.home_summary('a0000000-0000-0000-0000-000000000001'::uuid)->>'balance')::int,
+    (public.home_summary()->>'balance')::int,
     500,
     'TEST 13: home_summary retorna balance del equipo con fan activo'
 );

@@ -1,3 +1,4 @@
+<script setup lang="ts">
 import { ref, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
 import { useCurrentTeam } from '~/composables/useCurrentTeam'

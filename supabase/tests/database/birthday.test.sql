@@ -23,13 +23,6 @@ VALUES
 ON CONFLICT (id) DO UPDATE SET status = EXCLUDED.status, birth_date = EXCLUDED.birth_date, terms_accepted_at = NOW(), terms_version = 'v1.0';
 
 INSERT INTO public.team_follows (user_id, team_id)
-VALUES 
-  ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001'),
-  ('33333333-3333-3333-3333-333333333333', 'a0000000-0000-0000-0000-000000000001')
-ON CONFLICT (user_id, team_id) DO NOTHING;
-
--- Multi-team setup: ensure fans follow default team and have wallet
-INSERT INTO public.team_follows (user_id, team_id)
 VALUES
   ('11111111-1111-1111-1111-111111111111', 'a0000000-0000-0000-0000-000000000001'),
   ('22222222-2222-2222-2222-222222222222', 'a0000000-0000-0000-0000-000000000001'),

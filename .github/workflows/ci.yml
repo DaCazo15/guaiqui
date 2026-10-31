@@ -45,6 +45,12 @@ jobs:
       - name: Vitest Unit Tests
         run: pnpm test
 
+      - name: Build Web Application
+        run: pnpm -F web build
+
+      - name: Build Admin Application
+        run: pnpm -F admin build
+
       - name: Setup Supabase CLI
         uses: supabase/setup-cli@v1
         with:

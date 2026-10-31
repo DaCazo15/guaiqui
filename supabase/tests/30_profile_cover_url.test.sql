@@ -3,7 +3,7 @@
 -- =============================================================
 
 BEGIN;
-SELECT plan(3);
+SELECT plan(6);
 
 -- Setup: Fan users
 INSERT INTO auth.users (id, aud, role, email, encrypted_password, raw_app_meta_data, raw_user_meta_data, created_at, updated_at, confirmation_token, email_confirmed_at)
@@ -35,7 +35,28 @@ SELECT is(
 );
 RESET ROLE;
 
--- TEST 2: Authenticated user cannot update another user's cover_url (RLS protects rows)
+-- TEST 2: Authenticated user can update own municipality and shirt_size
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "f3000000-0000-0000-0000-000000000001", "role": "authenticated"}';
+
+UPDATE public.profiles
+SET municipality = 'Maneiro', shirt_size = 'L'
+WHERE id = 'f3000000-0000-0000-0000-000000000001';
+
+SELECT is(
+    (SELECT municipality FROM public.profiles WHERE id = 'f3000000-0000-0000-0000-000000000001'),
+    'Maneiro',
+    'Authenticated puede actualizar municipality'
+);
+
+SELECT is(
+    (SELECT shirt_size FROM public.profiles WHERE id = 'f3000000-0000-0000-0000-000000000001'),
+    'L',
+    'Authenticated puede actualizar shirt_size'
+);
+RESET ROLE;
+
+-- TEST 3: Authenticated user cannot update another user's cover_url (RLS protects rows)
 SET LOCAL ROLE authenticated;
 SET LOCAL "request.jwt.claims" = '{"sub": "f3000000-0000-0000-0000-000000000001", "role": "authenticated"}';
 
@@ -50,7 +71,7 @@ SELECT is(
 );
 RESET ROLE;
 
--- TEST 3: Authenticated user cannot update protected columns (e.g. status)
+-- TEST 4 & 5: Authenticated user cannot update protected columns (status, birth_date)
 SET LOCAL ROLE authenticated;
 SET LOCAL "request.jwt.claims" = '{"sub": "f3000000-0000-0000-0000-000000000001", "role": "authenticated"}';
 
@@ -59,6 +80,13 @@ SELECT throws_ok(
     '42501',
     NULL,
     'El rol authenticated no puede actualizar columnas restringidas como status.'
+);
+
+SELECT throws_ok(
+    $$UPDATE public.profiles SET birth_date = '1990-01-01' WHERE id = 'f3000000-0000-0000-0000-000000000001'$$,
+    '42501',
+    NULL,
+    'El rol authenticated no puede actualizar columnas restringidas como birth_date.'
 );
 RESET ROLE;
 

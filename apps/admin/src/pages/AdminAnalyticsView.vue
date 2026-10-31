@@ -102,7 +102,7 @@ const loadAnalytics = async () => {
       supabase.rpc('analytics_demographics', { p_team_id: teamIdParam }),
       supabase.rpc('analytics_engagement_hours', { p_start_date: sIso, p_end_date: eIso }),
       supabase.rpc('analytics_economy', { p_team_id: teamIdParam }),
-      supabase.rpc('analytics_funnel', { p_start_date: sIso, p_end_date: eIso })
+      supabase.rpc('analytics_funnel', { p_start_date: sIso, p_end_date: eIso, p_team_id: teamIdParam })
     ])
 
     if (resOverview.error) throw resOverview.error
