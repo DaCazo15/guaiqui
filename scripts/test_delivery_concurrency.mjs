@@ -11,6 +11,7 @@
 const SUPABASE_URL = 'http://127.0.0.1:54321';
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
 const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
+const DEFAULT_TEAM_ID = 'a0000000-0000-0000-0000-000000000001';
 
 async function adminQuery(endpoint, options = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
@@ -98,7 +99,7 @@ async function runDeliveryConcurrencyTests() {
   await adminQuery('staff_members', {
     method: 'POST',
     headers: { 'Prefer': 'resolution=merge-duplicates' },
-    body: [{ user_id: staffUser.user.id, role: 'staff', active: true }]
+    body: [{ user_id: staffUser.user.id, role: 'staff', team_id: DEFAULT_TEAM_ID, active: true }]
   });
 
   // 2. Crear Fan User con saldo y producto
@@ -108,16 +109,22 @@ async function runDeliveryConcurrencyTests() {
     headers: { 'Prefer': 'resolution=merge-duplicates' },
     body: [{ id: fanUser.user.id, display_name: 'Fan Concurrency', status: 'active' }]
   });
+  await adminQuery('team_follows', {
+    method: 'POST',
+    headers: { 'Prefer': 'resolution=merge-duplicates' },
+    body: [{ user_id: fanUser.user.id, team_id: DEFAULT_TEAM_ID }]
+  });
   await adminQuery('wallets', {
     method: 'POST',
     headers: { 'Prefer': 'resolution=merge-duplicates' },
-    body: [{ fan_id: fanUser.user.id, balance_cache: 1000 }]
+    body: [{ fan_id: fanUser.user.id, team_id: DEFAULT_TEAM_ID, balance_cache: 1000 }]
   });
 
   const createdProduct = await adminQuery('products', {
     method: 'POST',
     headers: { 'Prefer': 'return=representation' },
     body: [{
+      team_id: DEFAULT_TEAM_ID,
       name: 'Gorra Concurrencia Entrega ' + Date.now(),
       description: 'Test entrega concurrente',
       cost_pearls: 100,
@@ -133,6 +140,7 @@ async function runDeliveryConcurrencyTests() {
     headers: { 'Prefer': 'return=representation' },
     body: [{
       fan_id: fanUser.user.id,
+      team_id: DEFAULT_TEAM_ID,
       product_id: product.id,
       cost_pearls: 100,
       status: 'approved',
@@ -177,6 +185,7 @@ async function runDeliveryConcurrencyTests() {
     headers: { 'Prefer': 'return=representation' },
     body: [{
       fan_id: fanUser.user.id,
+      team_id: DEFAULT_TEAM_ID,
       product_id: product.id,
       cost_pearls: 100,
       status: 'approved',

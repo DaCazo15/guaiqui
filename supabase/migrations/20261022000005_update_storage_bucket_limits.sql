@@ -1,5 +1,5 @@
 -- ==============================================================================
--- MIGRACIÓN: 20261022000002_update_storage_bucket_limits.sql
+-- MIGRACIÓN: 20261022000005_update_storage_bucket_limits.sql
 -- Propósito: Blindar los límites de tamaño en Storage para evitar archivos pesados.
 -- Avatares: límite estricto de 15 KB (15360 bytes) para alojar miniaturas WebP de 2 KB a 5 KB.
 -- ==============================================================================

@@ -1,8 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted, computed } from 'vue'
-import { BaseCard, BaseButton, PearlAmount } from '@guaiqui/ui'
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from '~/stores/auth'
 import { useAnalytics } from '~/composables/useAnalytics'
+import BirthdayCardItem, { type BirthdayGreetingCard } from '~/components/birthday/BirthdayCardItem.vue'
 
 definePageMeta({
   layout: 'app',
@@ -14,17 +14,10 @@ const authStore = useAuthStore()
 const { trackEvent } = useAnalytics()
 
 const loading = ref(true)
-const cardData = ref<{
-  eligible: boolean
-  display_name?: string
-  title?: string
-  message?: string
-  image_url?: string | null
-  bonus_pearls?: number
-  has_claimed_bonus?: boolean
-} | null>(null)
+const displayName = ref('Fanático')
+const cards = ref<BirthdayGreetingCard[]>([])
 
-const claimLoading = ref(false)
+const claimingTeamId = ref<string | null>(null)
 const claimMessage = ref<string | null>(null)
 const claimError = ref<string | null>(null)
 const copySuccess = ref(false)
@@ -34,11 +27,28 @@ onMounted(async () => {
     const { data, error } = await (supabase.rpc as any)('get_birthday_card')
     const bday = data as any
     if (error || !bday || !bday.eligible) {
-      // Redirección silenciosa a /app si no es elegible
       return navigateTo('/app')
     }
 
-    cardData.value = bday
+    displayName.value = bday.display_name || authStore.profile?.display_name || 'Fanático'
+
+    if (Array.isArray(bday.cards) && bday.cards.length > 0) {
+      cards.value = bday.cards
+    } else if (bday.eligible) {
+      cards.value = [{
+        team_id: bday.team_id || 'a0000000-0000-0000-0000-000000000001',
+        team_name: bday.team_name || 'Guaiqueríes de Margarita',
+        team_slug: bday.team_slug || 'guaiqueries',
+        team_logo: bday.team_logo || '/logo.png',
+        title: bday.title || '¡Feliz Cumpleaños!',
+        message: bday.message || '',
+        image_url: bday.image_url || null,
+        bonus_pearls: bday.bonus_pearls || 0,
+        claimed: bday.claimed || false,
+        display_name: displayName.value,
+      }]
+    }
+
     trackEvent('birthday_card_viewed')
   } catch (err) {
     console.error('Error fetching birthday card:', err)
@@ -48,34 +58,26 @@ onMounted(async () => {
   }
 })
 
-const formattedMessage = computed(() => {
-  if (!cardData.value?.message) return ''
-  // Convert basic markdown format (**bold**, \n\n paragraphs) safely
-  const escaped = cardData.value.message
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
-  
-  const bolded = escaped.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
-  return bolded.split('\n\n').map(p => `<p class="mb-3">${p.replace(/\n/g, '<br/>')}</p>`).join('')
-})
-
-async function handleClaimBonus() {
-  if (claimLoading.value || !cardData.value || cardData.value.has_claimed_bonus) return
-  claimLoading.value = true
+async function handleClaimBonus(teamId: string) {
+  if (claimingTeamId.value) return
+  claimingTeamId.value = teamId
   claimError.value = null
   claimMessage.value = null
 
   try {
-    const { data, error } = await (supabase.rpc as any)('claim_birthday_bonus')
+    const { data, error } = await (supabase.rpc as any)('claim_birthday_bonus', {
+      p_team_id: teamId,
+    })
     if (error) throw error
 
     const claimRes = data as any
     if (claimRes?.success) {
-      cardData.value.has_claimed_bonus = true
-      claimMessage.value = `¡Felicidades! Has recibido ${cardData.value.bonus_pearls} puntos de regalo por tu cumpleaños.`
+      const targetCard = cards.value.find(c => c.team_id === teamId)
+      if (targetCard) {
+        targetCard.claimed = true
+        claimMessage.value = `¡Felicidades! Has recibido ${targetCard.bonus_pearls} perlitas de regalo en ${targetCard.team_name}.`
+      }
       trackEvent('birthday_bonus_claimed')
-      // Refresh wallet balance
       await authStore.fetchProfile()
     } else {
       throw new Error(claimRes?.message || 'No se pudo reclamar el bono.')
@@ -83,14 +85,14 @@ async function handleClaimBonus() {
   } catch (err: any) {
     claimError.value = err.message || 'Error al reclamar el bono de cumpleaños.'
   } finally {
-    claimLoading.value = false
+    claimingTeamId.value = null
   }
 }
 
-async function handleShare() {
+async function handleShare(card: BirthdayGreetingCard) {
   const shareData = {
-    title: '¡Feliz Cumpleaños con los Guaiqueríes!',
-    text: '¡Celebrando mi cumpleaños junto a la tribu de los Guaiqueríes de Margarita!',
+    title: `¡Feliz Cumpleaños con ${card.team_name}!`,
+    text: `¡Celebrando mi cumpleaños junto a ${card.team_name}!`,
     url: window.location.origin,
   }
 
@@ -98,7 +100,7 @@ async function handleShare() {
     try {
       await navigator.share(shareData)
     } catch {
-      // Ignore user cancellation
+      // Ignorar cancelación del usuario
     }
   } else {
     try {
@@ -120,7 +122,7 @@ async function handleShare() {
     </div>
   </div>
 
-  <div v-else-if="cardData && cardData.eligible" class="max-w-2xl mx-auto space-y-6 pb-10">
+  <div v-else-if="cards.length > 0" class="max-w-2xl mx-auto space-y-6 pb-10">
     <!-- Birthday Header Banner -->
     <div class="relative overflow-hidden rounded-guaiqui-2xl bg-gradient-to-br from-emerald-950 via-emerald-900 to-slate-900 text-white shadow-guaiqui-lg border border-emerald-800/50">
       <!-- Confetti decorativo (SVG + animación CSS, deshabilitado si prefers-reduced-motion) -->
@@ -140,11 +142,11 @@ async function handleShare() {
         </div>
 
         <h1 class="font-display text-3xl md:text-5xl font-bold uppercase tracking-wider text-white drop-shadow-md">
-          ¡FELIZ CUMPLEAÑOS, <span class="text-amber-300">{{ cardData.display_name }}</span>!
+          ¡FELIZ CUMPLEAÑOS, <span class="text-amber-300">{{ displayName }}</span>!
         </h1>
 
         <p class="text-emerald-200 text-sm md:text-base font-medium tracking-wide">
-          De parte de tus Guaiqueríes de Margarita
+          Tus equipos favoritos celebran contigo este gran día
         </p>
       </div>
 
@@ -152,97 +154,35 @@ async function handleShare() {
       <div class="h-2 w-full bg-gradient-to-r from-red-700 via-red-500 to-red-700"></div>
     </div>
 
-    <!-- Main Card Body -->
-    <BaseCard class="bg-white border-guaiqui-border p-6 md:p-8 rounded-guaiqui-xl space-y-6 shadow-guaiqui-md text-guaiqui-text">
-      <!-- Media Image (Optional defined by admin) -->
-      <div v-if="cardData.image_url" class="rounded-guaiqui-lg overflow-hidden border border-guaiqui-border bg-slate-950 max-h-72 flex items-center justify-center">
-        <img
-          :src="cardData.image_url"
-          :alt="cardData.title || 'Felicitación de cumpleaños'"
-          loading="lazy"
-          class="w-full h-full object-cover"
-        />
+    <!-- Feedback Alerts -->
+    <div v-if="claimMessage || claimError || copySuccess" class="space-y-2">
+      <div v-if="claimMessage" class="p-4 bg-emerald-50 border border-emerald-200 rounded-guaiqui-lg text-emerald-800 text-sm flex items-center gap-3">
+        <i class="bi bi-trophy-fill text-xl shrink-0 text-emerald-600"></i>
+        <span class="font-medium">{{ claimMessage }}</span>
       </div>
 
-      <!-- Card Title & Message -->
-      <div class="space-y-4">
-        <h2 class="text-xl md:text-2xl font-bold text-guaiqui-text flex items-center gap-2">
-          <i class="bi bi-balloon-fill text-red-500"></i>
-          <span>{{ cardData.title }}</span>
-        </h2>
-
-        <div
-          class="text-sm md:text-base text-guaiqui-text leading-relaxed prose prose-emerald max-w-none"
-          v-html="formattedMessage"
-        ></div>
+      <div v-if="claimError" class="p-4 bg-red-50 border border-red-200 rounded-guaiqui-lg text-red-800 text-sm flex items-center gap-3">
+        <i class="bi bi-exclamation-octagon-fill text-xl shrink-0 text-red-600"></i>
+        <span>{{ claimError }}</span>
       </div>
 
-      <!-- Feedback Live Region -->
-      <div
-        aria-live="polite"
-        aria-atomic="true"
-        class="space-y-2"
-      >
-        <div v-if="claimMessage" class="p-4 bg-guaiqui-status-success-soft border border-guaiqui-status-success/30 rounded-guaiqui-lg text-guaiqui-status-success text-sm flex items-center gap-3">
-          <i class="bi bi-trophy-fill text-xl shrink-0"></i>
-          <span class="font-medium">{{ claimMessage }}</span>
-        </div>
-
-        <div v-if="claimError" class="p-4 bg-guaiqui-status-danger-soft border border-guaiqui-status-danger/30 rounded-guaiqui-lg text-guaiqui-status-danger text-sm flex items-center gap-3">
-          <i class="bi bi-exclamation-octagon-fill text-xl shrink-0"></i>
-          <span>{{ claimError }}</span>
-        </div>
-
-        <div v-if="copySuccess" class="p-3 bg-emerald-50 border border-emerald-200 rounded-guaiqui-md text-emerald-800 text-xs flex items-center gap-2">
-          <i class="bi bi-check-circle-fill text-emerald-600"></i>
-          <span>¡Mensaje de felicitación copiado al portapapeles!</span>
-        </div>
+      <div v-if="copySuccess" class="p-3 bg-emerald-50 border border-emerald-200 rounded-guaiqui-md text-emerald-800 text-xs flex items-center gap-2">
+        <i class="bi bi-check-circle-fill text-emerald-600"></i>
+        <span>¡Mensaje copiado al portapapeles!</span>
       </div>
+    </div>
 
-      <!-- Action Buttons -->
-      <div class="pt-4 border-t border-guaiqui-border flex flex-col sm:flex-row flex-wrap gap-3 items-center justify-between">
-        <div class="flex flex-wrap gap-3 w-full sm:w-auto">
-          <!-- Button: Claim Bonus (if pearls > 0) -->
-          <BaseButton
-            v-if="cardData.bonus_pearls && cardData.bonus_pearls > 0"
-            variant="primary"
-            size="md"
-            :disabled="cardData.has_claimed_bonus"
-            :loading="claimLoading"
-            class="w-full sm:w-auto"
-            @click="handleClaimBonus"
-          >
-            <i v-if="cardData.has_claimed_bonus" class="bi bi-check-circle-fill mr-2"></i>
-            <i v-else class="bi bi-gift mr-2"></i>
-            <span>{{ cardData.has_claimed_bonus ? 'Bono Reclamado' : 'Reclamar mis' }}</span>
-            <PearlAmount
-              v-if="!cardData.has_claimed_bonus"
-              :amount="cardData.bonus_pearls"
-              class="ml-2 font-bold"
-            />
-          </BaseButton>
-
-          <!-- Button: Go to Trivias -->
-          <NuxtLink to="/app/trivias" class="w-full sm:w-auto">
-            <BaseButton variant="outline" size="md" class="w-full">
-              <i class="bi bi-controller mr-2"></i>
-              <span>Ir a mis trivias</span>
-            </BaseButton>
-          </NuxtLink>
-        </div>
-
-        <!-- Button: Share -->
-        <BaseButton
-          variant="secondary"
-          size="md"
-          class="w-full sm:w-auto"
-          @click="handleShare"
-        >
-          <i class="bi bi-share-fill mr-2"></i>
-          <span>Compartir</span>
-        </BaseButton>
-      </div>
-    </BaseCard>
+    <!-- Cards List: One card per greeting team -->
+    <div class="space-y-6">
+      <BirthdayCardItem
+        v-for="card in cards"
+        :key="card.team_id"
+        :card="card"
+        :claim-loading="claimingTeamId === card.team_id"
+        @claim="handleClaimBonus"
+        @share="handleShare"
+      />
+    </div>
   </div>
 </template>
 

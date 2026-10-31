@@ -4,6 +4,9 @@ import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseCard, BaseButton, BaseInput, BaseTable } from '@guaiqui/ui'
 import { formatCaracas } from '@guaiqui/shared'
 import { supabase } from '../lib/supabase'
+import { useAuthStore } from '../stores/auth'
+
+const authStore = useAuthStore()
 
 const dailyCap = ref(1000)
 const weeklyCap = ref(5000)
@@ -114,6 +117,14 @@ onMounted(loadEconomySettings)
         <p class="text-sm text-slate-400 mt-1">Configurar límites máximos de emisión de perlitas y bonos de racha. Los cambios aplican hacia adelante.</p>
       </div>
 
+      <div v-if="!authStore.isPlatformAdmin" class="p-4 bg-amber-950/40 border border-amber-800/80 text-amber-200 rounded-xl text-sm flex items-start gap-3">
+        <i class="bi bi-info-circle-fill text-amber-400 text-lg mt-0.5 shrink-0"></i>
+        <div>
+          <p class="font-semibold">Modo Solo Lectura (Administración de Club)</p>
+          <p class="text-xs text-amber-300/90 mt-0.5">Las reglas económicas y topes de emisión aplican a nivel global de la plataforma y son administradas exclusivamente por el Administrador de Plataforma.</p>
+        </div>
+      </div>
+
       <div v-if="errorMessage" class="p-4 bg-red-950/80 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
         <button @click="errorMessage = null" class="text-red-400 hover:text-red-200"><i class="bi bi-x-lg"></i></button>
@@ -129,8 +140,8 @@ onMounted(loadEconomySettings)
         </h2>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <BaseInput label="Cap Diario de Perlitas por Fanático" type="number" v-model="dailyCap" />
-          <BaseInput label="Cap Semanal de Perlitas por Fanático" type="number" v-model="weeklyCap" />
+          <BaseInput label="Cap Diario de Perlitas por Fanático" type="number" v-model="dailyCap" :disabled="!authStore.isPlatformAdmin" />
+          <BaseInput label="Cap Semanal de Perlitas por Fanático" type="number" v-model="weeklyCap" :disabled="!authStore.isPlatformAdmin" />
         </div>
 
         <h2 class="text-lg font-bold text-white flex items-center gap-2 border-t border-slate-800 pt-6">
@@ -138,11 +149,11 @@ onMounted(loadEconomySettings)
         </h2>
 
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-6">
-          <BaseInput label="Bono por 3 Días Consecutivos (Perlitas)" type="number" v-model="streak3DaysBonus" />
-          <BaseInput label="Bono por 7 Días Consecutivos (Perlitas)" type="number" v-model="streak7DaysBonus" />
+          <BaseInput label="Bono por 3 Días Consecutivos (Perlitas)" type="number" v-model="streak3DaysBonus" :disabled="!authStore.isPlatformAdmin" />
+          <BaseInput label="Bono por 7 Días Consecutivos (Perlitas)" type="number" v-model="streak7DaysBonus" :disabled="!authStore.isPlatformAdmin" />
         </div>
 
-        <div class="flex items-center justify-end border-t border-slate-800 pt-6">
+        <div v-if="authStore.isPlatformAdmin" class="flex items-center justify-end border-t border-slate-800 pt-6">
           <BaseButton variant="primary" :loading="actionLoading" @click="saveEconomySettings">
             <i class="bi bi-check-lg mr-1.5"></i> Actualizar Reglas Económicas
           </BaseButton>

@@ -11,24 +11,7 @@
 const SUPABASE_URL = 'http://127.0.0.1:54321';
 const ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6ImFub24iLCJleHAiOjE5ODM4MTI5OTZ9.CRXP1A7WOeoJeXxjNni43kdQwgnWNReilDMblYTn_I0';
 const SERVICE_ROLE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZS1kZW1vIiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImV4cCI6MTk4MzgxMjk5Nn0.EGIM96RAZx35lJzdJsyH-qQwv8Hdp7fsn3W0YpN81IU';
-
-async function adminRpc(functionName, payload = {}) {
-  const res = await fetch(`${SUPABASE_URL}/rest/v1/rpc/${functionName}`, {
-    method: 'POST',
-    headers: {
-      'apikey': SERVICE_ROLE_KEY,
-      'Authorization': `Bearer ${SERVICE_ROLE_KEY}`,
-      'Content-Type': 'application/json',
-      'Prefer': 'return=representation'
-    },
-    body: JSON.stringify(payload)
-  });
-  const data = await res.json();
-  if (!res.ok) {
-    throw new Error(`Admin RPC ${functionName} failed: ${JSON.stringify(data)}`);
-  }
-  return data;
-}
+const DEFAULT_TEAM_ID = 'a0000000-0000-0000-0000-000000000001';
 
 async function adminQuery(endpoint, options = {}) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${endpoint}`, {
@@ -75,7 +58,7 @@ async function signUpOrSignInUser(email, password = 'Password123!') {
       user_metadata: { first_name: 'Test', last_name: 'Fan' }
     })
   });
-  const adminUserData = await adminAuthRes.json();
+  await adminAuthRes.json();
 
   // Retry sign in
   const retryRes = await fetch(`${SUPABASE_URL}/auth/v1/token?grant_type=password`, {
@@ -116,11 +99,11 @@ async function runConcurrencyTests() {
 
   // Prepare product A for Test A
   console.log('📦 Preparando producto y usuario para Test A (20 llamadas paralelas, 1 solo usuario)...');
-  const products = await adminQuery('products?limit=1');
   const createdA = await adminQuery('products', {
     method: 'POST',
     headers: { 'Prefer': 'return=representation' },
     body: [{
+      team_id: DEFAULT_TEAM_ID,
       name: 'Gorra Concurrencia A ' + Date.now(),
       description: 'Test A',
       cost_pearls: 100,
@@ -132,11 +115,17 @@ async function runConcurrencyTests() {
 
   const userA = await signUpOrSignInUser(`concurrency_user_a_${Date.now()}@guaiqueries.com`);
 
-  // Ensure wallet entry exists
+  // Ensure follow and wallet entry exist for team
+  await adminQuery('team_follows', {
+    method: 'POST',
+    headers: { 'Prefer': 'resolution=merge-duplicates' },
+    body: [{ user_id: userA.user.id, team_id: DEFAULT_TEAM_ID }]
+  });
+
   await adminQuery('wallets', {
     method: 'POST',
     headers: { 'Prefer': 'resolution=merge-duplicates' },
-    body: [{ fan_id: userA.user.id, balance_cache: 100 }]
+    body: [{ fan_id: userA.user.id, team_id: DEFAULT_TEAM_ID, balance_cache: 100 }]
   });
 
   // Credit 100 pearls to userA (enough for exactly 1 redemption)
@@ -144,6 +133,7 @@ async function runConcurrencyTests() {
     method: 'POST',
     body: [{
       fan_id: userA.user.id,
+      team_id: DEFAULT_TEAM_ID,
       amount: 100,
       type: 'bonus',
       status: 'confirmed',
@@ -151,7 +141,7 @@ async function runConcurrencyTests() {
     }]
   });
   // Update wallet cache
-  await adminQuery(`wallets?fan_id=eq.${userA.user.id}`, {
+  await adminQuery(`wallets?fan_id=eq.${userA.user.id}&team_id=eq.${DEFAULT_TEAM_ID}`, {
     method: 'PATCH',
     body: { balance_cache: 100 }
   });
@@ -185,6 +175,7 @@ async function runConcurrencyTests() {
     method: 'POST',
     headers: { 'Prefer': 'return=representation' },
     body: [{
+      team_id: DEFAULT_TEAM_ID,
       name: 'Camiseta Edición Única Concurrencia B',
       description: 'Test B Stock 1',
       cost_pearls: 50,
@@ -197,22 +188,28 @@ async function runConcurrencyTests() {
   const usersB = [];
   for (let i = 1; i <= 5; i++) {
     const u = await signUpOrSignInUser(`concurrency_user_b_${Date.now()}_${i}@guaiqueries.com`);
+    await adminQuery('team_follows', {
+      method: 'POST',
+      headers: { 'Prefer': 'resolution=merge-duplicates' },
+      body: [{ user_id: u.user.id, team_id: DEFAULT_TEAM_ID }]
+    });
     await adminQuery('wallets', {
       method: 'POST',
       headers: { 'Prefer': 'resolution=merge-duplicates' },
-      body: [{ fan_id: u.user.id, balance_cache: 200 }]
+      body: [{ fan_id: u.user.id, team_id: DEFAULT_TEAM_ID, balance_cache: 200 }]
     });
     await adminQuery('ledger_entries', {
       method: 'POST',
       body: [{
         fan_id: u.user.id,
+        team_id: DEFAULT_TEAM_ID,
         amount: 200,
         type: 'bonus',
         status: 'confirmed',
         note: 'Saldo Test B'
       }]
     });
-    await adminQuery(`wallets?fan_id=eq.${u.user.id}`, {
+    await adminQuery(`wallets?fan_id=eq.${u.user.id}&team_id=eq.${DEFAULT_TEAM_ID}`, {
       method: 'PATCH',
       body: { balance_cache: 200 }
     });

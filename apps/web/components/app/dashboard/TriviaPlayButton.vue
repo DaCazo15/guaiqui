@@ -1,9 +1,11 @@
 <script setup lang="ts">
 import { ref, onBeforeUnmount } from 'vue'
 import { useRouter } from 'vue-router'
+import { useCurrentTeam } from '~/composables/useCurrentTeam'
 
 interface Props {
   triviaId: string
+  teamSlug?: string
   label?: string
   disabled?: boolean
 }
@@ -14,6 +16,7 @@ const props = withDefaults(defineProps<Props>(), {
 })
 
 const router = useRouter()
+const { activeTeam } = useCurrentTeam()
 
 // Estados: 'idle' | 'holding' | 'morphing'
 const state = ref<'idle' | 'holding' | 'morphing'>('idle')
@@ -57,7 +60,12 @@ function releaseHold() {
 
   // Transición breve mostrando la perlita radiante antes de navegar
   morphTimer = setTimeout(() => {
-    router.push(`/app/trivias/${props.triviaId}`)
+    const slug = props.teamSlug || activeTeam.value?.slug
+    if (slug) {
+      router.push(`/app/e/${slug}/trivias/${props.triviaId}`)
+    } else {
+      router.push(`/app/trivias/${props.triviaId}`)
+    }
   }, 450)
 }
 

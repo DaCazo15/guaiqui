@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseInput } from '@guaiqui/ui'
 import { supabase } from '../lib/supabase'
@@ -25,6 +25,9 @@ import type {
   AnalyticsFunnelStep
 } from '@guaiqui/shared'
 
+import { useAuthStore } from '../stores/auth'
+
+const authStore = useAuthStore()
 const loading = ref(true)
 const errorMessage = ref<string | null>(null)
 
@@ -77,6 +80,7 @@ const loadAnalytics = async () => {
 
   const sIso = startDate.value ? new Date(`${startDate.value}T00:00:00`).toISOString() : null
   const eIso = endDate.value ? new Date(`${endDate.value}T23:59:59`).toISOString() : null
+  const teamIdParam = authStore.activeTeamId || undefined
 
   try {
     const [
@@ -92,13 +96,13 @@ const loadAnalytics = async () => {
     ] = await Promise.all([
       supabase.rpc('analytics_overview', { p_start_date: sIso, p_end_date: eIso }),
       supabase.rpc('analytics_active_users', { p_start_date: sIso, p_end_date: eIso, p_granularity: 'day' }),
-      supabase.rpc('analytics_top_fans', { p_limit: 10, p_start_date: sIso, p_end_date: eIso }),
+      supabase.rpc('analytics_top_fans', { p_limit: 10, p_start_date: sIso, p_end_date: eIso, p_team_id: teamIdParam }),
       supabase.rpc('analytics_trivias', { p_start_date: sIso, p_end_date: eIso }),
       supabase.rpc('analytics_products', { p_start_date: sIso, p_end_date: eIso }),
-      supabase.rpc('analytics_demographics'),
+      supabase.rpc('analytics_demographics', { p_team_id: teamIdParam }),
       supabase.rpc('analytics_engagement_hours', { p_start_date: sIso, p_end_date: eIso }),
-      supabase.rpc('analytics_economy'),
-      supabase.rpc('analytics_funnel', { p_start_date: sIso, p_end_date: eIso })
+      supabase.rpc('analytics_economy', { p_team_id: teamIdParam }),
+      supabase.rpc('analytics_funnel', { p_start_date: sIso, p_end_date: eIso, p_team_id: teamIdParam })
     ])
 
     if (resOverview.error) throw resOverview.error
@@ -118,6 +122,10 @@ const loadAnalytics = async () => {
     loading.value = false
   }
 }
+
+watch(() => authStore.activeTeamId, () => {
+  loadAnalytics()
+})
 
 onMounted(() => {
   applyPreset('30d')

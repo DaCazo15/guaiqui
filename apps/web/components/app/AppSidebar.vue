@@ -9,9 +9,28 @@ const route = useRoute()
 const authStore = useAuthStore()
 const avatarError = ref(false)
 
-import { APP_SIDEBAR_NAV_ITEMS } from '~/data/appNavData'
+import { APP_SIDEBAR_NAV_ITEMS, type AppNavItem } from '~/data/appNavData'
+import { useCurrentTeam } from '~/composables/useCurrentTeam'
 
 const navItems = APP_SIDEBAR_NAV_ITEMS
+const { openPicker } = useCurrentTeam()
+
+const handleNavClick = (e: MouseEvent, item: AppNavItem) => {
+  if (item.name === 'Trivias') {
+    e.preventDefault()
+    openPicker('trivias')
+  } else if (item.name === 'Tienda') {
+    e.preventDefault()
+    openPicker('tienda')
+  }
+}
+
+const isItemActive = (item: AppNavItem) => {
+  if (route.name === item.routeName || route.path === item.path) return true
+  if (item.name === 'Trivias' && route.path.includes('/trivias')) return true
+  if (item.name === 'Tienda' && route.path.includes('/tienda')) return true
+  return false
+}
 
 const handleLogout = async () => {
   await authStore.logout()
@@ -72,9 +91,10 @@ const handleLogout = async () => {
         v-for="item in navItems"
         :key="item.routeName"
         :to="{ name: item.routeName }"
+        @click="handleNavClick($event, item)"
         class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
         :class="[
-          route.name === item.routeName || route.path === item.path
+          isItemActive(item)
             ? 'bg-white text-slate-950 font-black shadow-lg shadow-black/25 scale-[1.01]'
             : 'text-emerald-100/75 hover:text-white hover:bg-white/10',
         ]"

@@ -33,6 +33,9 @@ import AdminAdsView from '../pages/AdminAdsView.vue'
 import AdminNotificationsView from '../pages/AdminNotificationsView.vue'
 import Enroll2FAView from '../pages/Enroll2FAView.vue'
 import Verify2FAView from '../pages/Verify2FAView.vue'
+import PlatformTeamsView from '../pages/PlatformTeamsView.vue'
+import PlatformAnalyticsView from '../pages/PlatformAnalyticsView.vue'
+import InactiveTeamView from '../pages/InactiveTeamView.vue'
 
 
 export const router = createRouter({
@@ -266,6 +269,24 @@ export const router = createRouter({
       meta: { requiresAdmin: true }
     },
     {
+      path: '/equipo-inactivo',
+      name: 'inactive-team',
+      component: InactiveTeamView,
+      meta: { requiresAuthOnly: true }
+    },
+    {
+      path: '/admin/plataforma/equipos',
+      name: 'platform-teams',
+      component: PlatformTeamsView,
+      meta: { requiresPlatformAdmin: true }
+    },
+    {
+      path: '/admin/plataforma/analitica',
+      name: 'platform-analytics',
+      component: PlatformAnalyticsView,
+      meta: { requiresPlatformAdmin: true }
+    },
+    {
       path: '/:pathMatch(.*)*',
       redirect: '/staff/cola'
     }
@@ -293,7 +314,12 @@ router.beforeEach(async (to, from, next) => {
 
   const isAuth = authStore.isAuthenticated
 
-  if (isAuth && to.name !== 'enroll-2fa' && to.name !== 'verificar-2fa' && to.name !== 'login') {
+  // Check inactive team status for club staff
+  if (isAuth && authStore.isTeamInactive && to.name !== 'inactive-team' && to.name !== 'login') {
+    return next({ name: 'inactive-team' })
+  }
+
+  if (isAuth && to.name !== 'enroll-2fa' && to.name !== 'verificar-2fa' && to.name !== 'login' && to.name !== 'inactive-team') {
     try {
       const { data: aalData } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel()
       if (aalData) {
@@ -310,7 +336,15 @@ router.beforeEach(async (to, from, next) => {
     }
   }
 
-  if (to.meta.requiresAdmin) {
+  if (to.meta.requiresPlatformAdmin) {
+    if (!isAuth) {
+      next({ name: 'login' })
+    } else if (!authStore.isPlatformAdmin) {
+      next({ name: 'admin-dashboard' })
+    } else {
+      next()
+    }
+  } else if (to.meta.requiresAdmin) {
     if (!isAuth) {
       next({ name: 'login' })
     } else if (!authStore.isAdmin) {
@@ -325,7 +359,9 @@ router.beforeEach(async (to, from, next) => {
       next()
     }
   } else if (to.meta.guestOnly && isAuth) {
-    if (authStore.isAdmin) {
+    if (authStore.isPlatformAdmin) {
+      next({ name: 'platform-teams' })
+    } else if (authStore.isAdmin) {
       next({ name: 'admin-dashboard' })
     } else {
       next({ name: 'staff-queue' })

@@ -206,10 +206,24 @@ useSeoMeta({
       <BaseCard class="p-6 bg-white border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm space-y-4">
         <div class="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
           <div class="space-y-2">
-            <span :class="['inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border', getStatusConfig(currentRedemption.status).textClass]">
-              <i :class="['bi', getStatusConfig(currentRedemption.status).icon]"></i>
-              {{ getStatusConfig(currentRedemption.status).label }}
-            </span>
+            <div class="flex items-center gap-2 flex-wrap">
+              <!-- Team Badge -->
+              <div v-if="currentRedemption.team" class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-guaiqui-surface text-guaiqui-text border border-guaiqui-border">
+                <img
+                  v-if="currentRedemption.team.logo_url"
+                  :src="currentRedemption.team.logo_url"
+                  :alt="currentRedemption.team.name"
+                  class="w-4 h-4 rounded-full object-contain"
+                />
+                <i v-else class="bi bi-shield text-guaiqui-primary text-xs"></i>
+                <span>{{ currentRedemption.team.name }}</span>
+              </div>
+
+              <span :class="['inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider border', getStatusConfig(currentRedemption.status).textClass]">
+                <i :class="['bi', getStatusConfig(currentRedemption.status).icon]"></i>
+                {{ getStatusConfig(currentRedemption.status).label }}
+              </span>
+            </div>
 
             <h1 class="font-display font-bold text-3xl text-guaiqui-text uppercase">
               {{ currentRedemption.products?.name || 'Premio Oficial' }}

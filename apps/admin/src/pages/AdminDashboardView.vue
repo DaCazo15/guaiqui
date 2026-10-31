@@ -1,10 +1,12 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, onMounted, watch } from 'vue'
 import { RouterLink } from 'vue-router'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseCard, BaseBadge, BaseButton, BaseSkeletonLayout } from '@guaiqui/ui'
 import { supabase } from '../lib/supabase'
+import { useAuthStore } from '../stores/auth'
 
+const authStore = useAuthStore()
 const pendingIssuesCount = ref(0)
 const lowStockCount = ref(0)
 const draftTriviasCount = ref(0)
@@ -13,31 +15,29 @@ const loading = ref(true)
 
 const loadDashboardMetrics = async () => {
   loading.value = true
+  const teamId = authStore.activeTeamId
+
   try {
-    const { count: issueCount } = await supabase
-      .from('redemptions')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'issue')
+    let issueQ = supabase.from('redemptions').select('*', { count: 'exact', head: true }).eq('status', 'issue')
+    if (teamId) issueQ = issueQ.eq('team_id', teamId)
+    const { count: issueCount } = await issueQ
 
     pendingIssuesCount.value = issueCount || 0
 
-    const { count: lowStock } = await supabase
-      .from('products')
-      .select('*', { count: 'exact', head: true })
-      .filter('stock', 'lte', 5)
+    let stockQ = supabase.from('products').select('*', { count: 'exact', head: true }).filter('stock', 'lte', 5)
+    if (teamId) stockQ = stockQ.eq('team_id', teamId)
+    const { count: lowStock } = await stockQ
 
     lowStockCount.value = lowStock || 0
 
-    const { count: draftTrivias } = await supabase
-      .from('trivias')
-      .select('*', { count: 'exact', head: true })
-      .eq('status', 'draft')
+    let triviasQ = supabase.from('trivias').select('*', { count: 'exact', head: true }).eq('status', 'draft')
+    if (teamId) triviasQ = triviasQ.eq('team_id', teamId)
+    const { count: draftTrivias } = await triviasQ
 
     draftTriviasCount.value = draftTrivias || 0
 
-    const { count: fans } = await supabase
-      .from('profiles')
-      .select('*', { count: 'exact', head: true })
+    let fansQ = supabase.from('profiles').select('*', { count: 'exact', head: true })
+    const { count: fans } = await fansQ
 
     totalFansCount.value = fans || 0
   } catch (err) {
@@ -46,6 +46,10 @@ const loadDashboardMetrics = async () => {
     loading.value = false
   }
 }
+
+watch(() => authStore.activeTeamId, () => {
+  loadDashboardMetrics()
+})
 
 onMounted(loadDashboardMetrics)
 </script>

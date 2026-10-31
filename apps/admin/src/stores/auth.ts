@@ -6,9 +6,19 @@ import { supabase } from '../lib/supabase'
 export interface StaffProfile {
   user_id: string
   role: 'staff' | 'admin'
+  team_id?: string | null
+  team_status?: 'active' | 'inactive' | null
   active: boolean
   display_name?: string
   avatar_url?: string
+}
+
+export interface TeamOption {
+  id: string
+  name: string
+  slug: string
+  logo_url: string | null
+  status: 'active' | 'inactive'
 }
 
 const IDLE_TIMEOUT_MS = 30 * 60 * 1000 // 30 minutos
@@ -20,11 +30,62 @@ export const useAuthStore = defineStore('auth', () => {
   const isInitialized = ref(false)
   const authError = ref<string | null>(null)
   
+  const selectedTeamId = ref<string | null>(
+    typeof window !== 'undefined'
+      ? localStorage.getItem('admin_selected_team_id') || 'a0000000-0000-0000-0000-000000000001'
+      : 'a0000000-0000-0000-0000-000000000001'
+  )
+  const availableTeams = ref<TeamOption[]>([])
+
   const lastActivityTime = ref<number>(Date.now())
   let idleTimer: number | null = null
 
   const isAuthenticated = computed(() => !!user.value && !!staffMember.value && staffMember.value.active)
   const isAdmin = computed(() => isAuthenticated.value && staffMember.value?.role === 'admin')
+  const isPlatformAdmin = computed(() => isAdmin.value && staffMember.value?.team_id === null)
+  const isTeamAdmin = computed(() => isAdmin.value && staffMember.value?.team_id != null)
+  const staffTeamId = computed(() => staffMember.value?.team_id ?? null)
+  const isTeamInactive = computed(() => !isPlatformAdmin.value && staffMember.value?.team_status === 'inactive')
+
+  const activeTeamId = computed(() => {
+    if (isPlatformAdmin.value) {
+      return selectedTeamId.value
+    }
+    return staffMember.value?.team_id ?? null
+  })
+
+  const selectedTeam = computed(() => {
+    if (!activeTeamId.value) return null
+    return availableTeams.value.find(t => t.id === activeTeamId.value) || null
+  })
+
+  const setSelectedTeamId = (id: string | null) => {
+    selectedTeamId.value = id
+    if (typeof window !== 'undefined') {
+      if (id) {
+        localStorage.setItem('admin_selected_team_id', id)
+      } else {
+        localStorage.removeItem('admin_selected_team_id')
+      }
+    }
+  }
+
+  const loadAvailableTeams = async () => {
+    try {
+      const { data } = await supabase
+        .from('teams')
+        .select('id, name, slug, logo_url, status')
+        .order('name', { ascending: true })
+      if (data) {
+        availableTeams.value = data as TeamOption[]
+        if (!selectedTeamId.value && data.length > 0) {
+          setSelectedTeamId(data[0].id)
+        }
+      }
+    } catch (e) {
+      console.error('Error loading available teams:', e)
+    }
+  }
 
   const resetIdleTimer = () => {
     lastActivityTime.value = Date.now()
@@ -69,7 +130,7 @@ export const useAuthStore = defineStore('auth', () => {
     try {
       const { data: staff, error: staffErr } = await supabase
         .from('staff_members')
-        .select('user_id, role, active')
+        .select('user_id, role, team_id, active')
         .eq('user_id', uid)
         .single()
 
@@ -86,10 +147,25 @@ export const useAuthStore = defineStore('auth', () => {
         .eq('id', uid)
         .maybeSingle()
 
+      let teamStatus: 'active' | 'inactive' | null = null
+      if (staff.team_id) {
+        const { data: teamData } = await supabase
+          .from('teams')
+          .select('status')
+          .eq('id', staff.team_id)
+          .maybeSingle()
+        teamStatus = teamData?.status || 'active'
+      }
+
       staffMember.value = {
         ...staff,
+        team_status: teamStatus,
         display_name: profile?.display_name || 'Personal de Taquilla',
         avatar_url: profile?.avatar_url || undefined
+      }
+
+      if (staff.team_id === null) {
+        await loadAvailableTeams()
       }
 
       authError.value = null
@@ -193,6 +269,16 @@ export const useAuthStore = defineStore('auth', () => {
     authError,
     isAuthenticated,
     isAdmin,
+    isPlatformAdmin,
+    isTeamAdmin,
+    isTeamInactive,
+    staffTeamId,
+    activeTeamId,
+    selectedTeamId,
+    selectedTeam,
+    availableTeams,
+    setSelectedTeamId,
+    loadAvailableTeams,
     checkAuth,
     signIn,
     signOut,

@@ -9,8 +9,8 @@ test.describe('Fase 15 — Saludo de Cumpleaños E2E', () => {
     const url = page.url()
     if (url.includes('/cumpleanos')) {
       await expect(page.locator('h1')).toContainText('FELIZ CUMPLEAÑOS')
-      await expect(page.locator('button', { hasText: 'Ir a mis trivias' })).toBeVisible()
-      await expect(page.locator('button', { hasText: 'Compartir' })).toBeVisible()
+      await expect(page.locator('a, button').filter({ hasText: /trivias/i }).first()).toBeVisible()
+      await expect(page.locator('button', { hasText: 'Compartir' }).first()).toBeVisible()
     } else {
       // Redirección silenciosa a /app si no es elegible
       expect(url).toContain('/app')

@@ -36,9 +36,80 @@ flowchart TD
 
 ## Esquema de Base de Datos y Módulos Principales
 
-1. **Usuarios y Autenticación**: `profiles`, `staff_members`, `user_segments`.
-2. **Economía e Inmutabilidad**: `wallets`, `ledger_entries` (Append-Only), `economy_settings`.
-3. **Trivias y Participación**: `trivias`, `trivia_questions`, `trivia_options`, `trivia_attempts`.
-4. **Tienda y Canjes**: `products`, `redemptions`, `inventory_movements`.
-5. **Antifraude y Auditoría**: `captcha_passes`, `risk_flags`, `held_pearls`, `audit_logs`, `system_alerts`.
-6. **Contenido Público**: `site_announcements`, `carousel_slides`, `history_milestones`, `site_team_members`, `faqs`, `site_stats`, `policy_documents`.
+1. **Multi-Tenancy y Directorio de Equipos**: `teams`, `teams_public`, `team_follows`.
+2. **Usuarios y Control de Acceso (RBAC + Multi-Tenant)**:
+   - `profiles`: Identidad única del fanático compartida en la plataforma.
+   - `staff_members`: Empleados de club (`team_id NOT NULL`) y administradores de plataforma (`team_id IS NULL`).
+   - `team_follows`: Relación explícita fanático-equipo que habilita ganar perlitas y recibir beneficios.
+3. **Economía e Inmutabilidad Multi-Equipo**:
+   - `wallets`: Billetera aislada por equipo `(fan_id, team_id)` con `balance_cache`.
+   - `ledger_entries`: Libro contable append-only inmutable (`team_id NOT NULL`).
+   - `economy_settings`: Topes globales por usuario sumando todos los equipos y reglas de economía.
+4. **Trivias y Participación**: `trivias`, `trivia_questions`, `trivia_options`, `trivia_attempts` (acotados por `team_id`).
+5. **Tienda y Canjes**: `products`, `redemptions`, `redemption_history` (catálogo y canjes aislados por club).
+6. **Antifraude y Auditoría**: `risk_flags` (mixta: club ve banderas de su equipo, plataforma ve todas), `held_pearls`, `audit_log`, `system_alerts`.
+7. **Contenido Público**: `site_announcements`, `carousel_slides`, `history_milestones`, `site_team_members`, `faqs`, `site_stats`, `policy_documents`.
+
+---
+
+## Arquitectura de Navegación por Equipo en la Web del Fanático (Fase 3)
+
+```mermaid
+flowchart TD
+    Nav["Sidebar / Mobile Nav<br/>('Trivias' / 'Tienda')"] --> PickerModal{"¿Equipo seleccionado o<br/>múltiples equipos seguidos?"}
+    PickerModal -- "Abre Selector" --> TeamPicker["Modal Selector de Equipos<br/>(Logo, Nombre, Saldo de Perlitas)"]
+    TeamPicker -- "Elige Equipo" --> HubRouter["/app/e/[slug]<br/>Hub del Equipo"]
+
+    HubRouter --> TabTrivias["/app/e/[slug]/trivias<br/>(Trivias Clásicas y Dinámicas)"]
+    HubRouter --> TabTienda["/app/e/[slug]/tienda<br/>(Catálogo de Premios del Club)"]
+
+    TabTrivias --> PlayTrivia["/app/e/[slug]/trivias/[id]<br/>(Jugar y Ganar en ese Equipo)"]
+    TabTienda --> ProductDetail["/app/e/[slug]/tienda/[id]<br/>(Canje con Saldo del Equipo)"]
+
+    ProductDetail --> GlobalCanjes["/app/canjes<br/>(Bandeja Global con Filtro de Equipo)"]
+```
+
+### Principios de Aislamiento y Experiencia de Usuario:
+1. **Rutas Jerárquicas**:
+   - `/app/e/[slug]`: Hub principal del equipo con información, estado (activo/inactivo), saldo y pestañas directas.
+   - `/app/e/[slug]/trivias` y `/app/e/[slug]/trivias/[id]`: Catálogo y ejecución de trivias del equipo.
+   - `/app/e/[slug]/tienda` y `/app/e/[slug]/tienda/[id]`: Catálogo y canjes validados contra el saldo del club.
+   - `/app/canjes`: Bandeja consolidada de todos los canjes del fanático, con filtro por equipo y badge distintivo de cada club.
+2. **Team Picker Modal (`useCurrentTeam`)**:
+   - Intercepta los accesos a "Trivias" o "Tienda" desde el menú global. Muestra las tarjetas de los equipos seguidos con su saldo respectivo.
+   - Si el fanático no sigue a ningún club, ofrece un estado vacío amigable con enlace directo a `/app/equipos`.
+3. **Resiliencia en el Almacenamiento Local**:
+   - El slug del equipo activo se almacena en `localStorage` (`guaiqui_active_team_slug`) estrictamente como conveniencia UX dentro de bloques `try/catch`. El backend **nunca** asume este valor y deriva el `team_id` directamente del recurso (trivia o producto) consultado o jugado.
+4. **Tratamiento de Equipos Inactivos**:
+   - Si un equipo pasa a estado `inactive`, el Hub y sus subrutas muestran un banner preventivo que bloquea la participación en trivias y canjes nuevos, preservando intactos la visibilidad del historial y los saldos.
+
+---
+
+## Arquitectura del Panel de Plataforma (Fase 4)
+
+```mermaid
+flowchart TD
+    StaffLogin["Login en apps/admin"] --> CheckRole{"¿Rol y Alcance?"}
+    CheckRole -- "team_id IS NULL<br/>(Platform Admin)" --> PlatformMaster["Panel Master de Plataforma<br/>(Gestión de Clubes, Pagos, Analítica Global)"]
+    CheckRole -- "team_id NOT NULL<br/>(Club Staff / Admin)" --> CheckStatus{"¿Status del Club?"}
+    
+    CheckStatus -- "active" --> ClubAdmin["Panel de Club Específico<br/>(Taquilla, Trivias, Premios del Club)"]
+    CheckStatus -- "inactive" --> InactiveScreen["/equipo-inactivo<br/>(Pantalla de Bloqueo Operativo)"]
+    
+    PlatformMaster --> HeaderSelector["Selector de Club en Cabecera<br/>(Inyecta selectedTeamId en llamadas)"]
+    PlatformMaster --> TeamLifecycle["Ciclo de Vida de Franquicia<br/>(Alta compensable, Cobros, Desactivación)"]
+```
+
+### Componentes Clave de la Plataforma:
+1. **Diferenciación de Roles (`staff_members`)**:
+   - **Administrador de Plataforma (`team_id IS NULL`)**: Visión global, sin club fijo, acceso a gestión de franquicias, eventos de cobro (`team_billing_events`), configuración del sistema (`platform_settings`) y analítica cross-team.
+   - **Personal de Club (`team_id NOT NULL`)**: Confinado rígidamente a su equipo por RLS y triggers de integridad. No visualiza el selector de equipos ni rutas `/admin/plataforma/*`.
+2. **Selector de Contexto para Plataforma**:
+   - La cabecera expone un selector de club que actualiza `authStore.selectedTeamId` y alimenta `authStore.activeTeamId`. Esto permite al administrador de plataforma operar en cualquier club sin violar los triggers y políticas que exigen `team_id`.
+3. **Ciclo de Vida de Facturación y Desactivación Automática**:
+   - Cada equipo posee un campo `paid_until`.
+   - `job_send_team_billing_reminders()` genera avisos in-app y entradas en `email_outbox` 7 días y 1 día antes del vencimiento.
+   - Si transcurren los días de gracia (`billing_grace_days` en `platform_settings`, por defecto 3 días), `job_deactivate_expired_teams()` transiciona automáticamente el equipo a `status = 'inactive'`, notifica a sus administradores y asienta la auditoría.
+4. **Alta Compensable (`create-team`)**:
+   - La creación de franquicias se ejecuta en la Edge Function `create-team` exigiendo AAL2 (2FA). Si el alta del directivo inicial o la asignación de roles falla, se compensa eliminando la franquicia creada para evitar estados huérfanos.
+

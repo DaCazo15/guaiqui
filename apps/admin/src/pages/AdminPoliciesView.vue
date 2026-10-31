@@ -3,6 +3,9 @@ import { ref, onMounted } from 'vue'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import { BaseButton, BaseBadge, BaseInput, BaseModal, BaseTable } from '@guaiqui/ui'
 import { supabase } from '../lib/supabase'
+import { useAuthStore } from '../stores/auth'
+
+const authStore = useAuthStore()
 
 interface PolicyRow {
   id: string
@@ -131,6 +134,15 @@ onMounted(loadPolicies)
         </div>
       </div>
 
+      <!-- Banner de solo lectura para admin de club -->
+      <div v-if="!authStore.isPlatformAdmin" class="p-4 bg-amber-950/40 border border-amber-800/80 text-amber-200 rounded-xl text-sm flex items-start gap-3">
+        <i class="bi bi-info-circle-fill text-amber-400 text-lg mt-0.5 shrink-0"></i>
+        <div>
+          <p class="font-semibold">Modo Solo Lectura (Administración de Club)</p>
+          <p class="text-xs text-amber-300/90 mt-0.5">Las políticas legales y términos de servicio aplican globalmente a toda la plataforma y son administradas exclusivamente por el Administrador de Plataforma.</p>
+        </div>
+      </div>
+
       <div v-if="errorMessage" class="p-4 bg-red-950/80 border border-red-800 text-red-300 rounded-xl text-sm flex items-center justify-between">
         <span>{{ errorMessage }}</span>
         <button @click="errorMessage = null" class="text-red-400 hover:text-red-200"><i class="bi bi-x-lg"></i></button>
@@ -154,7 +166,7 @@ onMounted(loadPolicies)
               Publicado el: {{ policies.find(p => p.slug === slugKey && p.is_active)?.published_at ? new Date(policies.find(p => p.slug === slugKey && p.is_active)!.published_at).toLocaleDateString() : 'N/A' }}
             </p>
           </div>
-          <BaseButton variant="secondary" class="w-full text-xs" @click="openNewVersion(slugKey)">
+          <BaseButton v-if="authStore.isPlatformAdmin" variant="secondary" class="w-full text-xs" @click="openNewVersion(slugKey)">
             <i class="bi bi-file-earmark-diff mr-1.5 text-emerald-400"></i> Publicar Nueva Versión
           </BaseButton>
         </div>

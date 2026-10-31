@@ -10,33 +10,34 @@ VALUES
     ('33333333-3333-3333-3333-333333333333', '00000000-0000-0000-0000-000000000000', 'staff_a@guaiqui.test', 'encrypted', NOW(), '{"provider":"email","providers":["email"]}', '{}', NOW(), NOW(), 'authenticated', 'authenticated')
 ON CONFLICT (id) DO NOTHING;
 
-INSERT INTO public.profiles (id, display_name, status, created_at)
+INSERT INTO public.profiles (id, display_name, status, created_at, terms_accepted_at, terms_version)
 VALUES 
-    ('11111111-1111-1111-1111-111111111111', 'Fan Alpha', 'active', NOW() - INTERVAL '60 days'),
-    ('22222222-2222-2222-2222-222222222222', 'Fan Beta', 'active', NOW() - INTERVAL '60 days'),
-    ('33333333-3333-3333-3333-333333333333', 'Staff Solo', 'active', NOW() - INTERVAL '60 days')
-ON CONFLICT (id) DO NOTHING;
+    ('11111111-1111-1111-1111-111111111111', 'Fan Alpha', 'active', NOW() - INTERVAL '60 days', NOW(), 'v1.0'),
+    ('22222222-2222-2222-2222-222222222222', 'Fan Beta', 'active', NOW() - INTERVAL '60 days', NOW(), 'v1.0'),
+    ('33333333-3333-3333-3333-333333333333', 'Staff Solo', 'active', NOW() - INTERVAL '60 days', NOW(), 'v1.0')
+ON CONFLICT (id) DO UPDATE SET terms_accepted_at = NOW(), terms_version = 'v1.0';
 
-INSERT INTO public.staff_members (user_id, role, active)
-VALUES ('33333333-3333-3333-3333-333333333333', 'staff', true)
-ON CONFLICT (user_id) DO NOTHING;
+INSERT INTO public.staff_members (team_id, user_id, role, active)
+VALUES ('a0000000-0000-0000-0000-000000000001', '33333333-3333-3333-3333-333333333333', 'staff', true)
+ON CONFLICT (team_id, user_id) DO UPDATE SET role = 'staff', active = true;
 
-INSERT INTO public.wallets (fan_id, balance_cache)
+INSERT INTO public.wallets (team_id, fan_id, balance_cache)
 VALUES 
-    ('11111111-1111-1111-1111-111111111111', 500),
-    ('22222222-2222-2222-2222-222222222222', 1000)
-ON CONFLICT (fan_id) DO UPDATE SET balance_cache = EXCLUDED.balance_cache;
+    ('a0000000-0000-0000-0000-000000000001', '11111111-1111-1111-1111-111111111111', 500),
+    ('a0000000-0000-0000-0000-000000000001', '22222222-2222-2222-2222-222222222222', 1000)
+ON CONFLICT (fan_id, team_id) DO UPDATE SET balance_cache = EXCLUDED.balance_cache;
 
 INSERT INTO public.notifications (id, user_id, type, title, body)
 VALUES ('aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa', '22222222-2222-2222-2222-222222222222', 'security', 'Mensaje Privado Fan B', 'Contenido confidencial')
 ON CONFLICT (id) DO NOTHING;
 
 -- Authenticate as Fan Alpha
-SET LOCAL request.jwt.claims = '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}';
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}';
 
 -- Test 1: Fan Alpha CANNOT insert into wallets directly
 SELECT throws_ok(
-    'INSERT INTO public.wallets (fan_id, balance_cache) VALUES (''11111111-1111-1111-1111-111111111111'', 9999)',
+    'INSERT INTO public.wallets (team_id, fan_id, balance_cache) VALUES (''a0000000-0000-0000-0000-000000000001'', ''11111111-1111-1111-1111-111111111111'', 9999)',
     'new row violates row-level security policy for table "wallets"',
     'Direct INSERT on wallets must be rejected by RLS'
 );
@@ -50,7 +51,7 @@ SELECT throws_ok(
 
 -- Test 3: Fan Alpha CANNOT insert into ledger_entries directly
 SELECT throws_ok(
-    'INSERT INTO public.ledger_entries (fan_id, amount, type, status, source_type, source_id, note) VALUES (''11111111-1111-1111-1111-111111111111'', 500, ''admin_adjustment'', ''confirmed'', ''hack'', ''1'', ''auto'')',
+    'INSERT INTO public.ledger_entries (team_id, fan_id, amount, type, status, source_type, source_id, note) VALUES (''a0000000-0000-0000-0000-000000000001'', ''11111111-1111-1111-1111-111111111111'', 500, ''admin_adjustment'', ''confirmed'', ''hack'', ''1'', ''auto'')',
     'new row violates row-level security policy for table "ledger_entries"',
     'Direct INSERT on ledger_entries must be rejected by RLS'
 );
@@ -84,7 +85,8 @@ SELECT throws_ok(
 );
 
 -- Authenticate as Staff Member (Non-Admin)
-SET LOCAL request.jwt.claims = '{"sub": "33333333-3333-3333-3333-333333333333", "role": "authenticated"}';
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "33333333-3333-3333-3333-333333333333", "role": "authenticated"}';
 
 -- Test 8: Staff member CANNOT run admin-only RPC admin_risk_queue
 SELECT throws_ok(
@@ -101,7 +103,8 @@ SELECT throws_ok(
 );
 
 -- Test 10: Rate limiting on claim_birthday_bonus
-SET LOCAL request.jwt.claims = '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}';
+SET LOCAL ROLE authenticated;
+SET LOCAL "request.jwt.claims" = '{"sub": "11111111-1111-1111-1111-111111111111", "role": "authenticated"}';
 
 -- Calling check_rate_limit for birthday bonus up to max limit succeeds, 4th fails
 SELECT lives_ok(

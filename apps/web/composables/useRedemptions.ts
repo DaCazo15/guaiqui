@@ -3,6 +3,7 @@ import { useSupabaseClient, useSupabaseUser } from '#imports'
 
 export interface Redemption {
   id: string
+  team_id?: string
   fan_id: string
   product_id: string
   variant: string | null
@@ -13,6 +14,13 @@ export interface Redemption {
   approved_at: string | null
   delivered_at: string | null
   created_at: string
+  team?: {
+    id: string
+    name: string
+    slug: string
+    short_name?: string | null
+    logo_url: string | null
+  }
   products?: {
     name: string
     category: string
@@ -61,6 +69,13 @@ export const useRedemptions = () => {
         .from('redemptions')
         .select(`
           *,
+          team:teams (
+            id,
+            name,
+            slug,
+            short_name,
+            logo_url
+          ),
           products (
             name,
             category,
@@ -71,7 +86,7 @@ export const useRedemptions = () => {
         .order('created_at', { ascending: false })
 
       if (dbError) throw dbError
-      redemptions.value = (data as Redemption[]) || []
+      redemptions.value = (data as unknown as Redemption[]) || []
     } catch (err: any) {
       error.value = err.message || 'Error al cargar tus canjes'
     } finally {
@@ -89,6 +104,13 @@ export const useRedemptions = () => {
         .from('redemptions')
         .select(`
           *,
+          team:teams (
+            id,
+            name,
+            slug,
+            short_name,
+            logo_url
+          ),
           products (
             name,
             category,
