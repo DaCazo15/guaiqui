@@ -3,6 +3,7 @@ import { ref, onMounted } from 'vue'
 import { useWallet } from '~/composables/useWallet'
 import { useAdsProgress } from '~/composables/useAdsProgress'
 import WalletSummaryCard from '~/components/wallet/WalletSummaryCard.vue'
+import DashboardPendingGrantsCard from '~/components/app/dashboard/DashboardPendingGrantsCard.vue'
 import WalletTeamsBreakdown from '~/components/wallet/WalletTeamsBreakdown.vue'
 import WalletLedgerList from '~/components/wallet/WalletLedgerList.vue'
 import WalletHeldInfoModal from '~/components/wallet/WalletHeldInfoModal.vue'
@@ -72,6 +73,9 @@ useSeoMeta({
       :loading="loading"
       @show-held-info="isHeldModalOpen = true"
     />
+
+    <!-- Perlitas Pendientes por Asignar -->
+    <DashboardPendingGrantsCard />
 
     <!-- Multi-team Breakdown Cards -->
     <WalletTeamsBreakdown

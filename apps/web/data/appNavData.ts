@@ -11,6 +11,8 @@ export const APP_SIDEBAR_NAV_ITEMS: AppNavItem[] = [
   { name: 'Equipos', routeName: 'app-equipos', path: '/app/equipos', icon: 'bi-shield-shaded' },
   { name: 'Mi Perfil', routeName: 'app-perfil', path: '/app/perfil', icon: 'bi-person-fill' },
   { name: 'Billetera', routeName: 'app-billetera', path: '/app/billetera', icon: 'bi-wallet2' },
+  { name: 'Perlitas Pendientes', routeName: 'app-perlitas-pendientes', path: '/app/perlitas-pendientes', icon: 'bi-hourglass-split' },
+  { name: 'Referidos', routeName: 'app-referidos', path: '/app/referidos', icon: 'bi-people' },
   { name: 'Trivias', routeName: 'app-trivias', path: '/app/trivias', icon: 'bi-patch-question-fill' },
   { name: 'Ranking', routeName: 'app-ranking', path: '/app/ranking', icon: 'bi-trophy-fill' },
   { name: 'Tienda', routeName: 'app-tienda', path: '/app/tienda', icon: 'bi-bag-heart-fill' },

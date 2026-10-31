@@ -24,6 +24,7 @@ describe('useWallet composable', () => {
     expect(summary.value).toEqual({
       balance: 0,
       total_balance: 0,
+      pending_pearls: 0,
       earned_month: 0,
       spent_month: 0,
       held_pearls: 0,
@@ -39,6 +40,7 @@ describe('useWallet composable', () => {
     const mockRpcData = {
       total_balance: 150,
       total_held_balance: 10,
+      pending_pearls: 25,
       earned_month: 200,
       spent_month: 50,
       teams: [
@@ -61,6 +63,7 @@ describe('useWallet composable', () => {
     expect(summary.value).toEqual({
       balance: 150,
       total_balance: 150,
+      pending_pearls: 25,
       earned_month: 200,
       spent_month: 50,
       held_pearls: 10,

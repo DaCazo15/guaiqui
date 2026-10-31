@@ -8,6 +8,7 @@ import DashboardCompactHeader from '~/components/app/dashboard/DashboardCompactH
 import DashboardTriviaHero from '~/components/app/dashboard/DashboardTriviaHero.vue'
 import DashboardScoreboardWidget from '~/components/app/dashboard/DashboardScoreboardWidget.vue'
 import DashboardVideoPromo from '~/components/app/dashboard/DashboardVideoPromo.vue'
+import DashboardPendingGrantsCard from '~/components/app/dashboard/DashboardPendingGrantsCard.vue'
 import DashboardStreakXpWidget from '~/components/app/dashboard/DashboardStreakXpWidget.vue'
 import DashboardPodiumWidget from '~/components/app/dashboard/DashboardPodiumWidget.vue'
 
@@ -38,6 +39,9 @@ onMounted(async () => {
       <main class="lg:col-span-8 space-y-6 min-w-0">
         <!-- Hero Card de la Trivia del Día -->
         <DashboardTriviaHero />
+
+        <!-- Tarjeta de Perlitas por Asignar (Anuncios y Referidos) -->
+        <DashboardPendingGrantsCard />
 
         <!-- Jerarquía Deportiva: Marcador SPB, Escudos y Cuenta Regresiva -->
         <DashboardScoreboardWidget />

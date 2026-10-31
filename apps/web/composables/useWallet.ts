@@ -17,6 +17,7 @@ export interface WalletSummaryTeam {
 export interface WalletSummary {
   balance: number
   total_balance: number
+  pending_pearls: number
   earned_month: number
   spent_month: number
   held_pearls: number
@@ -43,6 +44,7 @@ export const useWallet = () => {
   const summary = ref<WalletSummary>({
     balance: 0,
     total_balance: 0,
+    pending_pearls: 0,
     earned_month: 0,
     spent_month: 0,
     held_pearls: 0,
@@ -68,6 +70,7 @@ export const useWallet = () => {
         summary.value = {
           balance: d.total_balance ?? d.balance ?? 0,
           total_balance: d.total_balance ?? d.balance ?? 0,
+          pending_pearls: d.pending_pearls ?? 0,
           earned_month: d.earned_month ?? 0,
           spent_month: d.spent_month ?? 0,
           held_pearls: d.total_held_balance ?? d.held_pearls ?? 0,

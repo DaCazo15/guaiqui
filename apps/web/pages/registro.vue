@@ -2,8 +2,11 @@
 definePageMeta({
   middleware: [
     'guest',
-    function () {
-      return navigateTo('/login?tab=register')
+    function (to) {
+      return navigateTo({
+        path: '/login',
+        query: { tab: 'register', ...to.query },
+      })
     }
   ]
 })

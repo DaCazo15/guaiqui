@@ -270,6 +270,7 @@ export const useAuthStore = defineStore('auth', () => {
       favoritePlayerId?: string | null
       shirtSize?: string | null
       referralSource?: string | null
+      referralCode?: string | null
     }
   ) {
     isLoading.value = true
@@ -292,6 +293,7 @@ export const useAuthStore = defineStore('auth', () => {
         favorite_player_id: profileData?.favoritePlayerId || undefined,
         shirt_size: profileData?.shirtSize || undefined,
         referral_source: profileData?.referralSource || undefined,
+        referral_code: profileData?.referralCode || undefined,
         terms_accepted_at: consent.terms ? now : null,
         terms_version: CURRENT_LEGAL_VERSIONS.terms,
         privacy_accepted_at: consent.privacy ? now : null,

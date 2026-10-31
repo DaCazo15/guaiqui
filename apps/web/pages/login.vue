@@ -13,7 +13,7 @@ const route = useRoute()
 const authStore = useAuthStore()
 
 const initialMode = computed<'login' | 'register'>(() => {
-  return route.query.tab === 'register' ? 'register' : 'login'
+  return (route.query.tab === 'register' || !!route.query.ref) ? 'register' : 'login'
 })
 
 const localError = ref<string | null>(null)
@@ -37,11 +37,15 @@ async function handleLogin(payload: { email: string; pass: string }) {
 async function handleRegister(payload: { email: string; pass: string }) {
   localError.value = null
   try {
+    const refCode = (route.query.ref || route.query.referral_code) as string | undefined
     await authStore.signUpWithEmail(
       payload.email,
       payload.pass,
       { terms: true, privacy: true, pearlsRules: true },
-      { displayName: payload.email.split('@')[0] }
+      {
+        displayName: payload.email.split('@')[0],
+        referralCode: refCode || undefined,
+      }
     )
     navigateTo('/verificar-correo')
   } catch (err: any) {
