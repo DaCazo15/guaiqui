@@ -74,6 +74,7 @@ export interface Profile {
   gender?: string | null
   favorite_player_id?: string | null
   shirt_size?: string | null
+  favorite_sport?: string | null
   referral_source?: string | null
   notification_prefs?: Json
   status: UserStatus
@@ -86,6 +87,73 @@ export interface Profile {
   created_at: string
   updated_at?: string | null
   deleted_at?: string | null
+}
+
+export type FollowRelationStatus = 'none' | 'pending' | 'accepted' | 'incoming_pending' | 'self'
+
+export interface PublicProfileFollowedTeam {
+  id: string
+  name: string
+  slug: string
+  logo_url?: string | null
+}
+
+export interface PublicProfileRanking {
+  rank: number
+  points: number
+}
+
+export interface PublicProfileLastReward {
+  product_name: string
+  image_url?: string | null
+  redeemed_at: string
+}
+
+export interface PublicUserProfile {
+  id: string
+  display_name: string
+  avatar_url?: string | null
+  cover_url?: string | null
+  favorite_sport?: string | null
+  followed_teams: PublicProfileFollowedTeam[]
+  followers_count: number
+  following_count: number
+  relation_status: FollowRelationStatus
+  is_full_profile: boolean
+  ranking?: PublicProfileRanking | null
+  redemptions_count?: number | null
+  last_reward?: PublicProfileLastReward | null
+  total_pearls?: number | null
+}
+
+export interface FollowRequestItem {
+  follower_id: string
+  display_name: string
+  avatar_url?: string | null
+  favorite_sport?: string | null
+  created_at: string
+}
+
+export interface BlockedUserItem {
+  id: string
+  display_name: string
+  avatar_url?: string | null
+  blocked_at: string
+}
+
+export interface UserFollowUserItem {
+  id: string
+  display_name: string
+  avatar_url?: string | null
+  favorite_sport?: string | null
+}
+
+export interface UserSearchResultItem {
+  id: string
+  display_name: string
+  avatar_url?: string | null
+  favorite_sport?: string | null
+  relation_status: FollowRelationStatus
 }
 
 export interface StaffMember {

@@ -25,6 +25,7 @@ const gender = ref(props.profile?.gender || '')
 const favoritePlayerId = ref(props.profile?.favorite_player_id || '')
 const shirtSize = ref(props.profile?.shirt_size || '')
 const referralSource = ref(props.profile?.referral_source || '')
+const favoriteSport = ref(props.profile?.favorite_sport || '')
 
 const playersList = ref<{ value: string; label: string }[]>([])
 const localError = ref<string | null>(null)
@@ -47,6 +48,7 @@ watch(
       favoritePlayerId.value = newProf.favorite_player_id || ''
       shirtSize.value = newProf.shirt_size || ''
       referralSource.value = newProf.referral_source || ''
+      favoriteSport.value = newProf.favorite_sport || ''
     }
   },
   { immediate: true }
@@ -87,6 +89,7 @@ function handleSave() {
     favorite_player_id: favoritePlayerId.value || null,
     shirt_size: shirtSize.value || null,
     referral_source: referralSource.value || null,
+    favorite_sport: favoriteSport.value?.trim() || null,
   })
 }
 </script>
@@ -141,6 +144,12 @@ function handleSave() {
         v-model="shirtSize"
         label="Talla de camisa"
         :options="[{ value: '', label: 'Seleccionar...' }, ...shirtSizeOptions]"
+      />
+
+      <BaseInput
+        v-model="favoriteSport"
+        label="Deporte favorito"
+        placeholder="Ej: Baloncesto, Béisbol, Fútbol"
       />
     </div>
 

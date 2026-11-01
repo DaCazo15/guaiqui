@@ -406,6 +406,7 @@ export const useAuthStore = defineStore('auth', () => {
         'referral_source',
         'notification_prefs',
         'cover_url',
+        'favorite_sport',
       ] as const
 
       const safeUpdates: TablesUpdate<'profiles'> = {}
