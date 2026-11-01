@@ -1,8 +1,12 @@
 import { fileURLToPath } from 'node:url'
 
+const isMobileBuild = process.env.BUILD_TARGET === 'mobile'
+
 // https://nuxt.com/docs/api/configuration/nuxt-config
 export default defineNuxtConfig({
   compatibilityDate: '2024-11-01',
+
+  ssr: !isMobileBuild,
 
   devtools: { enabled: true },
 
@@ -30,9 +34,17 @@ export default defineNuxtConfig({
         '/equipo-de-trabajo',
         '/como-funciona',
         '/faq',
-        '/contacto'
+        '/contacto',
+        '/e/*',
+        '/u/*'
       ],
     },
+  },
+
+  nitro: {
+    prerender: {
+      failOnError: false
+    }
   },
 
   typescript: {
