@@ -7,7 +7,12 @@ type PlayerRow = Player
 
 definePageMeta({
   layout: 'app',
-  middleware: ['auth'],
+  middleware: [
+    'auth',
+    function () {
+      return navigateTo('/app/e/guaiqueries/plantilla')
+    }
+  ],
 })
 
 const supabase = useSupabaseClient()

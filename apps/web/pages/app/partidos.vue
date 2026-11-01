@@ -8,7 +8,12 @@ type GameRow = Game
 
 definePageMeta({
   layout: 'app',
-  middleware: ['auth'],
+  middleware: [
+    'auth',
+    function () {
+      return navigateTo('/app/e/guaiqueries/partidos')
+    }
+  ],
 })
 
 useSeoMeta({

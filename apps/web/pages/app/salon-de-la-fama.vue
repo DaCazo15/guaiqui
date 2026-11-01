@@ -5,7 +5,12 @@ import { retiredJerseys, legendaryFigures, championshipsList, type RetiredJersey
 
 definePageMeta({
   layout: 'app',
-  middleware: ['auth'],
+  middleware: [
+    'auth',
+    function () {
+      return navigateTo('/app/e/guaiqueries/salon-de-la-fama')
+    }
+  ],
 })
 
 useSeoMeta({
