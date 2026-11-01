@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { onMounted } from 'vue'
-import Navbar from '~/components/landing/Navbar.vue'
-import SiteFooter from '~/components/landing/SiteFooter.vue'
+import PlatformNavbar from '~/components/platform-landing/PlatformNavbar.vue'
+import PlatformFooter from '~/components/platform-landing/PlatformFooter.vue'
 import PlatformHero from '~/components/platform-landing/PlatformHero.vue'
 import PlatformTeamsGrid from '~/components/platform-landing/PlatformTeamsGrid.vue'
 import PlatformHowItWorks from '~/components/platform-landing/PlatformHowItWorks.vue'
@@ -21,8 +21,8 @@ const handleSearch = (query: string) => {
 
 // SEO Meta
 useSeoMeta({
-  title: 'Fan Zone — Plataforma Oficial de Fidelización de Baloncesto Profesional',
-  ogTitle: 'Fan Zone — Fidelización & Premios Oficiales',
+  title: 'FanActivo — Plataforma Oficial de Fidelización de Baloncesto Profesional',
+  ogTitle: 'FanActivo — Fidelización & Premios Oficiales',
   description: 'Elige tu franquicia de baloncesto, responde trivias oficiales, acumula perlitas virtuales y canjea premios reales sin costo.',
   ogDescription: 'La plataforma oficial multi-equipo para los fanáticos del baloncesto profesional. 100% gratuita y sin dinero real.',
   ogType: 'website',
@@ -30,9 +30,9 @@ useSeoMeta({
 </script>
 
 <template>
-  <div class="min-h-screen bg-slate-950 text-slate-100 selection:bg-emerald-600 selection:text-white">
-    <!-- 1. Navbar Sticky -->
-    <Navbar />
+  <div class="min-h-screen bg-[#071318] text-slate-100 selection:bg-orange-500 selection:text-white">
+    <!-- 1. Navbar Sticky: FanActivo -->
+    <PlatformNavbar />
 
     <!-- 2. Platform Hero & Search -->
     <PlatformHero
@@ -56,7 +56,7 @@ useSeoMeta({
     <!-- 6. Registration CTA -->
     <PlatformCta />
 
-    <!-- 7. Footer -->
-    <SiteFooter />
+    <!-- 7. Footer: FanActivo -->
+    <PlatformFooter />
   </div>
 </template>
