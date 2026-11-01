@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, onMounted, watch } from 'vue'
+import { ref, computed, onMounted, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import AdminLayout from '../components/layout/AdminLayout.vue'
 import LandingHeroTab from '../components/landing-admin/LandingHeroTab.vue'
@@ -43,9 +43,13 @@ onMounted(() => {
   syncTabFromRoute()
 })
 
-watch(() => route.query.tab, () => {
-  syncTabFromRoute()
-})
+import { useAuthStore } from '../stores/auth'
+
+const authStore = useAuthStore()
+
+const currentTeamName = computed(() => authStore.selectedTeam?.name || 'Guaiqueríes de Margarita')
+const currentTeamSlug = computed(() => authStore.selectedTeam?.slug || 'guaiqueries')
+const previewUrl = computed(() => `http://localhost:3000/e/${currentTeamSlug.value}`)
 </script>
 
 <template>
@@ -61,6 +65,24 @@ watch(() => route.query.tab, () => {
           <p class="text-xs sm:text-sm text-slate-400 mt-1">
             Administra todos los componentes visuales y contenidos de la página de inicio pública desde un solo lugar.
           </p>
+        </div>
+
+        <!-- Preview & Team Badge -->
+        <div class="flex items-center gap-3">
+          <div class="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-800 text-xs text-slate-300">
+            <span class="w-2 h-2 rounded-full bg-emerald-400"></span>
+            <span>Equipo: <strong class="text-white">{{ currentTeamName }}</strong></span>
+          </div>
+
+          <a
+            :href="previewUrl"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs transition-all shadow-md shadow-emerald-950/40"
+          >
+            <i class="bi bi-box-arrow-up-right"></i>
+            <span>Ver Vista Previa</span>
+          </a>
         </div>
       </div>
 

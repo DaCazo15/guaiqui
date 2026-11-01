@@ -1,80 +1,62 @@
 <script setup lang="ts">
+import { onMounted } from 'vue'
 import Navbar from '~/components/landing/Navbar.vue'
-import HeroSection from '~/components/landing/HeroSection.vue'
-import FeaturedCarousel from '~/components/landing/FeaturedCarousel.vue'
-import HowItWorksSection from '~/components/landing/HowItWorksSection.vue'
-import AppShowcaseSection from '~/components/landing/AppShowcaseSection.vue'
-import RewardsPreviewSection from '~/components/landing/RewardsPreviewSection.vue'
-import StatsBand from '~/components/landing/StatsBand.vue'
-import RosterPreviewSection from '~/components/landing/RosterPreviewSection.vue'
-import StaffGridSection from '~/components/landing/StaffGridSection.vue'
-// import CommunityBlock from '~/components/landing/CommunityBlock.vue'
-import FaqSection from '~/components/landing/FaqSection.vue'
-import FinalCtaSection from '~/components/landing/FinalCtaSection.vue'
 import SiteFooter from '~/components/landing/SiteFooter.vue'
+import PlatformHero from '~/components/platform-landing/PlatformHero.vue'
+import PlatformTeamsGrid from '~/components/platform-landing/PlatformTeamsGrid.vue'
+import PlatformHowItWorks from '~/components/platform-landing/PlatformHowItWorks.vue'
+import PlatformStats from '~/components/platform-landing/PlatformStats.vue'
+import PlatformCta from '~/components/platform-landing/PlatformCta.vue'
+import { usePlatformLanding } from '~/composables/usePlatformLanding'
 
-import { onMounted, nextTick } from 'vue'
-import { useGSAP } from '~/composables/useGSAP'
-
-const { ScrollTrigger } = useGSAP()
+const { platformData, searchResults, loading, searchTeams, fetchPlatformLanding } = usePlatformLanding()
 
 onMounted(async () => {
-  await nextTick()
-  setTimeout(() => {
-    ScrollTrigger?.refresh()
-  }, 250)
+  await fetchPlatformLanding()
 })
+
+const handleSearch = (query: string) => {
+  searchTeams(query)
+}
 
 // SEO Meta
 useSeoMeta({
-  title: 'Guaiqueríes de Margarita — Fan Zone Oficial & Plataforma de Fidelización',
-  ogTitle: 'Guaiqueríes de Margarita — Fan Zone Oficial',
-  description: 'Gana puntos respondiendo trivias y canjea camisas, entradas y premios reales de Guaiqueríes de Margarita.',
-  ogDescription: 'La plataforma oficial de la tribu insular. 100% gratuita y sin dinero real.',
+  title: 'Fan Zone — Plataforma Oficial de Fidelización de Baloncesto Profesional',
+  ogTitle: 'Fan Zone — Fidelización & Premios Oficiales',
+  description: 'Elige tu franquicia de baloncesto, responde trivias oficiales, acumula perlitas virtuales y canjea premios reales sin costo.',
+  ogDescription: 'La plataforma oficial multi-equipo para los fanáticos del baloncesto profesional. 100% gratuita y sin dinero real.',
   ogType: 'website',
 })
 </script>
 
 <template>
-  <div class="min-h-screen bg-guaiqui-bg text-guaiqui-text selection:bg-guaiqui-primary selection:text-white">
+  <div class="min-h-screen bg-slate-950 text-slate-100 selection:bg-emerald-600 selection:text-white">
     <!-- 1. Navbar Sticky -->
     <Navbar />
 
-    <!-- 2. HeroSection (includes integrated AnnouncementBar) -->
-    <HeroSection />
+    <!-- 2. Platform Hero & Search -->
+    <PlatformHero
+      :total-teams="platformData?.totals.total_teams ?? 1"
+      :total-fans="platformData?.totals.total_fans ?? 0"
+      @search="handleSearch"
+    />
 
-    <!-- 3.1 Optional CTA after Hero -->
-    <FinalCtaSection placement="after_hero" />
+    <!-- 3. Platform Stats Band -->
+    <PlatformStats :totals="platformData?.totals" />
 
-    <!-- 4. FeaturedCarousel -->
-    <FeaturedCarousel />
+    <!-- 4. Active Teams Grid -->
+    <PlatformTeamsGrid
+      :teams="searchResults"
+      :loading="loading"
+    />
 
-    <!-- 5. HowItWorks -->
-    <HowItWorksSection />
+    <!-- 5. How It Works -->
+    <PlatformHowItWorks />
 
-    <!-- 6. AppShowcase -->
-    <AppShowcaseSection />
+    <!-- 6. Registration CTA -->
+    <PlatformCta />
 
-    <!-- 7. RewardsPreview -->
-    <RewardsPreviewSection />
-
-    <!-- 8. StatsBand -->
-    <StatsBand />
-
-    <!-- 9. RosterPreview -->
-    <RosterPreviewSection />
-
-    <!-- 10. StaffGrid -->
-    <StaffGridSection />
-
-    <!-- 12. CommunityBlock -->
-    <!-- <CommunityBlock /> -->
-
-    <!-- 13. FaqAccordion -->
-    <FaqSection />
-
-    <!-- 14. FinalCta & SiteFooter -->
-    <FinalCtaSection placement="before_footer" />
+    <!-- 7. Footer -->
     <SiteFooter />
   </div>
 </template>

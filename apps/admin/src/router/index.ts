@@ -205,7 +205,11 @@ export const router = createRouter({
       path: '/admin/landing',
       name: 'admin-landing',
       component: AdminLandingView,
-      meta: { requiresAdmin: true }
+      meta: { requiresStaff: true }
+    },
+    {
+      path: '/staff/landing',
+      redirect: '/admin/landing'
     },
     {
       path: '/admin/cta',

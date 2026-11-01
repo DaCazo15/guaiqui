@@ -62,12 +62,31 @@ const announcementColumns = [
 
 const asAnnouncement = (r: unknown): AnnouncementRow => r as AnnouncementRow
 
+import { useAuthStore } from '../../stores/auth'
+
+const authStore = useAuthStore()
+
 const loadData = async () => {
   loading.value = true
   try {
     const { data: setts } = await supabase.from('landing_settings').select('*').eq('id', 1).maybeSingle()
     if (setts) {
       settings.value = setts as LandingSettings
+    }
+
+    if (authStore.activeTeamId) {
+      const { data: teamContent } = await supabase
+        .from('team_landing_content')
+        .select('*')
+        .eq('team_id', authStore.activeTeamId)
+        .maybeSingle()
+      if (teamContent) {
+        settings.value.hero_title = teamContent.hero_title
+        settings.value.hero_subtitle = teamContent.hero_subtitle
+        if (teamContent.hero_image_url) {
+          settings.value.hero_image_url = teamContent.hero_image_url
+        }
+      }
     }
   } catch (err: unknown) {
     console.error('Error loading hero settings:', err)
@@ -104,7 +123,18 @@ const saveSettings = async () => {
       updated_at: new Date().toISOString()
     })
     if (error) throw error
-    successMessage.value = 'Configuración del Hero actualizada exitosamente.'
+
+    if (authStore.activeTeamId) {
+      await (supabase.rpc as any)('update_team_landing_content', {
+        p_team_id: authStore.activeTeamId,
+        p_hero_title: settings.value.hero_title,
+        p_hero_subtitle: settings.value.hero_subtitle,
+        p_hero_image_url: settings.value.hero_image_url || null,
+        p_sections: []
+      })
+    }
+
+    successMessage.value = 'Configuración del Hero de la franquicia actualizada exitosamente.'
   } catch (err: unknown) {
     errorMessage.value = (err instanceof Error ? err.message : String(err)) || 'Error al guardar configuración.'
   } finally {

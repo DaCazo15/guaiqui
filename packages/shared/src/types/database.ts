@@ -156,6 +156,96 @@ export interface UserSearchResultItem {
   relation_status: FollowRelationStatus
 }
 
+export interface TeamLandingContent {
+  team_id: string
+  hero_title: string
+  hero_subtitle: string
+  hero_image_url?: string | null
+  sections?: Record<string, unknown>[]
+  created_at?: string
+  updated_at: string
+}
+
+export interface TeamLandingActiveTrivia {
+  id: string
+  title: string
+  description?: string | null
+  category: string
+  reward_pearls: number
+  starts_at?: string | null
+  expires_at?: string | null
+}
+
+export interface TeamLandingTopRankingUser {
+  rank: number
+  display_name: string
+  avatar_url?: string | null
+  points: number
+}
+
+export interface TeamLandingFeaturedProduct {
+  id: string
+  name: string
+  description?: string | null
+  cost_pearls: number
+  image_url?: string | null
+  category: string
+  stock: number
+}
+
+export interface TeamLandingTeam {
+  id: string
+  name: string
+  slug: string
+  short_name?: string | null
+  logo_url?: string | null
+  primary_color: string
+  secondary_color: string
+  status: 'active' | 'inactive'
+}
+
+export interface TeamLandingResponse {
+  status: 'active' | 'inactive' | 'not_found'
+  message?: string
+  team?: TeamLandingTeam
+  follower_count?: number
+  is_following?: boolean
+  content?: {
+    hero_title: string
+    hero_subtitle: string
+    hero_image_url?: string | null
+    sections: Record<string, unknown>[]
+    updated_at: string
+  }
+  active_trivias?: TeamLandingActiveTrivia[]
+  top_ranking?: TeamLandingTopRankingUser[]
+  featured_products?: TeamLandingFeaturedProduct[]
+}
+
+export interface PlatformLandingTeamItem {
+  id: string
+  name: string
+  slug: string
+  short_name?: string | null
+  logo_url?: string | null
+  primary_color: string
+  secondary_color: string
+  follower_count: number
+  is_following: boolean
+}
+
+export interface PlatformLandingTotals {
+  total_teams: number
+  total_fans: number
+  total_trivias_played: number
+  total_rewards_claimed: number
+}
+
+export interface PlatformLandingResponse {
+  teams: PlatformLandingTeamItem[]
+  totals: PlatformLandingTotals
+}
+
 export interface StaffMember {
   user_id: string
   team_id?: string | null
