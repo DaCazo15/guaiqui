@@ -42,7 +42,9 @@ additional_redirect_urls = [
   "https://guaiqui.vercel.app/confirm",   # Callback confirmación y OAuth PKCE producción
   "http://localhost:3000/**",             # Local Web (Nuxt)
   "http://localhost:3001/**",             # Local Admin alternativo
-  "http://localhost:3010/**"              # Local Admin (Vite port por defecto en apps/admin)
+  "http://localhost:3010/**",             # Local Admin (Vite port por defecto en apps/admin)
+  "guaiqui://auth-callback",              # App móvil Capacitor (OAuth & Magic Link callback)
+  "guaiqui://**"                          # Deep links generales de la app móvil
 ]
 jwt_expiry = 3600
 enable_refresh_token_rotation = true
