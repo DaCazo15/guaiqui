@@ -4,6 +4,15 @@ import { BaseCard, BaseButton, PearlIcon } from '@guaiqui/ui'
 import { usePendingGrants, type PendingGrantItem } from '~/composables/usePendingGrants'
 import { useWallet } from '~/composables/useWallet'
 
+const props = withDefaults(
+  defineProps<{
+    hideFooterLink?: boolean
+  }>(),
+  {
+    hideFooterLink: false,
+  }
+)
+
 const pendingGrants = usePendingGrants()
 const wallet = useWallet()
 
@@ -223,9 +232,9 @@ const handleClaim = async (grant: PendingGrantItem) => {
       </div>
 
       <!-- Footer link to dedicated screen -->
-      <div class="pt-2 text-right">
+      <div v-if="!hideFooterLink" class="pt-2 text-right">
         <NuxtLink
-          to="/app/perlitas-pendientes"
+          to="/app/billetera?tab=pendientes"
           class="text-xs font-bold text-guaiqui-primary hover:underline inline-flex items-center gap-1"
         >
           <span>Gestionar todas mis perlitas pendientes</span>

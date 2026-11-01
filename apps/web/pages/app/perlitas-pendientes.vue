@@ -6,7 +6,12 @@ import { useWallet } from '~/composables/useWallet'
 
 definePageMeta({
   layout: 'app',
-  middleware: ['auth'],
+  middleware: [
+    'auth',
+    function () {
+      return navigateTo('/app/billetera?tab=pendientes')
+    }
+  ],
 })
 
 useSeoMeta({
