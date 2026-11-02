@@ -1,9 +1,10 @@
-<script setup lang="ts">
 import { computed, watch, onMounted, onUnmounted } from 'vue'
+import { useRoute } from 'vue-router'
 import { useCurrentTeam } from '~/composables/useCurrentTeam'
 import TeamPickerCard from './TeamPickerCard.vue'
 import TeamPickerEmpty from './TeamPickerEmpty.vue'
 
+const route = useRoute()
 const {
   isPickerOpen,
   pickerTargetSection,
@@ -12,6 +13,12 @@ const {
   closePicker,
   selectTeam,
 } = useCurrentTeam()
+
+watch(() => route.fullPath, () => {
+  if (isPickerOpen.value) {
+    closePicker()
+  }
+})
 
 const sectionTitle = computed(() => {
   if (pickerTargetSection.value === 'tienda') return 'la Tienda de Premios'
@@ -53,13 +60,13 @@ onUnmounted(() => {
   <Teleport to="body">
     <div
       v-if="isPickerOpen"
-      class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-950/80 backdrop-blur-md animate-fade-in"
+      class="fixed inset-0 lg:left-64 z-40 flex items-center justify-center p-4 pb-20 lg:pb-4 bg-slate-950/80 backdrop-blur-md animate-fade-in"
       role="dialog"
       aria-modal="true"
       aria-labelledby="team-picker-title"
     >
-      <!-- Backdrop click area -->
-      <div class="fixed inset-0" @click="closePicker" aria-hidden="true"></div>
+      <!-- Backdrop: Non-dismissible (does NOT close on outside click) -->
+      <div class="fixed inset-0 pointer-events-auto" aria-hidden="true"></div>
 
       <!-- Modal Card -->
       <div class="relative w-full max-w-lg bg-gradient-to-b from-slate-900 via-slate-950 to-slate-950 border border-emerald-500/30 rounded-3xl p-5 sm:p-6 shadow-2xl z-10 max-h-[90vh] flex flex-col">

@@ -84,7 +84,7 @@ onBeforeUnmount(() => {
       style="padding-bottom: calc(5.5rem + env(safe-area-inset-bottom, 0px));"
     >
       <!-- Mobile & Tablet Top Header: Obsidiana y Cian estilo FanActivo -->
-      <header class="lg:hidden sticky top-0 z-30 bg-[#071318]/95 border-b border-cyan-950/80 shadow-lg px-4 py-2.5 flex items-center justify-between text-white backdrop-blur-md">
+      <header class="lg:hidden sticky top-0 z-50 bg-[#071318]/95 border-b border-cyan-950/80 shadow-lg px-4 py-2.5 flex items-center justify-between text-white backdrop-blur-md">
         <div class="flex items-center gap-2.5">
           <!-- Mobile Menu Drawer Toggle Button -->
           <button

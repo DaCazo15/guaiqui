@@ -19,7 +19,7 @@ import { useNotificationsStore } from '~/stores/notifications'
 import NotificationBell from '~/components/app/NotificationBell.vue'
 
 const navItems = APP_SIDEBAR_NAV_ITEMS
-const { openPicker } = useCurrentTeam()
+const { openPicker, closePicker } = useCurrentTeam()
 const notifStore = useNotificationsStore()
 
 const handleNavClick = (e: MouseEvent, item: AppNavItem) => {
@@ -29,6 +29,8 @@ const handleNavClick = (e: MouseEvent, item: AppNavItem) => {
   } else if (item.name === 'Tienda') {
     e.preventDefault()
     openPicker('tienda')
+  } else {
+    closePicker()
   }
 }
 
@@ -45,7 +47,7 @@ const handleLogout = async () => {
 </script>
 
 <template>
-  <aside class="hidden lg:flex flex-col w-64 bg-gradient-to-b from-[#050e12] via-[#071318] to-[#0a1c22] border-r border-cyan-950/80 min-h-screen p-4 sticky top-0 h-screen text-white select-none shadow-2xl">
+  <aside class="hidden lg:flex flex-col w-64 bg-gradient-to-b from-[#050e12] via-[#071318] to-[#0a1c22] border-r border-cyan-950/80 min-h-screen p-4 sticky top-0 h-screen text-white select-none shadow-2xl z-50">
     <!-- Brand Logo & Notifications Bell -->
     <div class="flex items-center justify-between px-1 mb-4 border-b border-cyan-950/80 pb-3">
       <NuxtLink
