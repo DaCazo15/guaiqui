@@ -129,13 +129,9 @@ const backUrl = computed(() => {
 <template>
   <div class="space-y-6 max-w-5xl mx-auto">
     <!-- Breadcrumb / Back Link -->
-    <NuxtLink
-      :to="backUrl"
-      class="inline-flex items-center text-xs font-semibold text-slate-400 hover:text-emerald-400 transition-colors"
-    >
-      <i class="bi bi-arrow-left mr-1.5"></i>
+    <AppBackButton :to="backUrl">
       Volver a la Tienda de {{ teamInfo?.short_name || teamName }}
-    </NuxtLink>
+    </AppBackButton>
 
     <!-- Inactive Team Warning -->
     <div

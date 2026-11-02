@@ -471,11 +471,6 @@ useSeoMeta({
                   >
                     {{ trivia.is_won ? 'Completada' : 'Disponible' }}
                   </span>
-
-                  <span class="text-xs text-slate-400 flex items-center gap-1 font-mono">
-                    <i class="bi bi-stopwatch text-xs"></i>
-                    <span>{{ trivia.time_limit_seconds || 60 }}s</span>
-                  </span>
                 </div>
 
                 <h3 class="text-base font-bold text-white mb-1.5 leading-snug">

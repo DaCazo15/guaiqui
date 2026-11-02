@@ -99,13 +99,9 @@ useSeoMeta({
 <template>
   <div class="space-y-6 max-w-5xl mx-auto">
     <!-- Breadcrumb / Back Link -->
-    <NuxtLink
-      to="/app/tienda"
-      class="inline-flex items-center text-xs font-semibold text-guaiqui-text-muted hover:text-guaiqui-primary transition-colors"
-    >
-      <i class="bi bi-arrow-left mr-1.5"></i>
+    <AppBackButton to="/app/tienda">
       Volver a la Tienda
-    </NuxtLink>
+    </AppBackButton>
 
     <!-- Loading State -->
     <div v-if="loading" class="py-20 text-center text-guaiqui-text-muted space-y-3">

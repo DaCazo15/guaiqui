@@ -24,6 +24,7 @@ const isVerifyingCaptcha = ref(false)
 const localError = ref<string | null>(null)
 const captchaToken = ref<string>('')
 const attemptKey = ref<string>('')
+const showRules = ref(false)
 
 
 const attemptData = computed(() => triviaStore.currentAttempt)
@@ -139,10 +140,9 @@ async function handleFinalSubmit() {
 <template>
   <div class="max-w-2xl mx-auto space-y-6">
     <!-- Back Header -->
-    <NuxtLink to="/app/trivias" class="inline-flex items-center gap-2 text-sm text-guaiqui-text-muted hover:text-guaiqui-primary transition-colors">
-      <i class="bi bi-arrow-left"></i>
-      <span>Volver a Lista de Trivias</span>
-    </NuxtLink>
+    <AppBackButton to="/app/trivias">
+      Volver a Lista de Trivias
+    </AppBackButton>
 
     <div v-if="localError" class="p-4 bg-guaiqui-status-danger-soft border border-guaiqui-status-danger/30 rounded-guaiqui-xl text-guaiqui-status-danger text-sm flex items-center gap-2">
       <i class="bi bi-exclamation-circle-fill shrink-0"></i>
@@ -150,76 +150,91 @@ async function handleFinalSubmit() {
     </div>
 
     <!-- Mode 1: DETAIL / PREVIEW -->
-    <BaseCard v-if="mode === 'detail'" class="p-8 bg-white border-guaiqui-border rounded-guaiqui-xl space-y-6 shadow-guaiqui-sm">
-      <div class="space-y-2">
-        <span class="text-xs uppercase tracking-widest text-guaiqui-primary font-bold flex items-center gap-1.5">
-          <i class="bi bi-dribbble"></i>
-          <span>Desafío de Fanáticos</span>
-        </span>
-        <h1 class="font-display text-2xl md:text-3xl font-bold text-guaiqui-text">
-          {{ currentTriviaInfo?.title || (triviaStore.isLoading ? 'Cargando trivia...' : 'Trivia Guaiqueríes') }}
-        </h1>
-        <p class="text-sm text-guaiqui-text-muted">
-          {{ currentTriviaInfo?.description || 'Responde las preguntas para ganar puntos y acumular días en tu racha.' }}
-        </p>
-      </div>
+    <BaseCard v-if="mode === 'detail'" padding="none" class="bg-white border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-sm overflow-hidden">
+      <div class="p-6 sm:p-8 flex flex-col gap-5 sm:gap-6">
+        <div class="space-y-2">
+          <span class="text-xs uppercase tracking-widest text-guaiqui-primary font-bold flex items-center gap-1.5">
+            <i class="bi bi-dribbble"></i>
+            <span>Desafío de Fanáticos</span>
+          </span>
+          <h1 class="font-display text-2xl md:text-3xl font-bold text-guaiqui-text">
+            {{ currentTriviaInfo?.title || (triviaStore.isLoading ? 'Cargando trivia...' : 'Trivia Guaiqueríes') }}
+          </h1>
+          <p class="text-sm text-guaiqui-text-muted">
+            {{ currentTriviaInfo?.description || 'Responde las preguntas para ganar puntos y acumular días en tu racha.' }}
+          </p>
+        </div>
 
-      <div v-if="currentTriviaInfo" class="flex flex-wrap items-center gap-4 text-xs text-guaiqui-text-muted">
-        <span><i class="bi bi-calendar-event text-guaiqui-primary mr-1"></i>Inicio: {{ formatCaracas(currentTriviaInfo.starts_at) }}</span>
-        <span><i class="bi bi-calendar-check text-guaiqui-primary mr-1"></i>Cierre: {{ formatCaracas(currentTriviaInfo.ends_at) }}</span>
-      </div>
+        <div v-if="currentTriviaInfo" class="flex flex-wrap items-center gap-4 text-xs text-guaiqui-text-muted">
+          <span><i class="bi bi-calendar-event text-guaiqui-primary mr-1"></i>Inicio: {{ formatCaracas(currentTriviaInfo.starts_at) }}</span>
+          <span><i class="bi bi-calendar-check text-guaiqui-primary mr-1"></i>Cierre: {{ formatCaracas(currentTriviaInfo.ends_at) }}</span>
+        </div>
 
-      <!-- Banner de estado si ya ganó, aún no inicia o expiró -->
-      <div v-if="isTriviaWon" class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-guaiqui-lg text-xs font-semibold text-emerald-900 flex items-center gap-2">
-        <i class="bi bi-trophy-fill text-emerald-600 text-base shrink-0"></i>
-        <span>¡Ya has ganado esta trivia! Los puntos obtenidos ya fueron acreditados a tu billetera.</span>
-      </div>
+        <!-- Banner de estado si ya ganó, aún no inicia o expiró -->
+        <div v-if="isTriviaWon" class="p-3.5 bg-emerald-50 border border-emerald-200 rounded-guaiqui-lg text-xs font-semibold text-emerald-900 flex items-center gap-2">
+          <i class="bi bi-trophy-fill text-emerald-600 text-base shrink-0"></i>
+          <span>¡Ya has ganado esta trivia! Los puntos obtenidos ya fueron acreditados a tu billetera.</span>
+        </div>
 
-      <div v-else-if="isTriviaUpcoming" class="p-3.5 bg-amber-50 border border-amber-200 rounded-guaiqui-lg text-xs font-semibold text-amber-900 flex items-center gap-2">
-        <i class="bi bi-clock-history text-amber-600 text-base shrink-0"></i>
-        <span>Esta trivia está programada para comenzar próximamente.</span>
-      </div>
+        <div v-else-if="isTriviaUpcoming" class="p-3.5 bg-amber-50 border border-amber-200 rounded-guaiqui-lg text-xs font-semibold text-amber-900 flex items-center gap-2">
+          <i class="bi bi-clock-history text-amber-600 text-base shrink-0"></i>
+          <span>Esta trivia está programada para comenzar próximamente.</span>
+        </div>
 
-      <div v-else-if="isTriviaExpired" class="p-3.5 bg-red-50 border border-red-200 rounded-guaiqui-lg text-xs font-semibold text-red-900 flex items-center gap-2">
-        <i class="bi bi-x-circle-fill text-red-600 text-base shrink-0"></i>
-        <span>El plazo de participación para esta trivia ha concluido.</span>
-      </div>
+        <div v-else-if="isTriviaExpired" class="p-3.5 bg-red-50 border border-red-200 rounded-guaiqui-lg text-xs font-semibold text-red-900 flex items-center gap-2">
+          <i class="bi bi-x-circle-fill text-red-600 text-base shrink-0"></i>
+          <span>El plazo de participación para esta trivia ha concluido.</span>
+        </div>
 
-      <div class="p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-lg space-y-3 text-sm text-guaiqui-text">
-        <h4 class="font-bold text-guaiqui-text uppercase text-xs tracking-wider flex items-center gap-1.5">
-          <i class="bi bi-info-circle-fill text-guaiqui-primary"></i>
-          <span>Reglas del Juego:</span>
-        </h4>
-        <ul class="space-y-1.5 list-disc list-inside text-xs text-guaiqui-text-muted">
-          <li>Debes acertar todas las preguntas para ganar la trivia y recibir tus puntos.</li>
-          <li>Si no aciertas todas, puedes volver a intentarlo las veces que desees hasta ganarla.</li>
-          <li>Responde con calma y revisa tus respuestas antes de enviar.</li>
-        </ul>
-      </div>
+        <!-- Rules Box with Collapsible Toggle -->
+        <div class="space-y-2.5">
+          <button
+            type="button"
+            @click="showRules = !showRules"
+            class="inline-flex items-center gap-1.5 text-xs font-semibold text-guaiqui-text-muted hover:text-guaiqui-primary transition-colors cursor-pointer select-none"
+          >
+            <i class="bi bi-info-circle text-guaiqui-primary"></i>
+            <span>{{ showRules ? 'Ocultar reglas del juego' : 'Ver reglas del juego' }}</span>
+            <i class="bi text-[10px]" :class="showRules ? 'bi-chevron-up' : 'bi-chevron-down'"></i>
+          </button>
 
-      <!-- Turnstile Verification Widget -->
-      <TurnstileWrapper v-if="!isTriviaWon" @verify="onCaptchaVerified" />
+          <div v-if="showRules" class="p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-lg space-y-3 text-sm text-guaiqui-text">
+            <h4 class="font-bold text-guaiqui-text uppercase text-xs tracking-wider flex items-center gap-1.5">
+              <i class="bi bi-info-circle-fill text-guaiqui-primary"></i>
+              <span>Reglas del Juego:</span>
+            </h4>
+            <ul class="space-y-1.5 list-disc list-inside text-xs text-guaiqui-text-muted">
+              <li>Debes acertar todas las preguntas para ganar la trivia y recibir tus puntos.</li>
+              <li>Si no aciertas todas, puedes volver a intentarlo las veces que desees hasta ganarla.</li>
+              <li>Responde con calma y revisa tus respuestas antes de enviar.</li>
+            </ul>
+          </div>
+        </div>
 
-      <div class="pt-2">
-        <BaseButton
-          :variant="isTriviaWon ? 'secondary' : 'primary'"
-          block
-          size="lg"
-          :loading="triviaStore.isLoading || isVerifyingCaptcha"
-          :disabled="isTriviaWon || isTriviaUpcoming || isTriviaExpired"
-          @click="handleStartTrivia"
-        >
-          <i :class="isTriviaWon ? 'bi bi-check-circle-fill text-emerald-600 mr-1.5' : 'bi bi-play-circle-fill mr-1.5'"></i>
-          {{
-            isTriviaWon
-              ? 'Ya has ganado esta trivia previamente'
-              : isTriviaUpcoming
-                ? 'Trivia aún no disponible'
-                : isTriviaExpired
-                  ? 'Trivia finalizada'
-                  : 'Empezar Trivia Ahora'
-          }}
-        </BaseButton>
+        <!-- Turnstile Verification Widget -->
+        <TurnstileWrapper v-if="!isTriviaWon" @verify="onCaptchaVerified" />
+
+        <div class="pt-1">
+          <BaseButton
+            :variant="isTriviaWon ? 'secondary' : 'primary'"
+            block
+            size="lg"
+            :loading="triviaStore.isLoading || isVerifyingCaptcha"
+            :disabled="isTriviaWon || isTriviaUpcoming || isTriviaExpired"
+            @click="handleStartTrivia"
+          >
+            <i :class="isTriviaWon ? 'bi bi-check-circle-fill text-emerald-600 mr-1.5' : 'bi bi-play-circle-fill mr-1.5'"></i>
+            {{
+              isTriviaWon
+                ? 'Ya has ganado esta trivia previamente'
+                : isTriviaUpcoming
+                  ? 'Trivia aún no disponible'
+                  : isTriviaExpired
+                    ? 'Trivia finalizada'
+                    : 'Empezar Trivia Ahora'
+            }}
+          </BaseButton>
+        </div>
       </div>
     </BaseCard>
 

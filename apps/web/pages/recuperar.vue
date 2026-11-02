@@ -78,11 +78,10 @@ async function handleResetRequest() {
         </form>
       </BaseCard>
 
-      <div class="text-center text-sm text-guaiqui-text-muted">
-        <NuxtLink to="/login" class="text-guaiqui-primary font-semibold hover:text-guaiqui-primary-dark underline inline-flex items-center gap-1">
-          <i class="bi bi-arrow-left"></i>
+      <div class="flex justify-center">
+        <AppBackButton to="/login">
           Volver a Iniciar Sesión
-        </NuxtLink>
+        </AppBackButton>
       </div>
     </div>
   </div>

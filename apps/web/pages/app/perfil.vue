@@ -322,14 +322,9 @@ async function handleUnblockUser(userId: string) {
               Personaliza tus datos y tu deporte favorito.
             </p>
           </div>
-          <button
-            type="button"
-            @click="handleSelectTab('perfil')"
-            class="inline-flex items-center gap-1.5 text-xs font-bold text-guaiqui-primary hover:underline cursor-pointer self-start sm:self-auto"
-          >
-            <i class="bi bi-arrow-left"></i>
-            <span>Volver a Mi Perfil</span>
-          </button>
+          <AppBackButton @click="handleSelectTab('perfil')">
+            Volver a Mi Perfil
+          </AppBackButton>
         </div>
 
         <ProfileFormFields
