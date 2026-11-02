@@ -203,7 +203,7 @@ async function handleToggleTeamFollow(team: PublicProfileFollowedTeam) {
                 >
                   <span v-if="profile.relation_status === 'none'">
                     <i class="bi bi-person-plus-fill mr-1.5"></i>
-                    Solicitar Seguir
+                    Seguir
                   </span>
                   <span v-else-if="profile.relation_status === 'pending'" class="text-black">
                     <i class="bi bi-hourglass-split mr-1.5"></i>
