@@ -1,3 +1,4 @@
+<script setup lang="ts">
 import { computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useCurrentTeam } from '~/composables/useCurrentTeam'
