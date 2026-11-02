@@ -212,6 +212,29 @@ export const useAuthStore = defineStore('auth', () => {
     }
   }
 
+  async function refreshWallet() {
+    const targetId = profile.value?.id || sessionUser.value?.id
+    if (!targetId) return
+    try {
+      const { data: walList, error: walErr } = await supabase
+        .from('wallets')
+        .select('*')
+        .eq('fan_id', targetId)
+
+      if (!walErr && walList && walList.length > 0) {
+        const totalBalance = walList.reduce((acc: number, w: any) => acc + (Number(w.balance_cache) || 0), 0)
+        wallet.value = {
+          fan_id: targetId,
+          team_id: (walList[0] as any).team_id || '',
+          balance_cache: totalBalance,
+          updated_at: (walList[0] as any).updated_at || new Date().toISOString(),
+        }
+      }
+    } catch (err: unknown) {
+      console.warn('Error refreshing wallet in authStore:', err)
+    }
+  }
+
   async function loginWithEmail(email: string, pass: string) {
     explicitLoggedOut.value = false
     isLoading.value = true
@@ -605,6 +628,7 @@ export const useAuthStore = defineStore('auth', () => {
     updatePassword,
     resendVerificationEmail,
     deleteAccount,
+    refreshWallet,
     logout,
   }
 })

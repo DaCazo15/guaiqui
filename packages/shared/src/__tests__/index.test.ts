@@ -17,4 +17,26 @@ describe('formatPerlitas', () => {
     const result = formatPerlitas(-500)
     expect(result).toContain('500')
   })
+
+  it('abrevia con k a partir de 100mil puntos', () => {
+    expect(formatPerlitas(100_000)).toBe('100k')
+    expect(formatPerlitas(150_000)).toBe('150k')
+    expect(formatPerlitas(999_000)).toBe('999k')
+  })
+
+  it('abrevia con m para millones', () => {
+    expect(formatPerlitas(1_000_000)).toBe('1m')
+    expect(formatPerlitas(10_000_000)).toBe('10m')
+    expect(formatPerlitas(100_000_000)).toBe('100m')
+  })
+
+  it('abrevia con b para billones/miles de millones', () => {
+    expect(formatPerlitas(1_000_000_000)).toBe('1b')
+    expect(formatPerlitas(10_000_000_000)).toBe('10b')
+  })
+
+  it('no abrevia números menores a 100mil', () => {
+    expect(formatPerlitas(475)).toBe('475')
+    expect(formatPerlitas(99_999)).toContain('99')
+  })
 })

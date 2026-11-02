@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, watch, onMounted, onUnmounted } from 'vue'
+import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
 import { formatPerlitas } from '@guaiqui/shared'
@@ -18,6 +18,10 @@ const emit = defineEmits<{
 const route = useRoute()
 const authStore = useAuthStore()
 const avatarError = ref(false)
+
+const currentBalance = computed(() => {
+  return authStore.wallet?.balance_cache ?? 0
+})
 
 const navItems = APP_SIDEBAR_NAV_ITEMS
 const { openPicker } = useCurrentTeam()
@@ -144,38 +148,34 @@ async function handleLogout() {
             </button>
           </div>
 
-          <!-- User Mini Profile & Balance -->
-          <div class="bg-cyan-950/50 border border-cyan-800/60 rounded-2xl p-3 flex items-center justify-between shadow-lg backdrop-blur-md">
-            <div class="flex items-center gap-2.5 overflow-hidden">
-              <div class="w-9 h-9 rounded-full bg-cyan-950 text-cyan-300 flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden border border-cyan-700/60">
-                <img
-                  v-if="authStore.profile?.avatar_url && !avatarError"
-                  :src="authStore.profile.avatar_url"
-                  :alt="authStore.profile?.display_name || 'Avatar'"
-                  class="w-full h-full object-cover"
-                  referrerpolicy="no-referrer"
-                  @error="avatarError = true"
-                />
-                <span v-else>
-                  {{ authStore.profile?.display_name?.charAt(0).toUpperCase() || 'F' }}
-                </span>
-              </div>
-              <div class="truncate">
-                <p class="text-xs font-bold text-white truncate leading-tight">
-                  {{ authStore.profile?.display_name || 'Fanático' }}
-                </p>
-                <span class="text-[10px] text-cyan-300/80 font-medium">
-                  {{ authStore.profile?.municipality || 'FanActivo' }}
-                </span>
-              </div>
+          <!-- User Mini Profile & Balance: Avatar & Points Only -->
+          <NuxtLink
+            :to="{ name: 'app-perfil' }"
+            @click="emit('close')"
+            class="bg-cyan-950/50 hover:bg-cyan-900/60 border border-cyan-800/60 rounded-2xl p-2.5 flex items-center justify-between shadow-lg backdrop-blur-md transition-all group cursor-pointer"
+            title="Ver mi perfil"
+          >
+            <!-- Foto del perfil -->
+            <div class="w-9 h-9 rounded-full bg-cyan-950 text-cyan-300 flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden border-2 border-orange-500/80 ring-2 ring-cyan-500/20 shadow-sm group-hover:scale-105 transition-transform">
+              <img
+                v-if="authStore.profile?.avatar_url && !avatarError"
+                :src="authStore.profile.avatar_url"
+                :alt="authStore.profile?.display_name || 'Avatar'"
+                class="w-full h-full object-cover"
+                referrerpolicy="no-referrer"
+                @error="avatarError = true"
+              />
+              <span v-else>
+                {{ authStore.profile?.display_name?.charAt(0).toUpperCase() || 'F' }}
+              </span>
             </div>
 
             <!-- Pearls Badge -->
-            <div class="flex items-center gap-1.5 text-xs font-black text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 border border-amber-400/80 px-2.5 py-1 rounded-full shadow-xs shrink-0">
+            <div class="flex items-center gap-1.5 text-xs font-black text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 border border-amber-400/80 px-2.5 py-1 rounded-full shadow-xs shrink-0 group-hover:brightness-105 transition-all">
               <PearlIcon size="xs" animated />
-              <span>{{ formatPerlitas(authStore.wallet?.balance_cache || 0) }}</span>
+              <span class="tabular-nums">{{ formatPerlitas(currentBalance) }}</span>
             </div>
-          </div>
+          </NuxtLink>
         </div>
 
         <!-- Middle Section: Scrollable Complete Navigation Links -->

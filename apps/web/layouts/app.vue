@@ -1,6 +1,8 @@
 <script setup lang="ts">
-import { ref, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useAuthStore } from '~/stores/auth'
+import { useSupabaseClient } from '#imports'
+import type { RealtimeChannel } from '@supabase/supabase-js'
 import AppSidebar from '~/components/app/AppSidebar.vue'
 import AppMobileNav from '~/components/app/AppMobileNav.vue'
 import AppMobileDrawer from '~/components/app/AppMobileDrawer.vue'
@@ -13,12 +15,56 @@ import { PearlIcon } from '@guaiqui/ui'
 import { BaseSkeletonLayout } from '@guaiqui/ui'
 
 const authStore = useAuthStore()
+const supabase = useSupabaseClient()
 const avatarError = ref(false)
 const isDrawerOpen = ref(false)
+let walletChannel: RealtimeChannel | null = null
+
+const currentBalance = computed(() => {
+  return authStore.wallet?.balance_cache ?? 0
+})
+
+const onFocus = () => {
+  if (authStore.isAuthenticated) {
+    authStore.refreshWallet()
+  }
+}
 
 onMounted(async () => {
   if (!authStore.profile) {
     await authStore.fetchProfile()
+  }
+
+  const userId = authStore.user?.id || authStore.profile?.id
+  if (userId && supabase?.channel) {
+    walletChannel = supabase
+      .channel(`realtime-wallets-${userId}`)
+      .on(
+        'postgres_changes',
+        {
+          event: '*',
+          schema: 'public',
+          table: 'wallets',
+          filter: `fan_id=eq.${userId}`,
+        },
+        () => {
+          authStore.refreshWallet()
+        }
+      )
+      .subscribe()
+  }
+
+  if (typeof window !== 'undefined') {
+    window.addEventListener('focus', onFocus)
+  }
+})
+
+onBeforeUnmount(() => {
+  if (walletChannel && supabase?.removeChannel) {
+    supabase.removeChannel(walletChannel)
+  }
+  if (typeof window !== 'undefined') {
+    window.removeEventListener('focus', onFocus)
   }
 })
 </script>
@@ -74,7 +120,7 @@ onMounted(async () => {
             class="flex items-center gap-1.5 text-xs font-black text-amber-950 bg-amber-300 hover:bg-amber-200 border border-amber-400 px-2.5 py-1 rounded-full shadow-xs transition-colors"
           >
             <PearlIcon size="xs" animated />
-            <span>{{ formatPerlitas(authStore.wallet?.balance_cache || 0) }}</span>
+            <span>{{ formatPerlitas(currentBalance) }}</span>
           </NuxtLink>
 
           <!-- Notification Bell -->
