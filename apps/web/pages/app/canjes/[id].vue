@@ -176,7 +176,7 @@ useSeoMeta({
       class="inline-flex items-center text-xs font-semibold text-guaiqui-text-muted hover:text-guaiqui-primary transition-colors"
     >
       <i class="bi bi-arrow-left mr-1.5"></i>
-      Volver a Mis Canjes
+      Volver a Canjes
     </NuxtLink>
 
     <!-- Loading State -->

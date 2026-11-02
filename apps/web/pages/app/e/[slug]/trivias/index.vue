@@ -398,7 +398,7 @@ useSeoMeta({
                     : 'text-slate-600 hover:text-slate-900'
                 ]"
               >
-                Todas ({{ triviaStore.activeTrivias.length }})
+                Todas
               </button>
               <button
                 type="button"

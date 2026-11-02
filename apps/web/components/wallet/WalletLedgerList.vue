@@ -64,7 +64,7 @@ const getEntryIcon = (type: string) => {
     <!-- Header & Filter Tabs -->
     <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <h2 class="font-display font-bold text-xl text-guaiqui-text uppercase">
-        Historial de Movimientos
+        Historial
       </h2>
 
       <!-- Filtros -->

@@ -59,7 +59,7 @@ const fanLevel = computed(() => {
           </div>
 
           <h1 class="font-display font-extrabold text-2xl sm:text-3xl uppercase tracking-tight text-white flex items-center gap-2">
-            <span>¡Hola, {{ authStore.profile?.display_name || 'Fanático' }}!</span>
+            <span>{{ authStore.profile?.display_name || 'Fanático' }}!</span>
           </h1>
           <p class="text-xs text-slate-300">
             Demuestra tu pasión, suma puntos y canjea recompensas en FanActivo.

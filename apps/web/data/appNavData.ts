@@ -8,16 +8,16 @@ export interface AppNavItem {
 
 export const APP_SIDEBAR_NAV_ITEMS: AppNavItem[] = [
   { name: 'Inicio', routeName: 'app', path: '/app', icon: 'bi-house-door-fill' },
+  { name: 'Perfil', routeName: 'app-perfil', path: '/app/perfil', icon: 'bi-person-fill' },
   { name: 'Equipos', routeName: 'app-equipos', path: '/app/equipos', icon: 'bi-shield-shaded' },
-  { name: 'Mi Perfil', routeName: 'app-perfil', path: '/app/perfil', icon: 'bi-person-fill' },
   { name: 'Buscador FanActivo', routeName: 'app-usuarios', path: '/app/usuarios', icon: 'bi-search' },
   { name: 'Billetera', routeName: 'app-billetera', path: '/app/billetera', icon: 'bi-wallet2' },
   { name: 'Referidos', routeName: 'app-referidos', path: '/app/referidos', icon: 'bi-people' },
   { name: 'Trivias', routeName: 'app-trivias', path: '/app/trivias', icon: 'bi-patch-question-fill' },
   { name: 'Ranking', routeName: 'app-ranking', path: '/app/ranking', icon: 'bi-trophy-fill' },
   { name: 'Tienda', routeName: 'app-tienda', path: '/app/tienda', icon: 'bi-bag-heart-fill' },
-  { name: 'Mis Canjes', routeName: 'app-canjes', path: '/app/canjes', icon: 'bi-gift-fill' },
-  { name: 'Ver Anuncios', routeName: 'app-anuncios', path: '/app/anuncios', icon: 'bi-play-btn-fill' },
+  { name: 'Canjes', routeName: 'app-canjes', path: '/app/canjes', icon: 'bi-gift-fill' },
+  { name: 'Anuncios', routeName: 'app-anuncios', path: '/app/anuncios', icon: 'bi-play-btn-fill' },
   { name: 'Ajustes', routeName: 'app-ajustes', path: '/app/ajustes', icon: 'bi-gear-fill' },
 ]
 

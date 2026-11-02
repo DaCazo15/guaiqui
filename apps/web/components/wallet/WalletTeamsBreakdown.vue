@@ -31,17 +31,17 @@ const toggleTeamFilter = (teamId: string) => {
 
 <template>
   <div class="space-y-4">
-    <div class="flex items-center justify-between">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
       <div>
         <h2 class="font-display text-lg md:text-xl font-bold text-guaiqui-text uppercase tracking-wider">
           Perlitas por <span class="text-guaiqui-primary">Equipo</span>
         </h2>
-        <p class="text-xs text-guaiqui-text-muted">
+        <p class="text-xs text-guaiqui-text-muted mt-0.5">
           Cada club maneja su propia moneda de fidelización. Canjea tus perlitas en la tienda del equipo correspondiente.
         </p>
       </div>
-      <NuxtLink to="/app/equipos">
-        <BaseButton variant="outline" size="sm" class="text-xs font-semibold">
+      <NuxtLink to="/app/equipos" class="shrink-0 self-start sm:self-auto">
+        <BaseButton variant="outline" size="sm" class="text-xs font-semibold whitespace-nowrap">
           <i class="bi bi-compass mr-1.5 text-guaiqui-primary"></i>
           <span>Explorar Equipos</span>
         </BaseButton>

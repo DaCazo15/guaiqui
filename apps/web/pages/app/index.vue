@@ -5,12 +5,8 @@ import { useTriviaStore } from '~/stores/trivias'
 
 // Subcomponentes modulares del Dashboard
 import DashboardCompactHeader from '~/components/app/dashboard/DashboardCompactHeader.vue'
-import DashboardTriviaHero from '~/components/app/dashboard/DashboardTriviaHero.vue'
-import DashboardScoreboardWidget from '~/components/app/dashboard/DashboardScoreboardWidget.vue'
-import DashboardVideoPromo from '~/components/app/dashboard/DashboardVideoPromo.vue'
-import DashboardPendingGrantsCard from '~/components/app/dashboard/DashboardPendingGrantsCard.vue'
 import DashboardStreakXpWidget from '~/components/app/dashboard/DashboardStreakXpWidget.vue'
-import DashboardPodiumWidget from '~/components/app/dashboard/DashboardPodiumWidget.vue'
+import DashboardVideoPromo from '~/components/app/dashboard/DashboardVideoPromo.vue'
 
 definePageMeta({
   layout: 'app',
@@ -29,35 +25,14 @@ onMounted(async () => {
 </script>
 
 <template>
-  <div class="space-y-6">
+  <div class="space-y-6 max-w-4xl mx-auto">
     <!-- 1. Header Compacto de Bienvenida con Rango de Usuario -->
     <DashboardCompactHeader />
 
-    <!-- 2. Grid Responsivo de 2 Columnas (67% Principal / 33% Lateral) -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
-      <!-- Columna Principal (lg:col-span-8) -->
-      <main class="lg:col-span-8 space-y-6 min-w-0">
-        <!-- Hero Card de la Trivia del Día -->
-        <DashboardTriviaHero />
+    <!-- 2. Racha de 7 Días & Barra de Progreso XP / Nivel de Fidelidad -->
+    <DashboardStreakXpWidget />
 
-        <!-- Tarjeta de Perlitas por Asignar (Anuncios y Referidos) -->
-        <DashboardPendingGrantsCard />
-
-        <!-- Jerarquía Deportiva: Marcador SPB, Escudos y Cuenta Regresiva -->
-        <DashboardScoreboardWidget />
-
-        <!-- Banner de Videos Publicitarios con Recompensa en Puntos -->
-        <DashboardVideoPromo />
-      </main>
-
-      <!-- Columna Lateral (lg:col-span-4) -->
-      <aside class="lg:col-span-4 space-y-6 min-w-0">
-        <!-- Racha de 7 Días & Barra de Progreso XP / Nivel de Fidelidad -->
-        <DashboardStreakXpWidget />
-
-        <!-- Ranking de Fanáticos en Formato Lista con Posición del Fanático -->
-        <DashboardPodiumWidget />
-      </aside>
-    </div>
+    <!-- 3. Banner de Videos Publicitarios con Recompensa en Puntos -->
+    <DashboardVideoPromo />
   </div>
 </template>

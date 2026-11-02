@@ -79,9 +79,6 @@ watch(
         <!-- Pearls in this team -->
         <div class="flex items-center gap-2 px-3.5 py-2 rounded-2xl bg-slate-950/80 border border-amber-400/40 shadow-inner">
           <div class="text-left">
-            <span class="block text-[10px] uppercase font-bold text-slate-400 tracking-wider">
-              Tus perlitas en {{ team.short_name || team.name }}
-            </span>
             <div class="flex items-center gap-1.5 text-base font-black text-amber-300">
               <PearlIcon size="sm" animated />
               <span>{{ formatPerlitas(team.balance || 0) }}</span>

@@ -78,7 +78,7 @@ const emit = defineEmits<{
             class="w-full py-2.5 px-3 rounded-guaiqui-lg bg-guaiqui-primary hover:bg-guaiqui-primary-dark text-white font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-guaiqui-xs transition-colors cursor-pointer"
           >
             <i class="bi bi-shop text-sm"></i>
-            <span>Ir a la Tienda</span>
+            <span>Tienda</span>
           </button>
         </NuxtLink>
 
@@ -88,7 +88,7 @@ const emit = defineEmits<{
             class="w-full py-2.5 px-3 rounded-guaiqui-lg bg-white hover:bg-emerald-50/50 text-guaiqui-primary border border-guaiqui-primary/30 font-bold text-xs uppercase tracking-wider flex items-center justify-center gap-1.5 shadow-guaiqui-xs transition-colors cursor-pointer"
           >
             <i class="bi bi-gift-fill text-sm text-guaiqui-primary"></i>
-            <span>Mis Canjes</span>
+            <span>Canjes</span>
           </button>
         </NuxtLink>
       </div>
@@ -106,7 +106,7 @@ const emit = defineEmits<{
             <NuxtLink to="/app/canjes">
               <BaseButton variant="outline" size="sm" class="text-xs font-medium">
                 <i class="bi bi-gift mr-1.5 text-guaiqui-primary"></i>
-                Mis Canjes
+                Canjes
               </BaseButton>
             </NuxtLink>
           </div>

@@ -66,7 +66,7 @@ const variantClasses = computed(() => {
     :type="type"
     :disabled="disabled || loading"
     :class="[
-      'inline-flex items-center justify-center transition-colors duration-150 ease-in-out cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-guaiqui-primary focus-visible:ring-offset-2',
+      'inline-flex items-center justify-center whitespace-nowrap transition-colors duration-150 ease-in-out cursor-pointer select-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-guaiqui-primary focus-visible:ring-offset-2',
       sizeClasses,
       variantClasses,
       block ? 'w-full' : '',
