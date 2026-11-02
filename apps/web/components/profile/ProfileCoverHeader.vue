@@ -43,14 +43,14 @@ const joinedDate = computed(() => {
   return d.toLocaleDateString('es-VE', { month: 'long', year: 'numeric' })
 })
 
-// Nivel del fanático
+// Nivel del fanático (Plataforma FanActivo)
 const fanLevel = computed(() => {
   const bal = props.balance
-  if (bal >= 7000) return { name: 'Leyenda Guaiquerí', badge: 'bg-amber-500 text-white' }
-  if (bal >= 3500) return { name: 'Capitán de Grada', badge: 'bg-emerald-600 text-white' }
-  if (bal >= 1500) return { name: 'Guerrero Verde', badge: 'bg-guaiqui-primary text-white' }
-  if (bal >= 500) return { name: 'Fanático Insular', badge: 'bg-emerald-700 text-white' }
-  return { name: 'Novato de la Tribu', badge: 'bg-slate-700 text-white' }
+  if (bal >= 7000) return { name: 'Leyenda FanActivo', badge: 'bg-amber-500 text-white' }
+  if (bal >= 3500) return { name: 'Capitán Fanático', badge: 'bg-orange-600 text-white' }
+  if (bal >= 1500) return { name: 'Fanático Destacado', badge: 'bg-cyan-600 text-white' }
+  if (bal >= 500) return { name: 'Fanático Activo', badge: 'bg-teal-700 text-white' }
+  return { name: 'Novato FanActivo', badge: 'bg-slate-700 text-white' }
 })
 
 function triggerAvatarInput() {

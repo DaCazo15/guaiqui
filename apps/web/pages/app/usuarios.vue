@@ -9,8 +9,8 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Comunidad de Fanáticos — Guaiqueríes de Margarita',
-  description: 'Encuentra y sigue a otros fanáticos del baloncesto y la tribu guaiquerí.',
+  title: 'Comunidad de Fanáticos — FanActivo',
+  description: 'Encuentra y sigue a otros fanáticos del baloncesto y la plataforma FanActivo.',
 })
 
 const socialProfile = useSocialProfile()
@@ -64,7 +64,7 @@ async function handleAction(userId: string, currentStatus: string) {
         </h1>
       </div>
       <p class="text-xs sm:text-sm text-emerald-100 max-w-xl">
-        Busca a otros fanáticos de la tribu, conéctate con ellos y sigue su actividad de juego y canjes en la plataforma.
+        Busca a otros fanáticos, conéctate con ellos y sigue su actividad de juego y canjes en la plataforma FanActivo.
       </p>
 
       <!-- Barra de Búsqueda -->

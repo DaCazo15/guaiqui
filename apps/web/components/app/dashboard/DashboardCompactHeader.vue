@@ -7,14 +7,14 @@ import { useTriviaStore } from '~/stores/trivias'
 const authStore = useAuthStore()
 const triviaStore = useTriviaStore()
 
-// Cálculo del Rango de Fanático según perlitas acumuladas
+// Cálculo del Rango de Fanático según perlitas acumuladas (FanActivo)
 const fanLevel = computed(() => {
   const balance = triviaStore.homeSummary?.balance ?? authStore.wallet?.balance_cache ?? 0
-  if (balance >= 7000) return { title: 'Leyenda Guaiquerí', level: 5, color: 'text-amber-400 bg-amber-500/20 border-amber-400/40' }
-  if (balance >= 3500) return { title: 'Capitán de Grada', level: 4, color: 'text-rose-400 bg-rose-500/20 border-rose-400/40' }
-  if (balance >= 1500) return { title: 'Guerrero Verde', level: 3, color: 'text-emerald-400 bg-emerald-500/20 border-emerald-400/40' }
-  if (balance >= 500) return { title: 'Fanático Insular', level: 2, color: 'text-teal-400 bg-teal-500/20 border-teal-400/40' }
-  return { title: 'Novato de la Tribu', level: 1, color: 'text-slate-300 bg-slate-700/40 border-slate-600/40' }
+  if (balance >= 7000) return { title: 'Leyenda FanActivo', level: 5, color: 'text-amber-400 bg-amber-500/20 border-amber-400/40' }
+  if (balance >= 3500) return { title: 'Capitán Fanático', level: 4, color: 'text-orange-400 bg-orange-500/20 border-orange-400/40' }
+  if (balance >= 1500) return { title: 'Fanático Destacado', level: 3, color: 'text-cyan-400 bg-cyan-500/20 border-cyan-400/40' }
+  if (balance >= 500) return { title: 'Fanático Activo', level: 2, color: 'text-teal-400 bg-teal-500/20 border-teal-400/40' }
+  return { title: 'Novato FanActivo', level: 1, color: 'text-slate-300 bg-slate-700/40 border-slate-600/40' }
 })
 </script>
 

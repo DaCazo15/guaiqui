@@ -20,13 +20,13 @@ const alreadyAwardedToday = computed(() => {
   return triviaStore.homeSummary?.streak?.already_awarded_today || false
 })
 
-// Sistema de Niveles de Fidelidad (XP = Balance de perlitas ganadas)
+// Sistema de Niveles de Fidelidad (XP = Balance de perlitas ganadas) (FanActivo)
 const levelConfig = [
   { level: 1, name: 'Novato', min: 0, max: 500 },
-  { level: 2, name: 'Insular', min: 500, max: 1500 },
-  { level: 3, name: 'Guerrero Verde', min: 1500, max: 3500 },
-  { level: 4, name: 'Capitán de Grada', min: 3500, max: 7000 },
-  { level: 5, name: 'Leyenda Guaiquerí', min: 7000, max: 15000 },
+  { level: 2, name: 'Aficionado', min: 500, max: 1500 },
+  { level: 3, name: 'Fanático Activo', min: 1500, max: 3500 },
+  { level: 4, name: 'Capitán Fanático', min: 3500, max: 7000 },
+  { level: 5, name: 'Leyenda FanActivo', min: 7000, max: 15000 },
 ]
 
 const currentLevelData = computed(() => {
