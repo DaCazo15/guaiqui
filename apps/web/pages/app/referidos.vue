@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 import { BaseCard, BaseButton, PearlIcon, PearlAmount } from '@guaiqui/ui'
 import { useReferrals } from '~/composables/useReferrals'
 
@@ -14,6 +14,7 @@ useSeoMeta({
 })
 
 const referrals = useReferrals()
+const showRules = ref(false)
 
 onMounted(async () => {
   await referrals.fetchReferralSummary()
@@ -105,44 +106,45 @@ const shareViaWhatsApp = () => {
       </div>
     </BaseCard>
 
-    <!-- Stats Grid -->
-    <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <BaseCard class="p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-xs flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-2xl shrink-0">
+    <!-- Stats Grid (3 columns on mobile and desktop) -->
+    <div class="grid grid-cols-3 gap-2 sm:gap-4">
+      <BaseCard class="p-2.5 sm:p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-xs flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left gap-1.5 sm:gap-4">
+        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-base sm:text-2xl shrink-0">
           <i class="bi bi-people-fill"></i>
         </div>
-        <div>
-          <span class="text-xs font-bold text-guaiqui-text-muted uppercase tracking-wider block">Total Invitados</span>
-          <span class="font-display font-black text-2xl text-guaiqui-text block">
+        <div class="min-w-0">
+          <span class="text-[9px] sm:text-xs font-bold text-guaiqui-text-muted uppercase tracking-wider block leading-tight truncate">Invitados</span>
+          <span class="font-display font-black text-lg sm:text-2xl text-guaiqui-text block leading-tight">
             {{ referrals.summary.value.total_referred }}
           </span>
-          <span class="text-[11px] text-guaiqui-text-muted">Amigos registrados</span>
+          <span class="text-[9px] sm:text-[11px] text-guaiqui-text-muted hidden sm:block">Amigos registrados</span>
         </div>
       </BaseCard>
 
-      <BaseCard class="p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-xs flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-2xl shrink-0">
+      <BaseCard class="p-2.5 sm:p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-xs flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left gap-1.5 sm:gap-4">
+        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-base sm:text-2xl shrink-0">
           <i class="bi bi-check-circle-fill"></i>
         </div>
-        <div>
-          <span class="text-xs font-bold text-guaiqui-text-muted uppercase tracking-wider block">Calificados</span>
-          <span class="font-display font-black text-2xl text-purple-700 block">
+        <div class="min-w-0">
+          <span class="text-[9px] sm:text-xs font-bold text-guaiqui-text-muted uppercase tracking-wider block leading-tight truncate">Calificados</span>
+          <span class="font-display font-black text-lg sm:text-2xl text-purple-700 block leading-tight">
             {{ referrals.summary.value.qualified_count }}
           </span>
-          <span class="text-[11px] text-guaiqui-text-muted">Jugaron al menos 1 trivia</span>
+          <span class="text-[9px] sm:text-[11px] text-guaiqui-text-muted hidden sm:block">Jugaron 1 trivia</span>
         </div>
       </BaseCard>
 
-      <BaseCard class="p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-xs flex items-center gap-4">
-        <div class="w-12 h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-2xl shrink-0">
+      <BaseCard class="p-2.5 sm:p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-xs flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left gap-1.5 sm:gap-4">
+        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-base sm:text-2xl shrink-0">
           <i class="bi bi-gem"></i>
         </div>
-        <div>
-          <span class="text-xs font-bold text-guaiqui-text-muted uppercase tracking-wider block">Puntos Obtenidos</span>
-          <div class="flex items-baseline gap-1">
-            <PearlAmount :amount="referrals.summary.value.points_earned" size="lg" animated />
+        <div class="min-w-0">
+          <span class="text-[9px] sm:text-xs font-bold text-guaiqui-text-muted uppercase tracking-wider block leading-tight truncate">Puntos</span>
+          <div class="flex items-center justify-center sm:justify-start">
+            <PearlAmount :amount="referrals.summary.value.points_earned" size="sm" class="sm:hidden" animated />
+            <PearlAmount :amount="referrals.summary.value.points_earned" size="lg" class="hidden sm:inline-flex" animated />
           </div>
-          <span class="text-[11px] text-guaiqui-text-muted">Por registros y trivias</span>
+          <span class="text-[9px] sm:text-[11px] text-guaiqui-text-muted hidden sm:block">Total obtenido</span>
         </div>
       </BaseCard>
     </div>
@@ -235,13 +237,24 @@ const shareViaWhatsApp = () => {
       </div>
     </BaseCard>
 
-    <!-- How it works guide -->
-    <BaseCard class="p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-xs space-y-3">
-      <h2 class="text-sm font-bold text-guaiqui-text flex items-center gap-2">
-        <i class="bi bi-lightbulb-fill text-amber-500"></i>
-        <span>Reglas del Programa de Referidos</span>
-      </h2>
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-1">
+    <!-- How it works guide (collapsible) -->
+    <BaseCard class="p-4 sm:p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-xs transition-all">
+      <button
+        type="button"
+        class="w-full flex items-center justify-between text-left group cursor-pointer focus:outline-none"
+        @click="showRules = !showRules"
+      >
+        <div class="flex items-center gap-2">
+          <i class="bi bi-lightbulb-fill text-amber-500 text-base"></i>
+          <span class="text-sm font-bold text-guaiqui-text">Reglas del Programa de Referidos</span>
+        </div>
+        <span class="inline-flex items-center gap-1.5 text-xs font-semibold text-guaiqui-primary group-hover:text-guaiqui-primary-dark transition-colors">
+          <span>{{ showRules ? 'Ocultar reglas' : 'Ver reglas' }}</span>
+          <i :class="['bi text-xs transition-transform duration-200', showRules ? 'bi-chevron-up' : 'bi-chevron-down']"></i>
+        </span>
+      </button>
+
+      <div v-show="showRules" class="grid grid-cols-1 md:grid-cols-2 gap-4 pt-4 mt-3 border-t border-guaiqui-border/60">
         <div class="p-3.5 bg-slate-50 border border-slate-200 rounded-guaiqui-lg space-y-1">
           <div class="flex items-center gap-2 text-xs font-bold text-guaiqui-text">
             <span class="w-5 h-5 rounded-full bg-guaiqui-primary text-white flex items-center justify-center text-[10px]">1</span>

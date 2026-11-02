@@ -44,63 +44,65 @@ const canWatch = computed(() => {
 
 <template>
   <div class="bg-white border border-guaiqui-border rounded-guaiqui-2xl p-5 sm:p-6 shadow-guaiqui-sm space-y-6">
-    <!-- Grid de Métricas Diarias -->
-    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+    <!-- Grid de Métricas Diarias (3 columnas en móvil y desktop) -->
+    <div class="grid grid-cols-3 gap-2 sm:gap-4">
       <!-- Métrica 1: Videos Reclamados Hoy -->
-      <div class="p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-xl flex items-center justify-between">
-        <div class="space-y-1">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-guaiqui-text-muted block">
-            Videos Vistos Hoy
+      <div class="p-2.5 sm:p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-xl flex flex-col sm:flex-row items-center sm:items-center justify-between text-center sm:text-left gap-1 sm:gap-2">
+        <div class="space-y-0.5 min-w-0">
+          <span class="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-guaiqui-text-muted block leading-tight truncate">
+            Vistos Hoy
           </span>
-          <div class="flex items-baseline gap-1.5">
-            <span class="font-display font-black text-2xl text-guaiqui-primary">
+          <div class="flex items-baseline justify-center sm:justify-start gap-1">
+            <span class="font-display font-black text-lg sm:text-2xl text-guaiqui-primary">
               {{ completedToday }}
             </span>
-            <span class="text-xs text-guaiqui-text-muted font-medium">
-              / {{ maxDaily }} máximo diario
+            <span class="text-[9px] sm:text-xs text-guaiqui-text-muted font-medium">
+              /{{ maxDaily }}
             </span>
           </div>
+          <span class="text-[8px] sm:text-[10px] text-guaiqui-text-muted hidden sm:block">máx diario</span>
         </div>
-        <div class="w-11 h-11 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-xl border border-emerald-100">
+        <div class="w-7 h-7 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm sm:text-xl border border-emerald-100 shrink-0">
           <i class="bi bi-camera-reels-fill"></i>
         </div>
       </div>
 
       <!-- Métrica 2: Puntos Ganados Hoy -->
-      <div class="p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-xl flex items-center justify-between">
-        <div class="space-y-1">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-guaiqui-text-muted block">
-            Puntos Ganados Hoy
+      <div class="p-2.5 sm:p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-xl flex flex-col sm:flex-row items-center sm:items-center justify-between text-center sm:text-left gap-1 sm:gap-2">
+        <div class="space-y-0.5 min-w-0">
+          <span class="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-guaiqui-text-muted block leading-tight truncate">
+            Puntos Hoy
           </span>
-          <div class="flex items-center gap-2">
-            <PearlIcon size="md" />
-            <span class="font-display font-black text-2xl text-guaiqui-text">
+          <div class="flex items-center justify-center sm:justify-start gap-1">
+            <PearlIcon size="xs" class="sm:hidden" />
+            <PearlIcon size="sm" class="hidden sm:inline-flex" />
+            <span class="font-display font-black text-lg sm:text-2xl text-guaiqui-text">
               +{{ pointsEarnedToday }}
             </span>
-            <span class="text-xs text-guaiqui-text-muted font-medium">/ 60 máx diario</span>
           </div>
+          <span class="text-[8px] sm:text-[10px] text-guaiqui-text-muted hidden sm:block">/ 60 máx diario</span>
         </div>
-        <div class="w-11 h-11 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-xl border border-amber-100">
+        <div class="w-7 h-7 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-sm sm:text-xl border border-amber-100 shrink-0">
           <i class="bi bi-coin"></i>
         </div>
       </div>
 
       <!-- Métrica 3: Recompensa Próximo Bloque -->
-      <div class="p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-xl flex items-center justify-between sm:col-span-2 lg:col-span-1">
-        <div class="space-y-1">
-          <span class="text-[11px] font-bold uppercase tracking-wider text-guaiqui-text-muted block">
-            Próximo Bloque (+{{ isLimitReached ? 0 : currentTierReward }} pts)
+      <div class="p-2.5 sm:p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-xl flex flex-col sm:flex-row items-center sm:items-center justify-between text-center sm:text-left gap-1 sm:gap-2">
+        <div class="space-y-0.5 min-w-0">
+          <span class="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-guaiqui-text-muted block leading-tight truncate">
+            Próximo (+{{ isLimitReached ? 0 : currentTierReward }})
           </span>
-          <div class="flex items-center gap-1.5">
-            <span class="font-display font-black text-2xl text-guaiqui-primary">
+          <div class="flex items-center justify-center sm:justify-start gap-1">
+            <span class="font-display font-black text-lg sm:text-2xl text-guaiqui-primary">
               {{ isLimitReached ? 0 : (videosUntilNextBlock || (10 - (completedToday % 10))) }}
             </span>
-            <span class="text-xs font-semibold text-guaiqui-text-muted">
-              {{ isLimitReached ? 'Completado' : 'videos restantes' }}
-            </span>
           </div>
+          <span class="text-[8px] sm:text-[10px] font-medium text-guaiqui-text-muted truncate block">
+            {{ isLimitReached ? 'Completado' : 'videos restantes' }}
+          </span>
         </div>
-        <div class="w-11 h-11 rounded-xl bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center text-xl border border-guaiqui-primary/20">
+        <div class="w-7 h-7 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center text-sm sm:text-xl border border-guaiqui-primary/20 shrink-0">
           <i class="bi bi-award-fill"></i>
         </div>
       </div>

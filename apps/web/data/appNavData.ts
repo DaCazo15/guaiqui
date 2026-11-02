@@ -9,6 +9,7 @@ export interface AppNavItem {
 export const APP_SIDEBAR_NAV_ITEMS: AppNavItem[] = [
   { name: 'Inicio', routeName: 'app', path: '/app', icon: 'bi-house-door-fill' },
   { name: 'Perfil', routeName: 'app-perfil', path: '/app/perfil', icon: 'bi-person-fill' },
+  { name: 'Notificaciones', routeName: 'app-notificaciones', path: '/app/notificaciones', icon: 'bi-bell-fill' },
   { name: 'Equipos', routeName: 'app-equipos', path: '/app/equipos', icon: 'bi-shield-shaded' },
   { name: 'Buscador FanActivo', routeName: 'app-usuarios', path: '/app/usuarios', icon: 'bi-search' },
   { name: 'Billetera', routeName: 'app-billetera', path: '/app/billetera', icon: 'bi-wallet2' },

@@ -33,48 +33,52 @@ defineProps<{
         </span>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div class="grid grid-cols-3 gap-2 sm:gap-3">
         <!-- Tramo 1: Bloque 1 (Videos 1 al 10) -->
         <div
-          class="p-3.5 rounded-guaiqui-xl border transition-all"
+          class="p-2 sm:p-3.5 rounded-guaiqui-xl border transition-all"
           :class="[
             completedToday < 10
               ? 'bg-orange-50/80 border-guaiqui-primary ring-2 ring-guaiqui-primary/20 shadow-xs'
               : 'bg-slate-50 border-slate-200 opacity-80'
           ]"
         >
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-black uppercase tracking-wider text-guaiqui-text">
+          <div class="flex items-center justify-between gap-1">
+            <span class="text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-guaiqui-text truncate">
               Bloque 1
             </span>
             <span
               v-if="completedToday < 10"
-              class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-guaiqui-primary text-white"
+              class="text-[8px] sm:text-[10px] font-extrabold uppercase px-1.5 sm:px-2 py-0.5 rounded-full bg-guaiqui-primary text-white shrink-0"
             >
-              En Curso
+              <span class="sm:hidden">Activo</span>
+              <span class="hidden sm:inline">En Curso</span>
             </span>
             <span
               v-else
-              class="text-[10px] font-bold text-orange-600 flex items-center gap-1"
+              class="text-[8px] sm:text-[10px] font-bold text-orange-600 flex items-center gap-0.5 shrink-0"
             >
-              <i class="bi bi-check-circle-fill"></i> Completado
+              <i class="bi bi-check-circle-fill"></i>
+              <span class="hidden sm:inline">Completado</span>
             </span>
           </div>
 
-          <div class="flex items-center gap-2 mt-2">
-            <PearlIcon size="md" />
-            <span class="font-display font-black text-2xl text-guaiqui-text">
+          <div class="flex items-center gap-1 sm:gap-2 mt-1.5 sm:mt-2">
+            <PearlIcon size="xs" class="sm:hidden" />
+            <PearlIcon size="md" class="hidden sm:inline-flex" />
+            <span class="font-display font-black text-lg sm:text-2xl text-guaiqui-text">
               +5
             </span>
-            <span class="text-xs font-semibold text-guaiqui-text-muted">
-              puntos al completar los 10
+            <span class="text-[8px] sm:text-xs font-semibold text-guaiqui-text-muted leading-tight">
+              <span class="sm:hidden">pts</span>
+              <span class="hidden sm:inline">puntos al completar los 10</span>
             </span>
           </div>
         </div>
 
         <!-- Tramo 2: Bloque 2 (Videos 11 al 20) -->
         <div
-          class="p-3.5 rounded-guaiqui-xl border transition-all"
+          class="p-2 sm:p-3.5 rounded-guaiqui-xl border transition-all"
           :class="[
             completedToday >= 10 && completedToday < 20
               ? 'bg-orange-50/80 border-guaiqui-primary ring-2 ring-guaiqui-primary/20 shadow-xs'
@@ -83,44 +87,49 @@ defineProps<{
                 : 'bg-white border-guaiqui-border'
           ]"
         >
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-black uppercase tracking-wider text-guaiqui-text">
+          <div class="flex items-center justify-between gap-1">
+            <span class="text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-guaiqui-text truncate">
               Bloque 2
             </span>
             <span
               v-if="completedToday >= 10 && completedToday < 20"
-              class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-guaiqui-primary text-white"
+              class="text-[8px] sm:text-[10px] font-extrabold uppercase px-1.5 sm:px-2 py-0.5 rounded-full bg-guaiqui-primary text-white shrink-0"
             >
-              En Curso
+              <span class="sm:hidden">Activo</span>
+              <span class="hidden sm:inline">En Curso</span>
             </span>
             <span
               v-else-if="completedToday >= 20"
-              class="text-[10px] font-bold text-orange-600 flex items-center gap-1"
+              class="text-[8px] sm:text-[10px] font-bold text-orange-600 flex items-center gap-0.5 shrink-0"
             >
-              <i class="bi bi-check-circle-fill"></i> Completado
+              <i class="bi bi-check-circle-fill"></i>
+              <span class="hidden sm:inline">Completado</span>
             </span>
             <span
               v-else
-              class="text-[10px] font-semibold text-guaiqui-text-muted"
+              class="text-[8px] sm:text-[10px] font-semibold text-guaiqui-text-muted shrink-0"
             >
-              Bloqueado
+              <span class="sm:hidden">Bloq.</span>
+              <span class="hidden sm:inline">Bloqueado</span>
             </span>
           </div>
 
-          <div class="flex items-center gap-2 mt-2">
-            <PearlIcon size="md" />
-            <span class="font-display font-black text-2xl text-guaiqui-text">
+          <div class="flex items-center gap-1 sm:gap-2 mt-1.5 sm:mt-2">
+            <PearlIcon size="xs" class="sm:hidden" />
+            <PearlIcon size="md" class="hidden sm:inline-flex" />
+            <span class="font-display font-black text-lg sm:text-2xl text-guaiqui-text">
               +10
             </span>
-            <span class="text-xs font-semibold text-guaiqui-text-muted">
-              puntos al completar los 20
+            <span class="text-[8px] sm:text-xs font-semibold text-guaiqui-text-muted leading-tight">
+              <span class="sm:hidden">pts</span>
+              <span class="hidden sm:inline">puntos al completar los 20</span>
             </span>
           </div>
         </div>
 
         <!-- Tramo 3: Bloques 3, 4 y 5 (Videos 21 al 50) -->
         <div
-          class="p-3.5 rounded-guaiqui-xl border transition-all"
+          class="p-2 sm:p-3.5 rounded-guaiqui-xl border transition-all"
           :class="[
             completedToday >= 20 && completedToday < 50
               ? 'bg-orange-50/80 border-guaiqui-primary ring-2 ring-guaiqui-primary/20 shadow-xs'
@@ -129,37 +138,42 @@ defineProps<{
                 : 'bg-white border-guaiqui-border'
           ]"
         >
-          <div class="flex items-center justify-between">
-            <span class="text-[11px] font-black uppercase tracking-wider text-guaiqui-text">
-              Bloques 3 (Videos 21 a 50)
+          <div class="flex items-center justify-between gap-1">
+            <span class="text-[9px] sm:text-[11px] font-black uppercase tracking-wider text-guaiqui-text truncate">
+              Bloques 3-5
             </span>
             <span
               v-if="completedToday >= 20 && completedToday < 50"
-              class="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-guaiqui-primary text-white"
+              class="text-[8px] sm:text-[10px] font-extrabold uppercase px-1.5 sm:px-2 py-0.5 rounded-full bg-guaiqui-primary text-white shrink-0"
             >
-              En Curso
+              <span class="sm:hidden">Activo</span>
+              <span class="hidden sm:inline">En Curso</span>
             </span>
             <span
               v-else-if="completedToday >= 50"
-              class="text-[10px] font-bold text-orange-600 flex items-center gap-1"
+              class="text-[8px] sm:text-[10px] font-bold text-orange-600 flex items-center gap-0.5 shrink-0"
             >
-              <i class="bi bi-check-circle-fill"></i> Máximo Alcanzado
+              <i class="bi bi-check-circle-fill"></i>
+              <span class="hidden sm:inline">Máximo</span>
             </span>
             <span
               v-else
-              class="text-[10px] font-semibold text-guaiqui-text-muted"
+              class="text-[8px] sm:text-[10px] font-semibold text-guaiqui-text-muted shrink-0"
             >
-              Bloqueado
+              <span class="sm:hidden">Bloq.</span>
+              <span class="hidden sm:inline">Bloqueado</span>
             </span>
           </div>
 
-          <div class="flex items-center gap-2 mt-2">
-            <PearlIcon size="md" />
-            <span class="font-display font-black text-2xl text-guaiqui-text">
+          <div class="flex items-center gap-1 sm:gap-2 mt-1.5 sm:mt-2">
+            <PearlIcon size="xs" class="sm:hidden" />
+            <PearlIcon size="md" class="hidden sm:inline-flex" />
+            <span class="font-display font-black text-lg sm:text-2xl text-guaiqui-text">
               +15
             </span>
-            <span class="text-xs font-semibold text-guaiqui-text-muted">
-              puntos cada 10 videos
+            <span class="text-[8px] sm:text-xs font-semibold text-guaiqui-text-muted leading-tight">
+              <span class="sm:hidden">c/10</span>
+              <span class="hidden sm:inline">puntos cada 10 videos</span>
             </span>
           </div>
         </div>

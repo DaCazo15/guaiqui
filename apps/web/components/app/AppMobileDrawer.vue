@@ -6,6 +6,7 @@ import { formatPerlitas } from '@guaiqui/shared'
 import { PearlIcon } from '@guaiqui/ui'
 import { APP_SIDEBAR_NAV_ITEMS, type AppNavItem } from '~/data/appNavData'
 import { useCurrentTeam } from '~/composables/useCurrentTeam'
+import { useNotificationsStore } from '~/stores/notifications'
 
 const props = defineProps<{
   isOpen: boolean
@@ -25,6 +26,7 @@ const currentBalance = computed(() => {
 
 const navItems = APP_SIDEBAR_NAV_ITEMS
 const { openPicker } = useCurrentTeam()
+const notifStore = useNotificationsStore()
 
 const handleNavClick = (e: MouseEvent, item: AppNavItem) => {
   emit('close')
@@ -185,43 +187,52 @@ async function handleLogout() {
             :key="item.routeName"
             :to="{ name: item.routeName }"
             @click="handleNavClick($event, item)"
-            class="flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
+            class="flex items-center justify-between px-3 py-2.5 rounded-xl text-sm font-semibold transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400 group"
             :class="[
               isItemActive(item)
                 ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white font-black shadow-lg shadow-orange-950/40 scale-[1.01]'
                 : 'text-slate-300 hover:text-white hover:bg-cyan-950/50',
             ]"
           >
-            <!-- Custom circular avatar icon for 'Mi Perfil' -->
-            <template v-if="item.path === '/app/perfil'">
-              <div
-                class="w-5 h-5 rounded-full overflow-hidden border shrink-0 flex items-center justify-center transition-all duration-200"
-                :class="[
-                  route.path === item.path
-                    ? 'border-white ring-1 ring-white/60'
-                    : 'border-cyan-500/40 bg-cyan-950/60'
-                ]"
-              >
-                <img
-                  v-if="authStore.profile?.avatar_url && !avatarError"
-                  :src="authStore.profile.avatar_url"
-                  :alt="authStore.profile?.display_name || 'Perfil'"
-                  class="w-full h-full object-cover"
-                  referrerpolicy="no-referrer"
-                  @error="avatarError = true"
-                />
-                <span
-                  v-else-if="authStore.profile?.display_name"
-                  class="text-[10px] font-bold"
-                  :class="route.path === item.path ? 'text-white' : 'text-cyan-300'"
+            <div class="flex items-center gap-3 min-w-0">
+              <!-- Custom circular avatar icon for 'Mi Perfil' -->
+              <template v-if="item.path === '/app/perfil'">
+                <div
+                  class="w-5 h-5 rounded-full overflow-hidden border shrink-0 flex items-center justify-center transition-all duration-200"
+                  :class="[
+                    route.path === item.path
+                      ? 'border-white ring-1 ring-white/60'
+                      : 'border-cyan-500/40 bg-cyan-950/60'
+                  ]"
                 >
-                  {{ authStore.profile.display_name.charAt(0).toUpperCase() }}
-                </span>
-                <i v-else :class="['bi', item.icon, 'text-xs']"></i>
-              </div>
-            </template>
-            <i v-else :class="['bi', item.icon, 'text-base shrink-0']"></i>
-            <span class="truncate">{{ item.name }}</span>
+                  <img
+                    v-if="authStore.profile?.avatar_url && !avatarError"
+                    :src="authStore.profile.avatar_url"
+                    :alt="authStore.profile?.display_name || 'Perfil'"
+                    class="w-full h-full object-cover"
+                    referrerpolicy="no-referrer"
+                    @error="avatarError = true"
+                  />
+                  <span
+                    v-else-if="authStore.profile?.display_name"
+                    class="text-[10px] font-bold"
+                    :class="route.path === item.path ? 'text-white' : 'text-cyan-300'"
+                  >
+                    {{ authStore.profile.display_name.charAt(0).toUpperCase() }}
+                  </span>
+                  <i v-else :class="['bi', item.icon, 'text-xs']"></i>
+                </div>
+              </template>
+              <i v-else :class="['bi', item.icon, 'text-base shrink-0']"></i>
+              <span class="truncate">{{ item.name }}</span>
+            </div>
+
+            <span
+              v-if="item.routeName === 'app-notificaciones' && notifStore.unreadCount > 0"
+              class="flex items-center justify-center min-w-5 h-5 px-1.5 text-[10px] font-black text-white bg-[#C8102E] rounded-full shadow-xs shrink-0"
+            >
+              {{ notifStore.unreadCount > 99 ? '99+' : notifStore.unreadCount }}
+            </span>
           </NuxtLink>
         </nav>
 
