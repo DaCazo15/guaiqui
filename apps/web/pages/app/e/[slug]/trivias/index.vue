@@ -156,7 +156,7 @@ async function loadPollsData() {
 async function loadOverUnderData() {
   overUnderLoading.value = true
   try {
-    const { data, error } = await callRpc<ActiveOverUnder[]>('get_active_over_under_challenges')
+    const { data, error } = await callRpc<ActiveOverUnder[]>('get_active_over_under_predictions')
     if (error) throw error
     overUnderList.value = data || []
   } catch (err) {

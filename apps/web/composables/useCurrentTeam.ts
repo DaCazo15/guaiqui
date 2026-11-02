@@ -53,7 +53,7 @@ export const useCurrentTeam = () => {
   }
 
   const fetchFollowedTeams = async () => {
-    if (!user.value) return []
+    if (!user.value?.id) return []
     loading.value = true
     error.value = null
     try {
@@ -119,11 +119,12 @@ export const useCurrentTeam = () => {
       let teamBalance = 0
       const teamHeld = 0
 
-      if (user.value) {
+      if (user.value?.id) {
+        const userId = user.value.id
         const { data: followData } = await supabase
           .from('team_follows')
           .select('team_id')
-          .eq('user_id', user.value.id)
+          .eq('user_id', userId)
           .eq('team_id', team.id)
           .maybeSingle()
         isFollowing = !!followData
@@ -131,7 +132,7 @@ export const useCurrentTeam = () => {
         const { data: walletData } = await supabase
           .from('wallets')
           .select('balance_cache')
-          .eq('fan_id', user.value.id)
+          .eq('fan_id', userId)
           .eq('team_id', team.id)
           .maybeSingle()
         teamBalance = walletData?.balance_cache || 0
