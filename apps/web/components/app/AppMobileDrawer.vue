@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { ref, computed, watch, onMounted, onUnmounted } from 'vue'
+import { ref, watch, onMounted, onUnmounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { useAuthStore } from '~/stores/auth'
-import { formatPerlitas } from '@guaiqui/shared'
-import { PearlIcon } from '@guaiqui/ui'
 import { APP_SIDEBAR_NAV_ITEMS, type AppNavItem } from '~/data/appNavData'
 import { useCurrentTeam } from '~/composables/useCurrentTeam'
 import { useNotificationsStore } from '~/stores/notifications'
@@ -19,10 +17,6 @@ const emit = defineEmits<{
 const route = useRoute()
 const authStore = useAuthStore()
 const avatarError = ref(false)
-
-const currentBalance = computed(() => {
-  return authStore.wallet?.balance_cache ?? 0
-})
 
 const navItems = APP_SIDEBAR_NAV_ITEMS
 const { openPicker } = useCurrentTeam()
@@ -121,10 +115,10 @@ async function handleLogout() {
         aria-label="Menú principal de navegación"
         class="fixed top-0 bottom-0 left-0 z-50 w-[310px] max-w-[85vw] bg-gradient-to-b from-[#050e12] via-[#071318] to-[#0a1c22] text-white shadow-2xl flex flex-col justify-between overflow-hidden border-r border-cyan-950/80 lg:hidden"
       >
-        <!-- Top Section: Header & User Card -->
+        <!-- Top Section: Header -->
         <div class="p-4 border-b border-cyan-950/80 bg-[#0c1e24] shrink-0">
           <!-- Brand + Close Button -->
-          <div class="flex items-center justify-between pb-3 mb-3 border-b border-cyan-950/80">
+          <div class="flex items-center justify-between">
             <NuxtLink to="/" class="flex items-center gap-2.5" @click="emit('close')">
               <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-md shadow-orange-500/25 shrink-0">
                 <i class="bi bi-fire text-xl"></i>
@@ -149,35 +143,6 @@ async function handleLogout() {
               <i class="bi bi-x-lg text-lg"></i>
             </button>
           </div>
-
-          <!-- User Mini Profile & Balance: Avatar & Points Only -->
-          <NuxtLink
-            :to="{ name: 'app-perfil' }"
-            @click="emit('close')"
-            class="bg-cyan-950/50 hover:bg-cyan-900/60 border border-cyan-800/60 rounded-2xl p-2.5 flex items-center justify-between shadow-lg backdrop-blur-md transition-all group cursor-pointer"
-            title="Ver mi perfil"
-          >
-            <!-- Foto del perfil -->
-            <div class="w-9 h-9 rounded-full bg-cyan-950 text-cyan-300 flex items-center justify-center font-bold text-sm shrink-0 overflow-hidden border-2 border-orange-500/80 ring-2 ring-cyan-500/20 shadow-sm group-hover:scale-105 transition-transform">
-              <img
-                v-if="authStore.profile?.avatar_url && !avatarError"
-                :src="authStore.profile.avatar_url"
-                :alt="authStore.profile?.display_name || 'Avatar'"
-                class="w-full h-full object-cover"
-                referrerpolicy="no-referrer"
-                @error="avatarError = true"
-              />
-              <span v-else>
-                {{ authStore.profile?.display_name?.charAt(0).toUpperCase() || 'F' }}
-              </span>
-            </div>
-
-            <!-- Pearls Badge -->
-            <div class="flex items-center gap-1.5 text-xs font-black text-amber-950 bg-gradient-to-r from-amber-300 to-yellow-400 border border-amber-400/80 px-2.5 py-1 rounded-full shadow-xs shrink-0 group-hover:brightness-105 transition-all">
-              <PearlIcon size="xs" animated />
-              <span class="tabular-nums">{{ formatPerlitas(currentBalance) }}</span>
-            </div>
-          </NuxtLink>
         </div>
 
         <!-- Middle Section: Scrollable Complete Navigation Links -->
