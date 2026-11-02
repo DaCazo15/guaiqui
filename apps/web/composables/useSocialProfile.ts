@@ -8,6 +8,21 @@ import type {
   UserSearchResultItem,
 } from '@guaiqui/shared'
 
+function formatSocialError(err: any, fallback: string): string {
+  if (!err) return fallback
+  const msg = err.message || (typeof err === 'string' ? err : '')
+  if (/schema cache/i.test(msg) || /function .* does not exist/i.test(msg) || /permission denied/i.test(msg)) {
+    return 'El servicio se está sincronizando o requiere iniciar sesión. Por favor, recarga la página.'
+  }
+  if (/JWT expired/i.test(msg) || /not authenticated/i.test(msg) || /No autenticado/i.test(msg)) {
+    return 'Tu sesión ha expirado. Por favor, vuelve a iniciar sesión.'
+  }
+  if (/Failed to fetch/i.test(msg) || /NetworkError/i.test(msg)) {
+    return 'Error de conexión. Revisa tu conexión a internet.'
+  }
+  return msg || fallback
+}
+
 export const useSocialProfile = () => {
   const supabase = useSupabaseClient()
   const user = useSupabaseUser()
@@ -44,7 +59,7 @@ export const useSocialProfile = () => {
       currentProfile.value = data as PublicUserProfile
       return currentProfile.value
     } catch (err: any) {
-      error.value = err.message || 'Error al cargar perfil'
+      error.value = formatSocialError(err, 'Error al cargar perfil')
       currentProfile.value = null
       return null
     } finally {
@@ -67,7 +82,7 @@ export const useSocialProfile = () => {
       successMessage.value = 'Solicitud de seguimiento enviada con éxito.'
       return true
     } catch (err: any) {
-      error.value = err.message || 'Error al enviar solicitud de seguimiento'
+      error.value = formatSocialError(err, 'Error al enviar solicitud de seguimiento')
       return false
     } finally {
       actionLoading.value = false
@@ -95,7 +110,7 @@ export const useSocialProfile = () => {
       successMessage.value = accept ? 'Solicitud aceptada.' : 'Solicitud rechazada.'
       return true
     } catch (err: any) {
-      error.value = err.message || 'Error al responder solicitud'
+      error.value = formatSocialError(err, 'Error al responder solicitud')
       return false
     } finally {
       actionLoading.value = false
@@ -117,7 +132,7 @@ export const useSocialProfile = () => {
       successMessage.value = 'Solicitud cancelada.'
       return true
     } catch (err: any) {
-      error.value = err.message || 'Error al cancelar solicitud'
+      error.value = formatSocialError(err, 'Error al cancelar solicitud')
       return false
     } finally {
       actionLoading.value = false
@@ -145,7 +160,7 @@ export const useSocialProfile = () => {
       successMessage.value = 'Has dejado de seguir a este usuario.'
       return true
     } catch (err: any) {
-      error.value = err.message || 'Error al dejar de seguir al usuario'
+      error.value = formatSocialError(err, 'Error al dejar de seguir al usuario')
       return false
     } finally {
       actionLoading.value = false
@@ -168,7 +183,7 @@ export const useSocialProfile = () => {
       successMessage.value = 'Usuario bloqueado correctamente.'
       return true
     } catch (err: any) {
-      error.value = err.message || 'Error al bloquear usuario'
+      error.value = formatSocialError(err, 'Error al bloquear usuario')
       return false
     } finally {
       actionLoading.value = false
@@ -188,7 +203,7 @@ export const useSocialProfile = () => {
       successMessage.value = 'Usuario desbloqueado.'
       return true
     } catch (err: any) {
-      error.value = err.message || 'Error al desbloquear usuario'
+      error.value = formatSocialError(err, 'Error al desbloquear usuario')
       return false
     } finally {
       actionLoading.value = false
@@ -217,7 +232,7 @@ export const useSocialProfile = () => {
       if (rpcError) throw rpcError
       searchResults.value = Array.isArray(data) ? (data as unknown as UserSearchResultItem[]) : []
     } catch (err: any) {
-      error.value = err.message || 'Error en la búsqueda de usuarios'
+      error.value = formatSocialError(err, 'Error en la búsqueda de fanáticos')
       searchResults.value = []
     } finally {
       searching.value = false
@@ -236,7 +251,7 @@ export const useSocialProfile = () => {
       if (rpcError) throw rpcError
       followRequests.value = Array.isArray(data) ? (data as unknown as FollowRequestItem[]) : []
     } catch (err: any) {
-      error.value = err.message || 'Error al cargar solicitudes de seguimiento'
+      error.value = formatSocialError(err, 'Error al cargar solicitudes de seguimiento')
     } finally {
       loadingRequests.value = false
     }
@@ -254,7 +269,7 @@ export const useSocialProfile = () => {
       if (rpcError) throw rpcError
       blockedUsers.value = Array.isArray(data) ? (data as unknown as BlockedUserItem[]) : []
     } catch (err: any) {
-      error.value = err.message || 'Error al cargar usuarios bloqueados'
+      error.value = formatSocialError(err, 'Error al cargar usuarios bloqueados')
     } finally {
       loadingBlocked.value = false
     }
@@ -271,7 +286,7 @@ export const useSocialProfile = () => {
       if (rpcError) throw rpcError
       followersList.value = Array.isArray(data) ? (data as unknown as UserFollowUserItem[]) : []
     } catch (err: any) {
-      error.value = err.message || 'Error al cargar lista de seguidores'
+      error.value = formatSocialError(err, 'Error al cargar lista de seguidores')
     } finally {
       loadingList.value = false
     }
@@ -288,7 +303,7 @@ export const useSocialProfile = () => {
       if (rpcError) throw rpcError
       followingList.value = Array.isArray(data) ? (data as unknown as UserFollowUserItem[]) : []
     } catch (err: any) {
-      error.value = err.message || 'Error al cargar lista de seguidos'
+      error.value = formatSocialError(err, 'Error al cargar lista de seguidos')
     } finally {
       loadingList.value = false
     }

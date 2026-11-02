@@ -10,7 +10,7 @@ export const APP_SIDEBAR_NAV_ITEMS: AppNavItem[] = [
   { name: 'Inicio', routeName: 'app', path: '/app', icon: 'bi-house-door-fill' },
   { name: 'Equipos', routeName: 'app-equipos', path: '/app/equipos', icon: 'bi-shield-shaded' },
   { name: 'Mi Perfil', routeName: 'app-perfil', path: '/app/perfil', icon: 'bi-person-fill' },
-  { name: 'Buscar Fanáticos', routeName: 'app-usuarios', path: '/app/usuarios', icon: 'bi-search' },
+  { name: 'Buscador FanActivo', routeName: 'app-usuarios', path: '/app/usuarios', icon: 'bi-search' },
   { name: 'Billetera', routeName: 'app-billetera', path: '/app/billetera', icon: 'bi-wallet2' },
   { name: 'Referidos', routeName: 'app-referidos', path: '/app/referidos', icon: 'bi-people' },
   { name: 'Trivias', routeName: 'app-trivias', path: '/app/trivias', icon: 'bi-patch-question-fill' },

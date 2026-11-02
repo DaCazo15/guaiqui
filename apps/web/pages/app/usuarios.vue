@@ -9,8 +9,8 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Comunidad de Fanáticos — FanActivo',
-  description: 'Encuentra y sigue a otros fanáticos del baloncesto y la plataforma FanActivo.',
+  title: 'Buscador de FanActivo — FanActivo',
+  description: 'Encuentra y sigue a otros fanáticos en la plataforma FanActivo.',
 })
 
 const socialProfile = useSocialProfile()
@@ -60,11 +60,11 @@ async function handleAction(userId: string, currentStatus: string) {
           <i class="bi bi-people-fill"></i>
         </div>
         <h1 class="font-display font-black text-2xl sm:text-3xl uppercase tracking-wide">
-          Comunidad de Fanáticos
+          Buscador de FanActivo
         </h1>
       </div>
       <p class="text-xs sm:text-sm text-emerald-100 max-w-xl">
-        Busca a otros fanáticos, conéctate con ellos y sigue su actividad de juego y canjes en la plataforma FanActivo.
+        Busca a otros fanáticos en FanActivo, conéctate con ellos y sigue su actividad de juego y canjes en la plataforma.
       </p>
 
       <!-- Barra de Búsqueda -->
@@ -74,7 +74,7 @@ async function handleAction(userId: string, currentStatus: string) {
           <input
             v-model="searchQuery"
             type="text"
-            placeholder="Buscar fanáticos por su nombre..."
+            placeholder="Buscar fanáticos por su nombre o usuario en FanActivo..."
             class="w-full pl-9 pr-4 py-2.5 bg-white text-slate-900 rounded-guaiqui-xl text-sm border-0 focus:ring-2 focus:ring-emerald-400 shadow-sm placeholder:text-slate-400 font-medium"
           />
         </div>
