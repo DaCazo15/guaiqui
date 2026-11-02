@@ -11,6 +11,7 @@ import ProfileUsersListModal from '~/components/profile/ProfileUsersListModal.vu
 import ProfileFollowRequestsCard from '~/components/profile/ProfileFollowRequestsCard.vue'
 import ProfileBlockedUsersCard from '~/components/profile/ProfileBlockedUsersCard.vue'
 import ProfileFollowedTeamsCard from '~/components/profile/ProfileFollowedTeamsCard.vue'
+import AppBackButton from '~/components/common/AppBackButton.vue'
 
 definePageMeta({
   layout: 'app',

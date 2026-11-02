@@ -5,6 +5,7 @@ import QRCode from 'qrcode'
 import { BaseCard, BaseBadge, BaseButton, BaseModal, PearlAmount } from '@guaiqui/ui'
 import { useRedemptions } from '~/composables/useRedemptions'
 import { useWallet } from '~/composables/useWallet'
+import AppBackButton from '~/components/common/AppBackButton.vue'
 
 definePageMeta({
   layout: 'app',

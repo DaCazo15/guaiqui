@@ -5,6 +5,7 @@ import { formatCaracas } from '@guaiqui/shared'
 import { useTriviaStore, translateTriviaError } from '~/stores/trivias'
 import { useAntiFraud } from '~/composables/useAntiFraud'
 import TurnstileWrapper from '~/components/common/TurnstileWrapper.vue'
+import AppBackButton from '~/components/common/AppBackButton.vue'
 
 definePageMeta({
   layout: 'app',

@@ -8,6 +8,7 @@ import { useCatalog, type Product } from '~/composables/useCatalog'
 import { useWallet } from '~/composables/useWallet'
 import { useCurrentTeam } from '~/composables/useCurrentTeam'
 import StoreRedeemModal from '~/components/store/StoreRedeemModal.vue'
+import AppBackButton from '~/components/common/AppBackButton.vue'
 
 definePageMeta({
   layout: 'app',

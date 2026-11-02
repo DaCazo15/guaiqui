@@ -2,6 +2,7 @@
 import { ref } from 'vue'
 import { BaseInput, BaseButton, BaseCard } from '@guaiqui/ui'
 import { useAuthStore } from '~/stores/auth'
+import AppBackButton from '~/components/common/AppBackButton.vue'
 
 definePageMeta({
   middleware: ['guest'],

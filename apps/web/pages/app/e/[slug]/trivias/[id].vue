@@ -7,6 +7,7 @@ import { useTriviaStore, translateTriviaError } from '~/stores/trivias'
 import { useAntiFraud } from '~/composables/useAntiFraud'
 import { useCurrentTeam } from '~/composables/useCurrentTeam'
 import TurnstileWrapper from '~/components/common/TurnstileWrapper.vue'
+import AppBackButton from '~/components/common/AppBackButton.vue'
 
 definePageMeta({
   layout: 'app',

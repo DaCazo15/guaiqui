@@ -5,6 +5,7 @@ import { BaseCard, BaseBadge, BaseButton, PearlAmount } from '@guaiqui/ui'
 import { useCatalog } from '~/composables/useCatalog'
 import { useWallet } from '~/composables/useWallet'
 import StoreRedeemModal from '~/components/store/StoreRedeemModal.vue'
+import AppBackButton from '~/components/common/AppBackButton.vue'
 
 definePageMeta({
   layout: 'app',
