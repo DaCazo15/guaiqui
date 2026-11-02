@@ -72,14 +72,29 @@ export const useSocialProfile = () => {
     actionLoading.value = true
     clearMessages()
     try {
-      const { error: rpcError } = await supabase.rpc('send_follow_request', {
+      const { data, error: rpcError } = await supabase.rpc('send_follow_request', {
         p_user_id: userId,
       })
       if (rpcError) throw rpcError
+      const res = data as any
+      const resultingStatus = (res?.status === 'accepted' ? 'accepted' : 'pending') as FollowRelationStatus
+
       if (currentProfile.value && currentProfile.value.id === userId) {
-        currentProfile.value.relation_status = 'pending'
+        currentProfile.value.relation_status = resultingStatus
+        if (resultingStatus === 'accepted') {
+          currentProfile.value.is_full_profile = true
+          currentProfile.value.followers_count = (currentProfile.value.followers_count || 0) + 1
+        }
       }
-      successMessage.value = 'Solicitud de seguimiento enviada con éxito.'
+
+      const item = searchResults.value.find((u) => u.id === userId)
+      if (item) {
+        item.relation_status = resultingStatus
+      }
+
+      successMessage.value = resultingStatus === 'accepted'
+        ? 'Ahora sigues a este fanático.'
+        : 'Solicitud de seguimiento enviada con éxito.'
       return true
     } catch (err: any) {
       error.value = formatSocialError(err, 'Error al enviar solicitud de seguimiento')
@@ -125,11 +140,21 @@ export const useSocialProfile = () => {
       const { error: rpcError } = await supabase.rpc('cancel_follow_request', {
         p_user_id: userId,
       })
-      if (rpcError) throw rpcError
+      if (rpcError) {
+        // Fallback defensivo: si no había pendiente porque ya estaba aceptada la relación, desenlazar via unfollow_user
+        const { error: unfollowErr } = await supabase.rpc('unfollow_user', {
+          p_user_id: userId,
+        })
+        if (unfollowErr) throw rpcError
+      }
       if (currentProfile.value && currentProfile.value.id === userId) {
         currentProfile.value.relation_status = 'none'
       }
-      successMessage.value = 'Solicitud cancelada.'
+      const item = searchResults.value.find((u) => u.id === userId)
+      if (item) {
+        item.relation_status = 'none'
+      }
+      successMessage.value = 'Solicitud o seguimiento cancelado.'
       return true
     } catch (err: any) {
       error.value = formatSocialError(err, 'Error al cancelar solicitud')
@@ -156,6 +181,10 @@ export const useSocialProfile = () => {
         currentProfile.value.redemptions_count = null
         currentProfile.value.last_reward = null
         currentProfile.value.total_pearls = null
+      }
+      const item = searchResults.value.find((u) => u.id === userId)
+      if (item) {
+        item.relation_status = 'none'
       }
       successMessage.value = 'Has dejado de seguir a este usuario.'
       return true

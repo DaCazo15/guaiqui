@@ -31,23 +31,11 @@ watch(searchQuery, (newVal) => {
 
 async function handleAction(userId: string, currentStatus: string) {
   if (currentStatus === 'none') {
-    const ok = await socialProfile.sendFollow(userId)
-    if (ok) {
-      const item = socialProfile.searchResults.value.find((u) => u.id === userId)
-      if (item) item.relation_status = 'pending'
-    }
+    await socialProfile.sendFollow(userId)
   } else if (currentStatus === 'pending') {
-    const ok = await socialProfile.cancelFollow(userId)
-    if (ok) {
-      const item = socialProfile.searchResults.value.find((u) => u.id === userId)
-      if (item) item.relation_status = 'none'
-    }
+    await socialProfile.cancelFollow(userId)
   } else if (currentStatus === 'accepted') {
-    const ok = await socialProfile.unfollow(userId)
-    if (ok) {
-      const item = socialProfile.searchResults.value.find((u) => u.id === userId)
-      if (item) item.relation_status = 'none'
-    }
+    await socialProfile.unfollow(userId)
   }
 }
 </script>
