@@ -28,16 +28,24 @@ const socialProfile = useSocialProfile()
 const route = useRoute()
 const router = useRouter()
 
-const activeTab = ref<'perfil' | 'ajustes'>(route.query.tab === 'ajustes' ? 'ajustes' : 'perfil')
+export type ProfileTab = 'perfil' | 'ajustes' | 'solicitudes'
+
+const getValidTab = (tabValue: unknown): ProfileTab => {
+  if (tabValue === 'ajustes') return 'ajustes'
+  if (tabValue === 'solicitudes') return 'solicitudes'
+  return 'perfil'
+}
+
+const activeTab = ref<ProfileTab>(getValidTab(route.query.tab))
 
 watch(
   () => route.query.tab,
   (newTab) => {
-    activeTab.value = newTab === 'ajustes' ? 'ajustes' : 'perfil'
+    activeTab.value = getValidTab(newTab)
   }
 )
 
-function handleSelectTab(tab: 'perfil' | 'ajustes') {
+function handleSelectTab(tab: ProfileTab) {
   activeTab.value = tab
   router.replace({
     query: {
@@ -221,8 +229,8 @@ async function handleUnblockUser(userId: string) {
       </button>
     </div>
 
-    <!-- Pestañas de Navegación del Perfil: Mi Perfil / Ajustes -->
-    <div class="flex items-center gap-2 border-b border-guaiqui-border/80 pb-2">
+    <!-- Pestañas de Navegación del Perfil: Mi Perfil / Solicitudes / Ajustes -->
+    <div class="flex flex-wrap items-center gap-2 border-b border-guaiqui-border/80 pb-2">
       <button
         type="button"
         @click="handleSelectTab('perfil')"
@@ -233,6 +241,25 @@ async function handleUnblockUser(userId: string) {
       >
         <i class="bi bi-person-fill"></i>
         <span>Mi Perfil</span>
+      </button>
+
+      <button
+        type="button"
+        @click="handleSelectTab('solicitudes')"
+        class="inline-flex items-center gap-2 px-4 py-2 rounded-guaiqui-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all cursor-pointer"
+        :class="activeTab === 'solicitudes'
+          ? 'bg-guaiqui-primary text-white shadow-guaiqui-sm'
+          : 'bg-white text-guaiqui-text-muted hover:text-guaiqui-text hover:bg-slate-100/70 border border-guaiqui-border'"
+      >
+        <i class="bi bi-person-plus-fill"></i>
+        <span>Solicitudes</span>
+        <span
+          v-if="socialProfile.followRequests.value.length > 0"
+          class="px-1.5 py-0.5 rounded-full text-[10px] font-black leading-none"
+          :class="activeTab === 'solicitudes' ? 'bg-white text-guaiqui-primary' : 'bg-orange-500 text-white'"
+        >
+          {{ socialProfile.followRequests.value.length }}
+        </span>
       </button>
 
       <button
@@ -248,7 +275,7 @@ async function handleUnblockUser(userId: string) {
       </button>
     </div>
 
-    <!-- VISTA 1: MI PERFIL (Resumen, estadísticas, solicitudes y clubes) -->
+    <!-- VISTA 1: MI PERFIL (Resumen, estadísticas y clubes) -->
     <div v-if="activeTab === 'perfil'" class="space-y-6">
       <!-- 2. Grid de Estadísticas Reales (Ranking, Canjes, Último Premio, Seguidores, Seguidos) -->
       <ProfileStatsGrid
@@ -295,17 +322,19 @@ async function handleUnblockUser(userId: string) {
         </div>
       </div>
 
-      <!-- 3. Solicitudes de Seguimiento Recibidas -->
+      <!-- 3. Equipos que Sigue el Fanático -->
+      <ProfileFollowedTeamsCard
+        :teams="socialProfile.currentProfile.value?.followed_teams || []"
+      />
+    </div>
+
+    <!-- VISTA 3: SOLICITUDES (Subsección de Solicitudes de Seguimiento) -->
+    <div v-else-if="activeTab === 'solicitudes'" class="space-y-6">
       <ProfileFollowRequestsCard
         :requests="socialProfile.followRequests.value"
         :loading="socialProfile.loadingRequests.value"
         :action-loading="socialProfile.actionLoading.value"
         @respond="handleRespondRequest"
-      />
-
-      <!-- 4. Equipos que Sigue el Fanático -->
-      <ProfileFollowedTeamsCard
-        :teams="socialProfile.currentProfile.value?.followed_teams || []"
       />
     </div>
 
