@@ -17,15 +17,15 @@ const estimatedReward = computed(() => {
 </script>
 
 <template>
-  <BaseCard class="relative overflow-hidden p-6 rounded-guaiqui-xl bg-white border border-guaiqui-border shadow-guaiqui-sm hover:border-guaiqui-primary/40 transition-all duration-300">
-    <!-- Ribete superior deportivo con los colores Guaiquerí y acento rojo bandana -->
-    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-guaiqui-primary via-emerald-500 to-guaiqui-accent"></div>
+  <BaseCard class="relative overflow-hidden p-6 rounded-guaiqui-xl bg-white border border-guaiqui-border shadow-guaiqui-sm hover:border-orange-500/40 transition-all duration-300">
+    <!-- Ribete superior deportivo con los colores de FanActivo (Naranja, Ámbar y Cian) -->
+    <div class="absolute top-0 left-0 right-0 h-1.5 bg-gradient-to-r from-orange-500 via-amber-400 to-cyan-500"></div>
 
     <div v-if="activeTrivia" class="space-y-5">
       <!-- Fila Superior: Badges y Estado -->
       <div class="flex items-center justify-between gap-3">
         <div class="flex items-center gap-2">
-          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-guaiqui-primary-soft text-guaiqui-primary border border-guaiqui-primary/20">
+          <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider bg-orange-50 text-orange-700 border border-orange-200/80">
             <i class="bi bi-patch-question-fill text-sm"></i>
             <span>Trivia</span>
           </span>
@@ -40,11 +40,11 @@ const estimatedReward = computed(() => {
 
       <!-- Título y Descripción -->
       <div class="space-y-2">
-        <h2 class="font-display font-extrabold text-2xl sm:text-3xl uppercase tracking-tight text-guaiqui-text hover:text-guaiqui-primary transition-colors">
+        <h2 class="font-display font-extrabold text-2xl sm:text-3xl uppercase tracking-tight text-guaiqui-text hover:text-orange-600 transition-colors">
           {{ activeTrivia.title }}
         </h2>
         <p class="text-sm text-guaiqui-text-muted leading-relaxed max-w-2xl">
-          {{ activeTrivia.description || 'Pon a prueba tu pasión por la Tribu' }}
+          {{ activeTrivia.description || 'Pon a prueba tu pasión deportiva' }}
         </p>
       </div>
 
@@ -53,11 +53,11 @@ const estimatedReward = computed(() => {
         <!-- Métricas informativas -->
         <div class="flex items-center gap-4 text-xs text-guaiqui-text-muted">
           <span class="flex items-center gap-1 font-medium">
-            <i class="bi bi-clock-history text-guaiqui-primary text-sm"></i>
+            <i class="bi bi-clock-history text-orange-500 text-sm"></i>
             Disponible hoy
           </span>
           <span class="flex items-center gap-1 font-medium">
-            <i class="bi bi-shield-check text-emerald-600 text-sm"></i>
+            <i class="bi bi-shield-check text-cyan-600 text-sm"></i>
             Respuestas en servidor
           </span>
         </div>
@@ -67,12 +67,12 @@ const estimatedReward = computed(() => {
           <!-- Si ya fue jugada -->
           <template v-if="activeTrivia.played">
             <div class="flex items-center gap-3">
-              <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-guaiqui-lg bg-emerald-50 text-emerald-800 border border-emerald-300 font-bold text-xs uppercase tracking-wider">
-                <i class="bi bi-check-circle-fill text-emerald-600 text-sm"></i>
+              <span class="inline-flex items-center gap-1.5 px-4 py-2 rounded-guaiqui-lg bg-cyan-50 text-cyan-800 border border-cyan-300 font-bold text-xs uppercase tracking-wider">
+                <i class="bi bi-check-circle-fill text-cyan-600 text-sm"></i>
                 Completada
               </span>
               <NuxtLink :to="activeTeam ? `/app/e/${activeTeam.slug}/trivias` : '/app/trivias'">
-                <button class="px-4 py-2 rounded-guaiqui-lg bg-guaiqui-surface hover:bg-gray-200 text-guaiqui-text font-bold text-xs uppercase tracking-wider border border-guaiqui-border transition-colors">
+                <button class="px-4 py-2 rounded-guaiqui-lg bg-guaiqui-surface hover:bg-slate-200 text-guaiqui-text font-bold text-xs uppercase tracking-wider border border-guaiqui-border transition-colors cursor-pointer">
                   Historial
                 </button>
               </NuxtLink>
@@ -98,7 +98,7 @@ const estimatedReward = computed(() => {
 
     <!-- Empty State cuando no hay trivia activa -->
     <div v-else class="py-8 text-center space-y-3">
-      <div class="w-14 h-14 rounded-full bg-guaiqui-surface flex items-center justify-center text-2xl text-guaiqui-primary mx-auto border border-guaiqui-border shadow-inner">
+      <div class="w-14 h-14 rounded-full bg-orange-50 flex items-center justify-center text-2xl text-orange-600 mx-auto border border-orange-200 shadow-inner">
         <i class="bi bi-calendar-event"></i>
       </div>
       <div class="space-y-1">
@@ -110,7 +110,7 @@ const estimatedReward = computed(() => {
         </p>
       </div>
       <NuxtLink :to="activeTeam ? `/app/e/${activeTeam.slug}/trivias` : '/app/trivias'">
-        <button class="mt-2 px-4 py-2 rounded-guaiqui-md bg-guaiqui-primary-soft hover:bg-emerald-100 text-guaiqui-primary text-xs font-bold uppercase tracking-wider transition-colors">
+        <button class="mt-2 px-5 py-2.5 rounded-guaiqui-xl bg-orange-50 hover:bg-orange-500 hover:text-white text-orange-700 text-xs font-bold uppercase tracking-wider transition-all duration-200 shadow-xs border border-orange-200 cursor-pointer">
           Explorar Trivias Anteriores
         </button>
       </NuxtLink>

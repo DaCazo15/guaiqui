@@ -218,18 +218,18 @@ const handleClose = () => {
       >
         <!-- Modal Card Container con Branding Guaiqueríes: Pantalla completa en Móvil -->
         <div
-          class="relative w-full h-[100dvh] sm:h-auto sm:max-w-3xl bg-white rounded-none sm:rounded-guaiqui-2xl border-0 sm:border-2 border-guaiqui-primary shadow-2xl overflow-y-auto sm:overflow-hidden flex flex-col justify-between my-0 sm:my-auto animate-in fade-in zoom-in-95 duration-200"
+          class="relative w-full h-[100dvh] sm:h-auto sm:max-w-3xl bg-white rounded-none sm:rounded-guaiqui-2xl border-0 sm:border-2 border-orange-500 shadow-2xl overflow-y-auto sm:overflow-hidden flex flex-col justify-between my-0 sm:my-auto animate-in fade-in zoom-in-95 duration-200"
           @click.stop
         >
-          <!-- Header Branded: Verde Guaiqueríes sólido con logo oficial y nombre del video (SIN PUNTOS) -->
-          <div class="bg-[#0B7A3B] bg-gradient-to-r from-[#064E27] via-[#0B7A3B] to-emerald-800 text-white p-3.5 sm:p-5 relative flex items-center justify-between border-b-2 sm:border-b-4 border-[#C8102E] shadow-md shrink-0">
+          <!-- Header Branded: Obsidiana FanActivo con logo de llama y nombre del video -->
+          <div class="bg-gradient-to-r from-[#050E12] via-[#071318] to-[#0A1C22] text-white p-3.5 sm:p-5 relative flex items-center justify-between border-b-2 sm:border-b-4 border-orange-500 shadow-md shrink-0">
             <div class="flex items-center gap-3 min-w-0">
-              <div class="w-11 h-11 rounded-full bg-white p-1 shrink-0 shadow-md border-2 border-[#C8102E] flex items-center justify-center">
-                <img src="/logo.png" alt="Guaiqueríes" class="w-full h-full object-contain" />
+              <div class="w-11 h-11 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 p-1 shrink-0 shadow-md border border-orange-400/40 flex items-center justify-center text-white text-xl">
+                <i class="bi bi-fire"></i>
               </div>
               <div class="min-w-0 space-y-0.5">
                 <div v-if="video.sponsor_name" class="flex items-center gap-2">
-                  <span class="text-[10px] font-mono font-extrabold uppercase tracking-wider bg-black/30 text-emerald-200 px-2 py-0.5 rounded border border-emerald-400/30">
+                  <span class="text-[10px] font-mono font-extrabold uppercase tracking-wider bg-cyan-950/80 text-cyan-300 px-2 py-0.5 rounded border border-cyan-500/30">
                     {{ video.sponsor_name }}
                   </span>
                 </div>
@@ -242,7 +242,7 @@ const handleClose = () => {
             <!-- Botón de Cerrar Superior -->
             <button
               type="button"
-              class="w-9 h-9 rounded-full bg-white/20 hover:bg-[#C8102E] text-white flex items-center justify-center text-lg transition-colors shrink-0 ml-2 cursor-pointer shadow-inner border border-white/30"
+              class="w-9 h-9 rounded-full bg-white/10 hover:bg-orange-600 text-white flex items-center justify-center text-lg transition-colors shrink-0 ml-2 cursor-pointer shadow-inner border border-white/20"
               title="Cerrar video"
               @click="handleClose"
             >
@@ -343,48 +343,37 @@ const handleClose = () => {
             <div class="relative py-2">
               <!-- Pista de la barra -->
               <div class="w-full h-3.5 bg-slate-200 rounded-full overflow-hidden border border-slate-300 shadow-inner">
-                <!-- Barra de progreso verde Guaiqueríes -->
+                <!-- Barra de progreso FanActivo -->
                 <div
-                  class="h-full bg-[#0B7A3B] bg-gradient-to-r from-[#0B7A3B] via-emerald-500 to-emerald-400 transition-all duration-300 rounded-full shadow-sm"
+                  class="h-full bg-gradient-to-r from-orange-500 via-amber-500 to-cyan-400 transition-all duration-300 rounded-full shadow-sm"
                   :style="{ width: `${progressPercentage}%` }"
                 ></div>
               </div>
 
-              <!-- PUNTO DE PROGRESO DE LA BANDA DEL LOGO (#C8102E) -->
-              <!-- Al hacer click o hover se convierte en el logo de Guaiqueríes manteniendo el color de la banda -->
+              <!-- PUNTO DE PROGRESO -->
               <div
                 class="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 transition-all duration-300 cursor-pointer group/dot z-20 flex items-center justify-center select-none"
                 :style="{ left: `${progressPercentage}%` }"
                 @click="isDotActive = !isDotActive"
               >
                 <div
-                  class="rounded-full shadow-lg flex items-center justify-center overflow-hidden transition-all duration-300 border-2 border-[#C8102E]"
+                  class="rounded-full shadow-lg flex items-center justify-center overflow-hidden transition-all duration-300 border-2 border-orange-500"
                   :class="[
                     isDotActive
-                      ? 'w-11 h-11 bg-white ring-4 ring-[#C8102E]/40 scale-110 shadow-xl'
-                      : 'w-6 h-6 bg-[#C8102E] group-hover/dot:w-11 group-hover/dot:h-11 group-hover/dot:bg-white group-hover/dot:ring-4 group-hover/dot:ring-[#C8102E]/40'
+                      ? 'w-11 h-11 bg-white ring-4 ring-orange-500/40 scale-110 shadow-xl'
+                      : 'w-6 h-6 bg-orange-500 group-hover/dot:w-11 group-hover/dot:h-11 group-hover/dot:bg-white group-hover/dot:ring-4 group-hover/dot:ring-orange-500/40'
                   ]"
-                  title="Progreso Guaiqueríes — Haz clic o pasa el mouse para ver el escudo"
+                  title="Progreso FanActivo"
                 >
-                  <!-- Logo de Guaiqueríes revelado con borde de bandana roja -->
-                  <img
-                    src="/logo.png"
-                    alt="Logo Guaiqueríes"
-                    class="object-contain transition-all duration-300 pointer-events-none"
-                    :class="[
-                      isDotActive
-                        ? 'w-8 h-8 opacity-100 scale-100'
-                        : 'w-8 h-8 opacity-0 scale-75 group-hover/dot:opacity-100 group-hover/dot:scale-100'
-                    ]"
-                  />
+                  <i class="bi bi-fire text-orange-500 text-lg"></i>
                 </div>
               </div>
             </div>
 
-            <!-- Advertencia / Instrucción con alto contraste (SIN MENCIÓN DE PUNTOS NI RECLAMOS) -->
+            <!-- Advertencia / Instrucción con alto contraste -->
             <p class="text-[11px] text-slate-600 leading-tight">
               <span v-if="!isUnlocked">
-                <i class="bi bi-info-circle mr-1 text-[#0B7A3B] font-bold"></i>
+                <i class="bi bi-info-circle mr-1 text-orange-500 font-bold"></i>
                 Haz clic en el botón de reproducción del video. Si el video se pausa, el conteo se detiene y perderás el progreso si la modal se cierra.
               </span>
               <span v-else class="text-emerald-800 font-semibold flex items-center gap-1.5">

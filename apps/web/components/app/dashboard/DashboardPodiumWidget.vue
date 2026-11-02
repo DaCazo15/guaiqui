@@ -111,14 +111,14 @@ const myBalance = computed(() => {
     </div>
 
     <!-- Franja Destacada: Tu Posición Actual Calculada -->
-    <div class="mt-1 flex items-center justify-between p-3 rounded-guaiqui-lg bg-guaiqui-primary-soft border border-guaiqui-primary/20 text-xs font-semibold">
+    <div class="mt-1 flex items-center justify-between p-3 rounded-guaiqui-lg bg-orange-50/80 border border-orange-200/80 text-xs font-semibold">
       <div class="flex items-center gap-2">
-        <div class="w-6 h-6 rounded-full bg-guaiqui-primary text-white flex items-center justify-center text-[11px] font-bold font-mono shrink-0">
+        <div class="w-6 h-6 rounded-full bg-gradient-to-br from-orange-500 to-amber-500 text-white flex items-center justify-center text-[11px] font-bold font-mono shrink-0 shadow-xs">
           {{ myRank ? `#${myRank}` : '—' }}
         </div>
-        <span class="text-guaiqui-primary-dark font-bold">Tu Posición</span>
+        <span class="text-orange-950 font-bold">Tu Posición</span>
       </div>
-      <div class="flex items-center gap-1 font-mono text-guaiqui-primary font-bold">
+      <div class="flex items-center gap-1 font-mono text-orange-600 font-bold">
         <span>{{ myBalance }}</span>
         <span class="text-[10px] uppercase font-sans text-guaiqui-text-muted">Puntos</span>
       </div>

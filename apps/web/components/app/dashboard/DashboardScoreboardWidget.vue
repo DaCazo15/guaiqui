@@ -125,32 +125,32 @@ onBeforeUnmount(() => {
     <!-- Matchup Hero: Próximo Partido Dinámico -->
     <div
       v-if="nextGame"
-      class="relative overflow-hidden rounded-guaiqui-xl bg-gradient-to-br from-stone-950 via-emerald-950 to-slate-900 border border-emerald-500/30 p-4 sm:p-2.5 text-white shadow-md"
+      class="relative overflow-hidden rounded-guaiqui-xl bg-gradient-to-br from-[#050E12] via-[#071318] to-[#0A1C22] border border-cyan-900/60 p-4 sm:p-2.5 text-white shadow-md"
     >
       <!-- Glow ambiental sutil -->
-      <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-72 h-36 bg-emerald-500/15 blur-3xl pointer-events-none"></div>
+      <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-72 h-36 bg-cyan-500/15 blur-3xl pointer-events-none"></div>
 
       <!-- Fila superior: Badge de Torneo y Gimnasio Dinámico -->
       <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-300 pb-3 border-b border-white/10">
         <div class="flex items-center gap-2">
-          <span class="w-2 h-2 rounded-full bg-guaiqui-accent animate-ping shrink-0"></span>
-          <span class="font-mono font-bold text-emerald-400 uppercase tracking-widest text-[11px]">
+          <span class="w-2 h-2 rounded-full bg-orange-500 animate-ping shrink-0"></span>
+          <span class="font-mono font-bold text-cyan-400 uppercase tracking-widest text-[11px]">
             {{ nextGame.status === 'live' ? 'EN VIVO' : 'PRÓXIMO ENCUENTRO' }}
           </span>
         </div>
         <span class="font-medium text-[11px] text-slate-300 flex items-center gap-1 truncate max-w-[260px]">
-          <i class="bi bi-geo-alt-fill text-guaiqui-accent"></i>
+          <i class="bi bi-geo-alt-fill text-orange-400"></i>
           {{ nextGame.location }}
         </span>
       </div>
 
-      <!-- Duelo Dinámico: Guaiqueríes vs Rival -->
+      <!-- Duelo Dinámico: Equipo vs Rival -->
       <div class="grid grid-cols-3 items-center py-4 gap-2">
-        <!-- Equipo Local o Guaiqueríes -->
+        <!-- Equipo Local o Principal -->
         <div class="flex flex-col items-center text-center space-y-1.5">
-          <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-emerald-900/80 border-2 border-emerald-400 p-1.5 shadow-lg flex items-center justify-center">
-            <img src="/logo.png" alt="Guaiqueríes de Margarita" class="w-full h-full object-contain drop-shadow" />
-            <span class="absolute -bottom-1 px-1.5 py-0.2 rounded-full bg-emerald-600 text-white text-[8px] font-black uppercase tracking-wider">
+          <div class="relative w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-orange-950/80 border-2 border-orange-500 p-1.5 shadow-lg flex items-center justify-center">
+            <img src="/logo.png" alt="Equipo" class="w-full h-full object-contain drop-shadow" />
+            <span class="absolute -bottom-1 px-1.5 py-0.2 rounded-full bg-orange-600 text-white text-[8px] font-black uppercase tracking-wider">
               {{ nextGame.is_home ? 'Local' : 'Visita' }}
             </span>
           </div>
@@ -158,7 +158,7 @@ onBeforeUnmount(() => {
             <h3 class="font-display font-black text-sm sm:text-base uppercase text-white tracking-wide">
               Guaiqueríes
             </h3>
-            <p class="text-[10px] text-emerald-400 font-bold uppercase">Margarita</p>
+            <p class="text-[10px] text-orange-400 font-bold uppercase">Margarita</p>
           </div>
         </div>
 
@@ -209,23 +209,23 @@ onBeforeUnmount(() => {
           Tiempo para el salto entre dos:
         </span>
         <div class="flex items-center gap-1.5 font-mono text-center">
-          <div class="bg-black/60 border border-emerald-500/30 rounded px-2 py-0.5 min-w-[38px]">
-            <span class="font-display font-black text-sm sm:text-base text-emerald-400 tabular-nums">{{ days }}</span>
+          <div class="bg-black/60 border border-cyan-500/30 rounded px-2 py-0.5 min-w-[38px]">
+            <span class="font-display font-black text-sm sm:text-base text-cyan-400 tabular-nums">{{ days }}</span>
             <span class="block text-[7px] uppercase tracking-wider text-slate-400">Días</span>
           </div>
-          <span class="text-emerald-400 font-bold text-xs">:</span>
-          <div class="bg-black/60 border border-emerald-500/30 rounded px-2 py-0.5 min-w-[38px]">
-            <span class="font-display font-black text-sm sm:text-base text-emerald-400 tabular-nums">{{ hours }}</span>
+          <span class="text-cyan-400 font-bold text-xs">:</span>
+          <div class="bg-black/60 border border-cyan-500/30 rounded px-2 py-0.5 min-w-[38px]">
+            <span class="font-display font-black text-sm sm:text-base text-cyan-400 tabular-nums">{{ hours }}</span>
             <span class="block text-[7px] uppercase tracking-wider text-slate-400">Horas</span>
           </div>
-          <span class="text-emerald-400 font-bold text-xs">:</span>
-          <div class="bg-black/60 border border-emerald-500/30 rounded px-2 py-0.5 min-w-[38px]">
-            <span class="font-display font-black text-sm sm:text-base text-emerald-400 tabular-nums">{{ minutes }}</span>
+          <span class="text-cyan-400 font-bold text-xs">:</span>
+          <div class="bg-black/60 border border-cyan-500/30 rounded px-2 py-0.5 min-w-[38px]">
+            <span class="font-display font-black text-sm sm:text-base text-cyan-400 tabular-nums">{{ minutes }}</span>
             <span class="block text-[7px] uppercase tracking-wider text-slate-400">Min</span>
           </div>
-          <span class="text-emerald-400 font-bold text-xs">:</span>
-          <div class="bg-black/60 border border-emerald-500/30 rounded px-2 py-0.5 min-w-[38px]">
-            <span class="font-display font-black text-sm sm:text-base text-amber-400 tabular-nums animate-pulse">{{ seconds }}</span>
+          <span class="text-cyan-400 font-bold text-xs">:</span>
+          <div class="bg-black/60 border border-cyan-500/30 rounded px-2 py-0.5 min-w-[38px]">
+            <span class="font-display font-black text-sm sm:text-base text-orange-400 tabular-nums animate-pulse">{{ seconds }}</span>
             <span class="block text-[7px] uppercase tracking-wider text-slate-400">Seg</span>
           </div>
         </div>

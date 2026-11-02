@@ -39,7 +39,7 @@ defineProps<{
           class="p-3.5 rounded-guaiqui-xl border transition-all"
           :class="[
             completedToday < 10
-              ? 'bg-emerald-50/70 border-guaiqui-primary ring-2 ring-guaiqui-primary/20 shadow-xs'
+              ? 'bg-orange-50/80 border-guaiqui-primary ring-2 ring-guaiqui-primary/20 shadow-xs'
               : 'bg-slate-50 border-slate-200 opacity-80'
           ]"
         >
@@ -55,7 +55,7 @@ defineProps<{
             </span>
             <span
               v-else
-              class="text-[10px] font-bold text-emerald-600 flex items-center gap-1"
+              class="text-[10px] font-bold text-orange-600 flex items-center gap-1"
             >
               <i class="bi bi-check-circle-fill"></i> Completado
             </span>
@@ -77,7 +77,7 @@ defineProps<{
           class="p-3.5 rounded-guaiqui-xl border transition-all"
           :class="[
             completedToday >= 10 && completedToday < 20
-              ? 'bg-emerald-50/70 border-guaiqui-primary ring-2 ring-guaiqui-primary/20 shadow-xs'
+              ? 'bg-orange-50/80 border-guaiqui-primary ring-2 ring-guaiqui-primary/20 shadow-xs'
               : completedToday >= 20
                 ? 'bg-slate-50 border-slate-200 opacity-80'
                 : 'bg-white border-guaiqui-border'
@@ -95,7 +95,7 @@ defineProps<{
             </span>
             <span
               v-else-if="completedToday >= 20"
-              class="text-[10px] font-bold text-emerald-600 flex items-center gap-1"
+              class="text-[10px] font-bold text-orange-600 flex items-center gap-1"
             >
               <i class="bi bi-check-circle-fill"></i> Completado
             </span>
@@ -123,7 +123,7 @@ defineProps<{
           class="p-3.5 rounded-guaiqui-xl border transition-all"
           :class="[
             completedToday >= 20 && completedToday < 50
-              ? 'bg-emerald-50/70 border-guaiqui-primary ring-2 ring-guaiqui-primary/20 shadow-xs'
+              ? 'bg-orange-50/80 border-guaiqui-primary ring-2 ring-guaiqui-primary/20 shadow-xs'
               : completedToday >= 50
                 ? 'bg-slate-50 border-slate-200 opacity-80'
                 : 'bg-white border-guaiqui-border'
@@ -141,7 +141,7 @@ defineProps<{
             </span>
             <span
               v-else-if="completedToday >= 50"
-              class="text-[10px] font-bold text-emerald-600 flex items-center gap-1"
+              class="text-[10px] font-bold text-orange-600 flex items-center gap-1"
             >
               <i class="bi bi-check-circle-fill"></i> Máximo Alcanzado
             </span>

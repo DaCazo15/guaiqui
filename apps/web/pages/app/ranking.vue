@@ -9,8 +9,8 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Tabla de Posiciones — Guaiqueríes de Margarita',
-  description: 'Ranking oficial de los fanáticos con más puntos acumulados en Guaiqueríes de Margarita.',
+  title: 'Tabla de Posiciones — FanActivo',
+  description: 'Ranking oficial de los fanáticos con más puntos acumulados en FanActivo.',
 })
 
 const triviaStore = useTriviaStore()
@@ -52,7 +52,7 @@ const restOfLeaderboard = computed(() => {
         Tabla de <span class="text-guaiqui-primary">Posiciones</span>
       </h1>
       <p class="text-sm text-guaiqui-text-muted">
-        Los fanáticos con más puntos acumulados demostrando su lealtad por los Guaiqueríes.
+        Los fanáticos con más puntos acumulados demostrando su pasión y lealtad en FanActivo.
       </p>
     </div>
 
@@ -85,17 +85,17 @@ const restOfLeaderboard = computed(() => {
       <!-- 1. PODIO PARA LOS TRES PRIMEROS PUESTOS -->
       <BaseCard
         v-if="hasPodium"
-        class="bg-gradient-to-b from-slate-900 via-stone-900 to-emerald-950 border border-emerald-500/30 rounded-guaiqui-xl p-6 sm:p-8 text-white shadow-guaiqui-md relative overflow-hidden"
+        class="bg-gradient-to-b from-[#050E12] via-[#071318] to-[#0A1C22] border border-cyan-900/60 rounded-guaiqui-xl p-6 sm:p-8 text-white shadow-guaiqui-md relative overflow-hidden"
       >
         <!-- Glow ambiental -->
-        <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-96 h-36 bg-amber-500/10 blur-3xl pointer-events-none"></div>
+        <div class="absolute -top-12 left-1/2 -translate-x-1/2 w-96 h-36 bg-orange-500/10 blur-3xl pointer-events-none"></div>
 
         <div class="text-center space-y-1 mb-6 relative z-10">
-          <span class="text-xs uppercase font-extrabold tracking-widest text-amber-400">
-            Honor Insular
+          <span class="text-xs uppercase font-extrabold tracking-widest text-orange-400">
+            Honor FanActivo
           </span>
           <h2 class="font-display font-black text-2xl sm:text-3xl uppercase tracking-wider text-white">
-            El Podio de la Tribu
+            El Podio de Fanáticos
           </h2>
         </div>
 
@@ -124,7 +124,7 @@ const restOfLeaderboard = computed(() => {
                 <p class="font-display font-bold text-xs sm:text-sm text-slate-100 uppercase truncate">
                   {{ secondPlace.display_name }}
                 </p>
-                <span v-if="secondPlace.is_current_user" class="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500 text-white font-bold uppercase">
+                <span v-if="secondPlace.is_current_user" class="text-[9px] px-1.5 py-0.2 rounded-full bg-orange-500 text-white font-bold uppercase">
                   Tú
                 </span>
               </div>
@@ -168,7 +168,7 @@ const restOfLeaderboard = computed(() => {
                 <p class="font-display font-black text-sm sm:text-base text-amber-200 uppercase truncate">
                   {{ firstPlace.display_name }}
                 </p>
-                <span v-if="firstPlace.is_current_user" class="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500 text-white font-bold uppercase">
+                <span v-if="firstPlace.is_current_user" class="text-[9px] px-1.5 py-0.2 rounded-full bg-orange-500 text-white font-bold uppercase">
                   Tú
                 </span>
               </div>
@@ -209,7 +209,7 @@ const restOfLeaderboard = computed(() => {
                 <p class="font-display font-bold text-xs sm:text-sm text-amber-100 uppercase truncate">
                   {{ thirdPlace.display_name }}
                 </p>
-                <span v-if="thirdPlace.is_current_user" class="text-[9px] px-1.5 py-0.2 rounded-full bg-emerald-500 text-white font-bold uppercase">
+                <span v-if="thirdPlace.is_current_user" class="text-[9px] px-1.5 py-0.2 rounded-full bg-orange-500 text-white font-bold uppercase">
                   Tú
                 </span>
               </div>

@@ -1,24 +1,24 @@
-/* Design Tokens for Guaiqueríes de Margarita */
+/* Design Tokens for FanActivo */
 @import 'bootstrap-icons/font/bootstrap-icons.css';
 
 :root {
-  /* Brand Colors */
-  --g-color-primary: #0B7A3B;
-  --g-color-primary-dark: #064E27;
-  --g-color-primary-soft: #E7F5EC;
+  /* Brand Colors — FanActivo (Naranja Primario & Cian Oscuro de Acento) */
+  --g-color-primary: #EA580C; /* Naranja 600 */
+  --g-color-primary-dark: #C2410C; /* Naranja 700 */
+  --g-color-primary-soft: #FFF7ED; /* Naranja 50 */
   
-  --g-color-accent: #C8102E;
-  --g-color-accent-dark: #9B0B22;
-  --g-color-accent-soft: #FDF2F4;
+  --g-color-accent: #0891B2; /* Cian 600 */
+  --g-color-accent-dark: #0E7490; /* Cian 700 */
+  --g-color-accent-soft: #ECFEFF; /* Cian 50 */
 
   --g-color-bg: #FFFFFF;
-  --g-color-surface: #F1F4F2;
-  --g-color-surface-hover: #E2E8E5;
-  --g-color-border: #DDE2DF;
+  --g-color-surface: #F8FAFC; /* Slate 50 neutral contemporáneo */
+  --g-color-surface-hover: #F1F5F9; /* Slate 100 */
+  --g-color-border: #E2E8F0; /* Slate 200 */
   
-  --g-color-text: #111827;
-  --g-color-text-muted: #4B5563;
-  --g-color-text-subtle: #9CA3AF;
+  --g-color-text: #0F172A; /* Slate 900 */
+  --g-color-text-muted: #475569; /* Slate 600 */
+  --g-color-text-subtle: #94A3B8; /* Slate 400 */
 
   /* Status Colors */
   --g-color-success: #10B981;

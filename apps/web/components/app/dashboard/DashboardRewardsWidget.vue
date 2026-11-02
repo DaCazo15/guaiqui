@@ -100,7 +100,7 @@ function nextReward() {
       <!-- Tarjeta del Producto Actual -->
       <div class="flex items-center gap-3">
         <!-- Thumbnail del producto -->
-        <div class="w-14 h-14 rounded-guaiqui-md bg-gradient-to-br from-emerald-800 to-guaiqui-primary-dark text-white flex items-center justify-center text-2xl shadow-sm shrink-0 border border-emerald-600/30 overflow-hidden">
+        <div class="w-14 h-14 rounded-guaiqui-md bg-gradient-to-br from-orange-600 to-amber-600 text-white flex items-center justify-center text-2xl shadow-sm shrink-0 border border-orange-500/30 overflow-hidden">
           <img
             v-if="currentItem.image"
             :src="currentItem.image"
@@ -113,7 +113,7 @@ function nextReward() {
 
         <div class="space-y-1 min-w-0 flex-1">
           <div class="flex items-center gap-2">
-            <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-emerald-100 text-emerald-800">
+            <span class="px-2 py-0.5 rounded text-[9px] font-black uppercase tracking-wider bg-orange-100 text-orange-900">
               Oficial
             </span>
             <span class="text-[10px] text-guaiqui-text-muted uppercase font-semibold truncate">

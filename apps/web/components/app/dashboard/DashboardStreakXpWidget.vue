@@ -133,7 +133,7 @@ const streakMilestones = [1, 2, 3, 4, 5, 6, 7]
     <div class="pt-3 border-t border-guaiqui-border space-y-2">
       <div class="flex items-center justify-between text-xs">
         <div class="flex items-center gap-1.5">
-          <span class="px-2 py-0.5 rounded bg-emerald-100 text-emerald-800 font-bold font-mono text-[10px] uppercase">
+          <span class="px-2 py-0.5 rounded bg-cyan-100 text-cyan-900 border border-cyan-200/60 font-bold font-mono text-[10px] uppercase">
             Nivel {{ currentLevelData.level }}
           </span>
           <span class="font-display font-extrabold uppercase text-guaiqui-text">
@@ -148,7 +148,7 @@ const streakMilestones = [1, 2, 3, 4, 5, 6, 7]
       <!-- Barra de Progreso Dinámica -->
       <div class="w-full h-2.5 rounded-full bg-guaiqui-surface overflow-hidden border border-guaiqui-border p-0.5">
         <div
-          class="h-full rounded-full bg-gradient-to-r from-guaiqui-primary via-emerald-500 to-amber-400 transition-all duration-500 ease-out shadow-xs"
+          class="h-full rounded-full bg-gradient-to-r from-orange-500 via-amber-400 to-cyan-400 transition-all duration-500 ease-out shadow-xs"
           :style="{ width: `${progressPercent}%` }"
         ></div>
       </div>

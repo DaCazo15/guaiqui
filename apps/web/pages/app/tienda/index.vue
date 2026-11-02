@@ -78,8 +78,8 @@ onMounted(async () => {
 })
 
 useSeoMeta({
-  title: 'Tienda de Canje — Guaiqueríes de Margarita',
-  description: 'Canjea tus puntos por camisas, merchandising oficial y experiencias de la Tribu.',
+  title: 'Tienda de Canje — FanActivo',
+  description: 'Canjea tus puntos por camisas, merchandising oficial y experiencias exclusivas.',
 })
 </script>
 

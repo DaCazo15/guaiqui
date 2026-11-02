@@ -29,7 +29,7 @@ defineProps<{
         class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 inline-flex items-center gap-1.5"
         :class="[
           activeTab === 'trivias'
-            ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
+            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md font-black'
             : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
         ]"
       >
@@ -43,7 +43,7 @@ defineProps<{
         class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 inline-flex items-center gap-1.5"
         :class="[
           activeTab === 'tienda'
-            ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
+            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md font-black'
             : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
         ]"
       >
@@ -57,7 +57,7 @@ defineProps<{
         class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 inline-flex items-center gap-1.5"
         :class="[
           activeTab === 'partidos'
-            ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
+            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md font-black'
             : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
         ]"
       >
@@ -71,7 +71,7 @@ defineProps<{
         class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 inline-flex items-center gap-1.5"
         :class="[
           activeTab === 'plantilla'
-            ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
+            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md font-black'
             : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
         ]"
       >
@@ -85,7 +85,7 @@ defineProps<{
         class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 inline-flex items-center gap-1.5"
         :class="[
           activeTab === 'salon-de-la-fama'
-            ? 'bg-emerald-500 text-slate-950 shadow-md font-black'
+            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md font-black'
             : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
         ]"
       >

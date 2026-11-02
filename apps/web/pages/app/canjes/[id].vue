@@ -345,7 +345,7 @@ useSeoMeta({
               ¡Premio Entregado!
             </h3>
             <p class="text-xs text-guaiqui-text-muted leading-relaxed">
-              Este premio fue entregado el {{ formatDate(currentRedemption.delivered_at) }}. ¡Esperamos que lo disfrutes y sigas apoyando a la Tribu!
+              Este premio fue entregado el {{ formatDate(currentRedemption.delivered_at) }}. ¡Esperamos que lo disfrutes y sigas acumulando puntos en FanActivo!
             </p>
           </BaseCard>
 

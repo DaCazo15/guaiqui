@@ -161,7 +161,7 @@ useSeoMeta({
             {{ currentProduct.name }}
           </h1>
           <p class="text-sm text-guaiqui-text-muted leading-relaxed">
-            {{ currentProduct.description || 'Premio oficial disponible para canje de la Tribu Guaiquerí.' }}
+            {{ currentProduct.description || 'Premio oficial disponible para canje en FanActivo.' }}
           </p>
         </div>
 

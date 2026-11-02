@@ -280,7 +280,7 @@ useSeoMeta({
 
               <div>
                 <h3 class="font-display font-bold text-xl text-guaiqui-text uppercase">
-                  {{ redemption.products?.name || 'Premio de la Tribu' }}
+                  {{ redemption.products?.name || 'Recompensa FanActivo' }}
                 </h3>
                 <p class="text-xs text-guaiqui-text-muted mt-0.5">
                   Solicitado el {{ formatDate(redemption.created_at) }}

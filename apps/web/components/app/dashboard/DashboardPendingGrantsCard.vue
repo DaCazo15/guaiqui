@@ -167,7 +167,7 @@ const handleClaim = async (grant: PendingGrantItem) => {
         <div class="flex items-start gap-3">
           <div
             class="w-9 h-9 rounded-lg flex items-center justify-center text-lg shrink-0 mt-0.5"
-            :class="grant.source === 'ads_block' ? 'bg-emerald-100 text-emerald-700' : 'bg-blue-100 text-blue-700'"
+            :class="grant.source === 'ads_block' ? 'bg-orange-100 text-orange-700' : 'bg-cyan-100 text-cyan-700'"
           >
             <i :class="grant.source === 'ads_block' ? 'bi bi-play-btn-fill' : 'bi bi-people-fill'"></i>
           </div>

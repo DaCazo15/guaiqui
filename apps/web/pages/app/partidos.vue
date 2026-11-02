@@ -198,14 +198,14 @@ const formatDate = (dateStr: string) => {
         <div class="grid grid-cols-1 md:grid-cols-12 gap-4 items-center">
           <!-- Guaiqueríes -->
           <div class="md:col-span-5 flex items-center gap-3">
-            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-emerald-800 to-guaiqui-primary-dark text-amber-400 flex items-center justify-center font-display font-black text-xl border-2 border-emerald-500 shrink-0">
+            <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-orange-600 to-amber-600 text-white flex items-center justify-center font-display font-black text-xl border-2 border-orange-500 shrink-0">
               G
             </div>
             <div>
               <h3 class="font-display font-extrabold text-lg text-guaiqui-text uppercase">
                 Guaiqueríes de Margarita
               </h3>
-              <span class="text-xs text-guaiqui-primary font-semibold">La Tribu Insular</span>
+              <span class="text-xs text-guaiqui-primary font-semibold">Equipo Profesional</span>
             </div>
           </div>
 

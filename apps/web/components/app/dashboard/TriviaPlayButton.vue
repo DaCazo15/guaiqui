@@ -104,7 +104,7 @@ onBeforeUnmount(() => {
       class="group relative overflow-hidden transition-all duration-300 ease-out focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-guaiqui-accent focus-visible:ring-offset-2 cursor-pointer disabled:cursor-not-allowed disabled:opacity-60"
       :class="[
         state === 'idle'
-          ? 'h-12 px-6 rounded-guaiqui-lg bg-gradient-to-r from-guaiqui-primary via-emerald-600 to-guaiqui-primary-dark text-white font-display font-extrabold text-base uppercase tracking-wider shadow-lg shadow-emerald-900/30 hover:shadow-emerald-800/50 hover:scale-[1.02] active:scale-[0.98] border border-emerald-400/30 flex items-center gap-2.5'
+          ? 'h-12 px-6 rounded-guaiqui-lg bg-gradient-to-r from-orange-500 via-amber-500 to-orange-600 text-white font-display font-extrabold text-base uppercase tracking-wider shadow-lg shadow-orange-950/40 hover:shadow-orange-900/60 hover:scale-[1.02] active:scale-[0.98] border border-orange-400/30 flex items-center gap-2.5'
           : state === 'holding'
           ? 'w-14 h-14 rounded-full p-0 flex items-center justify-center shadow-xl shadow-amber-900/40 animate-pulse scale-105 border-2 border-amber-400'
           : 'w-14 h-14 rounded-full p-0 flex items-center justify-center bg-white shadow-2xl shadow-amber-500/50 scale-110 border-2 border-amber-300 animate-bounce'
@@ -117,11 +117,11 @@ onBeforeUnmount(() => {
         <!-- Brillo dinámico de fondo -->
         <span class="absolute inset-0 w-full h-full bg-gradient-to-r from-white/0 via-white/20 to-white/0 -translate-x-full group-hover:translate-x-full transition-transform duration-1000 ease-in-out"></span>
         
-        <!-- Indicador rojo bandana lateral de energía -->
-        <span class="w-2 h-2 rounded-full bg-guaiqui-accent animate-ping"></span>
-        <i class="bi bi-play-circle-fill text-lg text-amber-300"></i>
+        <!-- Indicador de energía naranja FanActivo -->
+        <span class="w-2 h-2 rounded-full bg-amber-300 animate-ping"></span>
+        <i class="bi bi-play-circle-fill text-lg text-amber-200"></i>
         <span>{{ label }}</span>
-        <i class="bi bi-arrow-right text-sm text-emerald-200 group-hover:translate-x-1 transition-transform"></i>
+        <i class="bi bi-arrow-right text-sm text-orange-100 group-hover:translate-x-1 transition-transform"></i>
       </template>
 
       <!-- ESTADO 2: Holding (Balón de Baloncesto auténtico con texturas y costuras) -->

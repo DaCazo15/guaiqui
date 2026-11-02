@@ -177,8 +177,8 @@ onMounted(() => {
 })
 
 useSeoMeta({
-  title: 'Videos de Patrocinadores — Guaiqueríes de Margarita',
-  description: 'Mira los videos comerciales de las marcas aliadas a la Tribu Verde y gana puntos para la tienda de canjes.',
+  title: 'Videos de Patrocinadores — FanActivo',
+  description: 'Mira los videos comerciales de las marcas aliadas y gana puntos para canjear por recompensas.',
 })
 </script>
 
@@ -195,7 +195,7 @@ useSeoMeta({
         Gana <span class="text-guaiqui-primary">Puntos</span> con Marcas Aliadas
       </h1>
       <p class="text-xs md:text-sm text-guaiqui-text-muted leading-relaxed max-w-2xl">
-        Mira los videos publicitarios de nuestros aliados comerciales, apoya a la Tribu Verde y acumula puntos para canjear en la tienda oficial.
+        Mira los videos publicitarios de nuestros aliados comerciales, apoya a tus equipos favoritos y acumula puntos para canjear en la tienda oficial.
       </p>
     </div>
 

@@ -33,7 +33,7 @@ const isItemActive = (item: AppNavItem) => {
 
 <template>
   <nav
-    class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-gradient-to-b from-[#0e743a] via-[#09542a] to-[#043319] border-t-2 border-emerald-400/40 shadow-[0_-15px_40px_rgba(0,0,0,0.7)] px-3 py-2 text-white backdrop-blur-md"
+    class="lg:hidden fixed bottom-0 left-0 right-0 z-40 bg-[#071318]/95 border-t border-cyan-950/80 shadow-[0_-15px_40px_rgba(0,0,0,0.7)] px-3 py-2 text-white backdrop-blur-md"
     style="padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));"
     aria-label="Navegación principal inferior"
   >
@@ -45,11 +45,11 @@ const isItemActive = (item: AppNavItem) => {
         :aria-label="item.name"
         :aria-current="isItemActive(item) ? 'page' : undefined"
         @click="handleNavClick($event, item)"
-        class="flex items-center justify-center min-w-[48px] min-h-[44px] p-2 rounded-2xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-white"
+        class="flex items-center justify-center min-w-[48px] min-h-[44px] p-2 rounded-2xl transition-all duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
         :class="[
           isItemActive(item)
-            ? 'bg-white text-slate-950 shadow-lg shadow-black/30 scale-105'
-            : 'text-emerald-100/75 hover:text-white hover:bg-white/10',
+            ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-lg shadow-orange-950/40 scale-105'
+            : 'text-slate-400 hover:text-white hover:bg-cyan-950/40',
         ]"
       >
         <!-- Ícono personalizado para Perfil con foto circular del usuario -->
@@ -58,8 +58,8 @@ const isItemActive = (item: AppNavItem) => {
             class="w-[28px] h-[28px] rounded-full overflow-hidden border flex items-center justify-center shrink-0 transition-colors duration-200"
             :class="[
               route.name === item.routeName || route.path === item.path
-                ? 'border-slate-950 ring-2 ring-slate-950 shadow-xs'
-                : 'border-white/60 opacity-90'
+                ? 'border-white ring-2 ring-white/60 shadow-xs'
+                : 'border-cyan-500/40 bg-cyan-950/60 opacity-90'
             ]"
           >
             <img

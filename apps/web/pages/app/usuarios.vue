@@ -54,16 +54,16 @@ async function handleAction(userId: string, currentStatus: string) {
 <template>
   <div class="space-y-6 max-w-4xl mx-auto">
     <!-- Encabezado de la Página -->
-    <div class="bg-gradient-to-r from-emerald-800 to-teal-700 text-white p-6 sm:p-8 rounded-guaiqui-2xl shadow-guaiqui-md">
+    <div class="bg-gradient-to-r from-[#050E12] via-[#071318] to-[#0A1C22] border border-cyan-900/60 text-white p-6 sm:p-8 rounded-guaiqui-2xl shadow-guaiqui-md">
       <div class="flex items-center gap-3 mb-2">
-        <div class="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center text-xl text-white">
+        <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-xl text-white shadow-md">
           <i class="bi bi-people-fill"></i>
         </div>
         <h1 class="font-display font-black text-2xl sm:text-3xl uppercase tracking-wide">
           Buscador de FanActivo
         </h1>
       </div>
-      <p class="text-xs sm:text-sm text-emerald-100 max-w-xl">
+      <p class="text-xs sm:text-sm text-slate-300 max-w-xl">
         Busca a otros fanáticos en FanActivo, conéctate con ellos y sigue su actividad de juego y canjes en la plataforma.
       </p>
 
@@ -75,7 +75,7 @@ async function handleAction(userId: string, currentStatus: string) {
             v-model="searchQuery"
             type="text"
             placeholder="Buscar fanáticos por su nombre o usuario en FanActivo..."
-            class="w-full pl-9 pr-4 py-2.5 bg-white text-slate-900 rounded-guaiqui-xl text-sm border-0 focus:ring-2 focus:ring-emerald-400 shadow-sm placeholder:text-slate-400 font-medium"
+            class="w-full pl-9 pr-4 py-2.5 bg-white text-slate-900 rounded-guaiqui-xl text-sm border-0 focus:ring-2 focus:ring-orange-400 shadow-sm placeholder:text-slate-400 font-medium"
           />
         </div>
       </div>

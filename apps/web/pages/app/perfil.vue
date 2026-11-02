@@ -18,7 +18,7 @@ definePageMeta({
 })
 
 useSeoMeta({
-  title: 'Mi Perfil — Guaiqueríes de Margarita',
+  title: 'Mi Perfil — FanActivo',
   description: 'Gestiona tu perfil oficial de fanático, seguidores, solicitudes y deporte favorito.',
 })
 

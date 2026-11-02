@@ -188,7 +188,7 @@ const onImageError = (slideId: string) => {
         <!-- Botón de cerrar "X" circular en la esquina superior derecha centrado en el borde de la modal -->
         <button
           @click="closeModal"
-          class="absolute -top-3.5 -right-3.5 sm:-top-4 sm:-right-4 z-50 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-slate-900 border-2 border-emerald-600 shadow-xl hover:bg-red-600 hover:text-white hover:border-red-600 flex items-center justify-center transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-emerald-400 cursor-pointer"
+          class="absolute -top-3.5 -right-3.5 sm:-top-4 sm:-right-4 z-50 w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white text-slate-900 border-2 border-orange-500 shadow-xl hover:bg-orange-600 hover:text-white hover:border-orange-600 flex items-center justify-center transition-all duration-150 focus:outline-none focus:ring-2 focus:ring-orange-400 cursor-pointer"
           title="Cerrar modal"
           aria-label="Cerrar modal de bienvenida"
         >
@@ -200,14 +200,14 @@ const onImageError = (slideId: string) => {
           tabindex="-1"
           role="dialog"
           aria-modal="true"
-          aria-label="Novedades del Club"
-          class="w-full max-h-[75vh] bg-slate-900 border border-slate-800 rounded-2xl shadow-2xl overflow-hidden flex flex-col focus:outline-none"
+          aria-label="Novedades de FanActivo"
+          class="w-full max-h-[75vh] bg-[#071318] border border-cyan-950/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col focus:outline-none"
           @touchstart="handleTouchStart"
           @touchend="handleTouchEnd"
         >
 
         <!-- Slide Media Area (16:9) -->
-        <div class="relative w-full aspect-video bg-gradient-to-br from-emerald-950 via-slate-900 to-emerald-900 overflow-hidden flex items-center justify-center">
+        <div class="relative w-full aspect-video bg-gradient-to-br from-[#050E12] via-[#071318] to-[#0A1C22] overflow-hidden flex items-center justify-center">
           <img
             v-if="currentSlide?.image_url && !failedImages[currentSlide.id]"
             :src="currentSlide.image_url"
@@ -217,22 +217,24 @@ const onImageError = (slideId: string) => {
             @error="onImageError(currentSlide.id)"
           />
           <div v-else class="p-6 text-center space-y-2">
-            <img src="/logo.png" alt="Guaiqueríes" class="w-16 h-16 mx-auto object-contain mb-2 opacity-90" />
+            <div class="w-14 h-14 mx-auto rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white text-2xl shadow-md mb-2">
+              <i class="bi bi-fire"></i>
+            </div>
             <h3 class="font-display text-2xl font-bold uppercase tracking-wider text-amber-400">
               {{ currentSlide?.title }}
             </h3>
           </div>
 
           <!-- Overlay gradient for text legibility -->
-          <div class="absolute inset-0 bg-gradient-to-t from-slate-900 via-slate-900/30 to-transparent"></div>
+          <div class="absolute inset-0 bg-gradient-to-t from-[#071318] via-[#071318]/40 to-transparent"></div>
         </div>
 
         <!-- Content Body & CTA -->
         <div class="p-5 sm:p-6 space-y-4 flex-1 flex flex-col justify-between overflow-y-auto">
           <div class="space-y-2">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-mono font-bold uppercase text-emerald-400 tracking-wider">
-                Novedades del Club • {{ currentIndex + 1 }} de {{ slides.length }}
+              <span class="text-[11px] font-mono font-bold uppercase text-cyan-400 tracking-wider">
+                Novedades FanActivo • {{ currentIndex + 1 }} de {{ slides.length }}
               </span>
             </div>
             <h2 class="font-display text-xl sm:text-2xl font-bold text-white uppercase tracking-wide leading-tight">
@@ -244,7 +246,7 @@ const onImageError = (slideId: string) => {
           </div>
 
           <!-- Bottom Bar: Indicators & CTA Button -->
-          <div class="pt-3 border-t border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
+          <div class="pt-3 border-t border-cyan-950/80 flex flex-col sm:flex-row items-center justify-between gap-4">
             <!-- Dots Indicators -->
             <div class="flex items-center gap-2">
               <button
@@ -253,7 +255,7 @@ const onImageError = (slideId: string) => {
                 @click="goToSlide(idx)"
                 :class="[
                   'h-2 rounded-full transition-all',
-                  idx === currentIndex ? 'w-6 bg-emerald-400' : 'w-2 bg-slate-700 hover:bg-slate-500'
+                  idx === currentIndex ? 'w-6 bg-orange-400' : 'w-2 bg-slate-700 hover:bg-slate-500'
                 ]"
                 :aria-label="`Ir a la diapositiva ${idx + 1}`"
               ></button>
@@ -280,7 +282,7 @@ const onImageError = (slideId: string) => {
 
               <button
                 @click="handleCtaClick"
-                class="flex-1 sm:flex-initial px-5 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition shadow-lg shadow-emerald-950/50 flex items-center justify-center gap-2"
+                class="flex-1 sm:flex-initial px-5 py-2 bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-orange-600 text-white font-bold text-xs uppercase tracking-wider rounded-xl transition shadow-lg shadow-orange-950/50 flex items-center justify-center gap-2 cursor-pointer"
               >
                 <span>{{ currentSlide?.cta_label || 'Ver más' }}</span>
                 <i class="bi bi-arrow-right text-sm"></i>

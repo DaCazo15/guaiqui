@@ -133,13 +133,13 @@ useSeoMeta({
       <!-- Main Overview Content (When active) -->
       <div v-if="activeTeam.status === 'active'" class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <!-- Daily Trivia & Streak Card -->
-        <div class="bg-gradient-to-b from-slate-900 to-slate-950 border border-emerald-500/20 rounded-3xl p-6 shadow-xl flex flex-col justify-between">
+        <div class="bg-gradient-to-b from-[#050E12] via-[#071318] to-[#0A1C22] border border-cyan-900/60 rounded-3xl p-6 shadow-xl flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between gap-2 mb-3">
-              <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-cyan-400">
                 Trivia del Día
               </span>
-              <div v-if="streakData && streakData.streak_days > 0" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-950/80 border border-emerald-600/40 text-emerald-300 text-xs font-black">
+              <div v-if="streakData && streakData.streak_days > 0" class="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-cyan-950/80 border border-cyan-500/40 text-cyan-300 text-xs font-black">
                 <i class="bi bi-lightning-charge-fill text-amber-400"></i>
                 <span>Racha: {{ streakData.streak_days }}d</span>
               </div>
@@ -154,7 +154,7 @@ useSeoMeta({
           </div>
 
           <div class="pt-4 border-t border-slate-800/80 flex items-center justify-between">
-            <span class="text-xs font-bold text-emerald-400 flex items-center gap-1">
+            <span class="text-xs font-bold text-cyan-400 flex items-center gap-1">
               <PearlIcon size="xs" />
               <span>Gana perlitas</span>
             </span>
@@ -162,7 +162,7 @@ useSeoMeta({
             <NuxtLink
               v-if="triviaStore.homeSummary?.active_trivia?.id"
               :to="`/app/e/${activeTeam.slug}/trivias/${triviaStore.homeSummary.active_trivia.id}`"
-              class="px-5 py-2.5 rounded-xl font-display font-bold uppercase tracking-wider text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-colors shadow-md"
+              class="px-5 py-2.5 rounded-xl font-display font-bold uppercase tracking-wider text-xs bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-orange-600 text-white transition-colors shadow-md"
             >
               Jugar Ahora
             </NuxtLink>
@@ -177,10 +177,10 @@ useSeoMeta({
         </div>
 
         <!-- Team Store Preview Card -->
-        <div class="bg-gradient-to-b from-slate-900 to-slate-950 border border-emerald-500/20 rounded-3xl p-6 shadow-xl flex flex-col justify-between">
+        <div class="bg-gradient-to-b from-[#050E12] via-[#071318] to-[#0A1C22] border border-cyan-900/60 rounded-3xl p-6 shadow-xl flex flex-col justify-between">
           <div>
             <div class="flex items-center justify-between gap-2 mb-3">
-              <span class="text-[11px] font-bold uppercase tracking-wider text-emerald-400">
+              <span class="text-[11px] font-bold uppercase tracking-wider text-cyan-400">
                 Catálogo de Premios
               </span>
               <span class="text-xs text-slate-400">
@@ -203,7 +203,7 @@ useSeoMeta({
 
             <NuxtLink
               :to="`/app/e/${activeTeam.slug}/tienda`"
-              class="px-5 py-2.5 rounded-xl font-display font-bold uppercase tracking-wider text-xs bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition-colors shadow-md"
+              class="px-5 py-2.5 rounded-xl font-display font-bold uppercase tracking-wider text-xs bg-gradient-to-r from-orange-500 to-amber-500 hover:from-orange-400 hover:to-orange-600 text-white transition-colors shadow-md"
             >
               Ir a la Tienda
             </NuxtLink>
