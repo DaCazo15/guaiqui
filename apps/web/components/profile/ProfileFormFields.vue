@@ -109,13 +109,13 @@ function handleSave() {
     <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
       <BaseInput
         v-model="displayName"
-        label="Nombre para mostrar *"
+        label="Nombre para mostrar"
         required
       />
 
       <BaseSelect
         v-model="municipality"
-        label="Municipio / Ubicación *"
+        label="Municipio / Ubicación"
         :options="municipalityOptions"
         required
       />

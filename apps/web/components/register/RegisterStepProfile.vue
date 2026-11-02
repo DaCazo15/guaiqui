@@ -62,14 +62,14 @@ function handleSubmit() {
 
     <BaseInput
       v-model="displayName"
-      label="Nombre para mostrar *"
+      label="Nombre para mostrar"
       placeholder="Ej. Pedro Guaiquerí"
       required
     />
 
     <BaseSelect
       v-model="municipality"
-      label="Municipio / Ubicación *"
+      label="Municipio / Ubicación"
       :options="municipalityOptions"
       required
     />

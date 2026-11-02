@@ -3,18 +3,25 @@ import { ref, computed, watch } from 'vue'
 import { PearlAmount } from '@guaiqui/ui'
 import ProfileCoverCropperModal from './ProfileCoverCropperModal.vue'
 
-const props = defineProps<{
-  profile: any
-  balance: number
-  streakDays: number
-  uploadingAvatar?: boolean
-  uploadingCover?: boolean
-}>()
+const props = withDefaults(
+  defineProps<{
+    profile: any
+    balance: number
+    streakDays: number
+    activeTab?: 'perfil' | 'ajustes'
+    uploadingAvatar?: boolean
+    uploadingCover?: boolean
+  }>(),
+  {
+    activeTab: 'perfil',
+  }
+)
 
 const emit = defineEmits<{
   (e: 'uploadAvatar', file: File): void
   (e: 'uploadCover', file: File): void
   (e: 'updateCover', coverUrl: string): void
+  (e: 'selectTab', tab: 'perfil' | 'ajustes'): void
 }>()
 
 const avatarInputRef = ref<HTMLInputElement | null>(null)
@@ -241,6 +248,20 @@ function handleCoverCroppedConfirmed(croppedFile: File) {
               <span>{{ streakDays }}</span>
             </div>
           </div>
+
+          <!-- Botón de Ajustes del Perfil -->
+          <button
+            type="button"
+            @click="emit('selectTab', activeTab === 'ajustes' ? 'perfil' : 'ajustes')"
+            class="px-3.5 py-1.5 rounded-guaiqui-lg border transition-all text-xs font-bold uppercase tracking-wider flex items-center gap-1.5 shadow-xs cursor-pointer active:scale-95"
+            :class="activeTab === 'ajustes'
+              ? 'bg-guaiqui-primary text-white border-guaiqui-primary shadow-guaiqui-sm'
+              : 'bg-white text-guaiqui-text hover:bg-slate-50 border-guaiqui-border'"
+            :title="activeTab === 'ajustes' ? 'Ver resumen del perfil' : 'Ir a ajustes del perfil'"
+          >
+            <i class="bi bi-gear-fill"></i>
+            <span>{{ activeTab === 'ajustes' ? 'Ver Perfil' : 'Ajustes' }}</span>
+          </button>
         </div>
       </div>
     </div>
