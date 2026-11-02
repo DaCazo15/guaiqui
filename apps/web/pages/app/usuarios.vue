@@ -2,6 +2,7 @@
 import { ref, watch } from 'vue'
 import { BaseCard, BaseInput, BaseButton } from '@guaiqui/ui'
 import { useSocialProfile } from '~/composables/useSocialProfile'
+import UserSearchCard from '~/components/user/UserSearchCard.vue'
 
 definePageMeta({
   layout: 'app',
@@ -139,69 +140,15 @@ async function handleAction(userId: string, currentStatus: string) {
         <p class="text-xs text-guaiqui-text-muted mt-1">Intenta buscar con otro nombre o término.</p>
       </div>
 
-      <!-- Lista de Resultados -->
-      <div v-else class="divide-y divide-guaiqui-border/60">
-        <div
+      <!-- Cuadrícula de Resultados (UserSearchCard) -->
+      <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3.5 sm:gap-4">
+        <UserSearchCard
           v-for="u in socialProfile.searchResults.value"
           :key="u.id"
-          class="py-3.5 flex flex-col sm:flex-row sm:items-center justify-between gap-3"
-        >
-          <div class="flex items-center gap-3.5 min-w-0">
-            <img
-              v-if="u.avatar_url"
-              :src="u.avatar_url"
-              :alt="u.display_name"
-              class="w-11 h-11 rounded-full object-cover border border-guaiqui-border shrink-0"
-            />
-            <div
-              v-else
-              class="w-11 h-11 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-base shrink-0 uppercase"
-            >
-              {{ u.display_name.charAt(0) }}
-            </div>
-
-            <div class="min-w-0">
-              <NuxtLink
-                :to="`/u/${u.id}`"
-                class="font-bold text-sm text-guaiqui-text hover:text-guaiqui-primary transition-colors block truncate"
-              >
-                {{ u.display_name }}
-              </NuxtLink>
-              <p v-if="u.favorite_sport" class="text-xs text-guaiqui-text-muted truncate">
-                <i class="bi bi-dribbble text-[10px] mr-1 text-guaiqui-primary"></i>{{ u.favorite_sport }}
-              </p>
-            </div>
-          </div>
-
-          <div class="flex items-center gap-2 shrink-0 self-end sm:self-center">
-            <NuxtLink :to="`/u/${u.id}`">
-              <BaseButton variant="outline" size="sm">
-                Ver Perfil
-              </BaseButton>
-            </NuxtLink>
-
-            <BaseButton
-              v-if="u.relation_status !== 'incoming_pending'"
-              :variant="u.relation_status === 'accepted' ? 'outline' : 'primary'"
-              size="sm"
-              :disabled="socialProfile.actionLoading.value"
-              @click="handleAction(u.id, u.relation_status)"
-            >
-              <span v-if="u.relation_status === 'none'">
-                <i class="bi bi-person-plus-fill mr-1"></i>
-                Seguir
-              </span>
-              <span v-else-if="u.relation_status === 'pending'" class="text-amber-700">
-                <i class="bi bi-hourglass-split mr-1"></i>
-                Pendiente
-              </span>
-              <span v-else-if="u.relation_status === 'accepted'">
-                <i class="bi bi-check2 text-emerald-600 mr-1"></i>
-                Siguiendo
-              </span>
-            </BaseButton>
-          </div>
-        </div>
+          :user="u"
+          :loading="socialProfile.actionLoading.value"
+          @action="handleAction"
+        />
       </div>
     </BaseCard>
   </div>
