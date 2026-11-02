@@ -132,18 +132,13 @@ onMounted(() => {
       <div
         v-for="i in 6"
         :key="i"
-        class="p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl space-y-4"
+        class="p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl flex flex-col items-center text-center space-y-3"
       >
-        <div class="flex items-center gap-3">
-          <Skeleton variant="circular" width="3.5rem" height="3.5rem" />
-          <div class="flex-1 space-y-2">
-            <Skeleton variant="text" width="70%" />
-            <Skeleton variant="text" width="40%" />
-          </div>
-        </div>
-        <div class="pt-3 border-t border-slate-100 flex justify-end">
-          <Skeleton variant="rectangular" width="5rem" height="2rem" />
-        </div>
+        <Skeleton variant="rectangular" width="5rem" height="5rem" class="rounded-2xl mx-auto" />
+        <Skeleton variant="text" width="75%" class="mx-auto" />
+        <Skeleton variant="text" width="45%" class="mx-auto" />
+        <div class="w-full border-t border-slate-100 my-2"></div>
+        <Skeleton variant="rectangular" width="100%" height="2.25rem" class="rounded-xl" />
       </div>
     </div>
 
