@@ -122,7 +122,7 @@ async function handleAction(userId: string, currentStatus: string) {
           v-for="u in socialProfile.searchResults.value"
           :key="u.id"
           :user="u"
-          :loading="socialProfile.actionLoading.value"
+          :loading-id="socialProfile.actionLoadingId.value"
           @action="handleAction"
         />
       </div>

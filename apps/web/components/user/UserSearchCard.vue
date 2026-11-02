@@ -3,7 +3,7 @@ import type { UserSearchResultItem } from '@guaiqui/shared'
 
 defineProps<{
   user: UserSearchResultItem
-  loading?: boolean
+  loadingId?: string | null
 }>()
 
 const emit = defineEmits<{
@@ -79,7 +79,7 @@ const emit = defineEmits<{
       <button
         v-if="user.relation_status !== 'incoming_pending'"
         type="button"
-        :disabled="loading"
+        :disabled="loadingId === user.id"
         @click="emit('action', user.id, user.relation_status)"
         class="inline-flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold transition-all cursor-pointer select-none active:scale-[0.98] disabled:opacity-60 disabled:cursor-not-allowed"
         :class="[

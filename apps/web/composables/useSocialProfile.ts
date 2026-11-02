@@ -38,7 +38,7 @@ export const useSocialProfile = () => {
   const followersList = ref<UserFollowUserItem[]>([])
   const followingList = ref<UserFollowUserItem[]>([])
   const loadingList = ref(false)
-  const actionLoading = ref(false)
+  const actionLoadingId = ref<string | null>(null)
   const error = ref<string | null>(null)
   const successMessage = ref<string | null>(null)
 
@@ -69,7 +69,7 @@ export const useSocialProfile = () => {
 
   const sendFollow = async (userId: string): Promise<boolean> => {
     if (!user.value || !userId) return false
-    actionLoading.value = true
+    actionLoadingId.value = userId
     clearMessages()
     try {
       const { data, error: rpcError } = await supabase.rpc('send_follow_request', {
@@ -100,13 +100,13 @@ export const useSocialProfile = () => {
       error.value = formatSocialError(err, 'Error al enviar solicitud de seguimiento')
       return false
     } finally {
-      actionLoading.value = false
+      actionLoadingId.value = null
     }
   }
 
   const respondRequest = async (followerId: string, accept: boolean): Promise<boolean> => {
     if (!user.value || !followerId) return false
-    actionLoading.value = true
+    actionLoadingId.value = followerId
     clearMessages()
     try {
       const { error: rpcError } = await supabase.rpc('respond_follow_request', {
@@ -128,13 +128,13 @@ export const useSocialProfile = () => {
       error.value = formatSocialError(err, 'Error al responder solicitud')
       return false
     } finally {
-      actionLoading.value = false
+      actionLoadingId.value = null
     }
   }
 
   const cancelFollow = async (userId: string): Promise<boolean> => {
     if (!user.value || !userId) return false
-    actionLoading.value = true
+    actionLoadingId.value = userId
     clearMessages()
     try {
       const { error: rpcError } = await supabase.rpc('cancel_follow_request', {
@@ -159,13 +159,13 @@ export const useSocialProfile = () => {
       error.value = formatSocialError(err, 'Error al cancelar solicitud')
       return false
     } finally {
-      actionLoading.value = false
+      actionLoadingId.value = null
     }
   }
 
   const unfollow = async (userId: string): Promise<boolean> => {
     if (!user.value || !userId) return false
-    actionLoading.value = true
+    actionLoadingId.value = userId
     clearMessages()
     try {
       const { error: rpcError } = await supabase.rpc('unfollow_user', {
@@ -190,13 +190,13 @@ export const useSocialProfile = () => {
       error.value = formatSocialError(err, 'Error al dejar de seguir al usuario')
       return false
     } finally {
-      actionLoading.value = false
+      actionLoadingId.value = null
     }
   }
 
   const block = async (userId: string): Promise<boolean> => {
     if (!user.value || !userId) return false
-    actionLoading.value = true
+    actionLoadingId.value = userId
     clearMessages()
     try {
       const { error: rpcError } = await supabase.rpc('block_user', {
@@ -213,13 +213,13 @@ export const useSocialProfile = () => {
       error.value = formatSocialError(err, 'Error al bloquear usuario')
       return false
     } finally {
-      actionLoading.value = false
+      actionLoadingId.value = null
     }
   }
 
   const unblock = async (userId: string): Promise<boolean> => {
     if (!user.value || !userId) return false
-    actionLoading.value = true
+    actionLoadingId.value = userId
     clearMessages()
     try {
       const { error: rpcError } = await supabase.rpc('unblock_user', {
@@ -233,7 +233,7 @@ export const useSocialProfile = () => {
       error.value = formatSocialError(err, 'Error al desbloquear usuario')
       return false
     } finally {
-      actionLoading.value = false
+      actionLoadingId.value = null
     }
   }
 
@@ -348,7 +348,8 @@ export const useSocialProfile = () => {
     followersList: computed(() => followersList.value),
     followingList: computed(() => followingList.value),
     loadingList: computed(() => loadingList.value),
-    actionLoading: computed(() => actionLoading.value),
+    actionLoading: computed(() => !!actionLoadingId.value),
+    actionLoadingId: computed(() => actionLoadingId.value),
     error: computed(() => error.value),
     successMessage: computed(() => successMessage.value),
     clearMessages,
