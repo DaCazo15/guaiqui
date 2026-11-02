@@ -21,6 +21,7 @@ import PollVoteModal from '~/components/trivia/PollVoteModal.vue'
 import OverUnderSection from '~/components/trivia/OverUnderSection.vue'
 import MysteryPlaySection from '~/components/trivia/MysteryPlaySection.vue'
 import ScorePredictionSection from '~/components/trivia/ScorePredictionSection.vue'
+import TriviaModalitiesTabs, { type TriviaModalityId } from '~/components/trivia/TriviaModalitiesTabs.vue'
 import FlashTriviaSection from '~/components/trivia/FlashTriviaSection.vue'
 import ProgressiveCluesSection from '~/components/trivia/ProgressiveCluesSection.vue'
 
@@ -39,28 +40,7 @@ const triviaStore = useTriviaStore()
 const authStore = useAuthStore()
 const { openPicker, fetchFollowedTeams } = useCurrentTeam()
 
-type MainTab =
-  | 'questions'
-  | 'who_is'
-  | 'polls'
-  | 'over_under'
-  | 'mystery_plays'
-  | 'score_predictions'
-  | 'flash_trivia'
-  | 'progressive_clues'
-
-const activeTab = ref<MainTab>('questions')
-
-const tabs = [
-  { id: 'questions' as const, label: 'Trivias Clásicas', icon: 'bi-question-diamond-fill', badge: 'Preguntas' },
-  { id: 'who_is' as const, label: '«¿Quién es?»', icon: 'bi-person-bounding-box', badge: 'Reto' },
-  { id: 'polls' as const, label: 'Encuestas', icon: 'bi-bar-chart-fill', badge: 'Partido' },
-  { id: 'over_under' as const, label: 'Mayor o Menor', icon: 'bi-arrow-down-up', badge: 'Líneas' },
-  { id: 'mystery_plays' as const, label: '¿Qué pasó después?', icon: 'bi-play-circle-fill', badge: 'Video' },
-  { id: 'score_predictions' as const, label: 'Marcador Exacto', icon: 'bi-bullseye', badge: 'El Bote' },
-  { id: 'flash_trivia' as const, label: 'Trivia Flash', icon: 'bi-stopwatch-fill', badge: '60s' },
-  { id: 'progressive_clues' as const, label: 'Pistas Progresivas', icon: 'bi-puzzle-fill', badge: 'Escalón' },
-]
+const activeTab = ref<TriviaModalityId>('questions')
 
 interface PlayerItem {
   id: string
@@ -351,38 +331,7 @@ function getEstimatedReward(t: { reward_rules?: unknown }): number {
     </div>
 
     <!-- Main Tabs Bar (Responsive 8 Modalities) -->
-    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 p-1.5 bg-slate-100 rounded-2xl border border-guaiqui-border shadow-inner">
-      <button
-        v-for="t in tabs"
-        :key="t.id"
-        type="button"
-        @click="activeTab = t.id"
-        :class="[
-          'px-3 py-2.5 rounded-xl text-left transition-all duration-200 flex items-center gap-2.5',
-          activeTab === t.id
-            ? 'bg-guaiqui-primary text-white shadow-md'
-            : 'text-guaiqui-text-muted hover:text-guaiqui-text hover:bg-white/80'
-        ]"
-      >
-        <div
-          class="w-7 h-7 rounded-lg flex items-center justify-center text-sm shrink-0"
-          :class="activeTab === t.id ? 'bg-white/20 text-white' : 'bg-slate-200 text-slate-700'"
-        >
-          <i :class="['bi', t.icon]"></i>
-        </div>
-        <div class="min-w-0 flex-1">
-          <div class="font-display font-bold text-xs tracking-tight uppercase truncate">
-            {{ t.label }}
-          </div>
-          <span
-            class="text-[9px] px-1.5 py-0.2 rounded font-mono font-bold uppercase"
-            :class="activeTab === t.id ? 'bg-emerald-800 text-emerald-100' : 'bg-slate-200 text-slate-600'"
-          >
-            {{ t.badge }}
-          </span>
-        </div>
-      </button>
-    </div>
+    <TriviaModalitiesTabs v-model:active-tab="activeTab" />
 
     <!-- PESTAÑA 1: TRIVIAS CLÁSICAS -->
     <div v-if="activeTab === 'questions'" class="space-y-4">
