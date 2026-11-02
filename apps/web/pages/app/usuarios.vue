@@ -70,19 +70,7 @@ async function handleAction(userId: string, currentStatus: string) {
       </div>
     </div>
 
-    <!-- Mensajes Globales -->
-    <div
-      v-if="socialProfile.successMessage.value"
-      class="p-3.5 bg-emerald-50 border border-emerald-300 rounded-guaiqui-xl text-emerald-800 text-sm flex items-center justify-between shadow-xs animate-in fade-in"
-    >
-      <div class="flex items-center gap-2">
-        <i class="bi bi-check-circle-fill text-emerald-600"></i>
-        <span>{{ socialProfile.successMessage.value }}</span>
-      </div>
-      <button @click="socialProfile.clearMessages()" class="text-emerald-700 hover:text-emerald-900 p-1">
-        <i class="bi bi-x-lg text-xs"></i>
-      </button>
-    </div>
+    <!-- Mensajes de Error -->
 
     <div
       v-if="socialProfile.error.value"

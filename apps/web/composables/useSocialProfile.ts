@@ -92,9 +92,9 @@ export const useSocialProfile = () => {
         item.relation_status = resultingStatus
       }
 
-      successMessage.value = resultingStatus === 'accepted'
-        ? 'Ahora sigues a este fanático.'
-        : 'Solicitud de seguimiento enviada con éxito.'
+      if (resultingStatus === 'pending') {
+        successMessage.value = 'Solicitud de seguimiento enviada con éxito.'
+      }
       return true
     } catch (err: any) {
       error.value = formatSocialError(err, 'Error al enviar solicitud de seguimiento')
@@ -154,7 +154,6 @@ export const useSocialProfile = () => {
       if (item) {
         item.relation_status = 'none'
       }
-      successMessage.value = 'Solicitud o seguimiento cancelado.'
       return true
     } catch (err: any) {
       error.value = formatSocialError(err, 'Error al cancelar solicitud')
@@ -186,7 +185,6 @@ export const useSocialProfile = () => {
       if (item) {
         item.relation_status = 'none'
       }
-      successMessage.value = 'Has dejado de seguir a este usuario.'
       return true
     } catch (err: any) {
       error.value = formatSocialError(err, 'Error al dejar de seguir al usuario')
