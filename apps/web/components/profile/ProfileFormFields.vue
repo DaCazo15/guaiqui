@@ -26,6 +26,7 @@ const favoritePlayerId = ref(props.profile?.favorite_player_id || '')
 const shirtSize = ref(props.profile?.shirt_size || '')
 const referralSource = ref(props.profile?.referral_source || '')
 const favoriteSport = ref(props.profile?.favorite_sport || '')
+const isPrivate = ref(Boolean(props.profile?.is_private))
 
 const playersList = ref<{ value: string; label: string }[]>([])
 const localError = ref<string | null>(null)
@@ -49,6 +50,7 @@ watch(
       shirtSize.value = newProf.shirt_size || ''
       referralSource.value = newProf.referral_source || ''
       favoriteSport.value = newProf.favorite_sport || ''
+      isPrivate.value = Boolean(newProf.is_private)
     }
   },
   { immediate: true }
@@ -90,6 +92,7 @@ function handleSave() {
     shirt_size: shirtSize.value || null,
     referral_source: referralSource.value || null,
     favorite_sport: favoriteSport.value?.trim() || null,
+    is_private: isPrivate.value,
   })
 }
 </script>
@@ -158,6 +161,39 @@ function handleSave() {
       label="¿Cómo te enteraste del equipo?"
       :options="[{ value: '', label: 'Seleccionar...' }, ...referralOptions]"
     />
+
+    <!-- Privacidad de la Cuenta -->
+    <div class="p-4 rounded-guaiqui-xl border border-guaiqui-border bg-slate-50/70">
+      <div class="flex items-center justify-between gap-4">
+        <div class="flex items-center gap-2.5">
+          <div class="w-8 h-8 rounded-full bg-slate-200/80 text-slate-700 flex items-center justify-center text-sm shrink-0">
+            <i :class="isPrivate ? 'bi bi-lock-fill text-amber-600' : 'bi bi-globe-americas text-emerald-600'"></i>
+          </div>
+          <div>
+            <label for="account-privacy-toggle" class="text-xs sm:text-sm font-bold text-guaiqui-text cursor-pointer">
+              Cuenta Privada
+            </label>
+            <p class="text-[11px] text-guaiqui-text-muted leading-tight">
+              {{ isPrivate ? 'Solo los fanáticos con solicitud aceptada podrán ver tus estadísticas de ranking, canjes y perlitas.' : 'Tu perfil es público por defecto. Cualquier fanático puede ver tus estadísticas y seguirte inmediatamente.' }}
+            </p>
+          </div>
+        </div>
+        <button
+          id="account-privacy-toggle"
+          type="button"
+          role="switch"
+          :aria-checked="isPrivate"
+          @click="isPrivate = !isPrivate"
+          class="relative inline-flex h-6 w-11 shrink-0 cursor-pointer rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out focus:outline-hidden"
+          :class="isPrivate ? 'bg-amber-600' : 'bg-slate-300'"
+        >
+          <span
+            class="pointer-events-none inline-block h-5 w-5 transform rounded-full bg-white shadow-sm ring-0 transition duration-200 ease-in-out"
+            :class="isPrivate ? 'translate-x-5' : 'translate-x-0'"
+          />
+        </button>
+      </div>
+    </div>
 
     <div class="pt-2">
       <BaseButton type="submit" variant="primary" block :loading="loading">

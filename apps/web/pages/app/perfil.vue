@@ -12,6 +12,7 @@ import ProfileFollowRequestsCard from '~/components/profile/ProfileFollowRequest
 import ProfileBlockedUsersCard from '~/components/profile/ProfileBlockedUsersCard.vue'
 import ProfileFollowedTeamsCard from '~/components/profile/ProfileFollowedTeamsCard.vue'
 import AppBackButton from '~/components/common/AppBackButton.vue'
+import type { PublicProfileFollowedTeam } from '@guaiqui/shared'
 
 definePageMeta({
   layout: 'app',
@@ -23,11 +24,14 @@ useSeoMeta({
   description: 'Gestiona tu perfil oficial de fanático, seguidores, solicitudes y deporte favorito.',
 })
 
+const supabase = useSupabaseClient()
 const authStore = useAuthStore()
 const triviaStore = useTriviaStore()
 const socialProfile = useSocialProfile()
 const route = useRoute()
 const router = useRouter()
+
+const teamActionLoading = ref<Record<string, boolean>>({})
 
 const activeTab = ref<'perfil' | 'ajustes'>(route.query.tab === 'ajustes' ? 'ajustes' : 'perfil')
 
@@ -171,6 +175,26 @@ async function handleRespondRequest(payload: { followerId: string; accept: boole
 async function handleUnblockUser(userId: string) {
   await socialProfile.unblock(userId)
 }
+
+async function handleToggleTeamFollow(team: PublicProfileFollowedTeam) {
+  if (!team?.id || teamActionLoading.value[team.id]) return
+  teamActionLoading.value = { ...teamActionLoading.value, [team.id]: true }
+  try {
+    const isCurrentlyFollowing = Boolean(team.is_following)
+    const rpcName = isCurrentlyFollowing ? 'unfollow_team' : 'follow_team'
+    const { error: rpcErr } = await supabase.rpc(rpcName, { p_team_id: team.id })
+    if (rpcErr) throw rpcErr
+    team.is_following = !isCurrentlyFollowing
+    await authStore.refreshWallet()
+    if (authStore.profile?.id) {
+      await socialProfile.fetchPublicProfile(authStore.profile.id)
+    }
+  } catch (err: any) {
+    console.error('Error toggling team follow:', err)
+  } finally {
+    teamActionLoading.value = { ...teamActionLoading.value, [team.id]: false }
+  }
+}
 </script>
 
 <template>
@@ -307,6 +331,8 @@ async function handleUnblockUser(userId: string) {
       <!-- 4. Equipos que Sigue el Fanático -->
       <ProfileFollowedTeamsCard
         :teams="socialProfile.currentProfile.value?.followed_teams || []"
+        :action-loading="teamActionLoading"
+        @toggle-follow-team="handleToggleTeamFollow"
       />
     </div>
 

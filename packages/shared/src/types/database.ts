@@ -75,6 +75,7 @@ export interface Profile {
   favorite_player_id?: string | null
   shirt_size?: string | null
   favorite_sport?: string | null
+  is_private?: boolean
   referral_source?: string | null
   notification_prefs?: Json
   status: UserStatus
@@ -96,6 +97,7 @@ export interface PublicProfileFollowedTeam {
   name: string
   slug: string
   logo_url?: string | null
+  is_following?: boolean
 }
 
 export interface PublicProfileRanking {
@@ -115,6 +117,7 @@ export interface PublicUserProfile {
   avatar_url?: string | null
   cover_url?: string | null
   favorite_sport?: string | null
+  is_private?: boolean
   followed_teams: PublicProfileFollowedTeam[]
   followers_count: number
   following_count: number
@@ -2624,6 +2627,8 @@ export type Database = {
           privacy_version: string | null
           referral_source: string | null
           shirt_size: string | null
+          favorite_sport: string | null
+          is_private: boolean
           status: Database['public']['Enums']['user_status']
           terms_accepted_at: string | null
           terms_version: string | null
@@ -2647,6 +2652,8 @@ export type Database = {
           privacy_version?: string | null
           referral_source?: string | null
           shirt_size?: string | null
+          favorite_sport?: string | null
+          is_private?: boolean
           status?: Database['public']['Enums']['user_status']
           terms_accepted_at?: string | null
           terms_version?: string | null
@@ -2670,6 +2677,8 @@ export type Database = {
           privacy_version?: string | null
           referral_source?: string | null
           shirt_size?: string | null
+          favorite_sport?: string | null
+          is_private?: boolean
           status?: Database['public']['Enums']['user_status']
           terms_accepted_at?: string | null
           terms_version?: string | null

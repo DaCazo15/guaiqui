@@ -2,6 +2,7 @@
 import { ref, computed, onMounted } from 'vue'
 import { useRoute } from 'vue-router'
 import { BaseCard, BaseButton, BaseModal } from '@guaiqui/ui'
+import type { PublicProfileFollowedTeam } from '@guaiqui/shared'
 import { useSocialProfile } from '~/composables/useSocialProfile'
 import { useAuthStore } from '~/stores/auth'
 import ProfileFollowedTeamsCard from '~/components/profile/ProfileFollowedTeamsCard.vue'
@@ -12,12 +13,15 @@ definePageMeta({
 })
 
 const route = useRoute()
+const supabase = useSupabaseClient()
 const authStore = useAuthStore()
 const socialProfile = useSocialProfile()
 
 const userId = computed(() => route.params.id as string)
 const profile = computed(() => socialProfile.currentProfile.value)
 const isBlockModalOpen = ref(false)
+const showTeamsSection = ref(true)
+const teamActionLoading = ref<Record<string, boolean>>({})
 
 useSeoMeta({
   title: computed(() => profile.value ? `${profile.value.display_name} — Perfil de Fanático` : 'Perfil de Fanático'),
@@ -54,6 +58,23 @@ async function handleConfirmBlock() {
   if (ok) {
     // Navigate back to community search
     navigateTo('/app/usuarios')
+  }
+}
+
+async function handleToggleTeamFollow(team: PublicProfileFollowedTeam) {
+  if (!team?.id || teamActionLoading.value[team.id]) return
+  teamActionLoading.value = { ...teamActionLoading.value, [team.id]: true }
+  try {
+    const isCurrentlyFollowing = Boolean(team.is_following)
+    const rpcName = isCurrentlyFollowing ? 'unfollow_team' : 'follow_team'
+    const { error: rpcErr } = await supabase.rpc(rpcName, { p_team_id: team.id })
+    if (rpcErr) throw rpcErr
+    team.is_following = !isCurrentlyFollowing
+    await authStore.refreshWallet()
+  } catch (err: any) {
+    console.error('Error toggling team follow:', err)
+  } finally {
+    teamActionLoading.value = { ...teamActionLoading.value, [team.id]: false }
   }
 }
 </script>
@@ -160,13 +181,13 @@ async function handleConfirmBlock() {
                     <i class="bi bi-person-plus-fill mr-1.5"></i>
                     Solicitar Seguir
                   </span>
-                  <span v-else-if="profile.relation_status === 'pending'" class="text-amber-700">
+                  <span v-else-if="profile.relation_status === 'pending'" class="text-black">
                     <i class="bi bi-hourglass-split mr-1.5"></i>
-                    Solicitud Pendiente (Cancelar)
+                    Solicitud Pendiente
                   </span>
                   <span v-else-if="profile.relation_status === 'accepted'">
-                    <i class="bi bi-check2 mr-1.5 text-emerald-600"></i>
-                    Siguiendo (Dejar de seguir)
+                    <i class="bi bi-check2 mr-1.5 text-black"></i>
+                    Siguiendo
                   </span>
                 </BaseButton>
               </template>
@@ -176,10 +197,11 @@ async function handleConfirmBlock() {
                 v-if="profile.relation_status !== 'self'"
                 type="button"
                 @click="isBlockModalOpen = true"
-                class="text-xs text-slate-400 hover:text-rose-600 p-2 rounded-lg hover:bg-slate-50 transition-colors"
+                class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold text-slate-500 hover:text-rose-700 bg-slate-100/90 hover:bg-rose-50 border border-slate-200 hover:border-rose-200 transition-all cursor-pointer shadow-2xs active:scale-95"
                 title="Bloquear a este usuario"
               >
-                <i class="bi bi-slash-circle"></i>
+                <i class="bi bi-slash-circle text-rose-500 text-xs"></i>
+                <span>Bloquear</span>
               </button>
             </div>
           </div>
@@ -195,8 +217,8 @@ async function handleConfirmBlock() {
             </p>
           </div>
 
-          <!-- Métricas Sociales Públicas (Seguidores y Seguidos) -->
-          <div class="flex items-center gap-6 pt-4 mt-4 border-t border-guaiqui-border/60 text-sm">
+          <!-- Métricas Sociales Públicas (Seguidores, Seguidos y Equipos) -->
+          <div class="flex flex-wrap items-center gap-5 sm:gap-6 pt-4 mt-4 border-t border-guaiqui-border/60 text-sm">
             <div>
               <strong class="font-display font-extrabold text-guaiqui-text text-base">
                 {{ profile.followers_count }}
@@ -209,12 +231,35 @@ async function handleConfirmBlock() {
               </strong>
               <span class="text-xs text-guaiqui-text-muted ml-1">seguidos</span>
             </div>
+            <button
+              type="button"
+              @click="showTeamsSection = !showTeamsSection"
+              class="group inline-flex items-center gap-1.5 px-2.5 py-1 -my-1 rounded-lg transition-all cursor-pointer select-none"
+              :class="showTeamsSection ? 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200' : 'hover:bg-slate-100 text-guaiqui-text'"
+              title="Ver u ocultar equipos que sigue"
+            >
+              <strong class="font-display font-extrabold text-base">
+                {{ profile.followed_teams?.length || 0 }}
+              </strong>
+              <span class="text-xs text-guaiqui-text-muted group-hover:text-guaiqui-text ml-0.5">
+                {{ (profile.followed_teams?.length === 1) ? 'equipo' : 'equipos' }}
+              </span>
+              <i
+                class="bi text-xs transition-transform"
+                :class="showTeamsSection ? 'bi-chevron-up text-emerald-700' : 'bi-chevron-down text-slate-400 group-hover:text-slate-600'"
+              ></i>
+            </button>
           </div>
         </div>
       </div>
 
-      <!-- 2. Equipos que Sigue (Siempre visible de forma pública) -->
-      <ProfileFollowedTeamsCard :teams="profile.followed_teams" />
+      <!-- 2. Equipos que Sigue (Mostrado al hacer click o desplegado) -->
+      <ProfileFollowedTeamsCard
+        v-if="showTeamsSection"
+        :teams="profile.followed_teams || []"
+        :action-loading="teamActionLoading"
+        @toggle-follow-team="handleToggleTeamFollow"
+      />
 
       <!-- 3. Contenido Completo (Solo para seguidores aceptados o el propio usuario) -->
       <div v-if="profile.is_full_profile" class="space-y-6">
