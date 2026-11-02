@@ -1,9 +1,10 @@
 <script setup lang="ts">
+import { ref, watch } from 'vue'
 import { formatPerlitas } from '@guaiqui/shared'
 import { PearlIcon } from '@guaiqui/ui'
 import type { TeamSummary } from '~/composables/useCurrentTeam'
 
-defineProps<{
+const props = defineProps<{
   team: TeamSummary
   toggling?: boolean
 }>()
@@ -12,6 +13,15 @@ const emit = defineEmits<{
   (e: 'toggleFollow'): void
   (e: 'switchTeam'): void
 }>()
+
+const logoError = ref(false)
+
+watch(
+  () => props.team?.logo_url,
+  () => {
+    logoError.value = false
+  }
+)
 </script>
 
 <template>
@@ -27,10 +37,11 @@ const emit = defineEmits<{
       <div class="flex items-center gap-4 min-w-0">
         <div class="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-slate-950 border border-slate-700/60 p-2 shrink-0 flex items-center justify-center shadow-lg">
           <img
-            v-if="team.logo_url"
+            v-if="team.logo_url && !logoError"
             :src="team.logo_url"
             :alt="team.name"
             class="w-full h-full object-contain"
+            @error="logoError = true"
           />
           <i v-else class="bi bi-shield-fill text-3xl text-emerald-400"></i>
         </div>

@@ -7,7 +7,7 @@ defineProps<{
 </script>
 
 <template>
-  <div class="border-b border-slate-800 pb-2 overflow-x-auto">
+  <div class="border-b border-guaiqui-border pb-2 overflow-x-auto">
     <div class="flex items-center gap-2 min-w-max">
       <!-- 1. Resumen -->
       <NuxtLink
@@ -15,8 +15,8 @@ defineProps<{
         class="px-3.5 py-2 rounded-xl text-xs sm:text-sm font-bold uppercase tracking-wider transition-all duration-200 inline-flex items-center gap-1.5"
         :class="[
           activeTab === 'hub'
-            ? 'bg-white text-slate-950 shadow-md font-black'
-            : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+            ? 'bg-guaiqui-primary text-white shadow-md font-black'
+            : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100'
         ]"
       >
         <i class="bi bi-grid-fill text-sm"></i>
@@ -30,7 +30,7 @@ defineProps<{
         :class="[
           activeTab === 'trivias'
             ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md font-black'
-            : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+            : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100'
         ]"
       >
         <i class="bi bi-patch-question-fill text-sm"></i>
@@ -44,7 +44,7 @@ defineProps<{
         :class="[
           activeTab === 'tienda'
             ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md font-black'
-            : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+            : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100'
         ]"
       >
         <i class="bi bi-bag-heart-fill text-sm"></i>
@@ -58,7 +58,7 @@ defineProps<{
         :class="[
           activeTab === 'partidos'
             ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md font-black'
-            : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+            : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100'
         ]"
       >
         <i class="bi bi-calendar-event-fill text-sm"></i>
@@ -72,7 +72,7 @@ defineProps<{
         :class="[
           activeTab === 'plantilla'
             ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md font-black'
-            : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+            : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100'
         ]"
       >
         <i class="bi bi-people-fill text-sm"></i>
@@ -86,7 +86,7 @@ defineProps<{
         :class="[
           activeTab === 'salon-de-la-fama'
             ? 'bg-gradient-to-r from-orange-500 to-amber-500 text-white shadow-md font-black'
-            : 'text-slate-400 hover:text-white hover:bg-slate-900/60'
+            : 'text-slate-600 hover:text-slate-950 hover:bg-slate-100'
         ]"
       >
         <i class="bi bi-award-fill text-sm"></i>

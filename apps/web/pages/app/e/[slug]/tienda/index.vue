@@ -137,8 +137,20 @@ useSeoMeta({
 
       <!-- Store Content (When active) -->
       <div v-if="activeTeam.status === 'active'" class="space-y-5">
+        <!-- Subheader -->
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pt-2">
+          <div>
+            <h2 class="font-display text-xl sm:text-2xl font-bold text-guaiqui-text uppercase tracking-wider">
+              Tienda Oficial <span class="text-guaiqui-primary">{{ activeTeam.name }}</span>
+            </h2>
+            <p class="text-xs sm:text-sm text-guaiqui-text-muted mt-0.5">
+              Canjea tus perlitas acumuladas por premios exclusivos y experiencias del club.
+            </p>
+          </div>
+        </div>
+
         <!-- Controls Bar: Search & Category Filter -->
-        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4 pt-2">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <!-- Category Pills -->
           <div class="flex items-center gap-1.5 overflow-x-auto pb-1 sm:pb-0">
             <button
@@ -149,8 +161,8 @@ useSeoMeta({
               class="px-3.5 py-2 rounded-xl text-xs font-bold transition-all duration-200 shrink-0 cursor-pointer"
               :class="[
                 selectedCategory === cat.id
-                  ? 'bg-emerald-500 text-slate-950 font-black shadow-xs'
-                  : 'bg-slate-900/80 hover:bg-slate-800 text-slate-300 border border-slate-800'
+                  ? 'bg-guaiqui-primary text-white font-black shadow-xs'
+                  : 'bg-white hover:bg-slate-100 text-slate-700 border border-slate-200'
               ]"
             >
               {{ cat.label }}
@@ -158,34 +170,34 @@ useSeoMeta({
           </div>
 
           <!-- Affordable Toggle -->
-          <label class="flex items-center gap-2 text-xs font-semibold text-slate-300 cursor-pointer select-none shrink-0">
+          <label class="flex items-center gap-2 text-xs font-semibold text-slate-700 cursor-pointer select-none shrink-0">
             <input
               type="checkbox"
               v-model="onlyAffordable"
-              class="rounded border-slate-700 bg-slate-900 text-emerald-500 focus:ring-emerald-500 w-4 h-4 cursor-pointer"
+              class="rounded border-slate-300 bg-white text-emerald-600 focus:ring-emerald-500 w-4 h-4 cursor-pointer"
             />
             <span>Solo lo que me alcanza ({{ formatPerlitas(activeTeam.balance) }} perlitas)</span>
           </label>
         </div>
 
         <!-- Products Loading -->
-        <div v-if="catalogLoading" class="py-16 text-center text-slate-400">
-          <i class="bi bi-arrow-repeat text-2xl animate-spin inline-block mb-2 text-emerald-400"></i>
-          <p class="text-xs">Cargando catálogo de premios...</p>
+        <div v-if="catalogLoading" class="py-16 text-center text-slate-500">
+          <i class="bi bi-arrow-repeat text-2xl animate-spin inline-block mb-2 text-guaiqui-primary"></i>
+          <p class="text-xs font-medium">Cargando catálogo de premios...</p>
         </div>
 
         <!-- Empty Products State -->
         <div
           v-else-if="filteredProducts.length === 0"
-          class="py-16 px-4 text-center rounded-3xl bg-slate-900/40 border border-slate-800"
+          class="py-16 px-4 text-center rounded-3xl bg-white border border-guaiqui-border shadow-xs"
         >
-          <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-slate-900 border border-slate-800 flex items-center justify-center text-slate-500">
+          <div class="w-14 h-14 mx-auto mb-3 rounded-2xl bg-slate-100 border border-slate-200 flex items-center justify-center text-slate-400">
             <i class="bi bi-bag-x text-2xl"></i>
           </div>
-          <h4 class="text-sm font-bold text-white mb-1">
+          <h4 class="text-base font-bold text-guaiqui-text mb-1">
             No se encontraron premios
           </h4>
-          <p class="text-xs text-slate-400 max-w-sm mx-auto">
+          <p class="text-xs text-guaiqui-text-muted max-w-sm mx-auto">
             {{ onlyAffordable ? 'No tienes suficientes perlitas de este equipo para los premios disponibles. Juega trivias para sumar más.' : 'Este equipo aún no ha publicado productos en esta categoría.' }}
           </p>
         </div>
