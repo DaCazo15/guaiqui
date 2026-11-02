@@ -13,6 +13,7 @@ const {
   loading,
   closePicker,
   selectTeam,
+  fetchFollowedTeams,
 } = useCurrentTeam()
 
 watch(() => route.fullPath, () => {
@@ -34,6 +35,9 @@ const handleKeydown = (e: KeyboardEvent) => {
 }
 
 watch(isPickerOpen, (open) => {
+  if (open) {
+    fetchFollowedTeams()
+  }
   if (typeof document !== 'undefined') {
     if (open) {
       document.body.style.overflow = 'hidden'

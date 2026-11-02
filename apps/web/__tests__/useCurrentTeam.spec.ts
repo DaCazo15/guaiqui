@@ -9,9 +9,14 @@ const mockFrom = vi.fn((_table: string): any => ({
 }))
 
 const mockRouterPush = vi.fn()
+const mockRpc = vi.fn().mockResolvedValue({ data: null, error: null })
 
 ;(globalThis as any).useSupabaseClient = () => ({
   from: mockFrom,
+  rpc: mockRpc,
+  auth: {
+    getSession: vi.fn().mockResolvedValue({ data: { session: null } }),
+  },
 })
 ;(globalThis as any).useSupabaseUser = () => mockUser
 ;(globalThis as any).useRouter = () => ({
@@ -92,6 +97,43 @@ describe('useCurrentTeam composable', () => {
 
     await fetchFollowedTeams()
     expect(followedTeams.value).toHaveLength(0)
+  })
+
+  it('fetchFollowedTeams maps get_wallet_summary payload fields correctly', async () => {
+    mockUser.value = { id: 'fan-test-uuid' }
+    mockRpc.mockResolvedValueOnce({
+      data: {
+        total_balance: 475,
+        teams: [
+          {
+            team_id: 'a0000000-0000-0000-0000-000000000001',
+            name: 'Guaiqueríes de Margarita',
+            slug: 'guaiqueries',
+            short_name: 'La Tribu',
+            logo_url: '/logo.png',
+            primary_color: '#005A36',
+            secondary_color: '#E31B23',
+            status: 'active',
+            balance: 475,
+            held_pearls: 0,
+            is_following: true,
+          },
+        ],
+      },
+      error: null,
+    })
+
+    const { fetchFollowedTeams, followedTeams } = useCurrentTeam()
+    const result = await fetchFollowedTeams()
+
+    expect(result).toHaveLength(1)
+    expect(result[0].name).toBe('Guaiqueríes de Margarita')
+    expect(result[0].slug).toBe('guaiqueries')
+    expect(result[0].short_name).toBe('La Tribu')
+    expect(result[0].logo_url).toBe('/logo.png')
+    expect(result[0].balance).toBe(475)
+    expect(result[0].is_following).toBe(true)
+    expect(followedTeams.value).toHaveLength(1)
   })
 
   it('loadTeamBySlug loads team details and persists slug', async () => {

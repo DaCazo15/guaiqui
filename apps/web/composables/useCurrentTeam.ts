@@ -52,31 +52,104 @@ export const useCurrentTeam = () => {
     }
   }
 
+  const resolveUserId = async (): Promise<string | null> => {
+    if (user.value?.id) return user.value.id
+    const userObj = user.value as any
+    if (userObj?.sub) return userObj.sub
+
+    try {
+      const authStore = useAuthStore()
+      if (authStore?.user?.id) return authStore.user.id
+      if (authStore?.profile?.id) return authStore.profile.id
+    } catch {
+      // Pinia might not be ready in isolated tests
+    }
+
+    try {
+      const { data } = await supabase.auth.getSession()
+      if (data?.session?.user?.id) return data.session.user.id
+    } catch {
+      // Ignore
+    }
+    return null
+  }
+
   const fetchFollowedTeams = async () => {
-    if (!user.value?.id) return []
     loading.value = true
     error.value = null
     try {
-      // Fetch wallet summary which already computes per-team balances and follow status
-      const { data, error: rpcError } = await supabase.rpc('get_wallet_summary')
-      if (rpcError) throw rpcError
+      const userId = await resolveUserId()
+      if (!userId) {
+        followedTeams.value = []
+        return []
+      }
 
-      const summary = data as any
-      const teamsList: TeamSummary[] = (summary?.teams || [])
-        .filter((t: any) => t.is_following === true)
-        .map((t: any) => ({
-          id: t.team_id,
-          name: t.team_name,
-          slug: t.team_slug,
-          short_name: t.team_short_name,
-          logo_url: t.team_logo_url,
-          primary_color: t.team_primary_color,
-          secondary_color: t.team_secondary_color,
-          status: 'active', // Only active teams can be followed
-          is_following: true,
-          balance: t.balance || 0,
-          held_balance: t.held_balance || 0,
-        }))
+      let teamsList: TeamSummary[] = []
+
+      // 1. Fetch wallet summary which computes per-team balances and follow status
+      try {
+        const { data, error: rpcError } = await supabase.rpc('get_wallet_summary')
+        if (!rpcError && data) {
+          const summary = data as any
+          const rawTeams = Array.isArray(summary?.teams) ? summary.teams : []
+          teamsList = rawTeams
+            .filter((t: any) => t.is_following === true)
+            .map((t: any) => ({
+              id: t.team_id || t.id,
+              name: t.name || t.team_name || 'Equipo',
+              slug: t.slug || t.team_slug || '',
+              short_name: t.short_name || t.team_short_name || null,
+              logo_url: t.logo_url || t.team_logo_url || null,
+              primary_color: t.primary_color || t.team_primary_color || null,
+              secondary_color: t.secondary_color || t.team_secondary_color || null,
+              status: (t.status as 'active' | 'inactive') || 'active',
+              is_following: true,
+              balance: t.balance || 0,
+              held_balance: t.held_pearls ?? t.held_balance ?? 0,
+            }))
+        }
+      } catch {
+        // Fallback to direct query below
+      }
+
+      // 2. Infallible fallback: If get_wallet_summary returned 0 teams or failed,
+      // query team_follows joined with teams directly so we never falsely show 0 followed teams.
+      if (teamsList.length === 0) {
+        const { data: followRows, error: followError } = await supabase
+          .from('team_follows')
+          .select(`
+            team_id,
+            teams (
+              id,
+              name,
+              slug,
+              short_name,
+              logo_url,
+              primary_color,
+              secondary_color,
+              status
+            )
+          `)
+          .eq('user_id', userId)
+
+        if (!followError && Array.isArray(followRows)) {
+          teamsList = followRows
+            .filter((r: any) => r.teams && r.teams.status === 'active')
+            .map((r: any) => ({
+              id: r.teams.id,
+              name: r.teams.name,
+              slug: r.teams.slug,
+              short_name: r.teams.short_name,
+              logo_url: r.teams.logo_url,
+              primary_color: r.teams.primary_color,
+              secondary_color: r.teams.secondary_color,
+              status: r.teams.status,
+              is_following: true,
+              balance: 0,
+              held_balance: 0,
+            }))
+        }
+      }
 
       followedTeams.value = teamsList
       return teamsList
@@ -119,8 +192,8 @@ export const useCurrentTeam = () => {
       let teamBalance = 0
       const teamHeld = 0
 
-      if (user.value?.id) {
-        const userId = user.value.id
+      const userId = await resolveUserId()
+      if (userId) {
         const { data: followData } = await supabase
           .from('team_follows')
           .select('team_id')

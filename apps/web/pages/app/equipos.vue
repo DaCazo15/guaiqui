@@ -2,6 +2,7 @@
 import { ref, onMounted } from 'vue'
 import { useSupabaseClient } from '#imports'
 import { EmptyState, Skeleton } from '@guaiqui/ui'
+import { useCurrentTeam } from '~/composables/useCurrentTeam'
 import TeamSearchBar from '~/components/teams/TeamSearchBar.vue'
 import TeamCard, { type TeamItem } from '~/components/teams/TeamCard.vue'
 
@@ -16,6 +17,7 @@ useSeoMeta({
 })
 
 const supabase = useSupabaseClient()
+const { fetchFollowedTeams } = useCurrentTeam()
 
 const searchQuery = ref('')
 const teams = ref<TeamItem[]>([])
@@ -60,6 +62,7 @@ const handleToggleFollow = async (team: TeamItem) => {
       const { error: rpcError } = await supabase.rpc('unfollow_team', { p_team_id: team.id })
       if (rpcError) throw rpcError
     }
+    await fetchFollowedTeams()
   } catch (err: any) {
     // Revert on error
     team.is_following = !targetState

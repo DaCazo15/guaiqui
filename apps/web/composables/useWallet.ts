@@ -60,13 +60,50 @@ export const useWallet = () => {
   const currentFilter = ref<string>('all')
   const selectedTeamId = ref<string | null>(null)
 
+  const resolveUserId = async (): Promise<string | null> => {
+    if (user.value?.id) return user.value.id
+    const userObj = user.value as any
+    if (userObj?.sub) return userObj.sub
+
+    try {
+      const authStore = useAuthStore()
+      if (authStore?.user?.id) return authStore.user.id
+      if (authStore?.profile?.id) return authStore.profile.id
+    } catch {
+      // Ignore
+    }
+
+    try {
+      const { data } = await supabase.auth.getSession()
+      if (data?.session?.user?.id) return data.session.user.id
+    } catch {
+      // Ignore
+    }
+    return null
+  }
+
   const fetchSummary = async () => {
-    if (!user.value) return
+    const userId = await resolveUserId()
+    if (!userId) return
     try {
       const { data, error: rpcError } = await supabase.rpc('get_wallet_summary')
       if (rpcError) throw rpcError
       if (data) {
         const d = data as any
+        const rawTeams = Array.isArray(d.teams) ? d.teams : []
+        const mappedTeams: WalletSummaryTeam[] = rawTeams.map((t: any) => ({
+          team_id: t.team_id || t.id,
+          team_name: t.name || t.team_name || '',
+          team_slug: t.slug || t.team_slug || '',
+          team_short_name: t.short_name || t.team_short_name || null,
+          team_logo_url: t.logo_url || t.team_logo_url || null,
+          team_primary_color: t.primary_color || t.team_primary_color || null,
+          team_secondary_color: t.secondary_color || t.team_secondary_color || null,
+          balance: t.balance ?? 0,
+          held_balance: t.held_pearls ?? t.held_balance ?? 0,
+          is_following: !!t.is_following,
+        }))
+
         summary.value = {
           balance: d.total_balance ?? d.balance ?? 0,
           total_balance: d.total_balance ?? d.balance ?? 0,
@@ -75,7 +112,7 @@ export const useWallet = () => {
           spent_month: d.spent_month ?? 0,
           held_pearls: d.total_held_balance ?? d.held_pearls ?? 0,
           total_held_balance: d.total_held_balance ?? d.held_pearls ?? 0,
-          teams: Array.isArray(d.teams) ? d.teams : [],
+          teams: mappedTeams,
         }
       }
     } catch (err: any) {
@@ -84,7 +121,8 @@ export const useWallet = () => {
   }
 
   const fetchLedger = async (type: string = 'all', isLoadMore: boolean = false) => {
-    if (!user.value) return
+    const userId = await resolveUserId()
+    if (!userId) return
     if (isLoadMore) {
       loadingMore.value = true
     } else {

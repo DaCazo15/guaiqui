@@ -46,10 +46,14 @@ describe('useWallet composable', () => {
       teams: [
         {
           team_id: 'team-1',
-          team_name: 'Guaiqueríes',
-          team_slug: 'guaiqueries',
+          name: 'Guaiqueríes',
+          slug: 'guaiqueries',
+          short_name: 'La Tribu',
+          logo_url: '/logo.png',
+          primary_color: '#005A36',
+          secondary_color: '#E31B23',
           balance: 150,
-          held_balance: 10,
+          held_pearls: 10,
           is_following: true,
         },
       ],
@@ -68,7 +72,20 @@ describe('useWallet composable', () => {
       spent_month: 50,
       held_pearls: 10,
       total_held_balance: 10,
-      teams: mockRpcData.teams,
+      teams: [
+        {
+          team_id: 'team-1',
+          team_name: 'Guaiqueríes',
+          team_slug: 'guaiqueries',
+          team_short_name: 'La Tribu',
+          team_logo_url: '/logo.png',
+          team_primary_color: '#005A36',
+          team_secondary_color: '#E31B23',
+          balance: 150,
+          held_balance: 10,
+          is_following: true,
+        },
+      ],
     })
     expect(error.value).toBeNull()
   })
