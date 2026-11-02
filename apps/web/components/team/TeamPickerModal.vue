@@ -29,7 +29,7 @@ const sectionTitle = computed(() => {
 
 const handleKeydown = (e: KeyboardEvent) => {
   if (e.key === 'Escape' && isPickerOpen.value) {
-    closePicker()
+    return
   }
 }
 
@@ -84,15 +84,6 @@ onUnmounted(() => {
               Las perlitas y recompensas se gestionan de forma independiente por equipo.
             </p>
           </div>
-
-          <button
-            type="button"
-            @click="closePicker"
-            aria-label="Cerrar selección de equipo"
-            class="w-8 h-8 rounded-full bg-slate-800/80 hover:bg-slate-700 text-slate-300 hover:text-white flex items-center justify-center transition-colors shrink-0 cursor-pointer"
-          >
-            <i class="bi bi-x-lg text-sm"></i>
-          </button>
         </div>
 
         <!-- Content Area -->
@@ -128,14 +119,6 @@ onUnmounted(() => {
             <i class="bi bi-plus-circle text-xs"></i>
             <span>Seguir a otros equipos</span>
           </NuxtLink>
-
-          <button
-            type="button"
-            @click="closePicker"
-            class="text-slate-400 hover:text-white transition-colors"
-          >
-            Cancelar
-          </button>
         </div>
       </div>
     </div>
