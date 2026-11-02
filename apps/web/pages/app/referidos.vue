@@ -108,43 +108,49 @@ const shareViaWhatsApp = () => {
 
     <!-- Stats Grid (3 columns on mobile and desktop) -->
     <div class="grid grid-cols-3 gap-2 sm:gap-4">
-      <BaseCard class="p-2.5 sm:p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-xs flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left gap-1.5 sm:gap-4">
-        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-base sm:text-2xl shrink-0">
-          <i class="bi bi-people-fill"></i>
-        </div>
-        <div class="min-w-0">
-          <span class="text-[9px] sm:text-xs font-bold text-guaiqui-text-muted uppercase tracking-wider block leading-tight truncate">Invitados</span>
-          <span class="font-display font-black text-lg sm:text-2xl text-guaiqui-text block leading-tight">
-            {{ referrals.summary.value.total_referred }}
-          </span>
-          <span class="text-[9px] sm:text-[11px] text-guaiqui-text-muted hidden sm:block">Amigos registrados</span>
-        </div>
-      </BaseCard>
-
-      <BaseCard class="p-2.5 sm:p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-xs flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left gap-1.5 sm:gap-4">
-        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-base sm:text-2xl shrink-0">
-          <i class="bi bi-check-circle-fill"></i>
-        </div>
-        <div class="min-w-0">
-          <span class="text-[9px] sm:text-xs font-bold text-guaiqui-text-muted uppercase tracking-wider block leading-tight truncate">Calificados</span>
-          <span class="font-display font-black text-lg sm:text-2xl text-purple-700 block leading-tight">
-            {{ referrals.summary.value.qualified_count }}
-          </span>
-          <span class="text-[9px] sm:text-[11px] text-guaiqui-text-muted hidden sm:block">Jugaron 1 trivia</span>
-        </div>
-      </BaseCard>
-
-      <BaseCard class="p-2.5 sm:p-5 bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-xs flex flex-col sm:flex-row items-center sm:items-center text-center sm:text-left gap-1.5 sm:gap-4">
-        <div class="w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-base sm:text-2xl shrink-0">
-          <i class="bi bi-gem"></i>
-        </div>
-        <div class="min-w-0">
-          <span class="text-[9px] sm:text-xs font-bold text-guaiqui-text-muted uppercase tracking-wider block leading-tight truncate">Puntos</span>
-          <div class="flex items-center justify-center sm:justify-start">
-            <PearlAmount :amount="referrals.summary.value.points_earned" size="sm" class="sm:hidden" animated />
-            <PearlAmount :amount="referrals.summary.value.points_earned" size="lg" class="hidden sm:inline-flex" animated />
+      <BaseCard padding="none" class="bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-xs h-full">
+        <div class="p-2.5 sm:p-5 flex flex-col sm:flex-row items-center justify-center sm:justify-start text-center sm:text-left gap-2 sm:gap-4 h-full w-full">
+          <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-blue-50 text-blue-600 flex items-center justify-center text-lg sm:text-2xl shrink-0 mx-auto sm:mx-0">
+            <i class="bi bi-people-fill"></i>
           </div>
-          <span class="text-[9px] sm:text-[11px] text-guaiqui-text-muted hidden sm:block">Total obtenido</span>
+          <div class="min-w-0 flex flex-col items-center sm:items-start gap-0.5 sm:gap-1">
+            <span class="text-[10px] sm:text-xs font-bold text-guaiqui-text-muted uppercase tracking-wider block leading-tight truncate">Invitados</span>
+            <span class="font-display font-black text-lg sm:text-2xl text-guaiqui-text block leading-tight">
+              {{ referrals.summary.value.total_referred }}
+            </span>
+            <span class="text-[9px] sm:text-[11px] text-guaiqui-text-muted hidden sm:block">Amigos registrados</span>
+          </div>
+        </div>
+      </BaseCard>
+
+      <BaseCard padding="none" class="bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-xs h-full">
+        <div class="p-2.5 sm:p-5 flex flex-col sm:flex-row items-center justify-center sm:justify-start text-center sm:text-left gap-2 sm:gap-4 h-full w-full">
+          <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-purple-50 text-purple-600 flex items-center justify-center text-lg sm:text-2xl shrink-0 mx-auto sm:mx-0">
+            <i class="bi bi-check-circle-fill"></i>
+          </div>
+          <div class="min-w-0 flex flex-col items-center sm:items-start gap-0.5 sm:gap-1">
+            <span class="text-[10px] sm:text-xs font-bold text-guaiqui-text-muted uppercase tracking-wider block leading-tight truncate">Calificados</span>
+            <span class="font-display font-black text-lg sm:text-2xl text-purple-700 block leading-tight">
+              {{ referrals.summary.value.qualified_count }}
+            </span>
+            <span class="text-[9px] sm:text-[11px] text-guaiqui-text-muted hidden sm:block">Jugaron 1 trivia</span>
+          </div>
+        </div>
+      </BaseCard>
+
+      <BaseCard padding="none" class="bg-white border border-guaiqui-border rounded-guaiqui-xl shadow-guaiqui-xs h-full">
+        <div class="p-2.5 sm:p-5 flex flex-col sm:flex-row items-center justify-center sm:justify-start text-center sm:text-left gap-2 sm:gap-4 h-full w-full">
+          <div class="w-9 h-9 sm:w-12 sm:h-12 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-lg sm:text-2xl shrink-0 mx-auto sm:mx-0">
+            <i class="bi bi-gem"></i>
+          </div>
+          <div class="min-w-0 flex flex-col items-center sm:items-start gap-0.5 sm:gap-1">
+            <span class="text-[10px] sm:text-xs font-bold text-guaiqui-text-muted uppercase tracking-wider block leading-tight truncate">Puntos</span>
+            <div class="flex items-center justify-center sm:justify-start">
+              <PearlAmount :amount="referrals.summary.value.points_earned" size="md" class="sm:hidden font-black text-amber-700" animated />
+              <PearlAmount :amount="referrals.summary.value.points_earned" size="lg" class="hidden sm:inline-flex font-black text-amber-700" animated />
+            </div>
+            <span class="text-[9px] sm:text-[11px] text-guaiqui-text-muted hidden sm:block">Total obtenido</span>
+          </div>
         </div>
       </BaseCard>
     </div>

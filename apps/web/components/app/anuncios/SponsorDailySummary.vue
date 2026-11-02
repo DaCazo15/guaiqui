@@ -47,8 +47,11 @@ const canWatch = computed(() => {
     <!-- Grid de Métricas Diarias (3 columnas en móvil y desktop) -->
     <div class="grid grid-cols-3 gap-2 sm:gap-4">
       <!-- Métrica 1: Videos Reclamados Hoy -->
-      <div class="p-2.5 sm:p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-xl flex flex-col sm:flex-row items-center sm:items-center justify-between text-center sm:text-left gap-1 sm:gap-2">
-        <div class="space-y-0.5 min-w-0">
+      <div class="p-2 sm:p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-xl flex flex-col sm:flex-row items-center justify-center sm:justify-between text-center sm:text-left gap-1.5 sm:gap-2">
+        <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-base sm:text-xl border border-emerald-100 shrink-0 mx-auto sm:mx-0 sm:order-last">
+          <i class="bi bi-camera-reels-fill"></i>
+        </div>
+        <div class="space-y-0.5 min-w-0 flex flex-col items-center sm:items-start">
           <span class="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-guaiqui-text-muted block leading-tight truncate">
             Vistos Hoy
           </span>
@@ -62,14 +65,14 @@ const canWatch = computed(() => {
           </div>
           <span class="text-[8px] sm:text-[10px] text-guaiqui-text-muted hidden sm:block">máx diario</span>
         </div>
-        <div class="w-7 h-7 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center text-sm sm:text-xl border border-emerald-100 shrink-0">
-          <i class="bi bi-camera-reels-fill"></i>
-        </div>
       </div>
 
       <!-- Métrica 2: Puntos Ganados Hoy -->
-      <div class="p-2.5 sm:p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-xl flex flex-col sm:flex-row items-center sm:items-center justify-between text-center sm:text-left gap-1 sm:gap-2">
-        <div class="space-y-0.5 min-w-0">
+      <div class="p-2 sm:p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-xl flex flex-col sm:flex-row items-center justify-center sm:justify-between text-center sm:text-left gap-1.5 sm:gap-2">
+        <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-base sm:text-xl border border-amber-100 shrink-0 mx-auto sm:mx-0 sm:order-last">
+          <i class="bi bi-coin"></i>
+        </div>
+        <div class="space-y-0.5 min-w-0 flex flex-col items-center sm:items-start">
           <span class="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-guaiqui-text-muted block leading-tight truncate">
             Puntos Hoy
           </span>
@@ -82,14 +85,14 @@ const canWatch = computed(() => {
           </div>
           <span class="text-[8px] sm:text-[10px] text-guaiqui-text-muted hidden sm:block">/ 60 máx diario</span>
         </div>
-        <div class="w-7 h-7 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center text-sm sm:text-xl border border-amber-100 shrink-0">
-          <i class="bi bi-coin"></i>
-        </div>
       </div>
 
       <!-- Métrica 3: Recompensa Próximo Bloque -->
-      <div class="p-2.5 sm:p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-xl flex flex-col sm:flex-row items-center sm:items-center justify-between text-center sm:text-left gap-1 sm:gap-2">
-        <div class="space-y-0.5 min-w-0">
+      <div class="p-2 sm:p-4 bg-guaiqui-surface border border-guaiqui-border rounded-guaiqui-xl flex flex-col sm:flex-row items-center justify-center sm:justify-between text-center sm:text-left gap-1.5 sm:gap-2">
+        <div class="w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center text-base sm:text-xl border border-guaiqui-primary/20 shrink-0 mx-auto sm:mx-0 sm:order-last">
+          <i class="bi bi-award-fill"></i>
+        </div>
+        <div class="space-y-0.5 min-w-0 flex flex-col items-center sm:items-start">
           <span class="text-[9px] sm:text-[11px] font-bold uppercase tracking-wider text-guaiqui-text-muted block leading-tight truncate">
             Próximo (+{{ isLimitReached ? 0 : currentTierReward }})
           </span>
@@ -101,9 +104,6 @@ const canWatch = computed(() => {
           <span class="text-[8px] sm:text-[10px] font-medium text-guaiqui-text-muted truncate block">
             {{ isLimitReached ? 'Completado' : 'videos restantes' }}
           </span>
-        </div>
-        <div class="w-7 h-7 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl bg-guaiqui-primary-soft text-guaiqui-primary flex items-center justify-center text-sm sm:text-xl border border-guaiqui-primary/20 shrink-0">
-          <i class="bi bi-award-fill"></i>
         </div>
       </div>
     </div>
