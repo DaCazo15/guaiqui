@@ -6,6 +6,7 @@ import type { PublicProfileFollowedTeam } from '@guaiqui/shared'
 import { useSocialProfile } from '~/composables/useSocialProfile'
 import { useAuthStore } from '~/stores/auth'
 import ProfileFollowedTeamsCard from '~/components/profile/ProfileFollowedTeamsCard.vue'
+import ProfileSocialUsersSection from '~/components/profile/ProfileSocialUsersSection.vue'
 
 definePageMeta({
   layout: 'app',
@@ -20,8 +21,18 @@ const socialProfile = useSocialProfile()
 const userId = computed(() => route.params.id as string)
 const profile = computed(() => socialProfile.currentProfile.value)
 const isBlockModalOpen = ref(false)
-const showTeamsSection = ref(true)
+
+type ActiveSocialSection = 'none' | 'followers' | 'following' | 'teams'
+const activeSection = ref<ActiveSocialSection>('none')
 const teamActionLoading = ref<Record<string, boolean>>({})
+
+const isFullProfileVisible = computed(() => {
+  if (!profile.value) return false
+  // Si la cuenta no está explícitamente configurada como privada, es pública
+  if (!profile.value.is_private) return true
+  // Si la cuenta es privada, solo visible para seguidores aceptados o el propio usuario
+  return Boolean(profile.value.is_full_profile) || profile.value.relation_status === 'accepted' || profile.value.relation_status === 'self'
+})
 
 useSeoMeta({
   title: computed(() => profile.value ? `${profile.value.display_name} — Perfil de Fanático` : 'Perfil de Fanático'),
@@ -58,6 +69,19 @@ async function handleConfirmBlock() {
   if (ok) {
     // Navigate back to community search
     navigateTo('/app/usuarios')
+  }
+}
+
+async function handleToggleSection(section: 'followers' | 'following' | 'teams') {
+  if (activeSection.value === section) {
+    activeSection.value = 'none'
+    return
+  }
+  activeSection.value = section
+  if (section === 'followers' && profile.value?.id) {
+    await socialProfile.fetchFollowers(profile.value.id)
+  } else if (section === 'following' && profile.value?.id) {
+    await socialProfile.fetchFollowing(profile.value.id)
   }
 }
 
@@ -217,26 +241,61 @@ async function handleToggleTeamFollow(team: PublicProfileFollowedTeam) {
             </p>
           </div>
 
-          <!-- Métricas Sociales Públicas (Seguidores, Seguidos y Equipos) -->
-          <div class="flex flex-wrap items-center gap-5 sm:gap-6 pt-4 mt-4 border-t border-guaiqui-border/60 text-sm">
-            <div>
-              <strong class="font-display font-extrabold text-guaiqui-text text-base">
-                {{ profile.followers_count }}
-              </strong>
-              <span class="text-xs text-guaiqui-text-muted ml-1">seguidores</span>
-            </div>
-            <div>
-              <strong class="font-display font-extrabold text-guaiqui-text text-base">
-                {{ profile.following_count }}
-              </strong>
-              <span class="text-xs text-guaiqui-text-muted ml-1">seguidos</span>
-            </div>
+          <!-- Métricas Sociales Públicas (Seguidores, Seguidos y Equipos - Inicializan en false) -->
+          <div class="flex flex-wrap items-center gap-2 sm:gap-3 pt-4 mt-4 border-t border-guaiqui-border/60 text-sm">
+            <!-- Botón Seguidores -->
             <button
               type="button"
-              @click="showTeamsSection = !showTeamsSection"
-              class="group inline-flex items-center gap-1.5 px-2.5 py-1 -my-1 rounded-lg transition-all cursor-pointer select-none"
-              :class="showTeamsSection ? 'bg-emerald-50 text-emerald-800 ring-1 ring-emerald-200' : 'hover:bg-slate-100 text-guaiqui-text'"
-              title="Ver u ocultar equipos que sigue"
+              @click="handleToggleSection('followers')"
+              class="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer select-none border text-xs sm:text-sm font-semibold"
+              :class="activeSection === 'followers'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 ring-2 ring-emerald-500/20 shadow-2xs'
+                : 'bg-slate-50 hover:bg-slate-100 text-guaiqui-text border-slate-200/80'"
+              title="Ver seguidores"
+            >
+              <strong class="font-display font-extrabold text-base">
+                {{ profile.followers_count }}
+              </strong>
+              <span class="text-xs text-guaiqui-text-muted group-hover:text-guaiqui-text ml-0.5">
+                seguidores
+              </span>
+              <i
+                class="bi text-xs transition-transform"
+                :class="activeSection === 'followers' ? 'bi-chevron-up text-emerald-700' : 'bi-chevron-down text-slate-400 group-hover:text-slate-600'"
+              ></i>
+            </button>
+
+            <!-- Botón Seguidos -->
+            <button
+              type="button"
+              @click="handleToggleSection('following')"
+              class="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer select-none border text-xs sm:text-sm font-semibold"
+              :class="activeSection === 'following'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 ring-2 ring-emerald-500/20 shadow-2xs'
+                : 'bg-slate-50 hover:bg-slate-100 text-guaiqui-text border-slate-200/80'"
+              title="Ver seguidos"
+            >
+              <strong class="font-display font-extrabold text-base">
+                {{ profile.following_count }}
+              </strong>
+              <span class="text-xs text-guaiqui-text-muted group-hover:text-guaiqui-text ml-0.5">
+                seguidos
+              </span>
+              <i
+                class="bi text-xs transition-transform"
+                :class="activeSection === 'following' ? 'bi-chevron-up text-emerald-700' : 'bi-chevron-down text-slate-400 group-hover:text-slate-600'"
+              ></i>
+            </button>
+
+            <!-- Botón Equipos -->
+            <button
+              type="button"
+              @click="handleToggleSection('teams')"
+              class="group inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl transition-all cursor-pointer select-none border text-xs sm:text-sm font-semibold"
+              :class="activeSection === 'teams'
+                ? 'bg-emerald-50 text-emerald-800 border-emerald-300 ring-2 ring-emerald-500/20 shadow-2xs'
+                : 'bg-slate-50 hover:bg-slate-100 text-guaiqui-text border-slate-200/80'"
+              title="Ver equipos que sigue"
             >
               <strong class="font-display font-extrabold text-base">
                 {{ profile.followed_teams?.length || 0 }}
@@ -246,88 +305,114 @@ async function handleToggleTeamFollow(team: PublicProfileFollowedTeam) {
               </span>
               <i
                 class="bi text-xs transition-transform"
-                :class="showTeamsSection ? 'bi-chevron-up text-emerald-700' : 'bi-chevron-down text-slate-400 group-hover:text-slate-600'"
+                :class="activeSection === 'teams' ? 'bi-chevron-up text-emerald-700' : 'bi-chevron-down text-slate-400 group-hover:text-slate-600'"
               ></i>
             </button>
           </div>
         </div>
       </div>
 
-      <!-- 2. Equipos que Sigue (Mostrado al hacer click o desplegado) -->
+      <!-- SECCIÓN 1: SEGUIDORES (Se muestra solo cuando activeSection === 'followers') -->
+      <ProfileSocialUsersSection
+        v-if="activeSection === 'followers'"
+        title="Seguidores"
+        :subtitle="`Fanáticos que siguen a ${profile.display_name}`"
+        :users="socialProfile.followersList.value"
+        :loading="socialProfile.loadingList.value"
+        empty-message="Este fanático no tiene seguidores aún."
+        @close="activeSection = 'none'"
+      />
+
+      <!-- SECCIÓN 2: SEGUIDOS (Se muestra solo cuando activeSection === 'following') -->
+      <ProfileSocialUsersSection
+        v-else-if="activeSection === 'following'"
+        title="Seguidos"
+        :subtitle="`Fanáticos a los que sigue ${profile.display_name}`"
+        :users="socialProfile.followingList.value"
+        :loading="socialProfile.loadingList.value"
+        empty-message="Este fanático no sigue a otros usuarios aún."
+        @close="activeSection = 'none'"
+      />
+
+      <!-- SECCIÓN 3: EQUIPOS QUE SIGUE (Se muestra solo cuando activeSection === 'teams') -->
       <ProfileFollowedTeamsCard
-        v-if="showTeamsSection"
+        v-else-if="activeSection === 'teams'"
         :teams="profile.followed_teams || []"
         :action-loading="teamActionLoading"
         @toggle-follow-team="handleToggleTeamFollow"
+        @close="activeSection = 'none'"
       />
 
-      <!-- 3. Contenido Completo (Solo para seguidores aceptados o el propio usuario) -->
-      <div v-if="profile.is_full_profile" class="space-y-6">
-        <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
-          <!-- Ranking -->
-          <BaseCard class="bg-white border-guaiqui-border p-4 rounded-guaiqui-xl shadow-xs">
-            <span class="text-xs font-semibold text-guaiqui-text-muted uppercase tracking-wider block mb-1">Ranking</span>
-            <div class="font-display font-black text-2xl text-guaiqui-text">
-              {{ profile.ranking ? `#${profile.ranking.rank}` : '—' }}
-            </div>
-            <span class="text-[11px] text-guaiqui-text-muted">
-              {{ profile.ranking ? `${profile.ranking.points} pts acumulados` : 'Sin puntuación' }}
-            </span>
-          </BaseCard>
+      <!-- INFORMACIÓN DE LA CUENTA (Visible solo cuando las tres secciones están en false/none) -->
+      <template v-else>
+        <!-- Contenido Completo (Público, seguidor aceptado o uno mismo) -->
+        <div v-if="isFullProfileVisible" class="space-y-6">
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+            <!-- Ranking -->
+            <BaseCard class="bg-white border-guaiqui-border p-4 rounded-guaiqui-xl shadow-xs">
+              <span class="text-xs font-semibold text-guaiqui-text-muted uppercase tracking-wider block mb-1">Ranking</span>
+              <div class="font-display font-black text-2xl text-guaiqui-text">
+                {{ profile.ranking ? `#${profile.ranking.rank}` : '—' }}
+              </div>
+              <span class="text-[11px] text-guaiqui-text-muted">
+                {{ profile.ranking ? `${profile.ranking.points} pts acumulados` : 'Sin puntuación' }}
+              </span>
+            </BaseCard>
 
-          <!-- Perlitas Totales -->
-          <BaseCard class="bg-white border-guaiqui-border p-4 rounded-guaiqui-xl shadow-xs">
-            <span class="text-xs font-semibold text-guaiqui-text-muted uppercase tracking-wider block mb-1">Perlitas</span>
-            <div class="font-display font-black text-2xl text-emerald-600">
-              {{ profile.total_pearls || 0 }}
-            </div>
-            <span class="text-[11px] text-guaiqui-text-muted">Saldo global calculado</span>
-          </BaseCard>
+            <!-- Perlitas Totales -->
+            <BaseCard class="bg-white border-guaiqui-border p-4 rounded-guaiqui-xl shadow-xs">
+              <span class="text-xs font-semibold text-guaiqui-text-muted uppercase tracking-wider block mb-1">Perlitas</span>
+              <div class="font-display font-black text-2xl text-emerald-600">
+                {{ profile.total_pearls || 0 }}
+              </div>
+              <span class="text-[11px] text-guaiqui-text-muted">Saldo global calculado</span>
+            </BaseCard>
 
-          <!-- Canjes Realizados -->
-          <BaseCard class="bg-white border-guaiqui-border p-4 rounded-guaiqui-xl shadow-xs">
-            <span class="text-xs font-semibold text-guaiqui-text-muted uppercase tracking-wider block mb-1">Canjes</span>
-            <div class="font-display font-black text-2xl text-guaiqui-text">
-              {{ profile.redemptions_count || 0 }}
-            </div>
-            <span class="text-[11px] text-guaiqui-text-muted">Premios entregados</span>
-          </BaseCard>
+            <!-- Canjes Realizados -->
+            <BaseCard class="bg-white border-guaiqui-border p-4 rounded-guaiqui-xl shadow-xs">
+              <span class="text-xs font-semibold text-guaiqui-text-muted uppercase tracking-wider block mb-1">Canjes</span>
+              <div class="font-display font-black text-2xl text-guaiqui-text">
+                {{ profile.redemptions_count || 0 }}
+              </div>
+              <span class="text-[11px] text-guaiqui-text-muted">Premios entregados</span>
+            </BaseCard>
 
-          <!-- Último Premio -->
-          <BaseCard class="bg-white border-guaiqui-border p-4 rounded-guaiqui-xl shadow-xs">
-            <span class="text-xs font-semibold text-guaiqui-text-muted uppercase tracking-wider block mb-1">Último Premio</span>
-            <div class="font-display font-bold text-sm text-guaiqui-text line-clamp-1">
-              {{ profile.last_reward?.product_name || 'Ninguno aún' }}
-            </div>
-            <span class="text-[11px] text-guaiqui-text-muted">
-              {{ profile.last_reward?.redeemed_at ? new Date(profile.last_reward.redeemed_at).toLocaleDateString('es-VE') : 'Sin canjes' }}
-            </span>
-          </BaseCard>
+            <!-- Último Premio -->
+            <BaseCard class="bg-white border-guaiqui-border p-4 rounded-guaiqui-xl shadow-xs">
+              <span class="text-xs font-semibold text-guaiqui-text-muted uppercase tracking-wider block mb-1">Último Premio</span>
+              <div class="font-display font-bold text-sm text-guaiqui-text line-clamp-1">
+                {{ profile.last_reward?.product_name || 'Ninguno aún' }}
+              </div>
+              <span class="text-[11px] text-guaiqui-text-muted">
+                {{ profile.last_reward?.redeemed_at ? new Date(profile.last_reward.redeemed_at).toLocaleDateString('es-VE') : 'Sin canjes' }}
+              </span>
+            </BaseCard>
+          </div>
         </div>
-      </div>
 
-      <!-- 4. Cuenta Privada (Para quienes no siguen a la cuenta) -->
-      <BaseCard v-else class="bg-white border-guaiqui-border p-8 rounded-guaiqui-2xl text-center shadow-guaiqui-sm">
-        <div class="w-14 h-14 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-2xl mx-auto mb-3">
-          <i class="bi bi-lock-fill"></i>
-        </div>
-        <h3 class="font-display font-black text-lg text-guaiqui-text uppercase tracking-wide mb-1">
-          Esta Cuenta es Privada
-        </h3>
-        <p class="text-xs text-guaiqui-text-muted max-w-sm mx-auto mb-4">
-          Envía una solicitud de seguimiento a {{ profile.display_name }} para poder ver sus estadísticas de ranking, canjes y saldo de perlitas.
-        </p>
-        <BaseButton
-          v-if="profile.relation_status === 'none'"
-          variant="primary"
-          size="sm"
-          :loading="socialProfile.actionLoading.value"
-          @click="handleFollowAction"
-        >
-          <i class="bi bi-person-plus-fill mr-1.5"></i>
-          Enviar Solicitud
-        </BaseButton>
-      </BaseCard>
+        <!-- Cuenta Privada (Solo cuando la cuenta sea privada y no haya relación aceptada) -->
+        <BaseCard v-else class="bg-white border-guaiqui-border p-8 rounded-guaiqui-2xl text-center shadow-guaiqui-sm">
+          <div class="w-14 h-14 rounded-full bg-slate-100 text-slate-500 flex items-center justify-center text-2xl mx-auto mb-3">
+            <i class="bi bi-lock-fill"></i>
+          </div>
+          <h3 class="font-display font-black text-lg text-guaiqui-text uppercase tracking-wide mb-1">
+            Esta Cuenta es Privada
+          </h3>
+          <p class="text-xs text-guaiqui-text-muted max-w-sm mx-auto mb-4">
+            Envía una solicitud de seguimiento a {{ profile.display_name }} para poder ver sus estadísticas de ranking, canjes y saldo de perlitas.
+          </p>
+          <BaseButton
+            v-if="profile.relation_status === 'none'"
+            variant="primary"
+            size="sm"
+            :loading="socialProfile.actionLoading.value"
+            @click="handleFollowAction"
+          >
+            <i class="bi bi-person-plus-fill mr-1.5"></i>
+            Enviar Solicitud
+          </BaseButton>
+        </BaseCard>
+      </template>
     </div>
 
     <!-- Modal de Confirmación de Bloqueo -->

@@ -174,7 +174,7 @@ function handleSave() {
               Cuenta Privada
             </label>
             <p class="text-[11px] text-guaiqui-text-muted leading-tight">
-              {{ isPrivate ? 'Solo los fanáticos con solicitud aceptada podrán ver tus estadísticas de ranking, canjes y perlitas.' : 'Tu perfil es público por defecto. Cualquier fanático puede ver tus estadísticas y seguirte inmediatamente.' }}
+              {{ isPrivate ? 'Solo tus seguidores podrán ver tus estadísticas de ranking, canjes y perlitas.' : 'Cualquier fanático puede ver tus estadísticas y crecimeinto dentro de Fanactivo.' }}
             </p>
           </div>
         </div>

@@ -16,6 +16,7 @@ withDefaults(
 
 const emit = defineEmits<{
   (e: 'toggle-follow-team', team: PublicProfileFollowedTeam): void
+  (e: 'close'): void
 }>()
 </script>
 
@@ -24,9 +25,6 @@ const emit = defineEmits<{
     <!-- Encabezado de la Sección -->
     <div class="flex items-center justify-between pb-3.5 mb-3.5 border-b border-guaiqui-border/80">
       <div class="flex items-center gap-2.5">
-        <div class="w-8 h-8 rounded-xl bg-emerald-50 text-emerald-700 border border-emerald-200/80 flex items-center justify-center font-bold text-sm shrink-0">
-          <i class="bi bi-shield-shaded"></i>
-        </div>
         <div>
           <h2 class="font-display font-black text-base text-guaiqui-text uppercase tracking-wide leading-tight">
             Equipos que Sigue
@@ -36,12 +34,23 @@ const emit = defineEmits<{
           </p>
         </div>
       </div>
-      <span
-        v-if="teams && teams.length > 0"
-        class="bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-xs font-extrabold px-2.5 py-0.5 rounded-full"
-      >
-        {{ teams.length }}
-      </span>
+      <div class="flex items-center gap-2">
+        <span
+          v-if="teams && teams.length > 0"
+          class="bg-emerald-50 text-emerald-800 border border-emerald-200/80 text-xs font-extrabold px-2.5 py-0.5 rounded-full"
+        >
+          {{ teams.length }}
+        </span>
+        <button
+          type="button"
+          @click="emit('close')"
+          class="inline-flex items-center gap-1 px-2.5 py-1 text-xs font-semibold text-slate-500 hover:text-slate-800 bg-slate-100 hover:bg-slate-200/80 rounded-lg transition-colors cursor-pointer"
+          title="Cerrar y volver al perfil"
+        >
+          <span>Volver</span>
+          <i class="bi bi-x-lg text-[10px]"></i>
+        </button>
+      </div>
     </div>
 
     <!-- Estado Vacío -->
