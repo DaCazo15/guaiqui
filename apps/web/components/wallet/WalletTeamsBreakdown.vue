@@ -151,10 +151,7 @@ const toggleTeamFilter = (teamId: string) => {
             type="button"
             class="text-xs font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer"
             :class="selectedTeamId === team.team_id ? 'text-guaiqui-primary underline font-bold' : 'text-guaiqui-text-muted hover:text-guaiqui-text'"
-            @click="toggleTeamFilter(team.team_id)"
           >
-            <i class="bi" :class="selectedTeamId === team.team_id ? 'bi-funnel-fill text-guaiqui-primary' : 'bi-funnel'"></i>
-            <span>{{ selectedTeamId === team.team_id ? 'Mostrando este equipo' : 'Ver movimientos' }}</span>
           </button>
 
           <NuxtLink to="/app/tienda" class="shrink-0">
