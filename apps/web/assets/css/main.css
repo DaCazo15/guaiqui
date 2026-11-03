@@ -25,3 +25,33 @@
   padding-left: var(--safe-area-inset-left);
   padding-right: var(--safe-area-inset-right);
 }
+
+/* Ocultar barra de scroll en todas las secciones y todas las versiones (móvil, tablet, escritorio) manteniendo el scroll funcional */
+html,
+body,
+* {
+  scrollbar-width: none !important; /* Firefox */
+  -ms-overflow-style: none !important; /* IE y Edge */
+}
+
+*::-webkit-scrollbar {
+  display: none !important; /* Chrome, Safari, Opera, iOS Safari, Android */
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
+}
+
+@layer utilities {
+  .scrollbar-none::-webkit-scrollbar,
+  .no-scrollbar::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+  .scrollbar-none,
+  .no-scrollbar {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+  }
+}
+

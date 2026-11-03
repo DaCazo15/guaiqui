@@ -146,13 +146,7 @@ const toggleTeamFilter = (teamId: string) => {
         </div>
 
         <!-- Card Footer Actions -->
-        <div class="mt-4 pt-2.5 border-t border-slate-100 flex items-center justify-between gap-2">
-          <button
-            type="button"
-            class="text-xs font-semibold transition-colors inline-flex items-center gap-1 cursor-pointer"
-            :class="selectedTeamId === team.team_id ? 'text-guaiqui-primary underline font-bold' : 'text-guaiqui-text-muted hover:text-guaiqui-text'"
-          >
-          </button>
+        <div class="mt-4 pt-2.5 border-t border-slate-100 flex items-center justify-end gap-2">
 
           <NuxtLink to="/app/tienda" class="shrink-0">
             <button
