@@ -73,11 +73,6 @@ onUnmounted(() => {
     document.body.style.overflow = ''
   }
 })
-
-async function handleLogout() {
-  emit('close')
-  await authStore.logout()
-}
 </script>
 
 <template>
@@ -113,38 +108,8 @@ async function handleLogout() {
         role="dialog"
         aria-modal="true"
         aria-label="Menú principal de navegación"
-        class="fixed top-0 bottom-0 left-0 z-50 w-[310px] max-w-[85vw] bg-gradient-to-b from-[#050e12] via-[#071318] to-[#0a1c22] text-white shadow-2xl flex flex-col justify-between overflow-hidden border-r border-cyan-950/80 lg:hidden"
+        class="fixed top-[57px] bottom-0 left-0 z-50 w-[310px] max-w-[85vw] bg-gradient-to-b from-[#050e12] via-[#071318] to-[#0a1c22] text-white shadow-2xl flex flex-col justify-between overflow-hidden border-r border-cyan-950/80 lg:hidden"
       >
-        <!-- Top Section: Header -->
-        <div class="p-4 border-b border-cyan-950/80 bg-[#0c1e24] shrink-0">
-          <!-- Brand + Close Button -->
-          <div class="flex items-center justify-between">
-            <NuxtLink to="/" class="flex items-center gap-2.5" @click="emit('close')">
-              <div class="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-amber-500 flex items-center justify-center text-white shadow-md shadow-orange-500/25 shrink-0">
-                <i class="bi bi-fire text-xl"></i>
-              </div>
-              <div>
-                <div class="flex items-baseline gap-1">
-                  <span class="font-title font-black text-base text-white tracking-wider leading-tight">FAN</span>
-                  <span class="font-title font-black text-base text-transparent bg-clip-text bg-gradient-to-r from-orange-400 to-amber-400 tracking-wider leading-tight">ACTIVO</span>
-                </div>
-                <span class="text-[10px] text-cyan-400 font-bold tracking-widest uppercase block mt-0.5">
-                  Fan Zone
-                </span>
-              </div>
-            </NuxtLink>
-
-            <button
-              type="button"
-              @click="emit('close')"
-              class="w-10 h-10 rounded-xl flex items-center justify-center text-cyan-300 hover:text-white hover:bg-cyan-950/60 active:scale-95 transition-all cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
-              aria-label="Cerrar menú"
-            >
-              <i class="bi bi-x-lg text-lg"></i>
-            </button>
-          </div>
-        </div>
-
         <!-- Middle Section: Scrollable Complete Navigation Links -->
         <nav class="flex-1 overflow-y-auto px-3 py-3 space-y-1">
           <NuxtLink
@@ -201,21 +166,11 @@ async function handleLogout() {
           </NuxtLink>
         </nav>
 
-        <!-- Bottom Section: Logout & Team Badge -->
-        <div class="p-3 border-t border-cyan-950/80 bg-[#0c1e24] shrink-0 space-y-2">
-          <button
-            type="button"
-            class="w-full flex items-center gap-3 px-3 py-2.5 rounded-xl text-sm text-rose-400 hover:text-rose-300 hover:bg-rose-950/30 transition-colors font-bold cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-rose-400"
-            @click="handleLogout"
-          >
-            <i class="bi bi-box-arrow-right text-base"></i>
-            <span>Cerrar Sesión</span>
-          </button>
-          <div class="px-3 pt-1 text-center">
-            <span class="text-[10px] text-cyan-400/60 font-mono uppercase tracking-widest">
-              FanActivo — Plataforma de Fanáticos
-            </span>
-          </div>
+        <!-- Bottom Section: Brand Badge (Cerrar sesión movido a ajustes del perfil) -->
+        <div class="p-3 border-t border-cyan-950/80 bg-[#0c1e24] shrink-0 text-center">
+          <span class="text-[10px] text-cyan-400/60 font-mono uppercase tracking-widest">
+            FanActivo — Plataforma de Fanáticos
+          </span>
         </div>
       </div>
     </Transition>

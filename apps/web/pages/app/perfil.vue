@@ -195,6 +195,10 @@ async function handleToggleTeamFollow(team: PublicProfileFollowedTeam) {
     teamActionLoading.value = { ...teamActionLoading.value, [team.id]: false }
   }
 }
+
+const handleLogout = async () => {
+  await authStore.logout()
+}
 </script>
 
 <template>
@@ -389,6 +393,27 @@ async function handleToggleTeamFollow(team: PublicProfileFollowedTeam) {
           <span>Ir a Ajustes Generales</span>
           <i class="bi bi-chevron-right text-xs"></i>
         </NuxtLink>
+      </div>
+
+      <!-- Cerrar Sesión (Visible exclusivamente en versiones móvil y tablet: lg:hidden) -->
+      <div class="lg:hidden p-4 bg-rose-50/80 border border-rose-200 rounded-guaiqui-xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 shadow-xs">
+        <div class="flex items-center gap-3">
+          <div class="w-9 h-9 rounded-full bg-rose-100 text-rose-600 flex items-center justify-center font-bold text-base shrink-0">
+            <i class="bi bi-box-arrow-right"></i>
+          </div>
+          <div>
+            <p class="text-sm font-semibold text-guaiqui-text">Cerrar Sesión</p>
+            <p class="text-xs text-guaiqui-text-muted">Finaliza tu sesión en este dispositivo móvil o tablet.</p>
+          </div>
+        </div>
+        <button
+          type="button"
+          @click="handleLogout"
+          class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-4 py-2 text-xs font-bold uppercase tracking-wider text-white bg-rose-600 hover:bg-rose-700 active:scale-95 transition-all rounded-guaiqui-lg shadow-xs cursor-pointer"
+        >
+          <i class="bi bi-box-arrow-right text-sm"></i>
+          <span>Cerrar Sesión</span>
+        </button>
       </div>
     </div>
 

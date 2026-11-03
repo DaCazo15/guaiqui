@@ -27,6 +27,10 @@ async function handleDeleteAccount() {
     deleteError.value = err.message || 'Error al eliminar la cuenta.'
   }
 }
+
+async function handleLogout() {
+  await authStore.logout()
+}
 </script>
 
 <template>
@@ -58,6 +62,22 @@ async function handleDeleteAccount() {
       <div class="border-t border-guaiqui-border pt-6">
         <!-- Section 2C: Global Sign Out -->
         <SettingsGlobalSignOut />
+      </div>
+
+      <!-- Section 2D: Mobile/Tablet Sign Out (lg:hidden) -->
+      <div class="lg:hidden border-t border-guaiqui-border pt-6">
+        <div class="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 p-4 bg-rose-50/70 border border-rose-200 rounded-guaiqui-lg">
+          <div>
+            <h3 class="text-sm font-semibold text-guaiqui-text">Cerrar Sesión</h3>
+            <p class="text-xs text-guaiqui-text-muted">
+              Finaliza tu sesión en este dispositivo móvil o tablet.
+            </p>
+          </div>
+          <BaseButton variant="danger" size="sm" @click="handleLogout">
+            <i class="bi bi-box-arrow-right mr-1.5"></i>
+            Cerrar Sesión
+          </BaseButton>
+        </div>
       </div>
 
 

@@ -89,11 +89,11 @@ onBeforeUnmount(() => {
           <!-- Mobile Menu Drawer Toggle Button -->
           <button
             type="button"
-            @click="isDrawerOpen = true"
-            aria-label="Abrir menú de navegación"
+            @click="isDrawerOpen = !isDrawerOpen"
+            :aria-label="isDrawerOpen ? 'Cerrar menú de navegación' : 'Abrir menú de navegación'"
             class="w-9 h-9 rounded-xl flex items-center justify-center text-cyan-300 hover:text-white hover:bg-cyan-950/60 active:scale-95 transition-all cursor-pointer -ml-1 border border-cyan-800/60 bg-[#0c1e24] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-orange-400"
           >
-            <i class="bi bi-list text-2xl leading-none"></i>
+            <i :class="isDrawerOpen ? 'bi bi-x-lg text-lg' : 'bi bi-list text-2xl'" class="leading-none"></i>
           </button>
 
           <NuxtLink to="/" class="flex items-center gap-2">
