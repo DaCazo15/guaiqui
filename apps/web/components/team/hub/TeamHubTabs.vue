@@ -1,13 +1,42 @@
 <script setup lang="ts">
-defineProps<{
+import { ref, onMounted, nextTick } from 'vue'
+
+const props = defineProps<{
   slug: string
   activeTab?: 'hub' | 'trivias' | 'tienda' | 'partidos' | 'plantilla' | 'salon-de-la-fama'
   isInactive?: boolean
 }>()
+
+const scrollContainer = ref<HTMLElement | null>(null)
+
+const onTabsScroll = () => {
+  if (scrollContainer.value && typeof sessionStorage !== 'undefined') {
+    sessionStorage.setItem(`team-hub-tabs-scroll-${props.slug}`, String(scrollContainer.value.scrollLeft))
+  }
+}
+
+onMounted(async () => {
+  await nextTick()
+  if (scrollContainer.value && typeof sessionStorage !== 'undefined') {
+    const saved = sessionStorage.getItem(`team-hub-tabs-scroll-${props.slug}`)
+    if (saved) {
+      scrollContainer.value.scrollLeft = Number(saved)
+    } else {
+      const activeEl = scrollContainer.value.querySelector<HTMLElement>('.font-black')
+      if (activeEl) {
+        activeEl.scrollIntoView({ inline: 'nearest', block: 'nearest' })
+      }
+    }
+  }
+})
 </script>
 
 <template>
-  <div class="border-b border-guaiqui-border pb-2 overflow-x-auto">
+  <div
+    ref="scrollContainer"
+    @scroll.passive="onTabsScroll"
+    class="border-b border-guaiqui-border pb-2 overflow-x-auto scrollbar-none"
+  >
     <div class="flex items-center gap-2 min-w-max">
       <!-- 1. Resumen -->
       <NuxtLink
